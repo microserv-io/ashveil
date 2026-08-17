@@ -1,0 +1,31 @@
+name: Feature or change
+description: Propose a mechanic, system or change
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Check CLAUDE.md first: several things are deliberately not built, and some
+        of those decisions would change the balance the loop is tuned around.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve
+      description: What is wrong or missing today, rather than the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+    validations:
+      required: true
+  - type: dropdown
+    id: balance
+    attributes:
+      label: Could this move game feel or balance?
+      description: >
+        If yes, it needs a sweep before and after, with the numbers in the PR.
+      options: ["No", "Yes", "Not sure"]
+    validations:
+      required: true
