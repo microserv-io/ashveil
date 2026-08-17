@@ -11,7 +11,7 @@ kill-and-loot rhythm does not feel good. So that rhythm is what exists so far.
 npm install
 npm run dev          # play it at http://localhost:5273
 npm run sim          # play it headless, and get numbers back
-npm test             # 361 tests
+npm test             # vitest suite
 ```
 
 ## Architecture
@@ -155,9 +155,14 @@ npm run sim -- sweep --seeds 6 --minutes 4 --policy brawler
 
 ## Current state
 
-Playable end to end. A four-minute run typically reaches depth 2–3 and level 6–7 at
-roughly 25 kills/min with 0–1 deaths, and clear times fall as power accrues, which is
-the curve the loop is supposed to have.
+Playable end to end. A four-minute headless run typically reaches depth 2-3 and level
+6-7 at roughly 25 kills/min with 0-1 deaths, and clear times fall as power accrues,
+which is the curve the loop is supposed to have. Re-measure with
+`npm run sim -- sweep` rather than trusting this paragraph.
+
+Working on this? Start with [CLAUDE.md](CLAUDE.md), then
+[docs/architecture.md](docs/architecture.md) for structural work and
+[src/sim/CLAUDE.md](src/sim/CLAUDE.md) before touching the sim.
 
 **In:** direct movement with click-to-move as an option, gamepad and Steam Deck
 support through an action layer, A* with an unstuck net, four player skills on a commit
