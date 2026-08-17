@@ -87,6 +87,33 @@ inward.** `sim` imports nothing from the others. `session` may import `sim`. `ne
 may import `session` and `sim` types. `render` and `ui` may import `sim` types and
 read sim state, never mutate it.
 
+### Zones
+
+Three kinds of place, with different rules, because they answer different questions:
+
+| | geometry | combat | who is there | entry | cleared? |
+| --- | --- | --- | --- | --- | --- |
+| **hub** | authored | no | strangers, up to ~50 | seamless | never |
+| **overworld** | authored | yes | your party only | seamless | never; monsters respawn |
+| **dungeon** | procedural from `(seed, depth)` | yes | your party only | portal | yes, then left behind |
+
+Strangers appear in hubs and nowhere else. That is the load-bearing decision: every
+fight in the game then happens at a known party size, so monster density and health
+can be tuned against it. Shared-world combat would break that, and defending against
+leeching and griefing is a second problem on top.
+
+The procedural generator therefore only ever serves dungeons. Hubs and the overworld
+need authored geometry, which is content rather than code — the generator is wired
+behind a zone rule so authored maps can replace it per zone without touching the sim.
+
+**Seamless is still a handoff.** A shared hub and a party-only overworld cannot be
+the same instance, so walking between them crosses instances no matter how it looks.
+`entry: 'seamless'` is a promise about presentation, not topology: the client
+connects to the destination before it leaves the source and hands off without a
+loading screen. Dungeons are `entry: 'portal'` and may take their time. This is the
+one place the session layer has to hold two connections at once, and it is why the
+transport is an interface rather than a single socket.
+
 ### Instance vs session
 
 Two things were tangled and are now separate:
@@ -127,8 +154,37 @@ server, Steam sockets for the native build, WebSocket for a dedicated server. Th
 game never names one.
 
 **Repository for persistence.** Characters load and save through an interface, so the
-web build can use IndexedDB and the native build the filesystem without the session
-layer noticing.
+web build can use IndexedDB, the native build the filesystem, and a live deployment
+an account service, without the session layer noticing.
+
+## Economy
+
+Trade is deliberately not built. What *is* built is the part that cannot be added
+afterwards, because by then items are already in circulation with no history:
+
+- **Server-issued identity and provenance.** Every item carries an id unique to the
+  instance that minted it, plus where it came from — instance, depth, tick, source.
+  That audit trail is how duplication is found. This replaced a module-global
+  counter that leaked across instances in one process.
+- **Binding.** Nothing binds while nothing trades, but the field exists on every
+  item from the start. Retrofitting it means deciding retroactively what every
+  existing item is.
+- **Realms.** Online characters live server-side and are the only ones an economy
+  may touch; offline characters live in a local save. There is deliberately no
+  migration between them — an offline character's items were minted on a machine
+  the player controls, which is the simplest dupe there is. It also means the
+  native build keeps offline play, which matters on a handheld.
+
+The risk worth stating plainly is not technical. A frictionless economy can gut the
+loop the whole game rests on: when buying an upgrade beats farming one, killing
+things stops mattering. Diablo III's auction house is the cautionary case. Every
+ARPG since has answered deliberately — Path of Exile with trade friction, Diablo IV
+by binding the best items, Last Epoch by making players choose between better drops
+and access to trade. That answer sets drop rates, binding rules and item budget, so
+it is a design decision to make before the economy is built, not after.
+
+A live economy is also a permanent operational commitment: botting, RMT, dupes,
+migrations, uptime. That is the ongoing cost, and it is larger than the build.
 
 ## Steam Deck native build
 
@@ -152,12 +208,19 @@ the instance. Commands become addressed and sequenced. State becomes serialisabl
 The tick splits into predictable and authoritative. Transport interface plus
 loopback. This is the work that is cheap now and expensive later.
 
-**Phase 2 — native shell.** Tauri or Electron, Steam Input backend, filesystem saves.
-Single-player throughout; no netcode yet.
+**Phase 2 — native shell.** Tauri or Electron, Steam Input backend, filesystem saves
+for offline characters. Single-player throughout; no netcode yet.
 
 **Phase 3 — netcode.** Real transport, snapshot/delta replication, prediction and
 reconciliation, interest management. The layers above exist so this phase touches
 `net/` and `session/` and almost nothing else.
 
+**Phase 4 — economy.** Account and item services, atomic trades, and the design
+answer to trade friction. Requires dedicated servers; listen servers cannot be
+authoritative over items that have value.
+
 Deliberately deferred: interest management, delta compression, lag compensation,
-anti-cheat beyond server authority, dedicated-server hosting.
+anti-cheat beyond server authority, dedicated-server hosting, authored map content,
+and shared-world combat. On that last one — if the goal is "the world feels
+inhabited", asynchronous presence (traces, echoes, ghosts of other players) buys
+most of the feeling at almost no cost and with no effect on difficulty tuning.

@@ -1,6 +1,8 @@
 import type { Rng } from './rng'
 import {
   type DamageType,
+  type ItemId,
+  type ItemOrigin,
   type EquipSlot,
   type Item,
   type ItemBaseDef,
@@ -299,9 +301,23 @@ function slotMatches(baseSlot: EquipSlot, wanted: EquipSlot): boolean {
   return baseSlot === 'ring1' && wanted === 'ring2'
 }
 
-let nextItemId = 1
+/**
+ * Issues identity and provenance for a new item. The sim supplies a per-instance
+ * implementation; a live economy swaps in one backed by the item service without
+ * anything here changing.
+ */
+export interface ItemMint {
+  next(source: string): { id: ItemId; origin: ItemOrigin }
+}
 
-export function rollItem(baseId: string, itemLevel: number, rarity: ItemRarity, rng: Rng): Item {
+export function rollItem(
+  baseId: string,
+  itemLevel: number,
+  rarity: ItemRarity,
+  rng: Rng,
+  mint: ItemMint,
+  source = 'granted',
+): Item {
   const base = itemBase(baseId)
   const counts = AFFIX_COUNTS[rarity]
   const prefixes = rollAffixes(base.slot, itemLevel, 'prefix', rng.int(rarity === 'rare' ? 2 : counts.prefixes, counts.prefixes), rng)
@@ -310,8 +326,12 @@ export function rollItem(baseId: string, itemLevel: number, rarity: ItemRarity, 
 
   const weapon = base.weapon ? applyLocalMods({ ...base.weapon }, affixes) : undefined
 
+  const identity = mint.next(source)
   return {
-    id: nextItemId++,
+    id: identity.id,
+    origin: identity.origin,
+    // Nothing binds while nothing trades. The rule lives at the point of exchange.
+    binding: 'none',
     baseId: base.id,
     name: itemName(base, rarity, prefixes[0], suffixes[0], rng),
     slot: base.slot,

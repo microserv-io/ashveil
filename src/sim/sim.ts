@@ -10,6 +10,7 @@ import {
 import { computeHit } from './damage'
 import { rollItem } from './items'
 import { rollDrops, startingGear } from './loot'
+import type { ItemMint } from './items'
 import { areaRng, generateArea, isWalkable, type PackPlan } from './mapgen'
 import { SNAPSHOT_VERSION, type InstanceSnapshot, type TickMode } from './snapshot'
 import {
@@ -39,6 +40,7 @@ import {
   type PlayerCommand,
   type PlayerId,
   type Item,
+  type ItemId,
   type Mod,
   type MonsterArchetype,
   type MonsterRarity,
@@ -48,6 +50,9 @@ import {
   type SkillDef,
   type SkillId,
   type WeaponBase,
+  type ZoneKind,
+  type ZoneRules,
+  ZONE_RULES,
 } from './types'
 import { add, angleOf, clone, distance, fromAngle, normalize, scale, sub, vec2, withinArc, type Vec2 } from './vec2'
 
@@ -56,6 +61,15 @@ export interface SimOptions {
   depth?: number
   /** Characters joining at creation. Omitted, one is rolled for single-player. */
   characters?: readonly Character[]
+  /**
+   * Defaults to a dungeon, which is where the loop is played.
+   */
+  zone?: ZoneKind
+  /**
+   * Globally unique in a live deployment; the server supplies it. Locally it is
+   * derived from the seed so item ids stay reproducible in tests and replays.
+   */
+  instanceId?: string
 }
 
 /**
@@ -116,6 +130,10 @@ export class Sim {
    */
   localPlayerId: PlayerId = 1
 
+  readonly zone: ZoneKind
+  readonly rules: ZoneRules
+  readonly instanceId: string
+
   monstersKilled = 0
   areaMonsterCount = 0
   areaStartTime = 0
@@ -124,6 +142,7 @@ export class Sim {
 
   private commands: PlayerCommand[] = []
   private nextEntityId = 1
+  private nextItemSerial = 1
   private nextPlayerId = 1
   private localSequence = 0
   private readonly respawnAt = new Map<PlayerId, number>()
@@ -132,6 +151,9 @@ export class Sim {
     this.seed = options.seed
     this.rng = new Rng(options.seed)
     this.depth = options.depth ?? 1
+    this.zone = options.zone ?? 'dungeon'
+    this.rules = ZONE_RULES[this.zone]
+    this.instanceId = options.instanceId ?? `local-${options.seed >>> 0}`
 
     const generated = generateArea(areaRng(this.seed, this.depth), this.depth)
     this.map = generated.map
@@ -139,12 +161,26 @@ export class Sim {
 
     // A session normally supplies characters. Without one, roll a fresh character
     // so a bare `new Sim(...)` is still a playable single-player instance.
-    for (const character of options.characters ?? [createCharacter('local', 'Ashbearer', startingGear(this.rng))]) {
+    for (const character of options.characters ??
+      [createCharacter('local', 'Ashbearer', startingGear(this.rng, this.mint))]) {
       this.addPlayer(character)
     }
-    this.spawnPacks(generated.packs)
+    if (this.rules.combat) this.spawnPacks(generated.packs)
     this.areaStartTime = 0
     this.events.push({ kind: 'area_entered', depth: this.depth, seed: this.seed })
+  }
+
+  /**
+   * Identity and provenance for items this instance creates. Per-instance rather
+   * than module-global: a shared counter leaks across instances in one process,
+   * which made ids depend on construction order and would have been a real problem
+   * the moment items had value.
+   */
+  readonly mint: ItemMint = {
+    next: (source: string) => ({
+      id: `${this.instanceId}#${this.nextItemSerial++}`,
+      origin: { instanceId: this.instanceId, depth: this.depth, tick: this.tickCount, source },
+    }),
   }
 
   // -------------------------------------------------------------------------
@@ -327,7 +363,8 @@ export class Sim {
           this.allocatePassive(slot, actor, intent.nodeId)
           break
         case 'enter_portal':
-          if (distance(actor.pos, this.map.portal) <= PORTAL_RANGE) this.enterNextArea()
+          // Only a dungeon leads anywhere deeper; a hub or overworld is a place.
+          if (this.rules.clearable && distance(actor.pos, this.map.portal) <= PORTAL_RANGE) this.enterNextArea()
           break
       }
     }
@@ -562,6 +599,7 @@ export class Sim {
   }
 
   private updateAreaState(): void {
+    if (!this.rules.clearable) return
     if (this.areaCleared || this.areaMonsterCount === 0) return
     if (this.monstersRemaining() > 0) return
     this.areaCleared = true
@@ -890,7 +928,7 @@ export class Sim {
     }
 
     this.monstersKilled++
-    const drops = rollDrops(actor.rarity, actor.level, this.rng)
+    const drops = rollDrops(actor.rarity, actor.level, this.rng, this.mint, `drop:${actor.name}`)
     for (const item of drops.items) {
       const groundItem: GroundItem = {
         id: this.nextEntityId++,
@@ -956,7 +994,7 @@ export class Sim {
     })
   }
 
-  private equip(slot: PlayerSlot, actor: Actor, itemId: EntityId): void {
+  private equip(slot: PlayerSlot, actor: Actor, itemId: ItemId): void {
     const result = equipFromInventory(slot.character, itemId)
     if (!result) return
     this.recomputeStats(actor)
@@ -1005,7 +1043,7 @@ export class Sim {
       this.clearPath(actor)
     }
 
-    this.spawnPacks(generated.packs)
+    if (this.rules.combat) this.spawnPacks(generated.packs)
     this.areaCleared = false
     this.areaStartTime = this.time
     this.events.push({ kind: 'area_entered', depth: this.depth, seed: this.seed })
@@ -1178,10 +1216,12 @@ export class Sim {
       version: SNAPSHOT_VERSION,
       seed: this.seed,
       depth: this.depth,
+      zone: this.zone,
       time: this.time,
       tickCount: this.tickCount,
       rngState: this.rng.state,
       nextEntityId: this.nextEntityId,
+      nextItemSerial: this.nextItemSerial,
       nextPlayerId: this.nextPlayerId,
       actors: structuredClone(this.actors),
       projectiles: structuredClone(this.projectiles),
@@ -1201,7 +1241,7 @@ export class Sim {
     if (snapshot.version !== SNAPSHOT_VERSION) {
       throw new Error(`snapshot version ${snapshot.version}, expected ${SNAPSHOT_VERSION}`)
     }
-    const sim = new Sim({ seed: snapshot.seed, depth: snapshot.depth, characters: [] })
+    const sim = new Sim({ seed: snapshot.seed, depth: snapshot.depth, characters: [], zone: snapshot.zone })
     sim.apply(snapshot)
     return sim
   }
@@ -1218,6 +1258,7 @@ export class Sim {
     this.tickCount = snapshot.tickCount
     this.rng.state = snapshot.rngState
     this.nextEntityId = snapshot.nextEntityId
+    this.nextItemSerial = snapshot.nextItemSerial
     this.nextPlayerId = snapshot.nextPlayerId
     this.actors = structuredClone(snapshot.actors) as Actor[]
     this.projectiles = structuredClone(snapshot.projectiles) as Projectile[]
@@ -1301,7 +1342,7 @@ export class Sim {
 
   /** Debug helper: hand the player a specific item, already equipped. */
   grantItem(baseId: string, itemLevel: number, rarity: Item['rarity']): Item {
-    const item = rollItem(baseId, itemLevel, rarity, this.rng)
+    const item = rollItem(baseId, itemLevel, rarity, this.rng, this.mint)
     const slot = this.players.get(this.localPlayerId)!
     slot.character.inventory.push(item)
     this.equip(slot, this.player, item.id)

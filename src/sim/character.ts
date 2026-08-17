@@ -1,8 +1,18 @@
 import { itemMods } from './items'
 import { levelForXp, levelMods, passive, canAllocate } from './progression'
-import { EQUIP_SLOTS, type EntityId, type EquipSlot, type Item, type Mod } from './types'
+import { EQUIP_SLOTS, type EquipSlot, type Item, type ItemId, type Mod } from './types'
 
 export type CharacterId = string
+
+/**
+ * Online characters live server-side and are the only ones an economy may touch.
+ * Offline characters live in a local save and never enter it.
+ *
+ * There is deliberately no migration between the two. Letting an offline character
+ * — whose items were minted on a machine the player controls — carry loot into a
+ * live economy is the simplest duplication exploit there is.
+ */
+export type CharacterRealm = 'online' | 'offline'
 
 /**
  * What survives an area. Level, gear and passives belong to the account, not to the
@@ -15,6 +25,7 @@ export type CharacterId = string
 export interface Character {
   id: CharacterId
   name: string
+  realm: CharacterRealm
   xp: number
   level: number
   passivePoints: number
@@ -23,10 +34,16 @@ export interface Character {
   inventory: Item[]
 }
 
-export function createCharacter(id: CharacterId, name: string, startingGear: readonly Item[] = []): Character {
+export function createCharacter(
+  id: CharacterId,
+  name: string,
+  startingGear: readonly Item[] = [],
+  realm: CharacterRealm = 'offline',
+): Character {
   const character: Character = {
     id,
     name,
+    realm,
     xp: 0,
     level: 1,
     passivePoints: 0,
@@ -69,7 +86,7 @@ export interface EquipResult {
   replaced: Item | undefined
 }
 
-export function equipFromInventory(character: Character, itemId: EntityId): EquipResult | null {
+export function equipFromInventory(character: Character, itemId: ItemId): EquipResult | null {
   const index = character.inventory.findIndex((item) => item.id === itemId)
   if (index === -1) return null
   const item = character.inventory[index]!
@@ -102,4 +119,16 @@ export function grantExperience(character: Character, amount: number): number {
 
 export function cloneCharacter(character: Character): Character {
   return structuredClone(character)
+}
+
+/**
+ * Guards anything that moves items between characters. Trade does not exist yet;
+ * when it does, this is the check that has to be in front of it.
+ */
+export function canExchangeItems(from: Character, to: Character): boolean {
+  return from.realm === 'online' && to.realm === 'online'
+}
+
+export function isBound(item: Item): boolean {
+  return item.binding !== 'none'
 }

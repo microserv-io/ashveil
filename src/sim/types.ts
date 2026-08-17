@@ -260,6 +260,29 @@ export type EquipSlot = (typeof EQUIP_SLOTS)[number]
 
 export type ItemRarity = 'normal' | 'magic' | 'rare'
 
+/**
+ * Server-issued and globally unique, never a local counter. An economy finds
+ * duplicates by identity and provenance, so both have to be real from the start —
+ * retrofitting them onto items already in circulation is not possible.
+ */
+export type ItemId = string
+
+/** Where an item came from. This is the audit trail dupes are caught with. */
+export interface ItemOrigin {
+  instanceId: string
+  depth: number
+  tick: number
+  /** 'drop:Gravebound', 'starting-gear', 'granted'. */
+  source: string
+}
+
+/**
+ * Binding is enforced wherever items change hands. Nothing binds today because
+ * nothing trades today, but the field has to exist before items do: adding it to
+ * an economy already in flight means deciding retroactively what every item is.
+ */
+export type ItemBinding = 'none' | 'account' | 'character'
+
 export interface WeaponBase {
   physicalMin: number
   physicalMax: number
@@ -277,7 +300,11 @@ export interface ItemBaseDef {
 }
 
 export interface Item {
-  id: EntityId
+  id: ItemId
+  origin: ItemOrigin
+  binding: ItemBinding
+  /** Set when bound; the character it is locked to. */
+  boundTo?: string
   baseId: string
   name: string
   slot: EquipSlot
@@ -316,6 +343,65 @@ export interface Orb {
 // ---------------------------------------------------------------------------
 
 export type TileKind = 0 | 1 // 0 wall, 1 floor
+
+/**
+ * Three kinds of place, with genuinely different rules:
+ *
+ * - `hub`      authored, peaceful, shared with strangers. Where trade and people are.
+ * - `overworld` authored, dangerous, persistent, party-only. Monsters respawn;
+ *               nothing is ever "cleared".
+ * - `dungeon`  procedural from (seed, depth), party-only, cleared and left behind.
+ *
+ * Strangers appear in hubs and nowhere else, so every fight in the game happens at
+ * a known party size and difficulty tuning stays honest.
+ */
+export type ZoneKind = 'hub' | 'overworld' | 'dungeon'
+
+export interface ZoneRules {
+  combat: boolean
+  /** Procedural zones derive from (seed, depth); authored ones load built geometry. */
+  geometry: 'procedural' | 'authored'
+  /** Whether clearing it means anything and a portal leads onward. */
+  clearable: boolean
+  /** Party-only, or open to whoever else is here. */
+  population: 'party' | 'shared'
+  maxPlayers: number
+  /**
+   * How a player arrives. `seamless` means no loading screen at the border — but it
+   * is still a handoff between instances, because a shared hub and a party-only
+   * overworld cannot be the same instance. The client has to be connected to the
+   * destination before it leaves the source; that is what makes it look seamless.
+   * `portal` may take its time and show a screen.
+   */
+  entry: 'seamless' | 'portal'
+}
+
+export const ZONE_RULES: Record<ZoneKind, ZoneRules> = {
+  hub: {
+    combat: false,
+    geometry: 'authored',
+    clearable: false,
+    population: 'shared',
+    maxPlayers: 50,
+    entry: 'seamless',
+  },
+  overworld: {
+    combat: true,
+    geometry: 'authored',
+    clearable: false,
+    population: 'party',
+    maxPlayers: 4,
+    entry: 'seamless',
+  },
+  dungeon: {
+    combat: true,
+    geometry: 'procedural',
+    clearable: true,
+    population: 'party',
+    maxPlayers: 4,
+    entry: 'portal',
+  },
+}
 
 export interface AreaMap {
   width: number
@@ -362,7 +448,7 @@ export type Intent =
   | { kind: 'stop' }
   | { kind: 'use_skill'; skill: SkillId; aim: Vec2 }
   | { kind: 'pickup'; itemId: EntityId }
-  | { kind: 'equip'; itemId: EntityId }
+  | { kind: 'equip'; itemId: ItemId }
   | { kind: 'allocate_passive'; nodeId: string }
   | { kind: 'enter_portal' }
 
@@ -389,9 +475,9 @@ export type SimEventBody =
   | { kind: 'ailment_applied'; targetId: EntityId; ailment: AilmentKind }
   | { kind: 'death'; actorId: EntityId; killerId: EntityId | null; pos: Vec2 }
   | { kind: 'item_dropped'; groundItemId: EntityId; rarity: ItemRarity; pos: Vec2 }
-  | { kind: 'item_picked_up'; itemId: EntityId; name: string; rarity: ItemRarity }
+  | { kind: 'item_picked_up'; itemId: ItemId; name: string; rarity: ItemRarity }
   | { kind: 'orb_collected'; healed: number; pos: Vec2 }
-  | { kind: 'item_equipped'; itemId: EntityId; slot: EquipSlot }
+  | { kind: 'item_equipped'; itemId: ItemId; slot: EquipSlot }
   | { kind: 'xp_gained'; amount: number; total: number }
   | { kind: 'level_up'; level: number; passivePoints: number }
   | { kind: 'passive_allocated'; nodeId: string }

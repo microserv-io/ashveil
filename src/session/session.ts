@@ -1,7 +1,7 @@
 import type { ClientMessage, ServerTransport } from '../net/protocol'
-import { type Character, cloneCharacter } from '../sim/character'
+import { type Character, type CharacterRealm, cloneCharacter } from '../sim/character'
 import { Sim } from '../sim/sim'
-import type { PlayerId } from '../sim/types'
+import { ZONE_RULES, type PlayerId, type ZoneKind } from '../sim/types'
 
 /**
  * Characters outlive instances, so they are stored rather than lived in. The web
@@ -9,6 +9,8 @@ import type { PlayerId } from '../sim/types'
  * without the session noticing the difference.
  */
 export interface CharacterStore {
+  /** Which characters this store is allowed to hold. */
+  readonly realm: CharacterRealm
   load(id: string): Promise<Character | null>
   save(character: Character): Promise<void>
   list(): Promise<Character[]>
@@ -17,12 +19,17 @@ export interface CharacterStore {
 export class MemoryCharacterStore implements CharacterStore {
   private readonly characters = new Map<string, Character>()
 
+  constructor(readonly realm: CharacterRealm = 'offline') {}
+
   async load(id: string): Promise<Character | null> {
     const found = this.characters.get(id)
     return found ? cloneCharacter(found) : null
   }
 
   async save(character: Character): Promise<void> {
+    if (character.realm !== this.realm) {
+      throw new Error(`refusing to store a ${character.realm} character in the ${this.realm} store`)
+    }
     this.characters.set(character.id, cloneCharacter(character))
   }
 
@@ -33,6 +40,8 @@ export class MemoryCharacterStore implements CharacterStore {
 
 export interface SessionOptions {
   seed: number
+  /** Defaults to a dungeon; a hub or overworld session passes its own. */
+  zone?: ZoneKind
   store?: CharacterStore
   /** Ticks between snapshots. Events go out every tick regardless. */
   snapshotInterval?: number
@@ -55,7 +64,7 @@ export class GameSession {
   private readonly snapshotInterval: number
 
   constructor(options: SessionOptions) {
-    this.instance = new Sim({ seed: options.seed, characters: [] })
+    this.instance = new Sim({ seed: options.seed, characters: [], zone: options.zone ?? 'dungeon' })
     this.store = options.store ?? new MemoryCharacterStore()
     this.snapshotInterval = options.snapshotInterval ?? 6
   }
@@ -92,6 +101,10 @@ export class GameSession {
   }
 
   join(character: Character): PlayerId {
+    const limit = ZONE_RULES[this.instance.zone].maxPlayers
+    if (this.instance.players.size >= limit) {
+      throw new Error(`${this.instance.zone} is full (${limit} players)`)
+    }
     const playerId = this.instance.addPlayer(character)
     if (this.instance.players.size === 1) this.instance.localPlayerId = playerId
     return playerId

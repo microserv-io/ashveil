@@ -9,7 +9,14 @@ import { decodeSnapshot, encodeSnapshot } from '../src/sim/snapshot'
 import { TICK_RATE } from '../src/sim/types'
 
 function character(id: string, seed = 1) {
-  return createCharacter(id, id, startingGear(new Rng(seed)))
+  let serial = 0
+  const mint = {
+    next: (source: string) => ({
+      id: `${id}#${++serial}`,
+      origin: { instanceId: id, depth: 1, tick: 0, source },
+    }),
+  }
+  return createCharacter(id, id, startingGear(new Rng(seed), mint))
 }
 
 describe('an instance holds more than one player', () => {

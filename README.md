@@ -11,7 +11,7 @@ kill-and-loot rhythm does not feel good. So that rhythm is what exists so far.
 npm install
 npm run dev          # play it at http://localhost:5273
 npm run sim          # play it headless, and get numbers back
-npm test             # 343 tests
+npm test             # 361 tests
 ```
 
 ## Architecture

@@ -1,4 +1,4 @@
-import { basesForLevel, rollItem } from './items'
+import { basesForLevel, rollItem, type ItemMint } from './items'
 import type { Rng } from './rng'
 import type { Item, ItemRarity, MonsterRarity } from './types'
 
@@ -44,7 +44,13 @@ export interface Drops {
   orbs: number
 }
 
-export function rollDrops(monsterRarity: MonsterRarity, monsterLevel: number, rng: Rng): Drops {
+export function rollDrops(
+  monsterRarity: MonsterRarity,
+  monsterLevel: number,
+  rng: Rng,
+  mint: ItemMint,
+  source = 'drop',
+): Drops {
   const profile = DROP_PROFILES[monsterRarity]
   const orbs = rng.chance(profile.orbChance) ? 1 : 0
   if (!rng.chance(profile.dropChance)) return { items: [], orbs }
@@ -61,12 +67,15 @@ export function rollDrops(monsterRarity: MonsterRarity, monsterLevel: number, rn
       { weight: profile.rarityWeights.magic, value: 'magic' as ItemRarity },
       { weight: profile.rarityWeights.rare, value: 'rare' as ItemRarity },
     ])
-    items.push(rollItem(base.id, itemLevel, rarity, rng))
+    items.push(rollItem(base.id, itemLevel, rarity, rng, mint, source))
   }
   return { items, orbs }
 }
 
 /** The kit a fresh character starts in, so the first fight is not a formality. */
-export function startingGear(rng: Rng): Item[] {
-  return [rollItem('rusted_axe', 1, 'normal', rng), rollItem('rags', 1, 'normal', rng)]
+export function startingGear(rng: Rng, mint: ItemMint): Item[] {
+  return [
+    rollItem('rusted_axe', 1, 'normal', rng, mint, 'starting-gear'),
+    rollItem('rags', 1, 'normal', rng, mint, 'starting-gear'),
+  ]
 }

@@ -3,13 +3,25 @@ import { AFFIX_COUNTS, itemBase, itemMods, itemScore, rollItem } from '../src/si
 import { rollDrops } from '../src/sim/loot'
 import { Rng } from '../src/sim/rng'
 import type { ItemRarity } from '../src/sim/types'
+import type { ItemMint } from '../src/sim/items'
+
+function testMint(): ItemMint {
+  let serial = 0
+  return {
+    next: (source) => ({
+      id: `test#${++serial}`,
+      origin: { instanceId: 'test', depth: 1, tick: 0, source },
+    }),
+  }
+}
 
 describe('item rolling', () => {
   it('respects the affix budget for each rarity', () => {
     const rng = new Rng(7)
+    const mint = testMint()
     for (const rarity of ['normal', 'magic', 'rare'] as ItemRarity[]) {
       for (let i = 0; i < 40; i++) {
-        const item = rollItem('cleaver', 20, rarity, rng)
+        const item = rollItem('cleaver', 20, rarity, rng, mint)
         const prefixes = item.affixes.filter((a) => a.kind === 'prefix').length
         const suffixes = item.affixes.filter((a) => a.kind === 'suffix').length
         expect(prefixes).toBeLessThanOrEqual(AFFIX_COUNTS[rarity].prefixes)
@@ -20,8 +32,9 @@ describe('item rolling', () => {
 
   it('never rolls the same affix twice on one item', () => {
     const rng = new Rng(11)
+    const mint = testMint()
     for (let i = 0; i < 60; i++) {
-      const item = rollItem('iron_ring', 20, 'rare', rng)
+      const item = rollItem('iron_ring', 20, 'rare', rng, mint)
       const ids = item.affixes.map((a) => a.id)
       expect(new Set(ids).size).toBe(ids.length)
     }
@@ -29,8 +42,9 @@ describe('item rolling', () => {
 
   it('only rolls affixes the item level unlocks', () => {
     const rng = new Rng(3)
+    const mint = testMint()
     for (let i = 0; i < 60; i++) {
-      const item = rollItem('rusted_axe', 1, 'rare', rng)
+      const item = rollItem('rusted_axe', 1, 'rare', rng, mint)
       // Tier 1 mods all require item level well above 1.
       expect(item.affixes.every((a) => a.tier >= 2)).toBe(true)
     }
@@ -38,10 +52,11 @@ describe('item rolling', () => {
 
   it('folds local weapon mods into the weapon and keeps them off the wearer', () => {
     const rng = new Rng(5)
+    const mint = testMint()
     const base = itemBase('cleaver').weapon!
     let sawLocal = false
     for (let i = 0; i < 80; i++) {
-      const item = rollItem('cleaver', 20, 'rare', rng)
+      const item = rollItem('cleaver', 20, 'rare', rng, mint)
       const localMods = item.affixes.flatMap((a) => a.mods).filter((m) => m.source?.endsWith(':local'))
       if (localMods.length === 0) continue
       sawLocal = true
@@ -54,8 +69,9 @@ describe('item rolling', () => {
 
   it('scores a rare above a normal of the same base', () => {
     const rng = new Rng(9)
-    const normal = rollItem('ringmail', 20, 'normal', rng)
-    const rare = rollItem('ringmail', 20, 'rare', rng)
+    const mint = testMint()
+    const normal = rollItem('ringmail', 20, 'normal', rng, mint)
+    const rare = rollItem('ringmail', 20, 'rare', rng, mint)
     expect(itemScore(rare)).toBeGreaterThan(itemScore(normal))
   })
 })
@@ -63,11 +79,12 @@ describe('item rolling', () => {
 describe('drops', () => {
   it('pays out more from rarer monsters', () => {
     const rng = new Rng(21)
+    const mint = testMint()
     const counts = { normal: 0, magic: 0, rare: 0 }
     for (let i = 0; i < 2000; i++) {
-      counts.normal += rollDrops('normal', 10, rng).items.length
-      counts.magic += rollDrops('magic', 10, rng).items.length
-      counts.rare += rollDrops('rare', 10, rng).items.length
+      counts.normal += rollDrops('normal', 10, rng, mint).items.length
+      counts.magic += rollDrops('magic', 10, rng, mint).items.length
+      counts.rare += rollDrops('rare', 10, rng, mint).items.length
     }
     expect(counts.magic).toBeGreaterThan(counts.normal)
     expect(counts.rare).toBeGreaterThan(counts.magic)
@@ -75,8 +92,9 @@ describe('drops', () => {
 
   it('never drops an item above the monster level plus one', () => {
     const rng = new Rng(33)
+    const mint = testMint()
     for (let i = 0; i < 500; i++) {
-      for (const item of rollDrops('rare', 8, rng).items) {
+      for (const item of rollDrops('rare', 8, rng, mint).items) {
         expect(item.itemLevel).toBeLessThanOrEqual(9)
         expect(item.itemLevel).toBeGreaterThanOrEqual(1)
       }

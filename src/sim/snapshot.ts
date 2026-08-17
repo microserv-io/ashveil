@@ -1,5 +1,5 @@
 import type { PlayerSlot } from './sim'
-import type { Actor, GroundItem, Orb, PlayerId, Projectile } from './types'
+import type { Actor, GroundItem, Orb, PlayerId, Projectile, ZoneKind } from './types'
 
 /**
  * Bumped whenever the shape below changes. A snapshot that does not match is
@@ -23,10 +23,12 @@ export interface InstanceSnapshot {
   version: number
   seed: number
   depth: number
+  zone: ZoneKind
   time: number
   tickCount: number
   rngState: number
   nextEntityId: number
+  nextItemSerial: number
   nextPlayerId: number
   actors: Actor[]
   projectiles: Projectile[]

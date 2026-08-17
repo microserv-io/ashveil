@@ -3,7 +3,7 @@ import { PASSIVES, canAllocate, xpIntoLevel } from '../sim/progression'
 import type { Sim } from '../sim/sim'
 import { skill as skillDef } from '../sim/skills'
 import { describeMod } from '../sim/stats'
-import { EQUIP_SLOTS, type EquipSlot, type Item, type SimEvent, type SkillId } from '../sim/types'
+import { EQUIP_SLOTS, type EquipSlot, type Item, type ItemId, type SimEvent, type SkillId } from '../sim/types'
 import { RARITY_CSS } from '../render/palette'
 import { glyphFor, type PadProfile } from '../render/profiles'
 import type { Scheme, UiAction } from '../render/input'
@@ -48,7 +48,7 @@ export class Hud {
 
   constructor(
     root: HTMLElement,
-    private readonly onEquip: (itemId: number) => void,
+    private readonly onEquip: (itemId: ItemId) => void,
     private readonly onAllocate: (nodeId: string) => void,
   ) {
     root.innerHTML = ''
