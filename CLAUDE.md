@@ -147,19 +147,18 @@ Netcode is also not built. The seams are in (`docs/architecture.md`), the wire i
 
 ## Open threads
 
-Keep this list current; it is what stops two sessions solving the same thing.
+Tracked as GitHub issues, not here: a list in this file rots, whereas closing an
+issue is a side effect of doing the work. `gh issue list` is the current picture.
 
-- **Steam Deck shell decision.** Research says Tauri is a poor fit for a Steam game:
-  the overlay issue is closed as not planned, SteamOS needs
-  `WEBKIT_DISABLE_DMABUF_RENDERER=1` which disables accelerated compositing, and the
-  overlay does work under Electron. `spike/deck/` measures the head-to-head on real
-  hardware. Do not start shell work until it has run.
-- **Economy friction.** Unanswered and it gates drop rates, binding rules and item
-  budget. A frictionless economy can gut the loop; see `docs/architecture.md`.
-- **Deck gamepad indices.** The back grip and trackpad indices in
-  `src/render/profiles.ts` are a best reading of the raw HID layout, not measured.
-  They degrade safely, but the spike settles them.
-- **No git remote yet**, so there is no PR flow. Ask before creating one.
+Standing rules that outlive any single issue:
+
+- **Do not start shell or packaging work** until the Deck spike has run. Tauri looks
+  like a poor fit for a Steam game and Electron may win; starting either way round
+  before there are numbers risks throwing the work away.
+- **Do not tune drop rates** until economy friction is decided. It sets drop rates,
+  binding rules and item budget, so that work would be built on sand.
+- Labels worth knowing: `decision` needs a call before work starts, `balance` means a
+  sweep is required in the PR, `spike` is a time-boxed investigation.
 
 ## Maintaining this file
 
