@@ -2,6 +2,7 @@
   "name": "ashveil",
   "version": "0.1.0",
   "description": "An isometric action-RPG core loop: pull a pack, spend skills, loot, get stronger, go deeper.",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

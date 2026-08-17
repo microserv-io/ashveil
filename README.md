@@ -185,3 +185,11 @@ not what the dressing looks like.
   live game from the console.
 - `?ui=1.4` overrides the interface scale; it bumps automatically when a pad is
   connected, since a controller usually means a handheld or a couch.
+
+## License
+
+MIT. Client, server, simulation and all — see [LICENSE](LICENSE).
+
+The dependency set is deliberately small and permissively licensed (Three.js, Vite
+and Vitest are all MIT). There are no third-party art or audio assets to attribute:
+every mesh is a coloured primitive generated at runtime.
