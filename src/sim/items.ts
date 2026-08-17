@@ -300,9 +300,6 @@ function slotMatches(baseSlot: EquipSlot, wanted: EquipSlot): boolean {
 }
 
 let nextItemId = 1
-export function resetItemIds(): void {
-  nextItemId = 1
-}
 
 export function rollItem(baseId: string, itemLevel: number, rarity: ItemRarity, rng: Rng): Item {
   const base = itemBase(baseId)

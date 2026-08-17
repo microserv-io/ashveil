@@ -1,0 +1,209 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-ash-900: #0b0d12;
+  --color-ash-800: #12151c;
+  --color-ash-700: #1b1f28;
+  --color-ash-600: #272c38;
+  --color-ash-300: #9aa1b0;
+  --color-ash-100: #e6e3da;
+  --color-ember: #f26a1f;
+  --color-blood: #c0392b;
+  --color-arcane: #4a7fd8;
+  --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--color-ash-900);
+  color: var(--color-ash-100);
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  user-select: none;
+}
+
+canvas {
+  display: block;
+}
+
+#overlay,
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+#hud {
+  z-index: 20;
+}
+
+@layer components {
+  .floating-number {
+    position: absolute;
+    top: 0;
+    left: 0;
+    will-change: transform, opacity;
+    text-shadow: 0 2px 6px rgb(0 0 0 / 0.9);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .loot-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: auto;
+    cursor: pointer;
+    white-space: nowrap;
+    padding: 2px 9px;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    border-radius: 3px;
+    border: 1px solid;
+    background: rgb(8 10 14 / 0.86);
+    backdrop-filter: blur(2px);
+    transition: transform 60ms linear;
+  }
+
+  .loot-label:hover {
+    background: rgb(20 24 32 / 0.95);
+  }
+
+  .loot-label.in-range::after {
+    content: ' ·E';
+    opacity: 0.5;
+    font-size: 10px;
+  }
+
+  .health-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 46px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgb(0 0 0 / 0.75);
+    outline: 1px solid rgb(0 0 0 / 0.6);
+    overflow: hidden;
+  }
+
+  .health-bar.rarity-magic {
+    width: 58px;
+    height: 5px;
+    outline-color: #4a7fd8;
+  }
+
+  .health-bar.rarity-rare {
+    width: 74px;
+    height: 6px;
+    outline-color: #d8b24a;
+  }
+
+  .health-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #8e2b22, #d8483a);
+    transition: width 90ms linear;
+  }
+
+  /* Orbs are clipped circles filled from the bottom, like the genre expects. */
+  .orb {
+    position: relative;
+    width: 92px;
+    height: 92px;
+    border-radius: 9999px;
+    overflow: hidden;
+    border: 2px solid rgb(255 255 255 / 0.09);
+    background: radial-gradient(circle at 35% 28%, rgb(255 255 255 / 0.14), rgb(0 0 0 / 0.55));
+    box-shadow: 0 8px 26px rgb(0 0 0 / 0.6);
+  }
+
+  .orb-fill {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    transition: height 120ms ease-out;
+  }
+
+  .orb-life .orb-fill {
+    background: linear-gradient(180deg, #e04b3a, #7e1d16);
+  }
+
+  .orb-mana .orb-fill {
+    background: linear-gradient(180deg, #4a86e8, #1b3a78);
+  }
+
+  .orb-label {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: 700;
+    text-shadow: 0 2px 5px rgb(0 0 0 / 0.95);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .skill-slot {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    border-radius: 7px;
+    border: 1px solid var(--color-ash-600);
+    background: linear-gradient(180deg, rgb(30 35 46 / 0.95), rgb(14 17 23 / 0.95));
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+
+  .skill-cooldown {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    background: rgb(0 0 0 / 0.72);
+    pointer-events: none;
+  }
+
+  .skill-slot.unaffordable {
+    opacity: 0.42;
+  }
+
+  .panel {
+    pointer-events: auto;
+    background: rgb(11 13 18 / 0.96);
+    border: 1px solid var(--color-ash-600);
+    border-radius: 10px;
+    box-shadow: 0 24px 70px rgb(0 0 0 / 0.7);
+    backdrop-filter: blur(6px);
+  }
+
+  .toast {
+    animation: toast-in 260ms ease-out;
+  }
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .passive-node {
+    pointer-events: auto;
+    cursor: pointer;
+    transition:
+      transform 120ms ease,
+      box-shadow 120ms ease;
+  }
+
+  .passive-node:hover {
+    transform: scale(1.08);
+  }
+}

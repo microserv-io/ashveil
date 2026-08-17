@@ -1,5 +1,7 @@
 import type { Vec2 } from './vec2'
 
+export type { Vec2 } from './vec2'
+
 // ---------------------------------------------------------------------------
 // Clock
 // ---------------------------------------------------------------------------
@@ -13,8 +15,6 @@ export const DT = 1 / TICK_RATE
 
 export const DAMAGE_TYPES = ['physical', 'fire', 'cold', 'lightning', 'chaos'] as const
 export type DamageType = (typeof DAMAGE_TYPES)[number]
-
-export const ELEMENTAL_TYPES = ['fire', 'cold', 'lightning'] as const
 
 /** Resistances are capped like PoE's: overcapping is only insurance against curses. */
 export const MAX_RESISTANCE = 0.75
@@ -305,8 +305,6 @@ export interface Orb {
 // ---------------------------------------------------------------------------
 // Map
 // ---------------------------------------------------------------------------
-
-export const TILE_SIZE = 1
 
 export type TileKind = 0 | 1 // 0 wall, 1 floor
 
