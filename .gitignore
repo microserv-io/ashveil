@@ -1,0 +1,6 @@
+node_modules/
+dist/
+workspaces/
+.DS_Store
+*.local
+.vite/
