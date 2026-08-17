@@ -1,8 +1,17 @@
 import { updateMonsterAI } from './ai'
+import {
+  allocatePassive as allocateOnCharacter,
+  characterMods,
+  createCharacter,
+  equipFromInventory,
+  grantExperience,
+  type Character,
+} from './character'
 import { computeHit } from './damage'
-import { itemMods, rollItem } from './items'
+import { rollItem } from './items'
 import { rollDrops, startingGear } from './loot'
-import { generateArea, isWalkable, type PackPlan } from './mapgen'
+import { areaRng, generateArea, isWalkable, type PackPlan } from './mapgen'
+import { SNAPSHOT_VERSION, type InstanceSnapshot, type TickMode } from './snapshot'
 import {
   MONSTERS,
   MONSTER_MODIFIERS,
@@ -13,7 +22,7 @@ import {
   monsterXp,
 } from './monsters'
 import { NavGrid, findPath, hasLineOfSight } from './pathfind'
-import { canAllocate, levelForXp, levelMods, passive, xpPenalty } from './progression'
+import { xpPenalty } from './progression'
 import { Rng } from './rng'
 import { PLAYER_BASE, resolveStats, type BaseStats } from './stats'
 import { PLAYER_SKILLS, skill as skillDef, speedMultiplier } from './skills'
@@ -25,9 +34,10 @@ import {
   type AreaMap,
   type DamageType,
   type EntityId,
-  type EquipSlot,
   type GroundItem,
   type Intent,
+  type PlayerCommand,
+  type PlayerId,
   type Item,
   type Mod,
   type MonsterArchetype,
@@ -44,15 +54,24 @@ import { add, angleOf, clone, distance, fromAngle, normalize, scale, sub, vec2, 
 export interface SimOptions {
   seed: number
   depth?: number
+  /** Characters joining at creation. Omitted, one is rolled for single-player. */
+  characters?: readonly Character[]
 }
 
-export interface PlayerProgress {
-  xp: number
-  level: number
-  passivePoints: number
-  allocated: Set<string>
-  equipment: Map<EquipSlot, Item>
-  inventory: Item[]
+/**
+ * A player inside this instance. The character is owned by the session and merely
+ * lent here, which is what lets a party carry progress between areas.
+ */
+function subjectOf(playerId: PlayerId | null): { subject?: PlayerId } {
+  return playerId === null ? {} : { subject: playerId }
+}
+
+export interface PlayerSlot {
+  id: PlayerId
+  character: Character
+  actorId: EntityId
+  /** Highest command sequence applied. A client reconciles its prediction to this. */
+  lastSequence: number
 }
 
 const UNARMED: WeaponBase = { physicalMin: 2, physicalMax: 5, attacksPerSecond: 1.2 }
@@ -90,8 +109,12 @@ export class Sim {
   /** Cleared at the start of every tick; hosts read it after `tick()` returns. */
   events: SimEvent[] = []
 
-  player: Actor
-  progress: PlayerProgress
+  readonly players = new Map<PlayerId, PlayerSlot>()
+  /**
+   * The player this host controls. A server leaves it at the first joiner; a client
+   * sets it to whoever it owns. Everything host-side reads the world through it.
+   */
+  localPlayerId: PlayerId = 1
 
   monstersKilled = 0
   areaMonsterCount = 0
@@ -99,30 +122,26 @@ export class Sim {
   areaCleared = false
   areasCleared = 0
 
-  private intents: Intent[] = []
+  private commands: PlayerCommand[] = []
   private nextEntityId = 1
-  private respawnAt = 0
+  private nextPlayerId = 1
+  private localSequence = 0
+  private readonly respawnAt = new Map<PlayerId, number>()
 
   constructor(options: SimOptions) {
     this.seed = options.seed
     this.rng = new Rng(options.seed)
     this.depth = options.depth ?? 1
 
-    this.progress = {
-      xp: 0,
-      level: 1,
-      passivePoints: 0,
-      allocated: new Set(['root']),
-      equipment: new Map(),
-      inventory: [],
-    }
-    for (const item of startingGear(this.rng)) this.progress.equipment.set(item.slot, item)
-
-    const generated = generateArea(this.rng, this.depth)
+    const generated = generateArea(areaRng(this.seed, this.depth), this.depth)
     this.map = generated.map
     this.nav = new NavGrid(this.map)
-    this.player = this.createPlayer()
-    this.actors.push(this.player)
+
+    // A session normally supplies characters. Without one, roll a fresh character
+    // so a bare `new Sim(...)` is still a playable single-player instance.
+    for (const character of options.characters ?? [createCharacter('local', 'Ashbearer', startingGear(this.rng))]) {
+      this.addPlayer(character)
+    }
     this.spawnPacks(generated.packs)
     this.areaStartTime = 0
     this.events.push({ kind: 'area_entered', depth: this.depth, seed: this.seed })
@@ -132,14 +151,119 @@ export class Sim {
   // Host surface
   // -------------------------------------------------------------------------
 
-  queue(intent: Intent): void {
-    this.intents.push(intent)
+  /**
+   * Seat a character. Returns the id the host uses to address commands and to know
+   * which actor it owns.
+   */
+  addPlayer(character: Character): PlayerId {
+    const id = this.nextPlayerId++
+    const actor = this.createPlayerActor(character)
+    this.actors.push(actor)
+    this.players.set(id, { id, character, actorId: actor.id, lastSequence: 0 })
+    return id
   }
 
-  tick(): void {
+  removePlayer(id: PlayerId): Character | null {
+    const slot = this.players.get(id)
+    if (!slot) return null
+    this.players.delete(id)
+    this.respawnAt.delete(id)
+    this.actors = this.actors.filter((actor) => actor.id !== slot.actorId)
+    return slot.character
+  }
+
+  /** The authoritative entry point: an addressed, sequenced command. */
+  submit(command: PlayerCommand): void {
+    this.commands.push(command)
+  }
+
+  /** Convenience for a host driving exactly one local player. */
+  queue(intent: Intent): void {
+    this.commands.push({ playerId: this.localPlayerId, sequence: ++this.localSequence, intent })
+  }
+
+  slot(id: PlayerId): PlayerSlot | undefined {
+    return this.players.get(id)
+  }
+
+  actorOf(id: PlayerId): Actor | undefined {
+    const slot = this.players.get(id)
+    if (!slot) return undefined
+    return this.actors.find((actor) => actor.id === slot.actorId)
+  }
+
+  characterOf(id: PlayerId): Character | undefined {
+    return this.players.get(id)?.character
+  }
+
+  playerIdOfActor(actorId: EntityId): PlayerId | null {
+    for (const slot of this.players.values()) {
+      if (slot.actorId === actorId) return slot.id
+    }
+    return null
+  }
+
+  /** The local player's actor. Hosts render and aim through this. */
+  get player(): Actor {
+    const actor = this.actorOf(this.localPlayerId)
+    if (!actor) throw new Error(`no actor for local player ${this.localPlayerId}`)
+    return actor
+  }
+
+  get progress(): Character {
+    const character = this.characterOf(this.localPlayerId)
+    if (!character) throw new Error(`no character for local player ${this.localPlayerId}`)
+    return character
+  }
+
+  playerActors(): Actor[] {
+    const actors: Actor[] = []
+    for (const slot of this.players.values()) {
+      const actor = this.actors.find((a) => a.id === slot.actorId)
+      if (actor) actors.push(actor)
+    }
+    return actors
+  }
+
+  /** Monsters chase whoever is closest, which is the whole of party aggro. */
+  nearestPlayerTo(position: Vec2): Actor | null {
+    let best: Actor | null = null
+    let bestGap = Infinity
+    for (const actor of this.playerActors()) {
+      if (actor.dead) continue
+      const gap = distance(position, actor.pos)
+      if (gap < bestGap) {
+        best = actor
+        bestGap = gap
+      }
+    }
+    return best
+  }
+
+  /**
+   * `authoritative` is the whole game and only a server runs it. `predicted` is the
+   * subset a client may run ahead of the server for its own responsiveness: input,
+   * timers and movement, none of which touch the RNG. Everything that rolls dice or
+   * decides an outcome — damage, loot, death, experience — is server-only, which is
+   * what stops a client inventing its own drops.
+   */
+  tick(mode: TickMode = 'authoritative'): void {
     this.events = []
     this.time += DT
     this.tickCount++
+
+    if (mode === 'predicted') {
+      this.rng.locked = true
+      try {
+        this.applyIntents()
+        this.advanceTimers()
+        this.updateMovement()
+        this.resolveSeparation()
+      } finally {
+        this.rng.locked = false
+      }
+      return
+    }
 
     this.applyIntents()
     this.advanceTimers()
@@ -165,36 +289,45 @@ export class Sim {
   // -------------------------------------------------------------------------
 
   private applyIntents(): void {
-    const queued = this.intents
-    this.intents = []
-    for (const intent of queued) {
-      if (this.player.dead && intent.kind !== 'allocate_passive') continue
+    const queued = this.commands
+    this.commands = []
+    for (const command of queued) {
+      const slot = this.players.get(command.playerId)
+      if (!slot) continue
+      const actor = this.actorOf(command.playerId)
+      if (!actor) continue
+      slot.lastSequence = Math.max(slot.lastSequence, command.sequence)
+
+      const intent = command.intent
+      // A corpse may still spend passive points; it may not act in the world.
+      if (actor.dead && intent.kind !== 'allocate_passive') continue
+
       switch (intent.kind) {
         case 'move':
-          this.player.moveDirection = null
-          this.setMoveTarget(this.player, intent.to)
+          actor.moveDirection = null
+          this.setMoveTarget(actor, intent.to)
           break
         case 'move_direction':
-          this.applyDirectMove(intent.direction, intent.facing)
+          this.applyDirectMove(actor, intent.direction, intent.facing)
           break
         case 'stop':
-          this.player.moveDirection = null
-          this.clearPath(this.player)
+          actor.moveDirection = null
+          this.clearPath(actor)
           break
         case 'use_skill':
-          this.beginCast(this.player, intent.skill, intent.aim)
+          this.beginCast(actor, intent.skill, intent.aim)
           break
         case 'pickup':
-          this.pickUp(intent.itemId)
+          this.pickUp(slot, actor, intent.itemId)
           break
         case 'equip':
-          this.equip(intent.itemId)
+          this.equip(slot, actor, intent.itemId)
           break
         case 'allocate_passive':
-          this.allocatePassive(intent.nodeId)
+          this.allocatePassive(slot, actor, intent.nodeId)
           break
         case 'enter_portal':
-          if (distance(this.player.pos, this.map.portal) <= PORTAL_RANGE) this.enterNextArea()
+          if (distance(actor.pos, this.map.portal) <= PORTAL_RANGE) this.enterNextArea()
           break
       }
     }
@@ -203,10 +336,10 @@ export class Sim {
   private advanceTimers(): void {
     for (const actor of this.actors) {
       if (actor.hitFlash > 0) actor.hitFlash = Math.max(0, actor.hitFlash - DT)
-      for (const [id, remaining] of actor.cooldowns) {
-        const next = remaining - DT
-        if (next <= 0) actor.cooldowns.delete(id)
-        else actor.cooldowns.set(id, next)
+      for (const [id, remaining] of Object.entries(actor.cooldowns)) {
+        const next = (remaining ?? 0) - DT
+        if (next <= 0) delete actor.cooldowns[id as SkillId]
+        else actor.cooldowns[id as SkillId] = next
       }
       if (actor.dead) continue
       if (actor.windup > 0) actor.windup = Math.max(0, actor.windup - DT)
@@ -267,12 +400,12 @@ export class Sim {
 
       let consumed = false
       for (const actor of this.actors) {
-        if (actor.dead || projectile.hitIds.has(actor.id)) continue
+        if (actor.dead || projectile.hitIds.includes(actor.id)) continue
         const isHostile = projectile.hostile ? actor.kind === 'player' : actor.kind === 'monster'
         if (!isHostile) continue
         if (distance(actor.pos, projectile.pos) > actor.radius + projectile.radius) continue
 
-        projectile.hitIds.add(actor.id)
+        projectile.hitIds.push(actor.id)
         this.applyHit(owner, actor, skillDef(projectile.skill))
         if (projectile.pierceLeft <= 0) {
           consumed = true
@@ -373,33 +506,53 @@ export class Sim {
   }
 
   private updatePickups(): void {
-    if (this.player.dead) return
     const remaining: Orb[] = []
     for (const orb of this.orbs) {
-      if (distance(orb.pos, this.player.pos) <= this.player.stats.pickupRadius + this.player.radius) {
-        const healed = Math.min(this.player.stats.maxLife - this.player.life, this.player.stats.maxLife * orb.lifeFraction)
-        this.player.life += healed
-        this.events.push({ kind: 'orb_collected', healed, pos: clone(orb.pos) })
-      } else {
+      const collector = this.playerActors().find(
+        (actor) => !actor.dead && distance(orb.pos, actor.pos) <= actor.stats.pickupRadius + actor.radius,
+      )
+      if (!collector) {
         remaining.push(orb)
+        continue
       }
+      const healed = Math.min(collector.stats.maxLife - collector.life, collector.stats.maxLife * orb.lifeFraction)
+      collector.life += healed
+      this.events.push({
+        kind: 'orb_collected',
+        healed,
+        pos: clone(orb.pos),
+        ...subjectOf(this.playerIdOfActor(collector.id)),
+      })
     }
     this.orbs = remaining
   }
 
   private updateRespawn(): void {
-    if (!this.player.dead || this.time < this.respawnAt) return
-    this.player.dead = false
-    this.player.state = 'idle'
-    this.player.pos = clone(this.map.spawn)
-    this.player.life = this.player.stats.maxLife
-    this.player.mana = this.player.stats.maxMana
-    this.player.ailments = []
-    this.player.windup = 0
-    this.player.recovery = 0
-    this.player.pendingCast = null
-    this.player.dash = null
-    this.clearPath(this.player)
+    for (const [playerId, dueAt] of this.respawnAt) {
+      if (this.time < dueAt) continue
+      const actor = this.actorOf(playerId)
+      if (!actor) {
+        this.respawnAt.delete(playerId)
+        continue
+      }
+      this.respawnAt.delete(playerId)
+      actor.dead = false
+      actor.state = 'idle'
+      actor.pos = clone(this.map.spawn)
+      actor.life = actor.stats.maxLife
+      actor.mana = actor.stats.maxMana
+      actor.ailments = []
+      actor.windup = 0
+      actor.recovery = 0
+      actor.pendingCast = null
+      actor.dash = null
+      actor.lastDamageFrom = null
+      this.clearPath(actor)
+    }
+
+    // Nothing left alive to fight means the pack loses interest, however many
+    // players are down.
+    if (this.playerActors().some((actor) => !actor.dead)) return
     for (const actor of this.actors) {
       if (actor.kind !== 'monster') continue
       actor.aggroed = false
@@ -428,7 +581,7 @@ export class Sim {
     if (actor.dead || actor.windup > 0 || actor.recovery > 0 || actor.dash) return false
     if (!actor.skills.includes(id)) return false
     const def = skillDef(id)
-    if ((actor.cooldowns.get(id) ?? 0) > 0) return false
+    if ((actor.cooldowns[id] ?? 0) > 0) return false
     if (def.manaCost > 0 && actor.mana < def.manaCost) {
       if (actor.kind === 'player') this.events.push({ kind: 'mana_insufficient', skill: id })
       return false
@@ -440,7 +593,7 @@ export class Sim {
     actor.activeSkill = id
     actor.pendingCast = { skill: id, aim: clone(aim), targetId: actor.targetId }
     actor.state = 'acting'
-    if (def.cooldown > 0) actor.cooldowns.set(id, def.cooldown)
+    if (def.cooldown > 0) actor.cooldowns[id] = def.cooldown
     if (distance(aim, actor.pos) > 0.05) actor.facing = angleOf(sub(aim, actor.pos))
     this.clearPath(actor)
     this.events.push({ kind: 'skill_used', actorId: actor.id, skill: id, aim: clone(aim) })
@@ -480,7 +633,7 @@ export class Sim {
       radius: def.projectileRadius ?? 0.3,
       distanceLeft: def.range,
       pierceLeft: def.pierce ?? 0,
-      hitIds: new Set(),
+      hitIds: [],
     })
   }
 
@@ -495,6 +648,7 @@ export class Sim {
     const breakdown = computeHit(source, target, def, this.weaponOf(source), this.rng, effectiveness)
     target.life -= breakdown.total
     target.hitFlash = 0.12
+    if (source.kind === 'player') target.lastDamageFrom = this.playerIdOfActor(source.id)
     this.events.push({
       kind: 'hit',
       sourceId: source.id,
@@ -572,8 +726,7 @@ export class Sim {
     if (actor.state === 'moving') actor.state = 'idle'
   }
 
-  private applyDirectMove(direction: Vec2, facing: number | undefined): void {
-    const player = this.player
+  private applyDirectMove(player: Actor, direction: Vec2, facing: number | undefined): void {
     const magnitude = Math.hypot(direction.x, direction.y)
     if (magnitude < 1e-3) {
       player.moveDirection = null
@@ -581,6 +734,7 @@ export class Sim {
       if (facing !== undefined) player.facing = facing
       return
     }
+    if (facing === undefined) player.facing = Math.atan2(direction.y, direction.x)
     // Direct input wins over a queued click destination rather than fighting it.
     if (player.path.length > 0) this.clearPath(player)
     player.moveDirection = { x: direction.x, y: direction.y }
@@ -724,11 +878,14 @@ export class Sim {
     actor.dash = null
     actor.ailments = []
     this.clearPath(actor)
-    this.events.push({ kind: 'death', actorId: actor.id, killerId: this.player.id, pos: clone(actor.pos) })
+    const killer = actor.lastDamageFrom
+    const killerActorId = killer === null ? null : (this.players.get(killer)?.actorId ?? null)
+    this.events.push({ kind: 'death', actorId: actor.id, killerId: killerActorId, pos: clone(actor.pos) })
 
     if (actor.kind === 'player') {
-      this.respawnAt = this.time + RESPAWN_DELAY
-      this.events.push({ kind: 'player_died', pos: clone(actor.pos) })
+      const playerId = this.playerIdOfActor(actor.id)
+      if (playerId !== null) this.respawnAt.set(playerId, this.time + RESPAWN_DELAY)
+      this.events.push({ kind: 'player_died', pos: clone(actor.pos), ...subjectOf(playerId) })
       return
     }
 
@@ -752,67 +909,66 @@ export class Sim {
         droppedAt: this.time,
       })
     }
-    this.grantXp(actor.xpValue, actor.level)
+    this.grantXp(killer, actor.xpValue, actor.level)
   }
 
-  private grantXp(amount: number, monsterLevel: number): void {
-    const gained = Math.max(1, Math.round(amount * xpPenalty(this.progress.level, monsterLevel)))
-    this.progress.xp += gained
-    this.events.push({ kind: 'xp_gained', amount: gained, total: this.progress.xp })
+  /**
+   * Experience goes to whoever landed the killing blow. Sharing it across a party
+   * is a session-level policy and belongs there, not here.
+   */
+  private grantXp(playerId: PlayerId | null, amount: number, monsterLevel: number): void {
+    if (playerId === null) return
+    const slot = this.players.get(playerId)
+    const actor = this.actorOf(playerId)
+    if (!slot || !actor) return
 
-    const level = levelForXp(this.progress.xp)
-    while (this.progress.level < level) {
-      this.progress.level++
-      this.progress.passivePoints++
-      this.player.level = this.progress.level
-      const lifeBefore = this.player.stats.maxLife
-      this.recomputeStats(this.player)
-      this.player.life += this.player.stats.maxLife - lifeBefore
-      this.events.push({ kind: 'level_up', level: this.progress.level, passivePoints: this.progress.passivePoints })
+    const gained = Math.max(1, Math.round(amount * xpPenalty(slot.character.level, monsterLevel)))
+    const levels = grantExperience(slot.character, gained)
+    this.events.push({ kind: 'xp_gained', amount: gained, total: slot.character.xp, ...subjectOf(playerId) })
+
+    for (let i = 0; i < levels; i++) {
+      actor.level = slot.character.level
+      const lifeBefore = actor.stats.maxLife
+      this.recomputeStats(actor)
+      actor.life += actor.stats.maxLife - lifeBefore
+      this.events.push({
+        kind: 'level_up',
+        level: slot.character.level,
+        passivePoints: slot.character.passivePoints,
+        ...subjectOf(playerId),
+      })
     }
   }
 
-  private pickUp(groundItemId: EntityId): void {
+  private pickUp(slot: PlayerSlot, actor: Actor, groundItemId: EntityId): void {
     const index = this.groundItems.findIndex((g) => g.id === groundItemId)
     if (index === -1) return
     const ground = this.groundItems[index]!
-    if (distance(ground.pos, this.player.pos) > ITEM_PICKUP_RANGE) return
+    if (distance(ground.pos, actor.pos) > ITEM_PICKUP_RANGE) return
     this.groundItems.splice(index, 1)
-    this.progress.inventory.push(ground.item)
+    slot.character.inventory.push(ground.item)
     this.events.push({
       kind: 'item_picked_up',
       itemId: ground.item.id,
       name: ground.item.name,
       rarity: ground.item.rarity,
+      ...subjectOf(slot.id),
     })
   }
 
-  private equip(itemId: EntityId): void {
-    const index = this.progress.inventory.findIndex((i) => i.id === itemId)
-    if (index === -1) return
-    const item = this.progress.inventory[index]!
-    const slot = this.resolveSlot(item.slot)
-    this.progress.inventory.splice(index, 1)
-    const previous = this.progress.equipment.get(slot)
-    if (previous) this.progress.inventory.push(previous)
-    this.progress.equipment.set(slot, item)
-    this.recomputeStats(this.player)
-    this.events.push({ kind: 'item_equipped', itemId: item.id, slot })
+  private equip(slot: PlayerSlot, actor: Actor, itemId: EntityId): void {
+    const result = equipFromInventory(slot.character, itemId)
+    if (!result) return
+    this.recomputeStats(actor)
+    this.events.push({ kind: 'item_equipped', itemId, slot: result.slot, ...subjectOf(slot.id) })
   }
 
-  private resolveSlot(slot: EquipSlot): EquipSlot {
-    if (slot !== 'ring1') return slot
-    return this.progress.equipment.has('ring1') && !this.progress.equipment.has('ring2') ? 'ring2' : 'ring1'
-  }
-
-  private allocatePassive(nodeId: string): void {
-    if (!canAllocate(nodeId, this.progress.allocated, this.progress.passivePoints)) return
-    this.progress.allocated.add(nodeId)
-    this.progress.passivePoints--
-    const lifeBefore = this.player.stats.maxLife
-    this.recomputeStats(this.player)
-    this.player.life += Math.max(0, this.player.stats.maxLife - lifeBefore)
-    this.events.push({ kind: 'passive_allocated', nodeId })
+  private allocatePassive(slot: PlayerSlot, actor: Actor, nodeId: string): void {
+    if (!allocateOnCharacter(slot.character, nodeId)) return
+    const lifeBefore = actor.stats.maxLife
+    this.recomputeStats(actor)
+    actor.life += Math.max(0, actor.stats.maxLife - lifeBefore)
+    this.events.push({ kind: 'passive_allocated', nodeId, ...subjectOf(slot.id) })
   }
 
   // -------------------------------------------------------------------------
@@ -821,26 +977,33 @@ export class Sim {
 
   enterNextArea(): void {
     this.depth++
-    const generated = generateArea(this.rng, this.depth)
+    const generated = generateArea(areaRng(this.seed, this.depth), this.depth)
     this.map = generated.map
     this.nav = new NavGrid(this.map)
 
-    this.actors = [this.player]
+    const playerActors = this.playerActors()
+    this.actors = playerActors
     this.projectiles = []
     this.groundItems = []
     this.orbs = []
+    this.respawnAt.clear()
 
-    this.player.pos = clone(this.map.spawn)
-    this.player.anchor = clone(this.map.spawn)
-    this.player.life = this.player.stats.maxLife
-    this.player.mana = this.player.stats.maxMana
-    this.player.ailments = []
-    this.player.windup = 0
-    this.player.recovery = 0
-    this.player.pendingCast = null
-    this.player.dash = null
-    this.player.cooldowns.clear()
-    this.clearPath(this.player)
+    for (const actor of playerActors) {
+      actor.pos = clone(this.map.spawn)
+      actor.anchor = clone(this.map.spawn)
+      actor.dead = false
+      actor.state = 'idle'
+      actor.life = actor.stats.maxLife
+      actor.mana = actor.stats.maxMana
+      actor.ailments = []
+      actor.windup = 0
+      actor.recovery = 0
+      actor.pendingCast = null
+      actor.dash = null
+      actor.lastDamageFrom = null
+      actor.cooldowns = {}
+      this.clearPath(actor)
+    }
 
     this.spawnPacks(generated.packs)
     this.areaCleared = false
@@ -863,12 +1026,12 @@ export class Sim {
   // Actor construction
   // -------------------------------------------------------------------------
 
-  private createPlayer(): Actor {
+  private createPlayerActor(character: Character): Actor {
     const actor: Actor = {
       id: this.nextEntityId++,
       kind: 'player',
-      name: 'Ashbearer',
-      level: this.progress.level,
+      name: character.name,
+      level: character.level,
       archetype: null,
       rarity: 'normal',
       packId: 0,
@@ -886,7 +1049,7 @@ export class Sim {
       recovery: 0,
       activeSkill: null,
       pendingCast: null,
-      cooldowns: new Map(),
+      cooldowns: {},
       skills: [...PLAYER_SKILLS],
       moveTarget: null,
       moveDirection: null,
@@ -899,12 +1062,17 @@ export class Sim {
       aggroed: true,
       dash: null,
       ailments: [],
+      lastDamageFrom: null,
       dead: false,
       diedAt: 0,
       hitFlash: 0,
       xpValue: 0,
     }
-    this.recomputeStats(actor)
+    actor.mods = characterMods(character)
+    actor.stats = resolveStats(
+      { ...PLAYER_BASE, attackSpeed: (character.equipment.weapon?.weapon ?? UNARMED).attacksPerSecond },
+      actor.mods,
+    )
     actor.life = actor.stats.maxLife
     actor.mana = actor.stats.maxMana
     return actor
@@ -947,7 +1115,7 @@ export class Sim {
       recovery: 0,
       activeSkill: null,
       pendingCast: null,
-      cooldowns: new Map(),
+      cooldowns: {},
       skills: [...def.skills],
       moveTarget: null,
       moveDirection: null,
@@ -960,6 +1128,7 @@ export class Sim {
       aggroed: false,
       dash: null,
       ailments: [],
+      lastDamageFrom: null,
       dead: false,
       diedAt: 0,
       hitFlash: 0,
@@ -974,22 +1143,96 @@ export class Sim {
       actor.stats = resolveStats(monsterBaseStats(MONSTERS[actor.archetype!], actor.level, actor.rarity), actor.mods)
       return
     }
-    actor.mods = this.playerMods()
+    const character = this.characterOfActor(actor)
+    if (!character) return
+
+    actor.mods = characterMods(character)
     const previousMaxMana = actor.stats.maxMana
     // The equipped weapon's rate IS the base attack speed, so weapon choice is a
     // real trade between a fast blade and a slow maul.
-    const weapon = this.weaponOf(actor) ?? UNARMED
+    const weapon = character.equipment.weapon?.weapon ?? UNARMED
     actor.stats = resolveStats({ ...PLAYER_BASE, attackSpeed: weapon.attacksPerSecond }, actor.mods)
     actor.life = Math.min(actor.life, actor.stats.maxLife)
     if (actor.stats.maxMana > previousMaxMana) actor.mana += actor.stats.maxMana - previousMaxMana
     actor.mana = Math.min(actor.mana, actor.stats.maxMana)
   }
 
-  private playerMods(): Mod[] {
-    const mods: Mod[] = [...levelMods(this.progress.level)]
-    for (const nodeId of this.progress.allocated) mods.push(...passive(nodeId).mods)
-    for (const item of this.progress.equipment.values()) mods.push(...itemMods(item))
-    return mods
+  characterOfActor(actor: Actor): Character | undefined {
+    for (const slot of this.players.values()) {
+      if (slot.actorId === actor.id) return slot.character
+    }
+    return undefined
+  }
+
+  // -------------------------------------------------------------------------
+  // Snapshots — late join, prediction reconciliation, and save games
+  // -------------------------------------------------------------------------
+
+  /**
+   * Everything needed to rebuild this instance elsewhere. The map is absent on
+   * purpose: it is a pure function of (seed, depth), so it costs a few bytes to
+   * describe and is regenerated on arrival.
+   */
+  snapshot(): InstanceSnapshot {
+    return {
+      version: SNAPSHOT_VERSION,
+      seed: this.seed,
+      depth: this.depth,
+      time: this.time,
+      tickCount: this.tickCount,
+      rngState: this.rng.state,
+      nextEntityId: this.nextEntityId,
+      nextPlayerId: this.nextPlayerId,
+      actors: structuredClone(this.actors),
+      projectiles: structuredClone(this.projectiles),
+      groundItems: structuredClone(this.groundItems),
+      orbs: structuredClone(this.orbs),
+      players: [...this.players.values()].map((slot) => structuredClone(slot)),
+      respawnAt: [...this.respawnAt.entries()],
+      monstersKilled: this.monstersKilled,
+      areaMonsterCount: this.areaMonsterCount,
+      areaStartTime: this.areaStartTime,
+      areaCleared: this.areaCleared,
+      areasCleared: this.areasCleared,
+    }
+  }
+
+  static restore(snapshot: InstanceSnapshot): Sim {
+    if (snapshot.version !== SNAPSHOT_VERSION) {
+      throw new Error(`snapshot version ${snapshot.version}, expected ${SNAPSHOT_VERSION}`)
+    }
+    const sim = new Sim({ seed: snapshot.seed, depth: snapshot.depth, characters: [] })
+    sim.apply(snapshot)
+    return sim
+  }
+
+  /** Overwrite this instance with a snapshot, as a client does on reconciliation. */
+  apply(snapshot: InstanceSnapshot): void {
+    if (snapshot.depth !== this.depth) {
+      this.depth = snapshot.depth
+      const generated = generateArea(areaRng(snapshot.seed, snapshot.depth), snapshot.depth)
+      this.map = generated.map
+      this.nav = new NavGrid(this.map)
+    }
+    this.time = snapshot.time
+    this.tickCount = snapshot.tickCount
+    this.rng.state = snapshot.rngState
+    this.nextEntityId = snapshot.nextEntityId
+    this.nextPlayerId = snapshot.nextPlayerId
+    this.actors = structuredClone(snapshot.actors) as Actor[]
+    this.projectiles = structuredClone(snapshot.projectiles) as Projectile[]
+    this.groundItems = structuredClone(snapshot.groundItems) as GroundItem[]
+    this.orbs = structuredClone(snapshot.orbs) as Orb[]
+    this.players.clear()
+    for (const slot of snapshot.players) this.players.set(slot.id, structuredClone(slot) as PlayerSlot)
+    this.respawnAt.clear()
+    for (const [playerId, dueAt] of snapshot.respawnAt) this.respawnAt.set(playerId, dueAt)
+    this.monstersKilled = snapshot.monstersKilled
+    this.areaMonsterCount = snapshot.areaMonsterCount
+    this.areaStartTime = snapshot.areaStartTime
+    this.areaCleared = snapshot.areaCleared
+    this.areasCleared = snapshot.areasCleared
+    this.commands = []
   }
 
   // -------------------------------------------------------------------------
@@ -1041,11 +1284,11 @@ export class Sim {
 
   weaponOf(actor: Actor): WeaponBase | null {
     if (actor.kind !== 'player') return null
-    return this.progress.equipment.get('weapon')?.weapon ?? UNARMED
+    return this.characterOfActor(actor)?.equipment.weapon?.weapon ?? UNARMED
   }
 
   cooldownRemaining(actor: Actor, id: SkillId): number {
-    return actor.cooldowns.get(id) ?? 0
+    return actor.cooldowns[id] ?? 0
   }
 
   private scatter(origin: Vec2, spread: number): Vec2 {
@@ -1059,8 +1302,9 @@ export class Sim {
   /** Debug helper: hand the player a specific item, already equipped. */
   grantItem(baseId: string, itemLevel: number, rarity: Item['rarity']): Item {
     const item = rollItem(baseId, itemLevel, rarity, this.rng)
-    this.progress.inventory.push(item)
-    this.equip(item.id)
+    const slot = this.players.get(this.localPlayerId)!
+    slot.character.inventory.push(item)
+    this.equip(slot, this.player, item.id)
     return item
   }
 }

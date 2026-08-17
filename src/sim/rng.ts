@@ -4,12 +4,21 @@
  */
 export class Rng {
   private s: number
+  /**
+   * A client predicting its own movement must never draw: one roll and it has
+   * diverged from the server irrecoverably. Locking turns that mistake into an
+   * immediate, loud failure instead of a desync nobody can reproduce.
+   */
+  locked = false
 
   constructor(seed: number) {
     this.s = (seed >>> 0) || 0x9e3779b9
   }
 
   next(): number {
+    if (this.locked) {
+      throw new Error('Rng drawn during a predicted tick: prediction must stay deterministic')
+    }
     this.s = (this.s + 0x6d2b79f5) >>> 0
     let t = this.s
     t = Math.imul(t ^ (t >>> 15), t | 1)

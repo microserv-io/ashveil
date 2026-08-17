@@ -94,6 +94,9 @@ export interface Stats {
 
 export type EntityId = number
 
+/** Identifies a player within an instance. Stable for as long as they are in it. */
+export type PlayerId = number
+
 export type ActorKind = 'player' | 'monster'
 
 export type MonsterArchetype = 'swarm' | 'ranged' | 'brute'
@@ -141,7 +144,7 @@ export interface Actor {
   activeSkill: SkillId | null
   /** Set while a skill is winding up; resolved when `windup` hits zero. */
   pendingCast: PendingCast | null
-  cooldowns: Map<SkillId, number>
+  cooldowns: Partial<Record<SkillId, number>>
   skills: SkillId[]
 
   moveTarget: Vec2 | null
@@ -161,6 +164,8 @@ export interface Actor {
   dash: DashState | null
 
   ailments: Ailment[]
+  /** Who gets the experience. Set on every hit, read once on death. */
+  lastDamageFrom: PlayerId | null
   dead: boolean
   diedAt: number
   /** Seconds of hit-flash left; presentation only, but part of sim state so replays match. */
@@ -234,7 +239,7 @@ export interface Projectile {
   radius: number
   distanceLeft: number
   pierceLeft: number
-  hitIds: Set<EntityId>
+  hitIds: EntityId[]
 }
 
 // ---------------------------------------------------------------------------
@@ -332,6 +337,19 @@ export interface Rect {
 // Player intents — the entire surface a host may drive the sim through
 // ---------------------------------------------------------------------------
 
+/**
+ * One player's input, addressed and sequenced. Addressing lets a server attribute
+ * input; the sequence lets a client replay everything the server has not yet
+ * acknowledged when it reconciles a prediction against a snapshot.
+ *
+ * Plain data on purpose: this is already the wire format.
+ */
+export interface PlayerCommand {
+  playerId: PlayerId
+  sequence: number
+  intent: Intent
+}
+
 export type Intent =
   /** Click-to-move: pathfind to a destination. */
   | { kind: 'move'; to: Vec2 }
@@ -359,7 +377,13 @@ export interface HitBreakdown {
   mitigated: number
 }
 
-export type SimEvent =
+/**
+ * Events carry the player they concern, where they concern one. A client uses it to
+ * separate its own experience gain and loot from a party member's.
+ */
+export type SimEvent = ({ subject?: PlayerId } & SimEventBody)
+
+export type SimEventBody =
   | { kind: 'skill_used'; actorId: EntityId; skill: SkillId; aim: Vec2 }
   | { kind: 'hit'; sourceId: EntityId; targetId: EntityId; skill: SkillId; damage: HitBreakdown; pos: Vec2 }
   | { kind: 'ailment_applied'; targetId: EntityId; ailment: AilmentKind }

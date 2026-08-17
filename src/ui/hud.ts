@@ -297,7 +297,7 @@ export class Hud {
     const equipped = div('flex flex-col gap-1')
     equipped.append(sectionLabel('Equipped'))
     for (const slot of EQUIP_SLOTS) {
-      const item = sim.progress.equipment.get(slot)
+      const item = sim.progress.equipment[slot]
       equipped.append(itemRow(slot, item, null))
     }
 
@@ -309,7 +309,7 @@ export class Hud {
       carried.append(empty)
     }
     for (const item of sim.progress.inventory) {
-      const equippedItem = sim.progress.equipment.get(item.slot === 'ring1' ? 'ring1' : item.slot)
+      const equippedItem = sim.progress.equipment[item.slot === 'ring1' ? 'ring1' : item.slot]
       const delta = itemScore(item) - (equippedItem ? itemScore(equippedItem) : 0)
       carried.append(itemRow(item.slot, item, () => this.onEquip(item.id), delta))
     }
@@ -345,13 +345,13 @@ export class Hud {
       line.style.width = `${Math.hypot(dx, dy)}%`
       line.style.height = '2px'
       line.style.transform = `rotate(${Math.atan2(dy * 4.3, dx) * (180 / Math.PI)}deg)`
-      if (sim.progress.allocated.has(node.id)) line.className = 'absolute origin-left bg-ember/70'
+      if (sim.progress.allocated.includes(node.id)) line.className = 'absolute origin-left bg-ember/70'
       board.append(line)
     }
 
     for (const node of PASSIVES) {
-      const allocated = sim.progress.allocated.has(node.id)
-      const available = canAllocate(node.id, sim.progress.allocated, sim.progress.passivePoints)
+      const allocated = sim.progress.allocated.includes(node.id)
+      const available = canAllocate(node.id, new Set(sim.progress.allocated), sim.progress.passivePoints)
       const element = document.createElement('button')
       element.className = `passive-node absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 px-2 py-1 text-[10px] font-bold ${
         allocated

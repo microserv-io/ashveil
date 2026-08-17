@@ -48,8 +48,30 @@ spend a tick reacting to a corpse whose `dead` flag has not been set yet.
 | `pathfind.ts` | `NavGrid` (per-radius passability) and 8-way A* with string pulling |
 | `progression.ts` | XP table, level mods, passive tree |
 | `targeting.ts` | soft targeting and aim resolution for cursorless input; pure leaf |
+| `character.ts` | the persisted unit: level, xp, gear, passives. Plain JSON, no Map/Set |
+| `snapshot.ts` | `InstanceSnapshot` and the tick modes; version-gated |
 | `harness.ts` | scripted bot policies, run metrics, DPS and sweep probes |
 | `rng.ts`, `vec2.ts` | pure leaves; a test imports them directly |
+
+## Multiplayer rules
+
+The instance holds *players*, plural. Anything written against "the player" is a
+bug waiting for the second one to arrive.
+
+- `sim.player` and `sim.progress` mean **the local player** — a host convenience,
+  not a claim that there is only one. Systems iterate `playerActors()` instead.
+- Commands arrive as `PlayerCommand`: addressed and sequenced. `slot.lastSequence`
+  is what a client reconciles its prediction against, so never stop recording it.
+- Events concerning one player carry `subject`. Without it a client cannot tell its
+  own loot from a party member's.
+- **Predicted ticks must not draw from the RNG.** `tick('predicted')` locks it and
+  throws on any draw. Anything that rolls — damage, loot, ailments, xp — belongs in
+  the authoritative half of the tick and nowhere else.
+- Replicated state must survive `JSON.stringify`. No `Map`, no `Set`, no class
+  instances in `Actor`, `Character`, projectiles, ground items or orbs.
+- Area geometry is a pure function of `(seed, depth)` via `areaRng`. Never send a
+  map; send the seed. Never draw map generation from the main stream, or a restored
+  snapshot regenerates different geometry.
 
 ## Adding a mechanic
 

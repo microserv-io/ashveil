@@ -3,7 +3,16 @@ import { findPath, hasLineOfWalk } from './pathfind'
 import { PASSIVES, canAllocate } from './progression'
 import { Sim } from './sim'
 import { skill as skillDef } from './skills'
-import { TICK_RATE, type Actor, type EntityId, type Intent, type ItemRarity, type SimEvent, type SkillId } from './types'
+import {
+  TICK_RATE,
+  type Actor,
+  type EntityId,
+  type EquipSlot,
+  type Intent,
+  type ItemRarity,
+  type SimEvent,
+  type SkillId,
+} from './types'
 import { distance, sub, type Vec2 } from './vec2'
 
 /**
@@ -280,12 +289,12 @@ function nearestLiveMonster(sim: Sim): Actor | null {
 function spendPassives(sim: Sim): Intent[] {
   if (sim.progress.passivePoints <= 0) return []
   for (const nodeId of PASSIVE_PRIORITY) {
-    if (canAllocate(nodeId, sim.progress.allocated, sim.progress.passivePoints)) {
+    if (canAllocate(nodeId, new Set(sim.progress.allocated), sim.progress.passivePoints)) {
       return [{ kind: 'allocate_passive', nodeId }]
     }
   }
   for (const node of PASSIVES) {
-    if (canAllocate(node.id, sim.progress.allocated, sim.progress.passivePoints)) {
+    if (canAllocate(node.id, new Set(sim.progress.allocated), sim.progress.passivePoints)) {
       return [{ kind: 'allocate_passive', nodeId: node.id }]
     }
   }
@@ -311,8 +320,8 @@ function handleLoot(sim: Sim): Intent[] {
   return intents
 }
 
-function currentScore(sim: Sim, slot: string): number {
-  const equipped = sim.progress.equipment.get(slot as never)
+function currentScore(sim: Sim, slot: EquipSlot): number {
+  const equipped = sim.progress.equipment[slot]
   return equipped ? itemScore(equipped) : 0
 }
 
@@ -564,7 +573,7 @@ export function measureDps(options: {
     sim.progress.passivePoints = options.level - 1
   }
   for (const nodeId of options.passives ?? []) {
-    sim.progress.allocated.add(nodeId)
+    if (!sim.progress.allocated.includes(nodeId)) sim.progress.allocated.push(nodeId)
   }
   sim.recomputeStats(sim.player)
   for (const gear of options.gear ?? []) sim.grantItem(gear.baseId, gear.itemLevel, gear.rarity)

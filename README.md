@@ -11,7 +11,7 @@ kill-and-loot rhythm does not feel good. So that rhythm is what exists so far.
 npm install
 npm run dev          # play it at http://localhost:5273
 npm run sim          # play it headless, and get numbers back
-npm test             # 222 tests
+npm test             # 343 tests
 ```
 
 ## Architecture
@@ -21,11 +21,17 @@ browser exists.**
 
 ```
 src/sim/      deterministic core — seeded RNG, fixed 60Hz tick, no DOM, no wall-clock
+src/session/  characters, persistence, the authoritative session
+src/net/      transport abstraction and wire protocol
 src/render/   three.js scene, meshes, effects, screen-space overlay, input
 src/ui/       HUD, inventory, passive tree
 headless/     CLI that drives the sim with a scripted player
-tests/        vitest, including the architecture guard below
+tests/        vitest, including the architecture guards below
 ```
+
+Dependencies point inward and a test enforces it. See
+[docs/architecture.md](docs/architecture.md) for the layering, the netcode model
+and why single-player is a one-player session rather than its own code path.
 
 `src/sim` never imports three.js and never touches `Math.random`, `Date.now`,
 `window` or `requestAnimationFrame`. That is not a convention, it is enforced by

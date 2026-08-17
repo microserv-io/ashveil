@@ -60,7 +60,45 @@ describe('src/sim stays host-agnostic and deterministic', () => {
 
     it(`${name} does not import rendering or three.js`, () => {
       expect(source).not.toMatch(/from ['"]three/)
-      expect(source).not.toMatch(/from ['"]\.\.\/(render|ui)/)
+      expect(source).not.toMatch(/from ['"]\.\.\/(render|ui|net|session)/)
     })
+  }
+})
+
+/**
+ * Dependencies point inward. The whole architecture rests on this: if `sim` could
+ * reach the network or the renderer, it would stop being runnable headless, and the
+ * harness, the tests and any future server would all lose their footing.
+ */
+describe('layering', () => {
+  const SRC = join(import.meta.dirname, '..', 'src')
+
+  function filesIn(dir: string): string[] {
+    return readdirSync(dir).flatMap((entry) => {
+      const full = join(dir, entry)
+      if (statSync(full).isDirectory()) return filesIn(full)
+      return full.endsWith('.ts') ? [full] : []
+    })
+  }
+
+  const forbidden: readonly { layer: string; mayNotImport: readonly string[] }[] = [
+    { layer: 'sim', mayNotImport: ['render', 'ui', 'net', 'session'] },
+    { layer: 'session', mayNotImport: ['render', 'ui'] },
+    { layer: 'net', mayNotImport: ['render', 'ui'] },
+    // render and ui may read sim types; they must never reach for the server.
+    { layer: 'render', mayNotImport: ['session'] },
+    { layer: 'ui', mayNotImport: ['session'] },
+  ]
+
+  for (const rule of forbidden) {
+    for (const file of filesIn(join(SRC, rule.layer))) {
+      const source = stripComments(readFileSync(file, 'utf8'))
+      const name = `${rule.layer}/${file.slice(join(SRC, rule.layer).length + 1)}`
+      for (const banned of rule.mayNotImport) {
+        it(`${name} does not import ${banned}`, () => {
+          expect(source).not.toMatch(new RegExp(`from ['"][^'"]*\\b${banned}/`))
+        })
+      }
+    }
   }
 })

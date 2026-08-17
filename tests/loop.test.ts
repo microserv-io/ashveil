@@ -32,7 +32,7 @@ describe('the core loop closes', () => {
   })
 
   it('spends its passive points', () => {
-    expect(harness.sim.progress.allocated.size).toBeGreaterThan(1)
+    expect(harness.sim.progress.allocated.length).toBeGreaterThan(1)
   })
 
   it('uses all three damaging skills', () => {

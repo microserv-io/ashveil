@@ -11,9 +11,10 @@ const PACK_AGGRO_RADIUS = 13
 
 export function updateMonsterAI(sim: Sim, monster: Actor): void {
   const def = MONSTERS[monster.archetype!]
-  const player = sim.player
+  // Whoever is closest, which is all party aggro amounts to at this scale.
+  const player = sim.nearestPlayerTo(monster.pos)
 
-  if (player.dead) {
+  if (!player || player.dead) {
     monster.aggroed = false
     monster.targetId = null
     return
@@ -40,7 +41,7 @@ export function updateMonsterAI(sim: Sim, monster: Actor): void {
 
   if (monster.windup > 0 || monster.recovery > 0) return
 
-  const choice = chooseSkill(sim, monster, toPlayer)
+  const choice = chooseSkill(sim, monster, player, toPlayer)
   if (choice) {
     sim.beginCast(monster, choice, player.pos)
     return
@@ -69,14 +70,14 @@ export function updateMonsterAI(sim: Sim, monster: Actor): void {
   }
 }
 
-function chooseSkill(sim: Sim, monster: Actor, toPlayer: number): SkillId | null {
+function chooseSkill(sim: Sim, monster: Actor, player: Actor, toPlayer: number): SkillId | null {
   for (const id of monster.skills) {
     const def = skillDef(id)
-    const cooldown = monster.cooldowns.get(id) ?? 0
+    const cooldown = monster.cooldowns[id] ?? 0
     if (cooldown > 0) continue
     const reach = def.shape === 'nova' ? def.range : def.range
     if (toPlayer > reach) continue
-    if (!hasLineOfSight(sim.map, monster.pos, sim.player.pos)) continue
+    if (!hasLineOfSight(sim.map, monster.pos, player.pos)) continue
     return id
   }
   return null

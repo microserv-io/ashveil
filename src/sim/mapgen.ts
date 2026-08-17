@@ -1,4 +1,4 @@
-import type { Rng } from './rng'
+import { Rng } from './rng'
 import { vec2, type Vec2 } from './vec2'
 import type { AreaMap, MonsterArchetype, MonsterRarity, Rect } from './types'
 
@@ -60,7 +60,15 @@ export function isWalkable(map: AreaMap, pos: Vec2, radius: number): boolean {
   return true
 }
 
-/** The caller owns the rng stream so an area is reproducible from the run seed. */
+/**
+ * Geometry derives from (seed, depth) alone, on its own rng stream. That keeps an
+ * area reproducible without replaying everything the main stream has drawn since,
+ * which is what lets a snapshot carry a seed rather than several thousand tiles.
+ */
+export function areaRng(seed: number, depth: number): Rng {
+  return new Rng((Math.imul(seed, 0x9e3779b1) ^ Math.imul(depth, 0x85ebca6b)) >>> 0)
+}
+
 export function generateArea(rng: Rng, depth: number): GeneratedArea {
   const tiles = new Uint8Array(MAP_WIDTH * MAP_HEIGHT).fill(WALL)
   const map: AreaMap = {
