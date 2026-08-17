@@ -2,6 +2,7 @@
   "name": "ashveil",
   "version": "0.1.0",
   "description": "An isometric action-RPG core loop: pull a pack, spend skills, loot, get stronger, go deeper.",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -9,7 +10,11 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "sim": "tsx headless/run.ts"
+    "sim": "tsx headless/run.ts",
+    "spike:dev": "vite --config spike/deck/vite.config.ts",
+    "spike:build": "vite build --config spike/deck/vite.config.ts",
+    "gate": "npm run typecheck && npm run test && npm run build",
+    "gate:balance": "npm run gate && npm run sim -- sweep --seeds 6 --minutes 4"
   },
   "type": "module",
   "dependencies": {

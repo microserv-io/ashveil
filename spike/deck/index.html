@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ashveil — Deck shell spike</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #0b0d12;
+        color: #e6e3da;
+        font: 14px ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      #stage {
+        position: fixed;
+        inset: 0;
+      }
+      #panel {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        pointer-events: none;
+        z-index: 10;
+      }
+      pre {
+        background: rgb(8 10 14 / 0.9);
+        border: 1px solid #272c38;
+        border-radius: 8px;
+        padding: 18px 24px;
+        margin: 0;
+        max-width: 92vw;
+        overflow: auto;
+        white-space: pre-wrap;
+        line-height: 1.55;
+      }
+      .pass {
+        border-color: #3f9c53;
+      }
+      .degraded {
+        border-color: #f26a1f;
+      }
+      .fail {
+        border-color: #c0392b;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="panel"><pre id="out">measuring for 10s…</pre></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
