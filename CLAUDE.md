@@ -31,6 +31,7 @@ Small dependency set on purpose.
 | `spike/deck/` | Shell diagnostics for the Steam Deck decision. Shell-agnostic on purpose. |
 | `tests/` | Vitest, including the architecture guards that enforce the invariants below. |
 | `docs/architecture.md` | Why the architecture is shaped this way: netcode model, layering, zones, economy. Read before structural work. |
+| `docs/quality.md` | How work gets done: red/green, what must have a test, module-first, the gate, what to look for in review. |
 
 ## Commands
 
@@ -41,6 +42,7 @@ Small dependency set on purpose.
 - `npm run sim -- sweep --seeds 8 --minutes 4 [--policy twinstick]` measures across seeds.
 - `npm run sim -- dps` gives per-skill DPS through real skill timings.
 - `npm run sim -- trace --seed 7 --every 2` prints a second-by-second readout.
+- `npm run gate` is typecheck, tests and build. `npm run gate:balance` adds a sweep.
 - `npm run spike:dev` serves the Deck shell diagnostics on :5274.
 
 In dev the browser exposes `globalThis.ashveil` as `{ sim, host, view, controls }`,
@@ -50,10 +52,13 @@ which is the fastest way to poke at a live game from the console.
 
 1. Read `src/sim/CLAUDE.md` if the change touches the sim at all.
 2. Make the change. Keep sim logic out of `render/` and `ui/`.
-3. `npm test` and `npm run typecheck`.
-4. **If the change could move game feel or balance, run a sweep before and after**
-   and put the numbers in the PR. See below.
-5. Update the docs that went stale: `src/sim/CLAUDE.md` for sim rules,
+3. **Write the failing test first**, and check it fails for the right reason. Bug
+   fixes always start with a reproduction: runs are deterministic, so a seed is a
+   test waiting to be written. See `docs/quality.md`.
+4. `npm run gate` (typecheck, tests, build) before calling it done.
+5. **If the change could move game feel or balance, run a sweep before and after**
+   and put the numbers in the PR. `npm run gate:balance` does both. See below.
+6. Update the docs that went stale: `src/sim/CLAUDE.md` for sim rules,
    `docs/architecture.md` for structure, `README.md` for the outside view.
 
 ## Invariants, YOU MUST keep these
@@ -121,6 +126,11 @@ new question rather than bending an existing one.
   The exception is `tests/damage.test.ts`, which pins the damage pipeline by hand.
 - Presentation is a projection. Dropping a frame of effects must never change the
   outcome of a run.
+- **Module-first.** New logic lands as its own tested module behind an existing seam,
+  never appended to a coordinator. The deciding question: does it need the
+  coordinator's private mutable state? If no, it is a sibling module every time.
+  `tests/monolith_budget.test.ts` pins a line ceiling per coordinator; when you
+  extract, **lower the ceiling**. Data tables are exempt, and correctly large.
 
 ## Working in parallel
 

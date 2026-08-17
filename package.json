@@ -12,7 +12,9 @@
     "test:watch": "vitest",
     "sim": "tsx headless/run.ts",
     "spike:dev": "vite --config spike/deck/vite.config.ts",
-    "spike:build": "vite build --config spike/deck/vite.config.ts"
+    "spike:build": "vite build --config spike/deck/vite.config.ts",
+    "gate": "npm run typecheck && npm run test && npm run build",
+    "gate:balance": "npm run gate && npm run sim -- sweep --seeds 6 --minutes 4"
   },
   "type": "module",
   "dependencies": {
