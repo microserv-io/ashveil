@@ -9,7 +9,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "sim": "tsx headless/run.ts"
+    "sim": "tsx headless/run.ts",
+    "spike:dev": "vite --config spike/deck/vite.config.ts",
+    "spike:build": "vite build --config spike/deck/vite.config.ts"
   },
   "type": "module",
   "dependencies": {
