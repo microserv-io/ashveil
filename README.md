@@ -11,7 +11,7 @@ kill-and-loot rhythm does not feel good. So that rhythm is what exists so far.
 npm install
 npm run dev          # play it at http://localhost:5273
 npm run sim          # play it headless, and get numbers back
-npm test             # 183 tests
+npm test             # 222 tests
 ```
 
 ## Architecture
@@ -88,10 +88,64 @@ time actually went (idle / moving / acting / dead).
 distance moved, path cursor and current target. Three real bugs were found by reading
 its `moved` column: the fix history is in the git log.
 
-Bot policies live in `src/sim/harness.ts` — `brawler` plays the intended loop,
-`punching-bag` never fights back (so monster lethality can be measured), and `runner`
-skips combat entirely (so "can packs be outrun" can be answered). Add a policy to ask
-a new question.
+Bot policies live in `src/sim/harness.ts` — `brawler` plays the intended loop with a
+cursor, `twinstick` plays it with a stick, `punching-bag` never fights back (so monster
+lethality can be measured), and `runner` skips combat entirely (so "can packs be
+outrun" can be answered). Add a policy to ask a new question.
+
+## Controls
+
+Movement is **direct** by default — left stick or WASD — not click-to-move. A stick
+sends a direction, and a direction is the only thing that can express strafing,
+kiting, or backing out of a slam telegraph while still facing the fight. Click-to-move
+is still there for the older feel; `M` toggles it.
+
+Aiming without a cursor is a soft target: the right stick aims explicitly, and if you
+do not touch it the game picks a target from what you are facing. That decides who
+gets hit, so it lives in `src/sim/targeting.ts` where it is testable, not in the
+input handler. A mouse gets no assistance — you already have exact aim.
+
+| | mouse + keyboard | gamepad | Steam Deck |
+| --- | --- | --- | --- |
+| move | WASD | left stick | left stick |
+| aim | cursor | right stick | right stick or right trackpad |
+| attack | LMB | RT | R2 |
+| firebolt | RMB | RB | R1 |
+| nova | Q | LB | L1 |
+| dash | Space | LT | **L4** |
+| interact / portal | F | A | **R4** |
+| loot | E | X | **L5** |
+| gear | Tab | Y | **R5** |
+| passives | P | Menu | Menu |
+
+### Devices
+
+Gameplay asks for actions (`attack_primary`), never buttons. Backends fill in the
+same action set, so a new device is a profile in `src/render/profiles.ts` and
+nothing else changes. Bindings that point past what a device reports are inert, so
+the Deck profile degrades to the standard layout rather than breaking on a pad that
+lacks back grips.
+
+Back grips carry the actions you need while both thumbs are already busy — dash,
+loot, interact — which is exactly what an ARPG asks for. The right trackpad reads as
+an absolute position from centre, which is far closer to a mouse than a stick is.
+
+**A caveat worth knowing.** Through Steam, a Deck presents as a plain virtual XInput
+pad: Steam Input binds the grips, trackpads and gyro onto the standard controls, and
+the extras never reach the page. The extended profile therefore only engages when the
+device really reports them (desktop mode, Steam Input not intercepting) — capability
+is detected, not assumed from the name. Reaching them properly under Steam means the
+Steamworks `ISteamInput` API and a native shell (Electron or Tauri + steamworks.js).
+The action layer is the seam for that: a Steam Input backend fills the same actions,
+and gameplay does not change. That port is not done.
+
+The controller path is covered headlessly by the `twinstick` bot policy, so a
+regression shows up as a number in a sweep rather than as a bug report:
+
+```bash
+npm run sim -- sweep --seeds 6 --minutes 4 --policy twinstick
+npm run sim -- sweep --seeds 6 --minutes 4 --policy brawler
+```
 
 ## Current state
 
@@ -99,22 +153,24 @@ Playable end to end. A four-minute run typically reaches depth 2–3 and level 6
 roughly 25 kills/min with 0–1 deaths, and clear times fall as power accrues, which is
 the curve the loop is supposed to have.
 
-**In:** click-to-move with A* and an unstuck net, four player skills on a commit
+**In:** direct movement with click-to-move as an option, gamepad and Steam Deck
+support through an action layer, A* with an unstuck net, four player skills on a commit
 (windup → hit → recovery) model, three monster archetypes with pack aggro, leashing
 and telegraphed hits, monster rarities with rolled modifiers, the damage pipeline
 above, items with tiered affixes, drop tables, inventory and equipment, XP and levels,
 a 14-node passive tree, procedural areas, and a portal that generates the next one
 deeper.
 
-**Deliberately not in yet:** flasks, currency and crafting, more than one character
-archetype, skill gems / supports, uniques, a real endgame, sound, and art. The meshes
-are coloured primitives on purpose — the question this build answers is whether the
-loop is worth dressing up, not what the dressing looks like.
+**Deliberately not in yet:** touch controls, a Steamworks/Steam Input backend, flasks,
+currency and crafting, more than one character archetype, skill gems / supports,
+uniques, a real endgame, sound, and art. The meshes are coloured primitives on
+purpose — the question this build answers is whether the loop is worth dressing up,
+not what the dressing looks like.
 
 ## Notes
 
 - `?seed=7` in the URL reproduces an exact run; omit it for a random one.
 - In dev, `globalThis.ashveil` exposes `{ sim, host, view, input }` for poking at a
   live game from the console.
-- Controls: LMB move/attack, RMB firebolt, Q nova, Space dash, E loot, Tab gear,
-  P passives, F portal.
+- `?ui=1.4` overrides the interface scale; it bumps automatically when a pad is
+  connected, since a controller usually means a handheld or a couch.

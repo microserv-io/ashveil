@@ -1,9 +1,10 @@
 import { itemScore } from './items'
+import { findPath, hasLineOfWalk } from './pathfind'
 import { PASSIVES, canAllocate } from './progression'
 import { Sim } from './sim'
 import { skill as skillDef } from './skills'
 import { TICK_RATE, type Actor, type EntityId, type Intent, type ItemRarity, type SimEvent, type SkillId } from './types'
-import { distance, type Vec2 } from './vec2'
+import { distance, sub, type Vec2 } from './vec2'
 
 /**
  * A scripted player. The harness drives the sim through exactly the same intent
@@ -102,6 +103,127 @@ export const brawler: BotPolicy = {
   },
 }
 
+/**
+ * Plays with a stick rather than a cursor: direct movement plus soft-targeted
+ * skills. Keeps the controller path covered by the same sweeps the mouse path is,
+ * so a regression there shows up as a number rather than as a bug report.
+ */
+export const twinstick: BotPolicy = {
+  name: 'twinstick',
+  decide(sim: Sim): Intent[] {
+    const intents: Intent[] = []
+    const player = sim.player
+
+    intents.push(...spendPassives(sim))
+    if (player.dead) return intents
+    intents.push(...handleLoot(sim))
+
+    const target = sim.nearestHostile(player, 18) ?? nearestLiveMonster(sim)
+    const destination = target
+      ? target.pos
+      : sim.monstersRemaining() === 0
+        ? sim.map.portal
+        : player.pos
+
+    const dx = destination.x - player.pos.x
+    const dy = destination.y - player.pos.y
+    const gap = Math.hypot(dx, dy)
+    const facing = gap > 0.01 ? Math.atan2(dy, dx) : player.facing
+
+    if (!target) {
+      if (gap <= 2.4 && sim.monstersRemaining() === 0) intents.push({ kind: 'enter_portal' })
+      else intents.push({ kind: 'move_direction', direction: steerToward(sim, destination), facing })
+      return intents
+    }
+
+    // Close to melee range, then hold position and swing rather than shoving past.
+    const wantsGap = CLEAVE_RANGE * 0.75
+    const approach = gap > wantsGap ? steerToward(sim, destination) : { x: 0, y: 0 }
+    intents.push({ kind: 'move_direction', direction: approach, facing })
+
+    if (player.windup > 0 || player.recovery > 0 || player.dash) return intents
+
+    const crowd = sim.hostilesWithin(player.pos, NOVA_RADIUS, 'monster').length
+    const aimStick = { x: Math.cos(facing), y: Math.sin(facing) }
+
+    // Same disengage rule the cursor bot has, so a comparison between the two
+    // measures the control scheme rather than the difference in bot smarts.
+    if (player.life / player.stats.maxLife < DISENGAGE_LIFE && gap < 6) {
+      const away = awayFrom(player.pos, target.pos, 6)
+      if (canCast(sim, 'dash')) intents.push({ kind: 'use_skill', skill: 'dash', aim: away })
+      else intents.push({ kind: 'move_direction', direction: steerToward(sim, away), facing })
+      return intents
+    }
+
+    if (crowd >= 2 && canCast(sim, 'frost_nova')) {
+      intents.push({ kind: 'use_skill', skill: 'frost_nova', aim: player.pos })
+    } else if (gap > 8 && canCast(sim, 'dash')) {
+      intents.push({ kind: 'use_skill', skill: 'dash', aim: sim.aimFor(player, 'dash', aimStick).aim })
+    } else if (gap <= CLEAVE_RANGE + target.radius) {
+      intents.push({ kind: 'use_skill', skill: 'cleave', aim: sim.aimFor(player, 'cleave', null).aim })
+    } else if (gap <= FIREBOLT_RANGE && canCast(sim, 'firebolt')) {
+      intents.push({ kind: 'use_skill', skill: 'firebolt', aim: sim.aimFor(player, 'firebolt', aimStick).aim })
+    }
+
+    return intents
+  },
+}
+
+function unit(dx: number, dy: number, length: number): { x: number; y: number } {
+  return length < 1e-6 ? { x: 0, y: 0 } : { x: dx / length, y: dy / length }
+}
+
+interface TravelState {
+  path: Vec2[]
+  cursor: number
+  computedAt: number
+  destination: Vec2
+}
+
+const travelStates = new WeakMap<Sim, TravelState>()
+const REPLAN_INTERVAL = 0.6
+const WAYPOINT_REACHED = 0.6
+
+/**
+ * A stick has no pathfinder behind it, so walking at a destination in a straight
+ * line just grinds into the nearest wall. A player solves this by eye — steering
+ * along the corridor they can see. The bot solves it by steering along a path,
+ * and only falls back to a straight line when the destination is already in view.
+ */
+function steerToward(sim: Sim, destination: Vec2): Vec2 {
+  const player = sim.player
+  const direct = sub(destination, player.pos)
+  const gap = Math.hypot(direct.x, direct.y)
+  if (gap < 1e-6) return { x: 0, y: 0 }
+  // Sight is not the test — a body has width. A gap a bolt flies through is one
+  // a shoulder wedges in, which is how the straight-line shortcut wedged the bot.
+  if (hasLineOfWalk(sim.nav, player.pos, destination, player.radius)) return unit(direct.x, direct.y, gap)
+
+  let state = travelStates.get(sim)
+  const stale =
+    !state ||
+    sim.time - state.computedAt > REPLAN_INTERVAL ||
+    state.cursor >= state.path.length ||
+    distance(state.destination, destination) > 2.5
+
+  if (stale) {
+    const path = findPath(sim.nav, player.pos, destination, player.radius)
+    if (!path || path.length === 0) return unit(direct.x, direct.y, gap)
+    state = { path, cursor: 0, computedAt: sim.time, destination: { ...destination } }
+    travelStates.set(sim, state)
+  }
+
+  const travel = state!
+  while (travel.cursor < travel.path.length && distance(player.pos, travel.path[travel.cursor]!) <= WAYPOINT_REACHED) {
+    travel.cursor++
+  }
+  const waypoint = travel.path[travel.cursor]
+  if (!waypoint) return unit(direct.x, direct.y, gap)
+
+  const toWaypoint = sub(waypoint, player.pos)
+  return unit(toWaypoint.x, toWaypoint.y, Math.hypot(toWaypoint.x, toWaypoint.y))
+}
+
 /** Never attacks. Use it to measure what a pack does to a standing target. */
 export const punchingBag: BotPolicy = {
   name: 'punching-bag',
@@ -123,6 +245,7 @@ export const runner: BotPolicy = {
 
 export const POLICIES: Record<string, BotPolicy> = {
   brawler,
+  twinstick,
   'punching-bag': punchingBag,
   runner,
 }

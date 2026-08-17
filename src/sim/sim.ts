@@ -17,6 +17,7 @@ import { canAllocate, levelForXp, levelMods, passive, xpPenalty } from './progre
 import { Rng } from './rng'
 import { PLAYER_BASE, resolveStats, type BaseStats } from './stats'
 import { PLAYER_SKILLS, skill as skillDef, speedMultiplier } from './skills'
+import { aimPoint, assistCone, softTarget } from './targeting'
 import {
   DT,
   type Actor,
@@ -61,6 +62,8 @@ const PORTAL_RANGE = 2.5
 const RESPAWN_DELAY = 1.6
 const ORB_LIFE_FRACTION = 0.22
 const PATH_WAYPOINT_EPSILON = 0.28
+/** Direct input lapses this long after the last update, so releasing a stick stops you. */
+const DIRECT_MOVE_GRACE = 0.1
 const STUCK_GRACE = 0.25
 const IGNITE_DURATION = 3
 const CHILL_DURATION = 2.5
@@ -168,9 +171,14 @@ export class Sim {
       if (this.player.dead && intent.kind !== 'allocate_passive') continue
       switch (intent.kind) {
         case 'move':
+          this.player.moveDirection = null
           this.setMoveTarget(this.player, intent.to)
           break
+        case 'move_direction':
+          this.applyDirectMove(intent.direction, intent.facing)
+          break
         case 'stop':
+          this.player.moveDirection = null
           this.clearPath(this.player)
           break
         case 'use_skill':
@@ -283,12 +291,20 @@ export class Sim {
         actor.velocity = vec2()
         continue
       }
+      if (actor.moveDirection && this.time > actor.moveDirectionExpiry) {
+        actor.moveDirection = null
+        if (actor.state === 'moving') actor.state = 'idle'
+      }
       if (actor.dash) {
         this.advanceDash(actor)
         continue
       }
       if (actor.windup > 0 || actor.recovery > 0) {
         actor.velocity = vec2()
+        continue
+      }
+      if (actor.moveDirection) {
+        this.steerDirect(actor)
         continue
       }
       this.followPath(actor)
@@ -554,6 +570,50 @@ export class Sim {
     actor.stuckFor = 0
     actor.velocity = vec2()
     if (actor.state === 'moving') actor.state = 'idle'
+  }
+
+  private applyDirectMove(direction: Vec2, facing: number | undefined): void {
+    const player = this.player
+    const magnitude = Math.hypot(direction.x, direction.y)
+    if (magnitude < 1e-3) {
+      player.moveDirection = null
+      if (player.state === 'moving') player.state = 'idle'
+      if (facing !== undefined) player.facing = facing
+      return
+    }
+    // Direct input wins over a queued click destination rather than fighting it.
+    if (player.path.length > 0) this.clearPath(player)
+    player.moveDirection = { x: direction.x, y: direction.y }
+    player.moveDirectionExpiry = this.time + DIRECT_MOVE_GRACE
+    if (facing !== undefined) player.facing = facing
+  }
+
+  /** Analog steering: no path, no waypoints, just push and slide along what blocks. */
+  private steerDirect(actor: Actor): void {
+    const direction = actor.moveDirection!
+    const magnitude = Math.hypot(direction.x, direction.y)
+    if (magnitude < 1e-3) return
+
+    const unit = { x: direction.x / magnitude, y: direction.y / magnitude }
+    const speed = this.effectiveMoveSpeed(actor) * Math.min(1, magnitude)
+    const before = clone(actor.pos)
+    this.nudge(actor, scale(unit, speed * DT))
+    actor.velocity = scale(sub(actor.pos, before), 1 / DT)
+    actor.state = 'moving'
+  }
+
+  /**
+   * What a skill is aimed at for a player with no cursor. Hosts pass the aim stick
+   * when they have one; the browser passes the mouse point as an explicit aim.
+   */
+  aimFor(actor: Actor, id: SkillId, stick: Vec2 | null): { aim: Vec2; target: Actor | null } {
+    const def = skillDef(id)
+    const reach = def.shape === 'nova' ? (def.radius ?? 3) * actor.stats.areaRadius : def.range
+    const target = softTarget(this.hostilesOf(actor), actor.pos, actor.facing, {
+      range: reach,
+      coneDegrees: assistCone(def.shape),
+    })
+    return { aim: aimPoint(actor.pos, actor.facing, stick, reach, target), target }
   }
 
   private followPath(actor: Actor): void {
@@ -829,6 +889,8 @@ export class Sim {
       cooldowns: new Map(),
       skills: [...PLAYER_SKILLS],
       moveTarget: null,
+      moveDirection: null,
+      moveDirectionExpiry: 0,
       path: [],
       pathCursor: 0,
       repathAt: 0,
@@ -888,6 +950,8 @@ export class Sim {
       cooldowns: new Map(),
       skills: [...def.skills],
       moveTarget: null,
+      moveDirection: null,
+      moveDirectionExpiry: 0,
       path: [],
       pathCursor: 0,
       repathAt: 0,

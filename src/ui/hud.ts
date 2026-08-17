@@ -5,19 +5,23 @@ import { skill as skillDef } from '../sim/skills'
 import { describeMod } from '../sim/stats'
 import { EQUIP_SLOTS, type EquipSlot, type Item, type SimEvent, type SkillId } from '../sim/types'
 import { RARITY_CSS } from '../render/palette'
+import { glyphFor, type PadProfile } from '../render/profiles'
+import type { Scheme, UiAction } from '../render/input'
 
 interface SkillSlotView {
   root: HTMLElement
   cooldown: HTMLElement
-  binding: string
+  key: HTMLElement
+  slot: string
+  keyboard: string
   skill: SkillId
 }
 
-const SKILL_BINDINGS: readonly { skill: SkillId; binding: string }[] = [
-  { skill: 'cleave', binding: 'LMB' },
-  { skill: 'firebolt', binding: 'RMB' },
-  { skill: 'frost_nova', binding: 'Q' },
-  { skill: 'dash', binding: 'Space' },
+const SKILL_BINDINGS: readonly { skill: SkillId; slot: string; keyboard: string }[] = [
+  { skill: 'cleave', slot: 'primary', keyboard: 'LMB' },
+  { skill: 'firebolt', slot: 'secondary', keyboard: 'RMB' },
+  { skill: 'frost_nova', slot: 'nova', keyboard: 'Q' },
+  { skill: 'dash', slot: 'dash', keyboard: 'Space' },
 ]
 
 export class Hud {
@@ -36,6 +40,11 @@ export class Hud {
   private readonly passivePanel: HTMLElement
   private inventoryOpen = false
   private passivesOpen = false
+  private panelsDirty = true
+  private focusIndex = 0
+  private scheme: Scheme | null = null
+  private profileId = ''
+  private readonly hint: HTMLElement
 
   constructor(
     root: HTMLElement,
@@ -72,17 +81,17 @@ export class Hud {
 
     const bar = div('absolute bottom-7 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2')
     const slots = div('flex gap-2')
-    for (const { skill, binding } of SKILL_BINDINGS) {
+    for (const binding of SKILL_BINDINGS) {
       const slot = div('skill-slot')
-      const name = div('px-1 text-center text-[10px] font-bold uppercase leading-tight tracking-wide text-ash-100/85')
-      name.textContent = skillDef(skill).name
-      const key = div('absolute bottom-0.5 right-1 text-[9px] font-semibold text-ash-300')
-      key.textContent = binding
+      const name = div('px-1 text-center text-[0.62rem] font-bold uppercase leading-tight tracking-wide text-ash-100/85')
+      name.textContent = skillDef(binding.skill).name
+      const key = div('absolute bottom-0.5 right-1 text-[0.58rem] font-semibold text-ash-300')
+      key.textContent = binding.keyboard
       const cooldown = div('skill-cooldown')
       cooldown.style.height = '0%'
       slot.append(name, key, cooldown)
       slots.append(slot)
-      this.skillSlots.push({ root: slot, cooldown, binding, skill })
+      this.skillSlots.push({ root: slot, cooldown, key, slot: binding.slot, keyboard: binding.keyboard, skill: binding.skill })
     }
 
     const xpTrack = div('h-1.5 w-[420px] overflow-hidden rounded-full bg-ash-700')
@@ -94,9 +103,8 @@ export class Hud {
     bar.append(slots, xpTrack, this.xpLabel)
     root.append(bar)
 
-    const hint = div('absolute bottom-2 left-1/2 -translate-x-1/2 text-[10px] text-ash-300/60')
-    hint.textContent = 'LMB move / attack · RMB firebolt · Q nova · Space dash · E loot · Tab gear · P passives · F portal'
-    root.append(hint)
+    this.hint = div('absolute bottom-2 left-1/2 max-w-[90vw] -translate-x-1/2 text-center text-[0.62rem] text-ash-300/60')
+    root.append(this.hint)
 
     this.inventoryPanel = div('panel absolute left-1/2 top-1/2 w-[560px] -translate-x-1/2 -translate-y-1/2 p-5')
     this.inventoryPanel.style.display = 'none'
@@ -107,18 +115,94 @@ export class Hud {
     root.append(this.passivePanel)
   }
 
+  get panelOpen(): boolean {
+    return this.inventoryOpen || this.passivesOpen
+  }
+
   toggleInventory(): void {
     this.inventoryOpen = !this.inventoryOpen
     if (this.inventoryOpen) this.passivesOpen = false
+    this.panelsDirty = true
+    this.focusIndex = 0
   }
 
   togglePassives(): void {
     this.passivesOpen = !this.passivesOpen
     if (this.passivesOpen) this.inventoryOpen = false
+    this.panelsDirty = true
+    this.focusIndex = 0
+  }
+
+  /**
+   * Panels are navigable without a cursor: a controller moves a focus ring through
+   * the same buttons a mouse would click, so nothing is mouse-only.
+   */
+  handleUi(action: UiAction): void {
+    switch (action) {
+      case 'panel_gear':
+        this.toggleInventory()
+        return
+      case 'panel_passives':
+        this.togglePassives()
+        return
+      case 'ui_cancel':
+        this.inventoryOpen = false
+        this.passivesOpen = false
+        return
+      default:
+        break
+    }
+    if (!this.panelOpen) return
+
+    const focusable = this.focusableElements()
+    if (focusable.length === 0) return
+
+    if (action === 'ui_confirm') {
+      focusable[this.focusIndex % focusable.length]?.click()
+      this.panelsDirty = true
+      return
+    }
+    const step = action === 'ui_down' || action === 'ui_right' ? 1 : -1
+    this.focusIndex = (this.focusIndex + step + focusable.length) % focusable.length
+    this.applyFocus(focusable)
+  }
+
+  private focusableElements(): HTMLElement[] {
+    const panel = this.inventoryOpen ? this.inventoryPanel : this.passivePanel
+    return [...panel.querySelectorAll('button')].filter((b) => !b.hasAttribute('disabled'))
+  }
+
+  private applyFocus(focusable: readonly HTMLElement[]): void {
+    focusable.forEach((element, index) => {
+      element.classList.toggle('ui-focused', index === this.focusIndex % focusable.length)
+    })
+    focusable[this.focusIndex % focusable.length]?.scrollIntoView({ block: 'nearest' })
+  }
+
+  /** Glyphs follow the device in the player's hands, and the Deck's own labels. */
+  setScheme(scheme: Scheme, profile: PadProfile): void {
+    if (scheme === this.scheme && profile.id === this.profileId) return
+    this.scheme = scheme
+    this.profileId = profile.id
+    for (const slot of this.skillSlots) {
+      slot.key.textContent = scheme === 'gamepad' ? glyphFor(profile, slot.slot) : slot.keyboard
+    }
+    this.hint.textContent =
+      scheme === 'gamepad'
+        ? `Left stick move · right stick aim · ${glyphFor(profile, 'primary')} attack · ${glyphFor(profile, 'dash')} dash · ${glyphFor(profile, 'interact')} interact · ${glyphFor(profile, 'loot')} loot · ${glyphFor(profile, 'gear')} gear${profile.extras ? ` · ${profile.extras.join(' · ')}` : ''}`
+        : 'WASD move · mouse aim · LMB attack · RMB firebolt · Q nova · Space dash · E loot · F portal · Tab gear · P passives · M movement mode'
   }
 
   consume(events: readonly SimEvent[]): void {
     for (const event of events) {
+      if (
+        event.kind === 'item_picked_up' ||
+        event.kind === 'item_equipped' ||
+        event.kind === 'level_up' ||
+        event.kind === 'passive_allocated'
+      ) {
+        this.panelsDirty = true
+      }
       switch (event.kind) {
         case 'level_up':
           this.toast(`Level ${event.level}`, 'text-ember border-ember/50', `${event.passivePoints} passive point${event.passivePoints === 1 ? '' : 's'} — press P`)
@@ -195,8 +279,13 @@ export class Hud {
 
     this.inventoryPanel.style.display = this.inventoryOpen ? '' : 'none'
     this.passivePanel.style.display = this.passivesOpen ? '' : 'none'
-    if (this.inventoryOpen) this.renderInventory(sim)
-    if (this.passivesOpen) this.renderPassives(sim)
+    // Rebuilding a panel every frame would throw away controller focus each time.
+    if (this.panelsDirty) {
+      if (this.inventoryOpen) this.renderInventory(sim)
+      if (this.passivesOpen) this.renderPassives(sim)
+      this.panelsDirty = false
+      if (this.panelOpen) this.applyFocus(this.focusableElements())
+    }
   }
 
   private renderInventory(sim: Sim): void {

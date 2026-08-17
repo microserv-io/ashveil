@@ -145,6 +145,10 @@ export interface Actor {
   skills: SkillId[]
 
   moveTarget: Vec2 | null
+  /** Held analog direction; overrides the path while fresh. */
+  moveDirection: Vec2 | null
+  /** Direct input is refreshed every tick by the host, and lapses without it. */
+  moveDirectionExpiry: number
   path: Vec2[]
   pathCursor: number
   repathAt: number
@@ -329,7 +333,14 @@ export interface Rect {
 // ---------------------------------------------------------------------------
 
 export type Intent =
+  /** Click-to-move: pathfind to a destination. */
   | { kind: 'move'; to: Vec2 }
+  /**
+   * Stick or WASD: a direction held this instant, magnitude 0..1 for analog speed.
+   * `facing` decouples where you look from where you walk, which is what makes
+   * strafing and backing out of a telegraph possible.
+   */
+  | { kind: 'move_direction'; direction: Vec2; facing?: number }
   | { kind: 'stop' }
   | { kind: 'use_skill'; skill: SkillId; aim: Vec2 }
   | { kind: 'pickup'; itemId: EntityId }

@@ -58,8 +58,8 @@ canvas {
     pointer-events: auto;
     cursor: pointer;
     white-space: nowrap;
-    padding: 2px 9px;
-    font-size: 12.5px;
+    padding: 0.14rem 0.58rem;
+    font-size: 0.78rem;
     font-weight: 600;
     letter-spacing: 0.01em;
     border-radius: 3px;
@@ -76,15 +76,15 @@ canvas {
   .loot-label.in-range::after {
     content: ' ·E';
     opacity: 0.5;
-    font-size: 10px;
+    font-size: 0.62rem;
   }
 
   .health-bar {
     position: absolute;
     top: 0;
     left: 0;
-    width: 46px;
-    height: 4px;
+    width: 2.9rem;
+    height: 0.26rem;
     border-radius: 2px;
     background: rgb(0 0 0 / 0.75);
     outline: 1px solid rgb(0 0 0 / 0.6);
@@ -92,14 +92,14 @@ canvas {
   }
 
   .health-bar.rarity-magic {
-    width: 58px;
-    height: 5px;
+    width: 3.7rem;
+    height: 0.32rem;
     outline-color: #4a7fd8;
   }
 
   .health-bar.rarity-rare {
-    width: 74px;
-    height: 6px;
+    width: 4.7rem;
+    height: 0.38rem;
     outline-color: #d8b24a;
   }
 
@@ -112,8 +112,8 @@ canvas {
   /* Orbs are clipped circles filled from the bottom, like the genre expects. */
   .orb {
     position: relative;
-    width: 92px;
-    height: 92px;
+    width: 5.75rem;
+    height: 5.75rem;
     border-radius: 9999px;
     overflow: hidden;
     border: 2px solid rgb(255 255 255 / 0.09);
@@ -141,7 +141,7 @@ canvas {
     inset: 0;
     display: grid;
     place-items: center;
-    font-size: 13px;
+    font-size: 0.82rem;
     font-weight: 700;
     text-shadow: 0 2px 5px rgb(0 0 0 / 0.95);
     font-variant-numeric: tabular-nums;
@@ -149,9 +149,9 @@ canvas {
 
   .skill-slot {
     position: relative;
-    width: 56px;
-    height: 56px;
-    border-radius: 7px;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 0.44rem;
     border: 1px solid var(--color-ash-600);
     background: linear-gradient(180deg, rgb(30 35 46 / 0.95), rgb(14 17 23 / 0.95));
     display: grid;
@@ -205,5 +205,12 @@ canvas {
 
   .passive-node:hover {
     transform: scale(1.08);
+  }
+
+  /* Controller focus: the panel equivalent of a cursor. */
+  .ui-focused {
+    outline: 2px solid var(--color-ember);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgb(242 106 31 / 0.18);
   }
 }

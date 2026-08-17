@@ -52,7 +52,7 @@ export class WorldOverlay {
     element.className = 'floating-number'
     element.textContent = text
     element.style.color = incoming ? '#ff6b5e' : colour
-    element.style.fontSize = crit ? '26px' : incoming ? '20px' : '17px'
+    element.style.fontSize = crit ? '1.62rem' : incoming ? '1.25rem' : '1.06rem'
     element.style.fontWeight = crit ? '800' : '600'
     this.root.appendChild(element)
     this.numbers.push({

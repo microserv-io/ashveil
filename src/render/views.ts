@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import type { Sim } from '../sim/sim'
-import type { Actor, EntityId, GroundItem, Orb, Projectile } from '../sim/types'
+import type { Actor, EntityId, GroundItem, Orb, Projectile, Vec2 } from '../sim/types'
 import { PALETTE } from './palette'
 
 const DEATH_FADE = 1.1
@@ -22,9 +22,68 @@ export class WorldView {
   private readonly loot = new Map<EntityId, THREE.Object3D>()
   private readonly orbs = new Map<EntityId, THREE.Mesh>()
   private readonly root = new THREE.Group()
+  private aimArrow: THREE.Mesh | null = null
+  private targetRing: THREE.Mesh | null = null
 
   constructor(scene: THREE.Scene) {
     scene.add(this.root)
+  }
+
+  /**
+   * A controller has no cursor, so the aim has to be visible: an arrow for the
+   * direction a skill will take, and a ring on whatever the soft target picked.
+   */
+  updateAimIndicator(sim: Sim, aim: Vec2 | null, targetId: EntityId | null): void {
+    if (!this.aimArrow) {
+      this.aimArrow = new THREE.Mesh(
+        new THREE.ConeGeometry(0.28, 0.85, 3),
+        new THREE.MeshBasicMaterial({ color: PALETTE.playerAccent, transparent: true, opacity: 0.75, depthTest: false }),
+      )
+      this.aimArrow.rotation.x = Math.PI / 2
+      this.aimArrow.renderOrder = 6
+      this.root.add(this.aimArrow)
+
+      this.targetRing = new THREE.Mesh(
+        new THREE.RingGeometry(0.62, 0.8, 26),
+        new THREE.MeshBasicMaterial({
+          color: PALETTE.playerAccent,
+          transparent: true,
+          opacity: 0.9,
+          depthTest: false,
+          side: THREE.DoubleSide,
+        }),
+      )
+      this.targetRing.rotation.x = -Math.PI / 2
+      this.targetRing.renderOrder = 6
+      this.root.add(this.targetRing)
+    }
+
+    const arrow = this.aimArrow
+    const ring = this.targetRing!
+
+    if (!aim || sim.player.dead) {
+      arrow.visible = false
+      ring.visible = false
+      return
+    }
+
+    const player = sim.player
+    const dx = aim.x - player.pos.x
+    const dy = aim.y - player.pos.y
+    const length = Math.hypot(dx, dy)
+    arrow.visible = length > 0.05
+    if (arrow.visible) {
+      const reach = Math.min(2.1, Math.max(1.2, length))
+      arrow.position.set(player.pos.x + (dx / length) * reach, 0.12, player.pos.y + (dy / length) * reach)
+      arrow.rotation.z = -Math.atan2(dy, dx) - Math.PI / 2
+    }
+
+    const target = targetId === null ? null : sim.actorById(targetId)
+    ring.visible = target !== undefined && target !== null && !target.dead
+    if (ring.visible && target) {
+      ring.position.set(target.pos.x, 0.08, target.pos.y)
+      ring.scale.setScalar(Math.max(0.7, target.radius / 0.5))
+    }
   }
 
   clearArea(): void {

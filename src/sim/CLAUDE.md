@@ -47,6 +47,7 @@ spend a tick reacting to a corpse whose `dead` flag has not been set yet.
 | `mapgen.ts` | rooms, corridors, pack placement; also the tile queries |
 | `pathfind.ts` | `NavGrid` (per-radius passability) and 8-way A* with string pulling |
 | `progression.ts` | XP table, level mods, passive tree |
+| `targeting.ts` | soft targeting and aim resolution for cursorless input; pure leaf |
 | `harness.ts` | scripted bot policies, run metrics, DPS and sweep probes |
 | `rng.ts`, `vec2.ts` | pure leaves; a test imports them directly |
 
@@ -76,3 +77,9 @@ spend a tick reacting to a corpse whose `dead` flag has not been set yet.
   `recomputeStats`. It is easy to roll that number and never feed it anywhere.
 - **Local weapon mods must not also be granted globally** or they count twice for
   attacks that already scale with weapon damage.
+- **Direct movement has no pathfinder.** Walking a straight line at a destination
+  grinds into the first wall between here and there. Anything steering with
+  `move_direction` over distance has to follow a path, as `steerToward` does.
+- **Sight is not a walkability test.** `hasLineOfSight` ignores body radius, so a
+  gap a projectile flies through is one a shoulder wedges in. Use `hasLineOfWalk`
+  for "can I walk straight there".

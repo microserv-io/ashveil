@@ -167,7 +167,12 @@ function dps(): void {
 function trace(): void {
   const seed = number(args.flags, 'seed', 1)
   const interval = Math.round(number(args.flags, 'every', 1) * TICK_RATE)
-  const harness = new Harness({ seed, decisionInterval: number(args.flags, 'reaction', 3) })
+  const tracePolicy = POLICIES[args.flags.get('policy') ?? 'brawler']
+  const harness = new Harness({
+    seed,
+    ...(tracePolicy ? { policy: tracePolicy } : {}),
+    decisionInterval: number(args.flags, 'reaction', 3),
+  })
   const sim = harness.sim
 
   console.log('')
@@ -205,10 +210,17 @@ function trace(): void {
 function runSweep(): void {
   const seedCount = number(args.flags, 'seeds', 8)
   const seeds = Array.from({ length: seedCount }, (_, i) => i + 1)
-  const result = sweep({ seeds, ticks, decisionInterval: number(args.flags, 'reaction', 3) })
+  const policyName = args.flags.get('policy') ?? 'brawler'
+  const policy = POLICIES[policyName]
+  if (!policy) {
+    console.error(`unknown policy: ${policyName} (have: ${Object.keys(POLICIES).join(', ')})`)
+    process.exit(1)
+    return
+  }
+  const result = sweep({ seeds, ticks, policy, decisionInterval: number(args.flags, 'reaction', 3) })
 
   console.log('')
-  console.log(`  Sweep — ${seedCount} seeds x ${minutes} min`)
+  console.log(`  Sweep — ${seedCount} seeds x ${minutes} min, policy ${policyName}`)
   console.log(`  ${'-'.repeat(72)}`)
   console.log(`  ${'seed'.padEnd(6)}${'depth'.padEnd(7)}${'lvl'.padEnd(5)}${'kills'.padEnd(7)}${'dps'.padEnd(9)}${'taken/s'.padEnd(9)}${'deaths'.padEnd(8)}rares`)
   for (const run of result.runs) {

@@ -43,6 +43,8 @@ function actor(mods: Mod[] = [], base: Partial<BaseStats> = {}): Actor {
     cooldowns: new Map(),
     skills: [],
     moveTarget: null,
+    moveDirection: null,
+    moveDirectionExpiry: 0,
     path: [],
     pathCursor: 0,
     repathAt: 0,
