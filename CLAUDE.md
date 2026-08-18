@@ -25,7 +25,7 @@ Small dependency set on purpose.
 | `src/sim/` | **The game. Deterministic, host-agnostic, the source of truth.** Has its own `CLAUDE.md`: read it before changing anything here. |
 | `src/session/` | Characters, persistence, the authoritative session. Owns what outlives an area. |
 | `src/net/` | Transport interface and wire protocol. Loopback today. No gameplay. |
-| `src/render/` | Three.js scene, meshes, effects, screen overlay, and the input layer (actions, device profiles, gamepad). Reads sim state, never mutates it. |
+| `src/render/` | Three.js scene, models, effects, screen overlay, and the input layer (actions, device profiles, gamepad). Reads sim state, never mutates it. `models.ts` loads the kit, `rig.ts` maps sim state to clips, `terrain.ts` builds the dungeon, `actorview.ts` builds one body. |
 | `src/ui/` | HUD, gear panel, passive tree. |
 | `headless/run.ts` | The CLI harness: `playtest`, `sweep`, `dps`, `trace`. |
 | `spike/deck/` | Shell diagnostics for the Steam Deck decision. Shell-agnostic on purpose. |
@@ -36,7 +36,8 @@ Small dependency set on purpose.
 
 ## Commands
 
-- `npm run dev` plays it at http://localhost:5273. `?seed=7` reproduces an exact run.
+- `npm run dev` fetches the art if missing, then plays it at http://localhost:5273.
+  `?seed=7` reproduces an exact run. `npm run assets` fetches the models on their own.
 - `npm test` runs Vitest. Prefer one file while iterating: `npx vitest run tests/loop.test.ts`.
 - `npm run typecheck` and `npm run build` are the other two gates.
 - `npm run sim -- playtest --seed 7 --minutes 6` plays it headless and reports.
@@ -127,7 +128,10 @@ new question rather than bending an existing one.
 - Tests assert that the loop closes, not exact numbers, so tuning does not break them.
   The exception is `tests/damage.test.ts`, which pins the damage pipeline by hand.
 - Presentation is a projection. Dropping a frame of effects must never change the
-  outcome of a run.
+  outcome of a run, and swapping every mesh for a model must leave the sweep
+  byte-identical per seed. If art moved a number, art is reaching into the sim.
+- **Every sim state needs a pose.** `tests/rig.test.ts` fails if a new skill has no
+  animation, because a missing one renders as a body frozen in its bind pose.
 - **Module-first.** New logic lands as its own tested module behind an existing seam,
   never appended to a coordinator. The deciding question: does it need the
   coordinator's private mutable state? If no, it is a sibling module every time.
@@ -153,9 +157,11 @@ deferred, and several would change the balance the loop is tuned around.
 Flasks and potions, currency and crafting, more than one character archetype, skill
 gems and supports, uniques, trade, a real endgame, and sound.
 
-Art is now scoped rather than deferred: the game still renders coloured primitives,
-but `spike/art/` evaluates a CC0 kit against the real mapgen and the open issue
-records which one and why. Do not wire assets into `src/render/` before that lands.
+Art is built: bodies, terrain, loot and the portal are KayKit models (CC0), loaded
+from `public/models` and fetched rather than committed. **Effects and affordances
+stay procedural on purpose** — projectiles, the cleave arc, aim arrows, target rings
+and rarity auras are read-aids, not scenery, and giving them meshes would make them
+harder to read, not easier.
 
 Netcode is also not built. The seams are in (`docs/architecture.md`), the wire is not.
 

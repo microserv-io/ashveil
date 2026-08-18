@@ -1,6 +1,7 @@
 import './style.css'
 import { Effects } from './render/fx'
 import { Controls } from './render/input'
+import { loadModels } from './render/models'
 import { WorldOverlay } from './render/overlay'
 import { SceneHost } from './render/scene'
 import { WorldView } from './render/views'
@@ -19,6 +20,10 @@ document.body.append(overlayRoot, hudRoot)
 
 const seed = readSeed()
 const sim = new Sim({ seed })
+
+// Every actor and tile is a model, so there is nothing to draw until they arrive.
+await loadModels('models', (done, total) => showLoading(`${done} / ${total}`))
+hideLoading()
 
 const host = new SceneHost(app)
 const view = new WorldView(host.scene)
@@ -115,6 +120,20 @@ function applyUiScale(padConnected: boolean): void {
   const scale = Number.isFinite(override) && override > 0 ? override : padConnected ? 1.2 : 1
   const next = `${(16 * scale).toFixed(2)}px`
   if (document.documentElement.style.fontSize !== next) document.documentElement.style.fontSize = next
+}
+
+function showLoading(progress: string): void {
+  let node = document.getElementById('loading')
+  if (!node) {
+    node = document.createElement('div')
+    node.id = 'loading'
+    document.body.append(node)
+  }
+  node.textContent = `Loading art ${progress}`
+}
+
+function hideLoading(): void {
+  document.getElementById('loading')?.remove()
 }
 
 function readSeed(): number {

@@ -39,9 +39,9 @@ const WALL_MODE: 'block' | 'squeezed' = 'block'
  */
 let characterScale = 0.85
 
-const CHARACTERS = ['player', 'swarm', 'ranged', 'brute', 'caster'] as const
-const PROPS = ['chest', 'barrel', 'coin_stack', 'torch'] as const
-const TILES = ['floor', 'floor_rocks', 'wall', 'wall_corner', 'wall_arched', 'stairs'] as const
+const CHARACTERS = ['player', 'swarm', 'ranged', 'brute'] as const
+const PROPS = ['loot_normal', 'loot_magic', 'loot_rare', 'orb'] as const
+const TILES = ['floor', 'floor_rocks', 'wall', 'portal'] as const
 
 type AssetName = (typeof CHARACTERS)[number] | (typeof PROPS)[number] | (typeof TILES)[number]
 
@@ -50,7 +50,7 @@ const loaded = new Map<AssetName, Awaited<ReturnType<GLTFLoader['loadAsync']>>>(
 
 async function loadAll(): Promise<void> {
   const names: AssetName[] = [...CHARACTERS, ...PROPS, ...TILES]
-  const gltfs = await Promise.all(names.map((n) => loader.loadAsync(`./assets/${n}.glb`)))
+  const gltfs = await Promise.all(names.map((n) => loader.loadAsync(`./models/${n}.glb`)))
   names.forEach((n, i) => loaded.set(n, gltfs[i]!))
 }
 
@@ -248,7 +248,6 @@ async function main(): Promise<void> {
     ['swarm', 'swarm (Skeleton_Minion)'],
     ['ranged', 'ranged (Skeleton_Rogue)'],
     ['brute', 'brute (Skeleton_Warrior)'],
-    ['caster', 'spare (Skeleton_Mage)'],
   ]
   ring.forEach(([name, label], i) => {
     const angle = (i / ring.length) * Math.PI * 2 + Math.PI / 4

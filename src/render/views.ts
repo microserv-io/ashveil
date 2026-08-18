@@ -1,16 +1,18 @@
 import * as THREE from 'three'
 import type { Sim } from '../sim/sim'
-import type { Actor, EntityId, GroundItem, Orb, Projectile, Vec2 } from '../sim/types'
+import type { EntityId, GroundItem, Orb, Projectile, Vec2 } from '../sim/types'
+import {
+  applyDeathFade,
+  applyHitFlash,
+  applyWindupTell,
+  createActorView,
+  disposeActorView,
+  orientActorView,
+  type ActorView,
+} from './actorview'
+import { meshesOf, spawnModel } from './models'
 import { PALETTE } from './palette'
-
-const DEATH_FADE = 1.1
-
-interface ActorView {
-  group: THREE.Group
-  body: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>
-  baseColour: THREE.Color
-  fadeLeft: number
-}
+import { rigStateOf } from './rig'
 
 /**
  * Meshes are a projection of sim state, never a source of truth. Anything the
@@ -20,7 +22,7 @@ export class WorldView {
   private readonly actors = new Map<EntityId, ActorView>()
   private readonly projectiles = new Map<EntityId, THREE.Mesh>()
   private readonly loot = new Map<EntityId, THREE.Object3D>()
-  private readonly orbs = new Map<EntityId, THREE.Mesh>()
+  private readonly orbs = new Map<EntityId, THREE.Object3D>()
   private readonly root = new THREE.Group()
   private aimArrow: THREE.Mesh | null = null
   private targetRing: THREE.Mesh | null = null
@@ -121,15 +123,15 @@ export class WorldView {
       const smoothing = 1 - Math.exp(-24 * delta)
       view.group.position.x += (actor.pos.x - view.group.position.x) * smoothing
       view.group.position.z += (actor.pos.y - view.group.position.z) * smoothing
-      view.group.rotation.y = -actor.facing + Math.PI / 2
+      orientActorView(view, actor)
+
+      view.rig.apply(rigStateOf(actor))
+      // A fast weapon outruns its swing clip, which would freeze on the last frame.
+      if (actor.state === 'acting' && actor.recovery > 0) view.rig.scaleToDuration(actor.recovery + actor.windup)
+      view.rig.update(delta)
 
       if (actor.dead) {
-        view.fadeLeft = view.fadeLeft === 0 ? DEATH_FADE : Math.max(0, view.fadeLeft - delta)
-        const t = view.fadeLeft / DEATH_FADE
-        view.group.position.y = -0.9 * (1 - t)
-        view.group.scale.setScalar(Math.max(0.05, t))
-        view.body.material.opacity = t
-        view.body.material.transparent = true
+        applyDeathFade(view, delta)
         continue
       }
 
@@ -141,8 +143,7 @@ export class WorldView {
       const actor = sim.actorById(id)
       if (seen.has(id) && actor && !(actor.dead && view.fadeLeft <= 0)) continue
       this.root.remove(view.group)
-      view.body.geometry.dispose()
-      view.body.material.dispose()
+      disposeActorView(view)
       this.actors.delete(id)
     }
   }
@@ -199,118 +200,9 @@ export class WorldView {
     for (const [id, mesh] of this.orbs) {
       if (live.has(id)) continue
       this.root.remove(mesh)
-      mesh.geometry.dispose()
       this.orbs.delete(id)
     }
   }
-}
-
-function createActorView(actor: Actor): ActorView {
-  const group = new THREE.Group()
-  const colour = new THREE.Color(bodyColour(actor))
-  const material = new THREE.MeshStandardMaterial({ color: colour, roughness: 0.7, metalness: 0.1 })
-  const body = new THREE.Mesh(bodyGeometry(actor), material)
-  body.castShadow = true
-  body.position.y = actor.radius * 1.9
-  group.add(body)
-
-  if (actor.kind === 'player') {
-    const blade = new THREE.Mesh(
-      new THREE.BoxGeometry(0.12, 0.12, 1),
-      new THREE.MeshStandardMaterial({ color: PALETTE.playerAccent, emissive: PALETTE.playerAccent, emissiveIntensity: 0.7 }),
-    )
-    blade.position.set(0.34, 0.85, 0.45)
-    group.add(blade)
-
-    const lamp = new THREE.PointLight(PALETTE.playerAccent, 3.2, 9, 2)
-    lamp.position.set(0, 1.6, 0)
-    group.add(lamp)
-
-    // A taller monster standing on top of you would otherwise hide you entirely.
-    const marker = new THREE.Mesh(
-      new THREE.RingGeometry(actor.radius * 1.25, actor.radius * 1.5, 28),
-      new THREE.MeshBasicMaterial({
-        color: PALETTE.playerAccent,
-        transparent: true,
-        opacity: 0.85,
-        depthTest: false,
-        side: THREE.DoubleSide,
-      }),
-    )
-    marker.rotation.x = -Math.PI / 2
-    marker.position.y = 0.05
-    marker.renderOrder = 5
-    group.add(marker)
-  }
-
-  if (actor.rarity !== 'normal') {
-    const aura = new THREE.Mesh(
-      new THREE.RingGeometry(actor.radius * 1.5, actor.radius * 1.9, 24),
-      new THREE.MeshBasicMaterial({
-        color: actor.rarity === 'rare' ? PALETTE.rare : PALETTE.magic,
-        transparent: true,
-        opacity: 0.65,
-        side: THREE.DoubleSide,
-      }),
-    )
-    aura.rotation.x = -Math.PI / 2
-    aura.position.y = 0.06
-    group.add(aura)
-  }
-
-  return { group, body, baseColour: colour, fadeLeft: 0 }
-}
-
-function bodyGeometry(actor: Actor): THREE.BufferGeometry {
-  if (actor.kind === 'player') return new THREE.CapsuleGeometry(actor.radius, 0.85, 6, 14)
-  switch (actor.archetype) {
-    case 'swarm':
-      return new THREE.ConeGeometry(actor.radius * 1.15, actor.radius * 2.6, 12)
-    case 'ranged':
-      return new THREE.CapsuleGeometry(actor.radius * 0.8, 1.1, 5, 10)
-    case 'brute':
-      return new THREE.BoxGeometry(actor.radius * 1.9, actor.radius * 2.6, actor.radius * 1.7)
-    default:
-      return new THREE.SphereGeometry(actor.radius, 12, 10)
-  }
-}
-
-function bodyColour(actor: Actor): number {
-  if (actor.kind === 'player') return PALETTE.player
-  switch (actor.archetype) {
-    case 'swarm':
-      return PALETTE.swarm
-    case 'ranged':
-      return PALETTE.ranged
-    case 'brute':
-      return PALETTE.brute
-    default:
-      return PALETTE.player
-  }
-}
-
-function applyHitFlash(view: ActorView, actor: Actor): void {
-  const material = view.body.material
-  if (actor.hitFlash > 0) {
-    material.emissive.setHex(0xffffff)
-    material.emissiveIntensity = actor.hitFlash * 5
-  } else {
-    material.emissiveIntensity = 0
-  }
-  const chilled = actor.ailments.some((a) => a.kind === 'chilled')
-  const ignited = actor.ailments.some((a) => a.kind === 'ignited')
-  if (chilled) material.color.setHex(PALETTE.cold)
-  else if (ignited) material.color.setHex(PALETTE.fire)
-  else material.color.copy(view.baseColour)
-}
-
-/** The wind-up tell: a monster swells right before it commits to a hit. */
-function applyWindupTell(view: ActorView, actor: Actor): void {
-  if (actor.kind === 'player' || actor.windup <= 0 || !actor.pendingCast) {
-    view.group.scale.setScalar(1)
-    return
-  }
-  view.group.scale.setScalar(1 + Math.min(0.22, actor.windup * 0.35))
 }
 
 function createProjectileMesh(projectile: Projectile): THREE.Mesh {
@@ -325,20 +217,41 @@ function createProjectileMesh(projectile: Projectile): THREE.Mesh {
 }
 
 function createLootMesh(ground: GroundItem): THREE.Object3D {
-  const colour = ground.item.rarity === 'rare' ? PALETTE.rare : ground.item.rarity === 'magic' ? PALETTE.magic : 0xa9a396
+  const rarity = ground.item.rarity
+  const group = new THREE.Group()
+  group.position.set(ground.pos.x, 0, ground.pos.y)
+
+  const container = spawnModel(rarity === 'rare' ? 'loot_rare' : rarity === 'magic' ? 'loot_magic' : 'loot_normal')
+  container.scale.setScalar(0.4)
+  group.add(container)
+
+  // The beam is what makes a drop findable across a dark room; the model alone is not.
+  const colour = rarity === 'rare' ? PALETTE.rare : rarity === 'magic' ? PALETTE.magic : 0xa9a396
   const beam = new THREE.Mesh(
     new THREE.CylinderGeometry(0.07, 0.07, 1.4, 6),
     new THREE.MeshBasicMaterial({ color: colour, transparent: true, opacity: 0.55 }),
   )
-  beam.position.set(ground.pos.x, 0.7, ground.pos.y)
-  return beam
+  beam.position.y = 0.7
+  group.add(beam)
+  return group
 }
 
-function createOrbMesh(orb: Orb): THREE.Mesh {
-  const mesh = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(0.24, 0),
-    new THREE.MeshStandardMaterial({ color: PALETTE.orb, emissive: PALETTE.orb, emissiveIntensity: 1.8 }),
-  )
-  mesh.position.set(orb.pos.x, 0.55, orb.pos.y)
-  return mesh
+function createOrbMesh(orb: Orb): THREE.Object3D {
+  const group = new THREE.Group()
+  const bottle = spawnModel('orb')
+  bottle.scale.setScalar(0.5)
+  // The kit's bottle is green; an orb restores life, and the glow has to agree.
+  for (const mesh of meshesOf(bottle)) {
+    const material = mesh.material as THREE.MeshStandardMaterial
+    material.color.setHex(PALETTE.orb)
+    material.emissive.setHex(PALETTE.orb)
+    material.emissiveIntensity = 1.4
+  }
+  group.add(bottle)
+
+  const glow = new THREE.PointLight(PALETTE.orb, 2.2, 4, 2)
+  glow.position.y = 0.3
+  group.add(glow)
+  group.position.set(orb.pos.x, 0.55, orb.pos.y)
+  return group
 }

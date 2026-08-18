@@ -214,3 +214,14 @@ canvas {
     box-shadow: 0 0 0 4px rgb(242 106 31 / 0.18);
   }
 }
+
+#loading {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #e6e3da;
+  background: #0b0d12;
+  font: 14px ui-monospace, SFMono-Regular, Menlo, monospace;
+  z-index: 30;
+}
