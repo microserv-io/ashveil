@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { grantKillXp, type XpRecipient } from '../src/sim/leveling'
+import { allocatePassiveNode, grantKillXp, type Advancement } from '../src/sim/leveling'
 import { Sim } from '../src/sim/sim'
 
-function recipient(sim: Sim): XpRecipient {
+/** Hangs off the root and grants flat life, so its effect is visible on the actor. */
+const LIFE_NODE = 'ward_1'
+
+function recipient(sim: Sim): Advancement {
   return {
     playerId: sim.localPlayerId,
     character: sim.progress,
@@ -65,5 +68,28 @@ describe('levelling up', () => {
 
     expect(actor.stats.maxLife).toBeGreaterThan(maxBefore)
     expect(actor.life).toBe(actor.stats.maxLife)
+  })
+})
+
+describe('spending a passive point', () => {
+  it('re-resolves the wearer and hands over any life the node added', () => {
+    const sim = new Sim({ seed: 4 })
+    sim.progress.passivePoints = 1
+    const actor = sim.player
+    const maxBefore = actor.stats.maxLife
+    actor.life = maxBefore
+
+    const events = allocatePassiveNode(recipient(sim), LIFE_NODE)
+
+    expect(events.map((event) => event.kind)).toEqual(['passive_allocated'])
+    expect(actor.stats.maxLife).toBeGreaterThan(maxBefore)
+    expect(actor.life).toBe(actor.stats.maxLife)
+  })
+
+  it('does nothing without a point to spend', () => {
+    const sim = new Sim({ seed: 4 })
+    sim.progress.passivePoints = 0
+
+    expect(allocatePassiveNode(recipient(sim), LIFE_NODE)).toEqual([])
   })
 })

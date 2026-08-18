@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ITEM_PICKUP_RANGE, equipFromBag, pickUpGroundItem, type ItemHolder } from '../src/sim/equipment'
+import { rollItem } from '../src/sim/items'
 import { Sim } from '../src/sim/sim'
 import type { GroundItem } from '../src/sim/types'
 import { add, vec2 } from '../src/sim/vec2'
@@ -9,8 +10,7 @@ function holder(sim: Sim): ItemHolder {
 }
 
 function dropNear(sim: Sim, gap: number): GroundItem {
-  const item = sim.grantItem('rusted_axe', 4, 'rare')
-  sim.progress.inventory.push(item)
+  const item = rollItem('rusted_axe', 4, 'rare', sim.rng, sim.mint)
   return { id: 9001, item, pos: add(sim.player.pos, vec2(gap, 0)), droppedAt: sim.time }
 }
 
@@ -46,7 +46,7 @@ describe('picking loot off the floor', () => {
 describe('equipping', () => {
   it('takes the item out of the bag and re-resolves the wearer stats', () => {
     const sim = new Sim({ seed: 11 })
-    const item = sim.grantItem('rusted_axe', 20, 'rare')
+    const item = rollItem('rusted_axe', 20, 'rare', sim.rng, sim.mint)
     sim.progress.inventory.push(item)
     let recomputed = 0
 
