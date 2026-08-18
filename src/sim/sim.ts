@@ -488,7 +488,7 @@ export class Sim {
         this.advanceDash(actor)
         continue
       }
-      if (actor.windup > 0 || actor.recovery > 0) {
+      if (this.mobilityOf(actor) === 0 && (actor.windup > 0 || actor.recovery > 0)) {
         actor.velocity = vec2()
         continue
       }
@@ -642,7 +642,7 @@ export class Sim {
     actor.state = 'acting'
     if (def.cooldown > 0) actor.cooldowns[id] = def.cooldown
     if (distance(aim, actor.pos) > 0.05) actor.facing = angleOf(sub(aim, actor.pos))
-    this.clearPath(actor)
+    if ((def.mobility ?? 0) === 0) this.clearPath(actor)
     this.events.push({ kind: 'skill_used', actorId: actor.id, skill: id, aim: clone(aim) })
     return true
   }
@@ -778,15 +778,15 @@ export class Sim {
     if (magnitude < 1e-3) {
       player.moveDirection = null
       if (player.state === 'moving') player.state = 'idle'
-      if (facing !== undefined) player.facing = facing
+      if (facing !== undefined && !this.isActing(player)) player.facing = facing
       return
     }
-    if (facing === undefined) player.facing = Math.atan2(direction.y, direction.x)
+    if (facing === undefined && !this.isActing(player)) player.facing = Math.atan2(direction.y, direction.x)
     // Direct input wins over a queued click destination rather than fighting it.
     if (player.path.length > 0) this.clearPath(player)
     player.moveDirection = { x: direction.x, y: direction.y }
     player.moveDirectionExpiry = this.time + DIRECT_MOVE_GRACE
-    if (facing !== undefined) player.facing = facing
+    if (facing !== undefined && !this.isActing(player)) player.facing = facing
   }
 
   /** Analog steering: no path, no waypoints, just push and slide along what blocks. */
@@ -800,7 +800,7 @@ export class Sim {
     const before = clone(actor.pos)
     this.nudge(actor, scale(unit, speed * DT))
     actor.velocity = scale(sub(actor.pos, before), 1 / DT)
-    actor.state = 'moving'
+    if (!this.isActing(actor)) actor.state = 'moving'
   }
 
   /**
@@ -841,8 +841,10 @@ export class Sim {
     const gapBefore = distance(before, next)
     this.nudge(actor, step)
     actor.velocity = scale(sub(actor.pos, before), 1 / DT)
-    if (direction.x !== 0 || direction.y !== 0) actor.facing = angleOf(direction)
-    actor.state = 'moving'
+    // Mid-skill the body stays pointed at what it is casting at, so a walking cast
+    // strafes rather than turning its back on the target.
+    if (!this.isActing(actor) && (direction.x !== 0 || direction.y !== 0)) actor.facing = angleOf(direction)
+    if (!this.isActing(actor)) actor.state = 'moving'
 
     this.trackStuck(actor, gapBefore - distance(actor.pos, next), speed * DT)
   }
@@ -889,11 +891,21 @@ export class Sim {
   }
 
   private effectiveMoveSpeed(actor: Actor): number {
-    let speed = actor.stats.moveSpeed
+    let speed = actor.stats.moveSpeed * (this.isActing(actor) ? this.mobilityOf(actor) : 1)
     for (const ailment of actor.ailments) {
       if (ailment.kind === 'chilled') speed *= 1 - ailment.magnitude
     }
     return speed
+  }
+
+  private isActing(actor: Actor): boolean {
+    return actor.windup > 0 || actor.recovery > 0
+  }
+
+  /** How much of its speed an actor keeps mid-skill. Rooted unless the skill says so. */
+  private mobilityOf(actor: Actor): number {
+    if (!actor.activeSkill) return 0
+    return skillDef(actor.activeSkill).mobility ?? 0
   }
 
   /** Wall-aware translation: slides along the blocking axis instead of stopping dead. */

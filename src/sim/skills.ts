@@ -37,6 +37,9 @@ export const SKILLS: Record<SkillId, SkillDef> = {
     projectileRadius: 0.35,
     pierce: 0,
     ailmentChance: 0.25,
+    // A bolt is aimed, not swung: walking while you throw it costs accuracy of
+    // position, not of the shot, so it is the one skill that reads right in motion.
+    mobility: 0.5,
   },
 
   frost_nova: {
