@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ashveil — CC0 art spike</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #0b0d12;
+        color: #e6e3da;
+        font: 13px ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      #stage {
+        position: fixed;
+        inset: 0;
+      }
+      #panel {
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        padding: 10px 14px;
+        white-space: pre;
+        background: rgba(11, 13, 18, 0.72);
+        border: 1px solid #2a2f3a;
+        border-radius: 6px;
+        pointer-events: none;
+      }
+      #credit {
+        position: fixed;
+        bottom: 10px;
+        left: 12px;
+        opacity: 0.55;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="panel">loading…</div>
+    <div id="credit">KayKit by Kay Lousberg — CC0 1.0</div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

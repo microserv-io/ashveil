@@ -29,6 +29,7 @@ Small dependency set on purpose.
 | `src/ui/` | HUD, gear panel, passive tree. |
 | `headless/run.ts` | The CLI harness: `playtest`, `sweep`, `dps`, `trace`. |
 | `spike/deck/` | Shell diagnostics for the Steam Deck decision. Shell-agnostic on purpose. |
+| `spike/art/` | CC0 art evaluation: the real mapgen rendered with a candidate asset kit. |
 | `tests/` | Vitest, including the architecture guards that enforce the invariants below. |
 | `docs/architecture.md` | Why the architecture is shaped this way: netcode model, layering, zones, economy. Read before structural work. |
 | `docs/quality.md` | How work gets done: red/green, what must have a test, module-first, the gate, what to look for in review. |
@@ -44,6 +45,7 @@ Small dependency set on purpose.
 - `npm run sim -- trace --seed 7 --every 2` prints a second-by-second readout.
 - `npm run gate` is typecheck, tests and build. `npm run gate:balance` adds a sweep.
 - `npm run spike:dev` serves the Deck shell diagnostics on :5274.
+- `npm run art:dev` fetches the CC0 kit and serves the art spike on :5275.
 
 In dev the browser exposes `globalThis.ashveil` as `{ sim, host, view, controls }`,
 which is the fastest way to poke at a live game from the console.
@@ -149,9 +151,11 @@ Do not add these as drive-by improvements; each is a decision that has been made
 deferred, and several would change the balance the loop is tuned around.
 
 Flasks and potions, currency and crafting, more than one character archetype, skill
-gems and supports, uniques, trade, a real endgame, sound, and art. Meshes are
-coloured primitives on purpose: the question this build answers is whether the loop
-is worth dressing up.
+gems and supports, uniques, trade, a real endgame, and sound.
+
+Art is now scoped rather than deferred: the game still renders coloured primitives,
+but `spike/art/` evaluates a CC0 kit against the real mapgen and the open issue
+records which one and why. Do not wire assets into `src/render/` before that lands.
 
 Netcode is also not built. The seams are in (`docs/architecture.md`), the wire is not.
 
