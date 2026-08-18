@@ -224,6 +224,11 @@ export interface SkillDef {
   pierce?: number
   /** Chance to apply the type's ailment on hit. */
   ailmentChance?: number
+  /**
+   * Fraction of move speed kept while winding up or recovering. Absent means rooted,
+   * which is the genre's default and the reason committing to a swing is a decision.
+   */
+  mobility?: number
   dashSpeed?: number
   /** Telegraph in seconds a monster shows before a big hit, so it can be dodged. */
   telegraph?: number

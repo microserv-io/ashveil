@@ -114,10 +114,16 @@ Two things to know before reading the output:
 - **`trace` is the debugging tool**, and its `moved` column has found three real bugs.
   A run where the bot is stuck shows `state=moving` with `moved` near zero.
 
-Bot policies live in `src/sim/harness.ts`: `brawler` plays with a cursor, `twinstick`
+Bot policies live in `src/sim/policies.ts`: `brawler` plays with a cursor, `twinstick`
 with a stick, `punching-bag` never fights back so monster lethality can be measured,
-`runner` skips combat so "can packs be outrun" can be answered. Add a policy to ask a
-new question rather than bending an existing one.
+`runner` skips combat so "can packs be outrun" can be answered, `kiter` retreats while
+it shoots so mobile skills can be judged. Add a policy to ask a new question rather
+than bending an existing one.
+
+**Check the bot can express the change before trusting a sweep.** Every policy except
+`kiter` stops issuing intents while acting, so none of them could measure mobility at
+all: the sweep moved by ~1 kill/min and said nothing. A flat sweep means "inert,
+untested, or unmeasurable by this bot", and the third is the easiest one to miss.
 
 ## Conventions
 
@@ -125,6 +131,9 @@ new question rather than bending an existing one.
   function over a comment. One or two lines, never a paragraph.
 - Data-as-code: skills, monsters, affixes, passives and zone rules are tables in
   `src/sim/`, not logic. Add content by adding a row.
+- **Rooting is the default.** A skill roots you unless its row sets `mobility`, and
+  monster skills must never set it or their wind-up tell stops being dodgeable.
+  `tests/mobility.test.ts` guards both.
 - Tests assert that the loop closes, not exact numbers, so tuning does not break them.
   The exception is `tests/damage.test.ts`, which pins the damage pipeline by hand.
 - Presentation is a projection. Dropping a frame of effects must never change the

@@ -22,8 +22,9 @@ const BUDGETS: Readonly<Record<string, number>> = {
   // actor construction are the remaining extraction targets, and none of them need
   // the tick's private state either.
   'src/sim/sim.ts': 1290,
-  // Bot policies plus metrics. The policies want their own module.
-  'src/sim/harness.ts': 700,
+  // Metrics and probes. The policies moved to policies.ts when the kiter landed.
+  'src/sim/harness.ts': 420,
+  'src/sim/policies.ts': 400,
   'src/ui/hud.ts': 520,
   // Actor bodies moved to actorview.ts and terrain to terrain.ts when art landed.
   'src/render/views.ts': 290,
