@@ -4,3 +4,4 @@ workspaces/
 .DS_Store
 *.local
 .vite/
+spike/art/assets/
