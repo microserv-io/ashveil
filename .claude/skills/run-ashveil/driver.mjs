@@ -83,7 +83,7 @@ const onScreen = (at) => [Math.max(4, Math.min(VIEWPORT.width - 4, at.x)), Math.
 // ---------------------------------------------------------------------------
 
 async function open() {
-  const browser = await chromium.launch()
+  const browser = await chromium.launch({ args: ['--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist'] })
   const page = await browser.newPage({ viewport: VIEWPORT })
   const errors = []
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
@@ -114,13 +114,18 @@ async function beginPlaying(page) {
 }
 
 /**
- * Chase and engage. Rotates to the next-nearest target when progress stalls: the
- * closest monster in a straight line is often behind a wall with no route to it, and
- * a bot that only ever picks the nearest one stands there until the steps run out.
+ * Chase and engage. Rotates to the next-nearest target only when the gap to the
+ * current one stops closing: the closest monster in a straight line is regularly
+ * behind a wall with no route to it.
+ *
+ * Judge progress by the gap, never by distance walked. A target far enough away to
+ * project off-screen pins the cursor to the viewport edge, so the player closes it
+ * at a crawl — fast enough to arrive, far too slow to look like movement.
  */
 async function chase(page, kind, steps, stop) {
   let rank = 0
-  let sinceProgress = 0
+  let stalled = 0
+  let closest = Infinity
   let last = await state(page)
 
   for (let step = 0; step < steps; step++) {
@@ -133,11 +138,14 @@ async function chase(page, kind, steps, stop) {
 
     const now = await state(page)
     if (stop && (await stop(now))) return true
-    const moved = Math.hypot(now.pos[0] - last.pos[0], now.pos[1] - last.pos[1])
-    if (now.kills > last.kills || now.bag > last.bag || moved > 0.6) sinceProgress = 0
-    else if (++sinceProgress >= 20) {
+
+    if (now.kills > last.kills || now.bag > last.bag || at.gap < closest - 0.15) {
+      stalled = 0
+      closest = Math.min(closest, at.gap)
+    } else if (++stalled >= 40) {
       rank++
-      sinceProgress = 0
+      stalled = 0
+      closest = Infinity
     }
     last = now
   }
