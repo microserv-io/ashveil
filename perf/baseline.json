@@ -1,0 +1,262 @@
+{
+  "seed": 7,
+  "policy": "brawler",
+  "frames": 2400,
+  "viewport": {
+    "width": 1600,
+    "height": 757,
+    "pixelRatio": 1
+  },
+  "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4, Unspecified Version)",
+  "softwareRasterised": false,
+  "advanceMs": {
+    "p50": 0.1,
+    "p95": 0.2,
+    "p99": 0.3,
+    "max": 2.6
+  },
+  "presentMs": {
+    "p50": 2.9,
+    "p95": 3.5,
+    "p99": 3.9,
+    "max": 37.1
+  },
+  "frameMs": {
+    "p50": 3,
+    "p95": 3.6,
+    "p99": 3.9,
+    "max": 37.1
+  },
+  "presentedDeltaMs": {
+    "p50": 10,
+    "p95": 17.7,
+    "p99": 27.3,
+    "max": 38.2
+  },
+  "scene": {
+    "drawCalls": 288,
+    "triangles": 824882,
+    "worstDrawCalls": 342
+  },
+  "overBudget": {
+    "count": 1,
+    "share": 0.0004166666666666667
+  },
+  "worstFrames": [
+    {
+      "tick": 1074,
+      "ms": 37.1,
+      "drawCalls": 288,
+      "monsters": 51,
+      "spawned": 0,
+      "phases": {
+        "sync": 0.7999999523162842,
+        "effects": 0,
+        "overlay": 0,
+        "hud": 0.10000002384185791,
+        "render": 36.199999928474426
+      },
+      "programs": 30,
+      "heapMb": 73,
+      "depth": 1
+    },
+    {
+      "tick": 328,
+      "ms": 12.9,
+      "drawCalls": 292,
+      "monsters": 56,
+      "spawned": 0,
+      "phases": {
+        "sync": 1.2999999523162842,
+        "effects": 0,
+        "overlay": 0,
+        "hud": 0,
+        "render": 11.5
+      },
+      "programs": 26,
+      "heapMb": 62,
+      "depth": 1
+    },
+    {
+      "tick": 420,
+      "ms": 7.9,
+      "drawCalls": 325,
+      "monsters": 55,
+      "spawned": 0,
+      "phases": {
+        "sync": 1.399999976158142,
+        "effects": 0,
+        "overlay": 0.10000002384185791,
+        "hud": 0,
+        "render": 4.799999952316284
+      },
+      "programs": 26,
+      "heapMb": 56,
+      "depth": 1
+    },
+    {
+      "tick": 360,
+      "ms": 6.2,
+      "drawCalls": 292,
+      "monsters": 56,
+      "spawned": 0,
+      "phases": {
+        "sync": 1.3000000715255737,
+        "effects": 0,
+        "overlay": 0,
+        "hud": 0,
+        "render": 2.299999952316284
+      },
+      "programs": 26,
+      "heapMb": 50,
+      "depth": 1
+    },
+    {
+      "tick": 2404,
+      "ms": 5.1,
+      "drawCalls": 247,
+      "monsters": 45,
+      "spawned": 0,
+      "phases": {
+        "sync": 1.100000023841858,
+        "effects": 0,
+        "overlay": 0.10000002384185791,
+        "hud": 0,
+        "render": 3.399999976158142
+      },
+      "programs": 30,
+      "heapMb": 55,
+      "depth": 1
+    },
+    {
+      "tick": 421,
+      "ms": 4.5,
+      "drawCalls": 324,
+      "monsters": 55,
+      "spawned": 0,
+      "phases": {
+        "sync": 1,
+        "effects": 0,
+        "overlay": 0.10000002384185791,
+        "hud": 0,
+        "render": 3.3000000715255737
+      },
+      "programs": 26,
+      "heapMb": 56,
+      "depth": 1
+    },
+    {
+      "tick": 329,
+      "ms": 4.4,
+      "drawCalls": 292,
+      "monsters": 56,
+      "spawned": 0,
+      "phases": {
+        "sync": 0.9000000953674316,
+        "effects": 0,
+        "overlay": 0,
+        "hud": 0,
+        "render": 3.5
+      },
+      "programs": 26,
+      "heapMb": 62,
+      "depth": 1
+    },
+    {
+      "tick": 1496,
+      "ms": 4.3,
+      "drawCalls": 276,
+      "monsters": 47,
+      "spawned": 0,
+      "phases": {
+        "sync": 0.9000000953674316,
+        "effects": 0,
+        "overlay": 0.19999992847442627,
+        "hud": 0,
+        "render": 3.100000023841858
+      },
+      "programs": 30,
+      "heapMb": 60,
+      "depth": 1
+    },
+    {
+      "tick": 957,
+      "ms": 4.2,
+      "drawCalls": 217,
+      "monsters": 53,
+      "spawned": 0,
+      "phases": {
+        "sync": 1.3000000715255737,
+        "effects": 0,
+        "overlay": 0.10000002384185791,
+        "hud": 0,
+        "render": 2.6999999284744263
+      },
+      "programs": 26,
+      "heapMb": 45,
+      "depth": 1
+    },
+    {
+      "tick": 1732,
+      "ms": 4.2,
+      "drawCalls": 291,
+      "monsters": 47,
+      "spawned": 0,
+      "phases": {
+        "sync": 1.100000023841858,
+        "effects": 0,
+        "overlay": 0.10000002384185791,
+        "hud": 0,
+        "render": 2.899999976158142
+      },
+      "programs": 30,
+      "heapMb": 71,
+      "depth": 1
+    },
+    {
+      "tick": 422,
+      "ms": 4.1,
+      "drawCalls": 320,
+      "monsters": 55,
+      "spawned": 0,
+      "phases": {
+        "sync": 1.100000023841858,
+        "effects": 0,
+        "overlay": 0,
+        "hud": 0.10000002384185791,
+        "render": 2.6999999284744263
+      },
+      "programs": 26,
+      "heapMb": 60,
+      "depth": 1
+    },
+    {
+      "tick": 529,
+      "ms": 4.1,
+      "drawCalls": 312,
+      "monsters": 54,
+      "spawned": 0,
+      "phases": {
+        "sync": 1.2999999523162842,
+        "effects": 0,
+        "overlay": 0.10000002384185791,
+        "hud": 0,
+        "render": 2.600000023841858
+      },
+      "programs": 26,
+      "heapMb": 62,
+      "depth": 1
+    }
+  ],
+  "workload": {
+    "ticks": 2580,
+    "depth": 1,
+    "monstersKilled": 11,
+    "level": 3,
+    "deaths": 0
+  },
+  "machine": {
+    "cpu": "Apple M4",
+    "platform": "darwin"
+  }
+}

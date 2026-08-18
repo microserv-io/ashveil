@@ -1,12 +1,14 @@
 import './style.css'
 import { Effects } from './render/fx'
 import { Controls } from './render/input'
+import { FrameLoop } from './render/loop'
 import { loadModels } from './render/models'
+import { prewarmShaders } from './render/prewarm'
 import { WorldOverlay } from './render/overlay'
 import { SceneHost } from './render/scene'
 import { WorldView } from './render/views'
 import { Sim } from './sim/sim'
-import { DT, type SimEvent } from './sim/types'
+import { type SimEvent } from './sim/types'
 import { Hud } from './ui/hud'
 
 const app = document.getElementById('app')
@@ -37,63 +39,30 @@ const hud = new Hud(
 const controls = new Controls(host.renderer.domElement, host)
 
 host.buildTerrain(sim.map)
+prewarmShaders(host)
 hud.consume(sim.events)
 applyUiScale(false)
 
 globalThis.addEventListener('resize', () => host.resize())
 
-const MAX_STEPS_PER_FRAME = 5
-let accumulator = 0
+const loop = new FrameLoop({ sim, host, view, effects, overlay, hud }, feelEvents)
 let previous = performance.now()
 
 function frame(now: number): void {
   const delta = Math.min(0.25, (now - previous) / 1000)
   previous = now
 
-  // Queue a frame's worth of input once, then advance the sim on its own fixed
-  // clock. The sim never sees the render rate.
+  // Queue a frame's worth of input once; the loop owns the fixed-step clock.
   const { intents, ui } = controls.poll(sim, hud.panelOpen)
   for (const action of ui) hud.handleUi(action)
   for (const intent of intents) sim.queue(intent)
   hud.setScheme(controls.scheme, controls.profile)
   applyUiScale(controls.padConnected)
 
-  accumulator += delta
-  let steps = 0
-  while (accumulator >= DT && steps < MAX_STEPS_PER_FRAME) {
-    const depthBefore = sim.depth
-    sim.tick()
-    handleEvents(depthBefore)
-    accumulator -= DT
-    steps++
-  }
-  if (steps === MAX_STEPS_PER_FRAME) accumulator = 0
-
-  view.sync(sim, delta)
-  view.updateAimIndicator(sim, controls.aimPreview.point, controls.aimPreview.targetId)
-  effects.update(delta)
-  overlay.update(sim, delta)
-  hud.update(sim)
-  host.followPlayer(sim.player.pos, delta)
-  host.render()
+  loop.advance(delta)
+  loop.present(delta, controls.aimPreview)
 
   requestAnimationFrame(frame)
-}
-
-function handleEvents(depthBefore: number): void {
-  const events = sim.events
-  if (events.length === 0) return
-
-  effects.consume(sim, events)
-  overlay.consume(sim, events)
-  hud.consume(events)
-  feelEvents(events)
-
-  if (sim.depth !== depthBefore) {
-    host.buildTerrain(sim.map)
-    view.clearArea()
-    overlay.clearArea()
-  }
 }
 
 /**

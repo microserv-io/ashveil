@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import type { Sim } from '../sim/sim'
 import type { EntityId, SimEvent } from '../sim/types'
 import { DAMAGE_CSS, RARITY_CSS } from './palette'
-import type { SceneHost } from './scene'
+import type { SceneHost, ScreenPoint } from './scene'
 
 interface FloatingNumber {
   element: HTMLElement
@@ -64,6 +64,10 @@ export class WorldOverlay {
     })
   }
 
+  /** Reused by every projection below; each result is consumed before the next call. */
+  private readonly screen: ScreenPoint = { x: 0, y: 0, visible: false }
+  private readonly live = new Set<EntityId>()
+
   update(sim: Sim, delta: number): void {
     this.updateNumbers(delta)
     this.updateLoot(sim)
@@ -80,17 +84,20 @@ export class WorldOverlay {
         continue
       }
       const progress = 1 - number.life / number.maxLife
-      const world = number.world.clone()
-      world.y += progress * 1.5
-      world.x += number.drift * progress
-      const screen = this.host.project(world)
+      const screen = this.host.project(
+        number.world.x + number.drift * progress,
+        number.world.y + progress * 1.5,
+        number.world.z,
+        this.screen,
+      )
       number.element.style.transform = `translate(-50%, -50%) translate(${screen.x}px, ${screen.y}px)`
       number.element.style.opacity = String(Math.min(1, (1 - progress) * 2.2))
     }
   }
 
   private updateLoot(sim: Sim): void {
-    const live = new Set<EntityId>()
+    const live = this.live
+    live.clear()
 
     for (const ground of sim.groundItems) {
       live.add(ground.id)
@@ -108,7 +115,7 @@ export class WorldOverlay {
         this.root.appendChild(label)
         this.lootLabels.set(ground.id, label)
       }
-      const screen = this.host.project(new THREE.Vector3(ground.pos.x, 1.1, ground.pos.y))
+      const screen = this.host.project(ground.pos.x, 1.1, ground.pos.y, this.screen)
       label.style.transform = `translate(-50%, -50%) translate(${screen.x}px, ${screen.y}px)`
       const inRange = Math.hypot(ground.pos.x - sim.player.pos.x, ground.pos.y - sim.player.pos.y) <= 2.6
       label.classList.toggle('in-range', inRange)
@@ -123,7 +130,8 @@ export class WorldOverlay {
   }
 
   private updateHealthBars(sim: Sim): void {
-    const live = new Set<EntityId>()
+    const live = this.live
+    live.clear()
 
     for (const actor of sim.actors) {
       if (actor.kind !== 'monster' || actor.dead) continue
@@ -144,7 +152,7 @@ export class WorldOverlay {
       }
 
       const height = actor.radius * 2.6 + 0.7
-      const screen = this.host.project(new THREE.Vector3(actor.pos.x, height, actor.pos.y))
+      const screen = this.host.project(actor.pos.x, height, actor.pos.y, this.screen)
       bar.root.style.transform = `translate(-50%, -50%) translate(${screen.x}px, ${screen.y}px)`
       bar.root.style.display = screen.visible ? '' : 'none'
       bar.fill.style.width = `${Math.max(0, (actor.life / actor.stats.maxLife) * 100)}%`
