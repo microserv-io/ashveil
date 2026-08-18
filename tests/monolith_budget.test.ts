@@ -18,10 +18,10 @@ import { describe, expect, it } from 'vitest'
  * affixes and passives are correctly large. This is about logic, never data.
  */
 const BUDGETS: Readonly<Record<string, number>> = {
-  // The tick coordinator. The largest file in the repo and the top extraction
-  // target: loot, progression, equipment and area transitions all still live here
-  // and none of them need the tick's private state.
-  'src/sim/sim.ts': 1400,
+  // The tick coordinator. Still the largest file in the repo; skills, movement and
+  // actor construction are the remaining extraction targets, and none of them need
+  // the tick's private state either.
+  'src/sim/sim.ts': 1290,
   // Bot policies plus metrics. The policies want their own module.
   'src/sim/harness.ts': 700,
   'src/ui/hud.ts': 520,

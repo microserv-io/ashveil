@@ -43,6 +43,10 @@ spend a tick reacting to a corpse whose `dead` flag has not been set yet.
 | `monsters.ts` | archetypes, rarity scaling, monster modifier pool |
 | `ai.ts` | monster state machine: aggro, pack alerting, leashing, retreat |
 | `items.ts` | bases, tiered affix pools, rolling; local vs global mods |
+| `drops.ts` | what a corpse leaves on the floor: scatter, ground items, orbs |
+| `equipment.ts` | the floor-to-body path: pickup range and equipping from the bag |
+| `leveling.ts` | the instance half of progression: kill xp, level-ups, passive spend |
+| `transitions.ts` | generating the next area and putting players back on their feet |
 | `loot.ts` | drop tables per monster rarity |
 | `mapgen.ts` | rooms, corridors, pack placement; also the tile queries |
 | `pathfind.ts` | `NavGrid` (per-radius passability) and 8-way A* with string pulling |
