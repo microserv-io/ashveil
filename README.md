@@ -94,6 +94,23 @@ time actually went (idle / moving / acting / dead).
 distance moved, path cursor and current target. Three real bugs were found by reading
 its `moved` column: the fix history is in the git log.
 
+## The frame budget
+
+A frame has 16.67ms to advance the sim and draw it. `npm run perf` plays a fixed seed
+against a bot in real Chrome and reports where that time went, against a baseline
+recorded on the machine it runs on.
+
+```bash
+npm run perf                  # measure and compare
+npm run perf -- --record      # this is the new baseline
+npm run perf -- --headed      # watch it play
+```
+
+It measures CPU cost per frame rather than an fps counter, because rAF is paced by
+the compositor: it reads ~48fps on an empty page on a busy machine and 60 on an idle
+one, whichever way the game is performing. Nearly all of the cost is in drawing —
+advancing the sim is about 0.1ms of the frame.
+
 Bot policies live in `src/sim/harness.ts` — `brawler` plays the intended loop with a
 cursor, `twinstick` plays it with a stick, `punching-bag` never fights back (so monster
 lethality can be measured), and `runner` skips combat entirely (so "can packs be
