@@ -156,6 +156,10 @@ Each of these cost real debugging time.
 - **The `play` run is not deterministic** even at a fixed seed, because wall-clock timing
   decides how many frames land between inputs. Kill counts vary run to run, which is why
   the assertions check `> 0` rather than an exact number.
+- **Never trust fps from a headless browser.** Chromium falls back to SwiftShader
+  software rasterisation, which reported 8fps on a scene the GPU runs at 86. Check
+  with `gl.getParameter(WEBGL_debug_renderer_info.UNMASKED_RENDERER_WEBGL)`; launch
+  with `--use-angle=metal --enable-gpu --ignore-gpu-blocklist` to get real numbers.
 - **Normal monsters only drop 22% of the time.** A short fight can legitimately end with
   a bare floor, so `play` fails with "dropped nothing" rather than pretending the loot
   path is broken. Retry or raise `--steps`.
