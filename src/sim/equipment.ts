@@ -17,11 +17,7 @@ export interface ItemHolder {
 }
 
 /** Splices the item out of `groundItems` on success, leaves it there otherwise. */
-export function pickUpGroundItem(
-  holder: ItemHolder,
-  groundItems: GroundItem[],
-  groundItemId: EntityId,
-): SimEvent[] {
+export function pickUpGroundItem(holder: ItemHolder, groundItems: GroundItem[], groundItemId: EntityId): SimEvent[] {
   const index = groundItems.findIndex((ground) => ground.id === groundItemId)
   if (index === -1) return []
   const ground = groundItems[index]!
@@ -40,11 +36,7 @@ export function pickUpGroundItem(
   ]
 }
 
-export function equipFromBag(
-  holder: ItemHolder,
-  itemId: ItemId,
-  recomputeStats: (actor: Actor) => void,
-): SimEvent[] {
+export function equipFromBag(holder: ItemHolder, itemId: ItemId, recomputeStats: (actor: Actor) => void): SimEvent[] {
   const result = equipFromInventory(holder.character, itemId)
   if (!result) return []
   recomputeStats(holder.actor)

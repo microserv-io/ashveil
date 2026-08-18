@@ -376,9 +376,11 @@ export class Sim {
         case 'equip':
           this.equip(slot, actor, intent.itemId)
           break
-        case 'allocate_passive':
-          this.events.push(...allocatePassiveNode(this.advancementOf(slot.id)!, intent.nodeId))
+        case 'allocate_passive': {
+          const advancing = this.advancementOf(slot.id)
+          if (advancing) this.events.push(...allocatePassiveNode(advancing, intent.nodeId))
           break
+        }
         case 'enter_portal':
           // Only a dungeon leads anywhere deeper; a hub or overworld is a place.
           if (this.rules.clearable && distance(actor.pos, this.map.portal) <= PORTAL_RANGE) this.enterNextArea()

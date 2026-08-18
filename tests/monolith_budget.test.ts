@@ -19,7 +19,8 @@ import { describe, expect, it } from 'vitest'
  */
 const BUDGETS: Readonly<Record<string, number>> = {
   // The tick coordinator. Still the largest file in the repo; skills, movement and
-  // actor construction are the remaining extraction targets.
+  // actor construction are the remaining extraction targets, and none of them need
+  // the tick's private state either.
   'src/sim/sim.ts': 1290,
   // Bot policies plus metrics. The policies want their own module.
   'src/sim/harness.ts': 700,
