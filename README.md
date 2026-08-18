@@ -191,5 +191,7 @@ not what the dressing looks like.
 MIT. Client, server, simulation and all — see [LICENSE](LICENSE).
 
 The dependency set is deliberately small and permissively licensed (Three.js, Vite
-and Vitest are all MIT). There are no third-party art or audio assets to attribute:
-every mesh is a coloured primitive generated at runtime.
+and Vitest are all MIT). The art is the KayKit Adventurers, Skeletons and Dungeon
+Remastered packs by Kay Lousberg (kaylousberg.com), released under CC0 1.0: no
+attribution is required, so the credit here is courtesy rather than obligation. The
+models are fetched by `npm run assets` rather than committed. There is no audio.
