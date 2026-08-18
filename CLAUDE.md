@@ -39,7 +39,8 @@ Small dependency set on purpose.
 - `npm run dev` fetches the art if missing, then plays it at http://localhost:5273.
   `?seed=7` reproduces an exact run. `npm run assets` fetches the models on their own.
 - `npm test` runs Vitest. Prefer one file while iterating: `npx vitest run tests/loop.test.ts`.
-- `npm run typecheck` and `npm run build` are the other two gates.
+- `npm run typecheck` and `npm run build` are the other two gates. `build` fetches the
+  art too, so a `dist/` is always a playable one.
 - `npm run sim -- playtest --seed 7 --minutes 6` plays it headless and reports.
 - `npm run sim -- sweep --seeds 8 --minutes 4 [--policy twinstick]` measures across seeds.
 - `npm run sim -- dps` gives per-skill DPS through real skill timings.

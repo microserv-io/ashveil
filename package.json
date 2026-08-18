@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "npm run assets && vite",
-    "build": "vite build",
+    "build": "npm run assets && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

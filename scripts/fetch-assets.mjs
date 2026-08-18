@@ -53,13 +53,18 @@ async function fetchOne(name, url) {
   return { name, bytes: body.length, cached: false }
 }
 
-await mkdir(OUT, { recursive: true })
-const results = await Promise.all(Object.entries(ASSETS).map(([name, url]) => fetchOne(name, url)))
+async function fetchAll() {
+  await mkdir(OUT, { recursive: true })
+  const results = await Promise.all(Object.entries(ASSETS).map(([name, url]) => fetchOne(name, url)))
 
-let total = 0
-for (const { name, bytes, cached } of results.sort((a, b) => b.bytes - a.bytes)) {
-  total += bytes
-  console.log(`  ${cached ? 'cached ' : 'fetched'} ${String(Math.round(bytes / 1024)).padStart(6)} KB  ${name}`)
+  let total = 0
+  for (const { name, bytes, cached } of results.sort((a, b) => b.bytes - a.bytes)) {
+    total += bytes
+    console.log(`  ${cached ? 'cached ' : 'fetched'} ${String(Math.round(bytes / 1024)).padStart(6)} KB  ${name}`)
+  }
+  console.log(`\n${results.length} assets, ${(total / 1024 / 1024).toFixed(1)} MB in ${OUT}`)
+  console.log('KayKit by Kay Lousberg (kaylousberg.com) — CC0 1.0 Universal')
 }
-console.log(`\n${results.length} assets, ${(total / 1024 / 1024).toFixed(1)} MB in ${OUT}`)
-console.log('KayKit by Kay Lousberg (kaylousberg.com) — CC0 1.0 Universal')
+
+// Importing this for its ASSETS table must not download 18MB as a side effect.
+if (import.meta.filename === process.argv[1]) await fetchAll()
