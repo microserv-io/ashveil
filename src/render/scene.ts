@@ -1,9 +1,9 @@
 import * as THREE from 'three'
-import { isFloor } from '../sim/mapgen'
 import type { AreaMap, Vec2 } from '../sim/types'
+import { spawnModel } from './models'
 import { PALETTE } from './palette'
+import { buildTerrain as buildTerrainGeometry } from './terrain'
 
-const WALL_HEIGHT = 2.1
 const CAMERA_OFFSET = new THREE.Vector3(0, 19, 14.5)
 
 export class SceneHost {
@@ -60,8 +60,8 @@ export class SceneHost {
   private keyLight!: THREE.DirectionalLight
 
   /**
-   * Rebuilds terrain for a new area. Floor and walls are instanced: a full area is
-   * a few thousand tiles, and one draw call each keeps the frame budget for effects.
+   * Rebuilds terrain for a new area. `terrain.ts` owns the geometry; this owns the
+   * scene graph it hangs from.
    */
   buildTerrain(map: AreaMap): void {
     if (this.terrain) {
@@ -69,74 +69,10 @@ export class SceneHost {
       disposeGroup(this.terrain)
     }
 
-    const group = new THREE.Group()
-    const floorTiles: { x: number; y: number }[] = []
-    const wallTiles: { x: number; y: number }[] = []
-
-    for (let ty = 0; ty < map.height; ty++) {
-      for (let tx = 0; tx < map.width; tx++) {
-        if (isFloor(map, tx, ty)) {
-          floorTiles.push({ x: tx, y: ty })
-        } else if (touchesFloor(map, tx, ty)) {
-          wallTiles.push({ x: tx, y: ty })
-        }
-      }
-    }
-
-    group.add(this.buildFloor(floorTiles))
-    group.add(this.buildWalls(wallTiles))
+    const group = buildTerrainGeometry(map)
     group.add(buildPortal(map.portal))
-
     this.terrain = group
     this.scene.add(group)
-  }
-
-  private buildFloor(tiles: readonly { x: number; y: number }[]): THREE.InstancedMesh {
-    const geometry = new THREE.BoxGeometry(1, 0.2, 1)
-    const material = new THREE.MeshStandardMaterial({ roughness: 0.95, metalness: 0.02 })
-    const mesh = new THREE.InstancedMesh(geometry, material, tiles.length)
-    mesh.receiveShadow = true
-
-    const matrix = new THREE.Matrix4()
-    const low = new THREE.Color(PALETTE.floorLow)
-    const high = new THREE.Color(PALETTE.floorHigh)
-    const colour = new THREE.Color()
-
-    tiles.forEach((tile, index) => {
-      matrix.setPosition(tile.x + 0.5, -0.1, tile.y + 0.5)
-      mesh.setMatrixAt(index, matrix)
-      // Deterministic per-tile variation so the floor is not a flat sheet.
-      const noise = hash2(tile.x, tile.y)
-      colour.copy(low).lerp(high, noise)
-      mesh.setColorAt(index, colour)
-    })
-    mesh.instanceMatrix.needsUpdate = true
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
-    return mesh
-  }
-
-  private buildWalls(tiles: readonly { x: number; y: number }[]): THREE.InstancedMesh {
-    const geometry = new THREE.BoxGeometry(1, WALL_HEIGHT, 1)
-    const material = new THREE.MeshStandardMaterial({ roughness: 0.85, metalness: 0.05 })
-    const mesh = new THREE.InstancedMesh(geometry, material, tiles.length)
-    mesh.castShadow = true
-    mesh.receiveShadow = true
-
-    const matrix = new THREE.Matrix4()
-    const base = new THREE.Color(PALETTE.wall)
-    const top = new THREE.Color(PALETTE.wallTop)
-    const colour = new THREE.Color()
-
-    tiles.forEach((tile, index) => {
-      const jitter = hash2(tile.x, tile.y)
-      matrix.setPosition(tile.x + 0.5, WALL_HEIGHT / 2 - jitter * 0.25, tile.y + 0.5)
-      mesh.setMatrixAt(index, matrix)
-      colour.copy(base).lerp(top, jitter)
-      mesh.setColorAt(index, colour)
-    })
-    mesh.instanceMatrix.needsUpdate = true
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
-    return mesh
   }
 
   followPlayer(position: Vec2, delta: number): void {
@@ -182,19 +118,15 @@ export class SceneHost {
   }
 }
 
-function touchesFloor(map: AreaMap, tx: number, ty: number): boolean {
-  for (let dy = -1; dy <= 1; dy++) {
-    for (let dx = -1; dx <= 1; dx++) {
-      if (isFloor(map, tx + dx, ty + dy)) return true
-    }
-  }
-  return false
-}
-
 function buildPortal(position: Vec2): THREE.Group {
   const group = new THREE.Group()
   group.position.set(position.x, 0, position.y)
 
+  const stairs = spawnModel('portal')
+  stairs.scale.setScalar(0.4)
+  group.add(stairs)
+
+  // The stairs alone read as scenery; the ring is what says "this is the way out".
   const ring = new THREE.Mesh(
     new THREE.TorusGeometry(1.1, 0.14, 12, 40),
     new THREE.MeshStandardMaterial({ color: PALETTE.portal, emissive: PALETTE.portal, emissiveIntensity: 1.5, roughness: 0.4 }),
@@ -210,11 +142,6 @@ function buildPortal(position: Vec2): THREE.Group {
   return group
 }
 
-/** Stable 0..1 value per tile, so terrain looks the same on every replay. */
-function hash2(x: number, y: number): number {
-  const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453
-  return n - Math.floor(n)
-}
 
 function disposeGroup(group: THREE.Object3D): void {
   group.traverse((child) => {

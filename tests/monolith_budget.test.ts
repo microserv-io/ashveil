@@ -25,10 +25,11 @@ const BUDGETS: Readonly<Record<string, number>> = {
   // Bot policies plus metrics. The policies want their own module.
   'src/sim/harness.ts': 700,
   'src/ui/hud.ts': 520,
-  'src/render/views.ts': 400,
+  // Actor bodies moved to actorview.ts and terrain to terrain.ts when art landed.
+  'src/render/views.ts': 290,
   'src/sim/pathfind.ts': 300,
   'headless/run.ts': 280,
-  'src/render/scene.ts': 280,
+  'src/render/scene.ts': 200,
   'src/render/input.ts': 260,
   'src/sim/mapgen.ts': 260,
 }

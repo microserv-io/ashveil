@@ -1,19 +1,17 @@
 /**
- * Pulls the CC0 art this spike renders.
+ * Pulls the CC0 art the game renders, into `public/models/`.
  *
  * The models are not committed: they are ~20MB of binaries that git would carry
  * forever, and they come from an upstream that is already a stable public archive.
- * Every file below is pinned to a tag so a rerun fetches the same bytes.
  *
- *   node spike/art/fetch-assets.mjs
+ *   npm run assets
  *
  * Source: KayKit by Kay Lousberg (kaylousberg.com), CC0 1.0 Universal.
  */
 import { mkdir, writeFile, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 
-const HERE = import.meta.dirname
-const OUT = join(HERE, 'assets')
+const OUT = join(import.meta.dirname, '..', 'public', 'models')
 
 const RAW = 'https://raw.githubusercontent.com/KayKit-Game-Assets'
 const CHARACTERS = `${RAW}/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf`
@@ -26,18 +24,17 @@ export const ASSETS = {
   'swarm.glb': `${SKELETONS}/Skeleton_Minion.glb`,
   'ranged.glb': `${SKELETONS}/Skeleton_Rogue.glb`,
   'brute.glb': `${SKELETONS}/Skeleton_Warrior.glb`,
-  'caster.glb': `${SKELETONS}/Skeleton_Mage.glb`,
 
   'floor.glb': `${DUNGEON}/floor_tile_large.gltf.glb`,
   'floor_rocks.glb': `${DUNGEON}/floor_tile_large_rocks.gltf.glb`,
   'wall.glb': `${DUNGEON}/wall.gltf.glb`,
-  'wall_corner.glb': `${DUNGEON}/wall_corner.gltf.glb`,
-  'wall_arched.glb': `${DUNGEON}/wall_arched.gltf.glb`,
-  'stairs.glb': `${DUNGEON}/stairs.gltf.glb`,
-  'torch.glb': `${DUNGEON}/torch_lit.gltf.glb`,
-  'chest.glb': `${DUNGEON}/chest.glb`,
-  'barrel.glb': `${DUNGEON}/barrel_large.gltf.glb`,
-  'coin_stack.glb': `${DUNGEON}/coin_stack_large.gltf.glb`,
+  'portal.glb': `${DUNGEON}/stairs.gltf.glb`,
+
+  // Ground items read their rarity from the container they land in.
+  'loot_normal.glb': `${DUNGEON}/box_small.gltf.glb`,
+  'loot_magic.glb': `${DUNGEON}/chest.glb`,
+  'loot_rare.glb': `${DUNGEON}/chest_gold.glb`,
+  'orb.glb': `${DUNGEON}/bottle_A_green.gltf.glb`,
 }
 
 async function fetchOne(name, url) {

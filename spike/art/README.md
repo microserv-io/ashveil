@@ -1,12 +1,17 @@
 # CC0 art spike
 
+**The kit is now in the game** (`src/render/models.ts` and friends). This spike stays
+as the fast way to judge art in isolation, and as the record of how the call was made.
+
 Renders the **real** `generateArea` output with a candidate CC0 asset kit, under the
 game's own camera, lighting, fog and palette. Nothing in `src/` is touched; the spike
 reads the sim the way the renderer does.
 
 ```bash
-npm run art:dev          # fetches ~22MB of CC0 models, serves on :5275
+npm run art:dev          # fetches ~18MB of CC0 models, serves on :5275
 ```
+
+It shares `public/models` with the game rather than keeping a second copy.
 
 Keys: `1`-`8` switch animation state, `[` / `]` rescale characters.
 
