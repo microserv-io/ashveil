@@ -6,6 +6,13 @@ import { buildTerrain as buildTerrainGeometry } from './terrain'
 
 const CAMERA_OFFSET = new THREE.Vector3(0, 19, 14.5)
 
+/** Where a world point landed on screen. Callers own the object so projecting allocates nothing. */
+export interface ScreenPoint {
+  x: number
+  y: number
+  visible: boolean
+}
+
 export class SceneHost {
   readonly renderer: THREE.WebGLRenderer
   readonly scene: THREE.Scene
@@ -14,6 +21,21 @@ export class SceneHost {
 
   private terrain: THREE.Group | null = null
   private readonly cameraTarget = new THREE.Vector3()
+  private readonly cameraDesired = new THREE.Vector3()
+  private readonly projected = new THREE.Vector3()
+  /**
+   * Cached rather than read from the canvas. `clientWidth` forces a synchronous
+   * layout, and the overlay projects once per label per frame in between writing
+   * their transforms: reading it here made every frame a layout thrash.
+   */
+  private viewportWidth = 1
+  private viewportHeight = 1
+  /**
+   * Lives on the scene rather than on the terrain it belongs to. Rebuilding an area
+   * would otherwise change the scene's light count, and three.js recompiles every
+   * shader when that happens — see `lights.ts`.
+   */
+  private readonly portalGlow = new THREE.PointLight(PALETTE.portal, 6, 12, 2)
 
   constructor(canvasParent: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' })
@@ -30,6 +52,7 @@ export class SceneHost {
     this.camera.position.copy(CAMERA_OFFSET)
 
     this.addLights()
+    this.scene.add(this.portalGlow)
     this.resize()
   }
 
@@ -71,15 +94,16 @@ export class SceneHost {
 
     const group = buildTerrainGeometry(map)
     group.add(buildPortal(map.portal))
+    this.portalGlow.position.set(map.portal.x, 1.4, map.portal.y)
     this.terrain = group
     this.scene.add(group)
   }
 
   followPlayer(position: Vec2, delta: number): void {
     this.cameraTarget.set(position.x, 0, position.y)
-    const desired = this.cameraTarget.clone().add(CAMERA_OFFSET)
+    this.cameraDesired.copy(this.cameraTarget).add(CAMERA_OFFSET)
     // Critically damped follow: keeps up without the camera feeling welded on.
-    this.camera.position.lerp(desired, 1 - Math.exp(-9 * delta))
+    this.camera.position.lerp(this.cameraDesired, 1 - Math.exp(-9 * delta))
     this.camera.lookAt(this.cameraTarget)
 
     this.keyLight.position.set(position.x + 12, 26, position.y + 8)
@@ -96,18 +120,20 @@ export class SceneHost {
     return { x: point.x, y: point.z }
   }
 
-  project(position: THREE.Vector3): { x: number; y: number; visible: boolean } {
-    const projected = position.clone().project(this.camera)
-    return {
-      x: (projected.x * 0.5 + 0.5) * this.renderer.domElement.clientWidth,
-      y: (-projected.y * 0.5 + 0.5) * this.renderer.domElement.clientHeight,
-      visible: projected.z < 1,
-    }
+  /** Writes into `out` so the overlay can project every label without allocating. */
+  project(x: number, y: number, z: number, out: ScreenPoint): ScreenPoint {
+    const projected = this.projected.set(x, y, z).project(this.camera)
+    out.x = (projected.x * 0.5 + 0.5) * this.viewportWidth
+    out.y = (-projected.y * 0.5 + 0.5) * this.viewportHeight
+    out.visible = projected.z < 1
+    return out
   }
 
   resize(): void {
     const width = globalThis.innerWidth
     const height = globalThis.innerHeight
+    this.viewportWidth = width
+    this.viewportHeight = height
     this.renderer.setSize(width, height)
     this.camera.aspect = width / height
     this.camera.updateProjectionMatrix()
@@ -134,10 +160,6 @@ function buildPortal(position: Vec2): THREE.Group {
   ring.position.y = 1.3
   ring.name = 'portal-ring'
   group.add(ring)
-
-  const glow = new THREE.PointLight(PALETTE.portal, 6, 12, 2)
-  glow.position.y = 1.4
-  group.add(glow)
 
   return group
 }

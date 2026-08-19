@@ -65,6 +65,7 @@ logic that belongs in a module a test can import directly.
 | **Pinned math** | `tests/damage.test.ts` | Exact numbers, by hand. The damage pipeline is the one place a wrong number is invisible and catastrophic |
 | **Behaviour** | `tests/loop.test.ts`, `tests/multiplayer.test.ts` | That the loop closes and the seams hold, never exact values |
 | **Determinism** | `tests/determinism.test.ts` | Same seed, same run, byte for byte |
+| **Frame budget** | `tests/frame_budget.test.ts`, `npm run perf` | That a frame still fits in 16.67ms. The test pins the sim half headless; `npm run perf` measures the whole frame in real Chrome |
 
 **Behaviour tests assert shape, not magnitude.** `monstersKilled > 30`, not
 `=== 47`. Tuning must not turn the suite red, or the suite becomes the thing people

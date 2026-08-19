@@ -28,6 +28,7 @@ Small dependency set on purpose.
 | `src/render/` | Three.js scene, models, effects, screen overlay, and the input layer (actions, device profiles, gamepad). Reads sim state, never mutates it. `models.ts` loads the kit, `rig.ts` maps sim state to clips, `terrain.ts` builds the dungeon, `actorview.ts` builds one body. |
 | `src/ui/` | HUD, gear panel, passive tree. |
 | `headless/run.ts` | The CLI harness: `playtest`, `sweep`, `dps`, `trace`. |
+| `perf/` | The frame-budget harness: plays the game against itself in real Chrome and reports what each frame cost. `baseline.json` is this machine. |
 | `spike/deck/` | Shell diagnostics for the Steam Deck decision. Shell-agnostic on purpose. |
 | `spike/art/` | CC0 art evaluation: the real mapgen rendered with a candidate asset kit. |
 | `tests/` | Vitest, including the architecture guards that enforce the invariants below. |
@@ -45,7 +46,10 @@ Small dependency set on purpose.
 - `npm run sim -- sweep --seeds 8 --minutes 4 [--policy twinstick]` measures across seeds.
 - `npm run sim -- dps` gives per-skill DPS through real skill timings.
 - `npm run sim -- trace --seed 7 --every 2` prints a second-by-second readout.
-- `npm run gate` is typecheck, tests and build. `npm run gate:balance` adds a sweep.
+- `npm run gate` is typecheck, tests and build. `npm run gate:balance` adds a sweep,
+  `npm run gate:perf` adds the frame budget.
+- `npm run perf` measures the frame against the 60fps budget in real Chrome, and
+  `npm run perf -- --record` makes the current numbers the baseline.
 - `npm run spike:dev` serves the Deck shell diagnostics on :5274.
 - `npm run art:dev` fetches the CC0 kit and serves the art spike on :5275.
 
@@ -140,6 +144,10 @@ untested, or unmeasurable by this bot", and the third is the easiest one to miss
 - Presentation is a projection. Dropping a frame of effects must never change the
   outcome of a run, and swapping every mesh for a model must leave the sweep
   byte-identical per seed. If art moved a number, art is reaching into the sim.
+- **Lights never enter or leave the scene.** Three.js bakes the light count into
+  every shader program, so one light attached to a projectile recompiles all of them
+  mid-fight: that was an 85ms frame. Claim one from `LightPool` in
+  `src/render/lights.ts` instead. `tests/frame_budget.test.ts` guards it.
 - **Every sim state needs a pose.** `tests/rig.test.ts` fails if a new skill has no
   animation, because a missing one renders as a body frozen in its bind pose.
 - **Module-first.** New logic lands as its own tested module behind an existing seam,
@@ -147,6 +155,38 @@ untested, or unmeasurable by this bot", and the third is the easiest one to miss
   coordinator's private mutable state? If no, it is a sibling module every time.
   `tests/monolith_budget.test.ts` pins a line ceiling per coordinator; when you
   extract, **lower the ceiling**. Data tables are exempt, and correctly large.
+
+## The frame budget: 16.67ms, and it is measured
+
+A frame has 16.67ms to advance the sim and draw it. `npm run perf` plays a fixed
+seed against a bot in real Chrome and reports where the time went, comparing against
+`perf/baseline.json` recorded on the machine it runs on.
+
+```bash
+npm run perf                  # measure and compare
+npm run perf -- --record      # this is the new baseline
+npm run perf -- --headed      # watch it play
+```
+
+Two things make it a test rather than a benchmark. The clock is fixed at `DT`, so the
+bot walks the identical run every time. And the report carries a fingerprint of what
+it played: if the bot fought a different fight, the run says the comparison is invalid
+instead of blaming the timings.
+
+**Run `npm run gate:perf` before merging anything that touches `src/render/`.** The
+parts of the budget that survive without a GPU are in `npm run gate`: the sim half of
+the frame, the light-count rule, and that the harness still drives the real loop. The
+frame cost itself needs a real GPU, so it is a machine-local gate and not a CI one —
+a headless runner rasterises in software and the harness refuses to report numbers
+from it.
+
+**Presented fps is not the metric, frame cost is.** rAF is paced by the compositor,
+which reads ~48fps on an empty page on a busy machine and 60 on an idle one whether a
+frame costs 2ms or 15. What is asserted is CPU cost per frame, plus the count of
+frames that missed the budget at all.
+
+`sim advance` is about 0.1ms of the frame; the cost is nearly all in `present`. Sim
+work is cheap here, so a regression is usually something the renderer started doing.
 
 ## Working in parallel
 

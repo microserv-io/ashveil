@@ -5,14 +5,19 @@ import {
   applyDeathFade,
   applyHitFlash,
   applyWindupTell,
-  createActorView,
-  disposeActorView,
   orientActorView,
   type ActorView,
 } from './actorview'
+import { ActorViewPool } from './actorpool'
+import { LightPool } from './lights'
 import { meshesOf, spawnModel } from './models'
 import { PALETTE } from './palette'
 import { rigStateOf } from './rig'
+
+/** Intensities the lights had when they were parented to the things that cast them. */
+const PLAYER_LAMP = 3.2
+const PROJECTILE_LIGHT = 5
+const ORB_LIGHT = 2.2
 
 /**
  * Meshes are a projection of sim state, never a source of truth. Anything the
@@ -27,8 +32,12 @@ export class WorldView {
   private aimArrow: THREE.Mesh | null = null
   private targetRing: THREE.Mesh | null = null
 
+  private readonly lights: LightPool
+  private readonly bodies = new ActorViewPool()
+
   constructor(scene: THREE.Scene) {
     scene.add(this.root)
+    this.lights = new LightPool(scene)
   }
 
   /**
@@ -89,7 +98,12 @@ export class WorldView {
   }
 
   clearArea(): void {
-    for (const view of this.actors.values()) this.root.remove(view.group)
+    // Bodies go back to the pool rather than being dropped: the next area is built
+    // from the same archetypes, so rebuilding them would be pure waste.
+    for (const view of this.actors.values()) {
+      this.root.remove(view.group)
+      this.bodies.release(view)
+    }
     for (const mesh of this.projectiles.values()) this.root.remove(mesh)
     for (const mesh of this.loot.values()) this.root.remove(mesh)
     for (const mesh of this.orbs.values()) this.root.remove(mesh)
@@ -99,21 +113,29 @@ export class WorldView {
     this.orbs.clear()
   }
 
+  /** One scratch set for all four passes: each fills and drains it before the next runs. */
+  private readonly live = new Set<EntityId>()
+
   sync(sim: Sim, delta: number): void {
+    // The player's lamp is claimed first so a volley can never leave them unlit.
+    this.lights.begin()
+    this.lights.place(sim.player.pos.x, 1.6, sim.player.pos.y, PALETTE.playerAccent, PLAYER_LAMP, 9)
     this.syncActors(sim, delta)
     this.syncProjectiles(sim)
     this.syncLoot(sim)
     this.syncOrbs(sim, delta)
+    this.lights.end()
   }
 
   private syncActors(sim: Sim, delta: number): void {
-    const seen = new Set<EntityId>()
+    const seen = this.live
+    seen.clear()
 
     for (const actor of sim.actors) {
       seen.add(actor.id)
       let view = this.actors.get(actor.id)
       if (!view) {
-        view = createActorView(actor)
+        view = this.bodies.acquire(actor)
         this.actors.set(actor.id, view)
         this.root.add(view.group)
         view.group.position.set(actor.pos.x, 0, actor.pos.y)
@@ -143,13 +165,14 @@ export class WorldView {
       const actor = sim.actorById(id)
       if (seen.has(id) && actor && !(actor.dead && view.fadeLeft <= 0)) continue
       this.root.remove(view.group)
-      disposeActorView(view)
+      this.bodies.release(view)
       this.actors.delete(id)
     }
   }
 
   private syncProjectiles(sim: Sim): void {
-    const live = new Set<EntityId>()
+    const live = this.live
+    live.clear()
     for (const projectile of sim.projectiles) {
       live.add(projectile.id)
       let mesh = this.projectiles.get(projectile.id)
@@ -159,6 +182,8 @@ export class WorldView {
         this.root.add(mesh)
       }
       mesh.position.set(projectile.pos.x, 0.85, projectile.pos.y)
+      const colour = projectile.hostile ? PALETTE.lightning : PALETTE.fire
+      this.lights.place(projectile.pos.x, 0.85, projectile.pos.y, colour, PROJECTILE_LIGHT, 6)
     }
     for (const [id, mesh] of this.projectiles) {
       if (live.has(id)) continue
@@ -169,7 +194,8 @@ export class WorldView {
   }
 
   private syncLoot(sim: Sim): void {
-    const live = new Set<EntityId>()
+    const live = this.live
+    live.clear()
     for (const ground of sim.groundItems) {
       live.add(ground.id)
       if (this.loot.has(ground.id)) continue
@@ -185,7 +211,8 @@ export class WorldView {
   }
 
   private syncOrbs(sim: Sim, delta: number): void {
-    const live = new Set<EntityId>()
+    const live = this.live
+    live.clear()
     for (const orb of sim.orbs) {
       live.add(orb.id)
       let mesh = this.orbs.get(orb.id)
@@ -196,6 +223,7 @@ export class WorldView {
       }
       mesh.rotation.y += delta * 2
       mesh.position.y = 0.55 + Math.sin(sim.time * 3 + orb.id) * 0.08
+      this.lights.place(orb.pos.x, mesh.position.y + 0.3, orb.pos.y, PALETTE.orb, ORB_LIGHT, 4)
     }
     for (const [id, mesh] of this.orbs) {
       if (live.has(id)) continue
@@ -211,8 +239,6 @@ function createProjectileMesh(projectile: Projectile): THREE.Mesh {
     new THREE.SphereGeometry(projectile.radius * 1.5, 10, 8),
     new THREE.MeshStandardMaterial({ color: colour, emissive: colour, emissiveIntensity: 2.4 }),
   )
-  const light = new THREE.PointLight(colour, 5, 6, 2)
-  mesh.add(light)
   return mesh
 }
 
@@ -249,9 +275,6 @@ function createOrbMesh(orb: Orb): THREE.Object3D {
   }
   group.add(bottle)
 
-  const glow = new THREE.PointLight(PALETTE.orb, 2.2, 4, 2)
-  glow.position.y = 0.3
-  group.add(glow)
   group.position.set(orb.pos.x, 0.55, orb.pos.y)
   return group
 }

@@ -9,8 +9,12 @@ export interface ActorView {
   group: THREE.Group
   materials: THREE.MeshStandardMaterial[]
   baseColours: THREE.Color[]
+  /** What the kit shipped, so a faded corpse can be handed back looking new. */
+  baseTransparent: boolean[]
   rig: Rig
   fadeLeft: number
+  /** Which pool this body came from; see `actorpool.ts`. */
+  key: string
 }
 
 export const DEATH_FADE = 1.6
@@ -22,6 +26,14 @@ export const DEATH_FADE = 1.6
 const HEIGHT_PER_RADIUS = 1.93
 /** The models face +Z; the sim's zero facing is +X. */
 const MODEL_FACING = Math.PI / 2
+
+/**
+ * Bodies are only interchangeable when every part of their build matches: the model,
+ * the rings a rarity adds, and the scale their radius sets.
+ */
+export function viewKey(actor: Actor): string {
+  return `${modelFor(actor)}|${actor.kind}|${actor.rarity}|${actor.radius.toFixed(2)}`
+}
 
 function modelFor(actor: Actor): ModelName {
   if (actor.kind === 'player') return 'player'
@@ -49,10 +61,8 @@ export function createActorView(actor: Actor): ActorView {
   rig.apply(rigStateOf(actor))
 
   if (actor.kind === 'player') {
-    const lamp = new THREE.PointLight(PALETTE.playerAccent, 3.2, 9, 2)
-    lamp.position.set(0, 1.6, 0)
-    group.add(lamp)
-
+    // The lamp itself comes from the pool in views.ts; a light parented here would
+    // change the scene's light count and recompile every shader.
     // A taller monster standing on top of you would otherwise hide you entirely.
     group.add(groundRing(actor.radius * 1.25, actor.radius * 1.5, PALETTE.playerAccent, 0.85, 5))
   }
@@ -61,7 +71,8 @@ export function createActorView(actor: Actor): ActorView {
     group.add(groundRing(actor.radius * 1.5, actor.radius * 1.9, rarityColour(actor), 0.65, 0))
   }
 
-  return { group, materials, baseColours, rig, fadeLeft: 0 }
+  const baseTransparent = materials.map((material) => material.transparent)
+  return { group, materials, baseColours, baseTransparent, rig, fadeLeft: 0, key: viewKey(actor) }
 }
 
 function rarityColour(actor: Actor): number {
@@ -129,6 +140,20 @@ export function applyDeathFade(view: ActorView, delta: number): void {
     material.transparent = true
     material.opacity = opacity
   }
+}
+
+/** Returns a used body to the state a fresh one would have been in. */
+export function resetActorView(view: ActorView, actor: Actor): void {
+  view.fadeLeft = 0
+  view.group.scale.setScalar(1)
+  view.group.visible = true
+  view.materials.forEach((material, index) => {
+    material.transparent = view.baseTransparent[index] ?? false
+    material.opacity = 1
+    material.emissiveIntensity = 0
+    material.color.copy(view.baseColours[index]!)
+  })
+  view.rig.apply(rigStateOf(actor))
 }
 
 export function disposeActorView(view: ActorView): void {
