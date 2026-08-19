@@ -17,7 +17,8 @@
     "art:dev": "npm run assets && vite --config spike/art/vite.config.ts",
     "perf": "node scripts/perf.mjs",
     "gate": "npm run typecheck && npm run test && npm run build",
-    "gate:balance": "npm run gate && npm run sim -- sweep --seeds 6 --minutes 4"
+    "gate:balance": "npm run gate && npm run sim -- sweep --seeds 6 --minutes 4",
+    "gate:perf": "npm run gate && npm run perf"
   },
   "type": "module",
   "dependencies": {

@@ -45,7 +45,8 @@ Small dependency set on purpose.
 - `npm run sim -- sweep --seeds 8 --minutes 4 [--policy twinstick]` measures across seeds.
 - `npm run sim -- dps` gives per-skill DPS through real skill timings.
 - `npm run sim -- trace --seed 7 --every 2` prints a second-by-second readout.
-- `npm run gate` is typecheck, tests and build. `npm run gate:balance` adds a sweep.
+- `npm run gate` is typecheck, tests and build. `npm run gate:balance` adds a sweep,
+  `npm run gate:perf` adds the frame budget.
 - `npm run perf` measures the frame against the 60fps budget in real Chrome, and
   `npm run perf -- --record` makes the current numbers the baseline.
 - `npm run spike:dev` serves the Deck shell diagnostics on :5274.
@@ -170,6 +171,13 @@ Two things make it a test rather than a benchmark. The clock is fixed at `DT`, s
 bot walks the identical run every time. And the report carries a fingerprint of what
 it played: if the bot fought a different fight, the run says the comparison is invalid
 instead of blaming the timings.
+
+**Run `npm run gate:perf` before merging anything that touches `src/render/`.** The
+parts of the budget that survive without a GPU are in `npm run gate`: the sim half of
+the frame, the light-count rule, and that the harness still drives the real loop. The
+frame cost itself needs a real GPU, so it is a machine-local gate and not a CI one —
+a headless runner rasterises in software and the harness refuses to report numbers
+from it.
 
 **Presented fps is not the metric, frame cost is.** rAF is paced by the compositor,
 which reads ~48fps on an empty page on a busy machine and 60 on an idle one whether a
