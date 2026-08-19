@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# A newer push to the same branch makes the older run irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    name: gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Pinned rather than floating: a moving Node is a CI failure nobody
+          # changed anything to cause. Developers run newer; LTS proves the
+          # floor still works.
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      # The same command a developer runs before calling anything done, so CI
+      # cannot disagree with the local gate about what passing means.
+      - name: npm run gate
+        run: npm run gate
+
+      # The harness is a first-class tool here, not a test fixture: if it stops
+      # running, balance work stops with it, and the suite would not notice.
+      - name: harness smoke test
+        run: npm run sim -- playtest --seed 1 --minutes 1
