@@ -1,6 +1,6 @@
 # Ashveil
 
-An isometric action-RPG in the Diablo / Path of Exile lineage, built core loop first.
+An elevated top-down action-RPG in the Diablo / Path of Exile lineage, built core loop first.
 
 The loop is the product: **pull a pack → spend skills → things die → loot drops → your
 numbers change → go deeper, harder.** Everything else (endgame, crafting, trade,
@@ -178,6 +178,7 @@ which is the curve the loop is supposed to have. Re-measure with
 `npm run sim -- sweep` rather than trusting this paragraph.
 
 Working on this? Start with [CLAUDE.md](CLAUDE.md), then
+[docs/game-design-document.md](docs/game-design-document.md) for player-facing design,
 [docs/architecture.md](docs/architecture.md) for structural work and
 [src/sim/CLAUDE.md](src/sim/CLAUDE.md) before touching the sim.
 

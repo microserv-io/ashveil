@@ -8,7 +8,7 @@
 
 # Ashveil
 
-An isometric action-RPG in the Diablo / Path of Exile lineage, built core loop first.
+An elevated top-down action-RPG in the Diablo / Path of Exile lineage, built core loop first.
 
 The loop is the product: **pull a pack, spend skills, things die, loot drops, your
 numbers change, go deeper and harder.** Everything else hangs off that, and none of
@@ -33,6 +33,7 @@ Small dependency set on purpose.
 | `spike/art/` | CC0 art evaluation: the real mapgen rendered with a candidate asset kit. |
 | `tests/` | Vitest, including the architecture guards that enforce the invariants below. |
 | `docs/architecture.md` | Why the architecture is shaped this way: netcode model, layering, zones, economy. Read before structural work. |
+| `docs/game-design-document.md` | The living design contract: decided rules, leading directions, and open product decisions. |
 | `docs/quality.md` | How work gets done: red/green, what must have a test, module-first, the gate, what to look for in review. |
 
 ## Commands
@@ -59,14 +60,17 @@ which is the fastest way to poke at a live game from the console.
 ## Default task workflow
 
 1. Read `src/sim/CLAUDE.md` if the change touches the sim at all.
-2. Make the change. Keep sim logic out of `render/` and `ui/`.
-3. **Write the failing test first**, and check it fails for the right reason. Bug
+2. Read `docs/game-design-document.md` for player-facing changes. Features must match
+   a decided rule; resolve open design rather than silently choosing a default. If a
+   feature changes the design, update the GDD in the same PR.
+3. Make the change. Keep sim logic out of `render/` and `ui/`.
+4. **Write the failing test first**, and check it fails for the right reason. Bug
    fixes always start with a reproduction: runs are deterministic, so a seed is a
    test waiting to be written. See `docs/quality.md`.
-4. `npm run gate` (typecheck, tests, build) before calling it done.
-5. **If the change could move game feel or balance, run a sweep before and after**
+5. `npm run gate` (typecheck, tests, build) before calling it done.
+6. **If the change could move game feel or balance, run a sweep before and after**
    and put the numbers in the PR. `npm run gate:balance` does both. See below.
-6. Update the docs that went stale: `src/sim/CLAUDE.md` for sim rules,
+7. Update the docs that went stale: `src/sim/CLAUDE.md` for sim rules,
    `docs/architecture.md` for structure, `README.md` for the outside view.
 
 ## Invariants, YOU MUST keep these
