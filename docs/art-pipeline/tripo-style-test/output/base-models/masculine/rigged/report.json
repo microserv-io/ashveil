@@ -74,22 +74,22 @@
         ],
         "tail": [
           0.0,
-          0.012469,
-          0.777536
+          0.01051,
+          0.87907
         ],
-        "roll": 0.0,
+        "roll": -0.0,
         "matrixLocal": [
           1.0,
           0.0,
-          -0.0,
           0.0,
-          -0.0,
-          0.016035,
-          -0.999871,
           0.0,
-          -0.0,
-          0.999871,
-          0.016035,
+          0.0,
+          0.011955,
+          -0.999929,
+          0.0,
+          0.0,
+          0.999929,
+          0.011954,
           0.0,
           0.0,
           0.0,
@@ -103,8 +103,8 @@
         "deform": true,
         "head": [
           0.0,
-          0.012469,
-          0.777536
+          0.01051,
+          0.87907
         ],
         "tail": [
           -0.0,
@@ -118,13 +118,13 @@
           0.0,
           0.0,
           0.0,
-          0.038235,
-          -0.999269,
-          0.012469,
+          0.103979,
+          -0.99458,
+          0.01051,
           0.0,
-          0.999269,
-          0.038235,
-          0.777536,
+          0.99458,
+          0.103979,
+          0.87907,
           0.0,
           0.0,
           0.0,
@@ -157,7 +157,7 @@
           0.019728,
           0.0,
           0.993142,
-          -0.116916,
+          -0.116917,
           0.967244,
           0.0,
           0.0,
@@ -191,7 +191,7 @@
           -0.008372,
           -0.0,
           0.93418,
-          0.356802,
+          0.356801,
           1.205938,
           0.0,
           0.0,
@@ -213,17 +213,17 @@
           0.020663,
           1.569322
         ],
-        "roll": -0.0,
+        "roll": 0.0,
         "matrixLocal": [
           1.0,
+          -0.0,
           0.0,
-          0.0,
-          0.0,
+          -0.0,
           -0.0,
           -0.169425,
           -0.985543,
           0.05473,
-          0.0,
+          -0.0,
           0.985543,
           -0.169425,
           1.371153,
@@ -252,7 +252,7 @@
           1.0,
           -0.0,
           0.0,
-          0.0,
+          -0.0,
           0.0,
           -0.198024,
           -0.980197,
@@ -286,7 +286,7 @@
           0.0,
           1.0,
           0.0,
-          0.0,
+          -0.0,
           -0.0,
           0.0,
           -1.0,
@@ -318,8 +318,8 @@
         "roll": 2.738438,
         "matrixLocal": [
           -0.919828,
-          0.391803,
-          0.020165,
+          0.391804,
+          0.020166,
           0.221326,
           0.0,
           0.051401,
@@ -385,13 +385,13 @@
         ],
         "roll": 2.86201,
         "matrixLocal": [
-          -0.96117,
+          -0.961171,
           0.270079,
           -0.05664,
           0.401192,
           0.0,
           -0.205251,
-          -0.97871,
+          -0.978709,
           0.021153,
           -0.275954,
           -0.940707,
@@ -422,13 +422,13 @@
           0.0,
           -1.0,
           0.0,
+          -0.0,
           0.0,
-          0.0,
-          0.0,
+          -0.0,
           -1.0,
           0.05473,
           1.0,
-          0.0,
+          -0.0,
           0.0,
           1.371153,
           0.0,
@@ -455,7 +455,7 @@
         "matrixLocal": [
           -0.919828,
           -0.391804,
-          -0.020165,
+          -0.020166,
           -0.221326,
           -0.0,
           0.051401,
@@ -561,7 +561,7 @@
           0.135601,
           -0.050544,
           0.100105,
-          0.993693,
+          0.993694,
           0.01051,
           0.045654,
           -0.993692,
@@ -591,11 +591,11 @@
         "matrixLocal": [
           0.990231,
           0.099705,
-          0.097478,
+          0.097479,
           0.153949,
-          -0.099705,
+          -0.099706,
           0.017582,
-          0.994862,
+          0.994864,
           0.046848,
           0.097478,
           -0.994862,
@@ -624,16 +624,16 @@
         "roll": 0.395094,
         "matrixLocal": [
           -0.922961,
-          0.192351,
+          0.192352,
           -0.333384,
           0.194607,
-          0.0,
-          -0.866169,
-          -0.499751,
+          1e-06,
+          -0.86617,
+          -0.499752,
           0.054018,
           -0.384895,
-          -0.46125,
-          0.79944,
+          -0.461251,
+          0.799439,
           0.112667,
           0.0,
           0.0,
@@ -657,13 +657,13 @@
         ],
         "roll": 0.04567,
         "matrixLocal": [
-          0.997677,
+          0.997678,
           -0.050543,
           -0.045654,
           -0.135601,
-          0.050537,
+          0.05054,
           0.100105,
-          0.993684,
+          0.993685,
           0.01051,
           -0.045654,
           -0.993692,
@@ -695,11 +695,11 @@
           -0.099705,
           -0.097478,
           -0.153949,
-          0.099698,
+          0.099701,
           0.017582,
-          0.994854,
+          0.994855,
           0.046848,
-          -0.097479,
+          -0.097478,
           -0.994862,
           0.027351,
           0.518357,
@@ -726,11 +726,11 @@
         "roll": -0.395093,
         "matrixLocal": [
           -0.92296,
-          -0.192349,
+          -0.19235,
           0.333384,
           -0.194607,
-          5e-06,
-          -0.866163,
+          3e-06,
+          -0.866165,
           -0.499745,
           0.054018,
           0.384894,
@@ -744,8 +744,154 @@
         ]
       }
     ],
-    "acceptedMaleRestSignatureSha256": "06b8b7f511219087ffd2843bc91b012651acf6353b0e9260e9709b906b67238f",
-    "rigify": "not_used_direct_fitted_deform_rig_is_less_brittle_for_this_diagnostic"
+    "acceptedMaleRestSignatureSha256": "aa7561f79abbe95a94bd3a0fe345594e824855e6eeb70cdce8ca3c06b3567531",
+    "authoringRig": {
+      "name": "Ashveil_AuthoringRig",
+      "action": "Ashveil_AuthoringStress",
+      "controls": [
+        "CTRL_cog",
+        "CTRL_elbow_pole.L",
+        "CTRL_elbow_pole.R",
+        "CTRL_foot_ik.L",
+        "CTRL_foot_ik.R",
+        "CTRL_hand_ik.L",
+        "CTRL_hand_ik.R",
+        "CTRL_knee_pole.L",
+        "CTRL_knee_pole.R"
+      ],
+      "handoff": "Blender_native_IK_FK_authoring_to_frozen_deform_matrices",
+      "meshBoundToAuthoringRig": false,
+      "bindIkCalibration": {
+        "chains": [
+          {
+            "chain": "arm.L",
+            "space": "authoring_armature",
+            "poleWorld": [
+              0.295708,
+              0.17024,
+              1.159714
+            ],
+            "poleAngleDegrees": -82.0,
+            "poleOffsetFraction": 0.3000000096619365,
+            "targetWorld": [
+              0.401192,
+              0.021153,
+              0.969471
+            ],
+            "actualEndpointWorld": [
+              0.401192,
+              0.021153,
+              0.96947
+            ],
+            "endpointErrorMetres": 1.3838839248572819e-07,
+            "jointTargetWorld": [
+              0.305849,
+              0.065819,
+              1.172984
+            ],
+            "jointErrorMetres": 1.6697841573144542e-05,
+            "authoredTwistDegrees": 0,
+            "maximumBindOrientationErrorDegrees": 0.0,
+            "pass": true
+          },
+          {
+            "chain": "leg.L",
+            "space": "authoring_armature",
+            "poleWorld": [
+              0.045098,
+              0.229677,
+              0.520356
+            ],
+            "poleAngleDegrees": 123.75000000000001,
+            "poleOffsetFraction": 0.3000000251239204,
+            "targetWorld": [
+              0.194607,
+              0.054018,
+              0.112667
+            ],
+            "actualEndpointWorld": [
+              0.194607,
+              0.054018,
+              0.112667
+            ],
+            "endpointErrorMetres": 1.4905817079352256e-07,
+            "jointTargetWorld": [
+              0.153949,
+              0.046848,
+              0.518357
+            ],
+            "jointErrorMetres": 3.334900515691036e-05,
+            "authoredTwistDegrees": 0,
+            "maximumBindOrientationErrorDegrees": 0.0,
+            "pass": true
+          },
+          {
+            "chain": "arm.R",
+            "space": "authoring_armature",
+            "poleWorld": [
+              -0.295708,
+              0.17024,
+              1.159714
+            ],
+            "poleAngleDegrees": -98.0,
+            "poleOffsetFraction": 0.3000000096619365,
+            "targetWorld": [
+              -0.401192,
+              0.021153,
+              0.969471
+            ],
+            "actualEndpointWorld": [
+              -0.401192,
+              0.021153,
+              0.96947
+            ],
+            "endpointErrorMetres": 2.403894931808364e-07,
+            "jointTargetWorld": [
+              -0.305849,
+              0.065819,
+              1.172984
+            ],
+            "jointErrorMetres": 1.6738674080295818e-05,
+            "authoredTwistDegrees": 0,
+            "maximumBindOrientationErrorDegrees": 0.0,
+            "pass": true
+          },
+          {
+            "chain": "leg.R",
+            "space": "authoring_armature",
+            "poleWorld": [
+              -0.045098,
+              0.229677,
+              0.520356
+            ],
+            "poleAngleDegrees": 56.25,
+            "poleOffsetFraction": 0.3000000251239204,
+            "targetWorld": [
+              -0.194607,
+              0.054018,
+              0.112667
+            ],
+            "actualEndpointWorld": [
+              -0.194607,
+              0.054017,
+              0.112667
+            ],
+            "endpointErrorMetres": 7.121543059173196e-07,
+            "jointTargetWorld": [
+              -0.153949,
+              0.046848,
+              0.518357
+            ],
+            "jointErrorMetres": 3.315973868668117e-05,
+            "authoredTwistDegrees": 0,
+            "maximumBindOrientationErrorDegrees": 0.0,
+            "pass": true
+          }
+        ],
+        "pass": true
+      }
+    },
+    "rigify": "not_used_lightweight_Blender_native_control_rig_retained_in_editable_blend"
   },
   "jointFit": {
     "contract": "humanoid.v1",
@@ -1225,13 +1371,13 @@
         "name": "pelvis",
         "targetWorld": [
           0.0,
-          0.012469,
-          0.777536
+          0.01051,
+          0.87907
         ],
         "actualWorld": [
           0.0,
-          0.012469,
-          0.777536
+          0.01051,
+          0.87907
         ],
         "errorVectorMetres": [
           0.0,
@@ -1240,12 +1386,12 @@
         ],
         "errorMetres": 0.0,
         "thresholdMetres": 0.035999999046325684,
-        "derivation": "robust_height_slice_central_cluster",
+        "derivation": "bilateral_hip_midpoint",
         "sourceObjects": [
           "Body"
         ],
         "sourceVertexPairs": [],
-        "sampleCount": 82,
+        "sampleCount": 94,
         "confidence": 1.0,
         "pass": true
       },
@@ -1446,6 +1592,26 @@
     ],
     "pass": true
   },
+  "pelvisCogFit": {
+    "hipMidpointWorld": [
+      0.0,
+      0.01051,
+      0.87907
+    ],
+    "deformPelvisWorld": [
+      -0.0,
+      0.01051,
+      0.87907
+    ],
+    "authoringCogWorld": [
+      0.0,
+      0.01051,
+      0.87907
+    ],
+    "pelvisToHipMidpointMetres": 2.3560806823869524e-08,
+    "cogToHipMidpointMetres": 1.20256069524497e-07,
+    "pass": true
+  },
   "weights": {
     "vertices": 7966,
     "weightedVertices": 7966,
@@ -1557,55 +1723,597 @@
     ],
     "poseChannels": {
       "bind": {
-        "space": "armature_world",
-        "targets": []
+        "space": "Blender_armature_space_Z_up_forward_negative_Y",
+        "targets": [],
+        "ikChains": [],
+        "terminalOrientationIntent": {},
+        "authoringToDeform": [
+          {
+            "bone": "root",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 9.313225746154785e-10
+          },
+          {
+            "bone": "pelvis",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.006850114687239e-08
+          },
+          {
+            "bone": "spine",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 0.0
+          },
+          {
+            "bone": "chest",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 2.7939677238464865e-08
+          },
+          {
+            "bone": "neck",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.301187962038292e-07
+          },
+          {
+            "bone": "head",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.725290298504266e-09
+          },
+          {
+            "bone": "clavicle.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.4901161193847656e-08
+          },
+          {
+            "bone": "upper_arm.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 8.971687092477304e-08
+          },
+          {
+            "bone": "forearm.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.514431838712321e-08
+          },
+          {
+            "bone": "hand.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.3433016637044245e-07
+          },
+          {
+            "bone": "clavicle.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.4901161193847656e-08
+          },
+          {
+            "bone": "upper_arm.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.1944189326376765e-07
+          },
+          {
+            "bone": "forearm.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.1828894262453654e-08
+          },
+          {
+            "bone": "hand.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.828569911354542e-08
+          },
+          {
+            "bone": "thigh.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.143906154658885e-08
+          },
+          {
+            "bone": "shin.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.666000468656264e-08
+          },
+          {
+            "bone": "foot.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.414284955677271e-08
+          },
+          {
+            "bone": "thigh.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.300725890540647e-08
+          },
+          {
+            "bone": "shin.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.006850114687196e-08
+          },
+          {
+            "bone": "foot.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.0719530773294423e-08
+          }
+        ]
       },
       "overhead-reach": {
-        "space": "armature_world",
+        "space": "Blender_armature_space_Z_up_forward_negative_Y",
         "targets": [
           {
             "bone": "hand.L",
             "targetWorld": [
-              0.289338,
-              -0.029473,
-              1.99766
+              0.28987,
+              -0.029029,
+              1.991388
             ]
           },
           {
             "bone": "hand.R",
             "targetWorld": [
-              -0.289338,
-              -0.029473,
-              1.997424
+              -0.28987,
+              -0.029029,
+              1.991152
             ]
+          }
+        ],
+        "ikChains": [
+          {
+            "chain": "arm.L",
+            "space": "authoring_armature",
+            "poleWorld": [
+              0.367535,
+              -0.040966,
+              1.55956
+            ],
+            "poleAngleDegrees": -82.0,
+            "poleOffsetFraction": 0.3000000405448366,
+            "targetWorld": [
+              0.27487,
+              -0.029029,
+              1.794787
+            ],
+            "actualEndpointWorld": [
+              0.27487,
+              -0.02903,
+              1.79479
+            ],
+            "endpointErrorMetres": 3.514866673391686e-06,
+            "jointTargetWorld": [
+              0.318292,
+              -0.020374,
+              1.56997
+            ],
+            "jointErrorMetres": 4.8034169889647876e-05,
+            "authoredTwistDegrees": 0
+          },
+          {
+            "chain": "arm.R",
+            "space": "authoring_armature",
+            "poleWorld": [
+              -0.367535,
+              -0.040966,
+              1.55956
+            ],
+            "poleAngleDegrees": -98.0,
+            "poleOffsetFraction": 0.3000000405448366,
+            "targetWorld": [
+              -0.27487,
+              -0.029029,
+              1.794787
+            ],
+            "actualEndpointWorld": [
+              -0.27487,
+              -0.02903,
+              1.79479
+            ],
+            "endpointErrorMetres": 3.4107921643743216e-06,
+            "jointTargetWorld": [
+              -0.318292,
+              -0.020374,
+              1.56997
+            ],
+            "jointErrorMetres": 4.805742999766769e-05,
+            "authoredTwistDegrees": 0
+          }
+        ],
+        "terminalOrientationIntent": {
+          "hand.L": "palm_neutral_fingers_up",
+          "hand.R": "palm_neutral_fingers_up"
+        },
+        "authoringToDeform": [
+          {
+            "bone": "root",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 9.313225746154785e-10
+          },
+          {
+            "bone": "pelvis",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.006850114687239e-08
+          },
+          {
+            "bone": "spine",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 0.0
+          },
+          {
+            "bone": "chest",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 2.7939677238464865e-08
+          },
+          {
+            "bone": "neck",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.301187962038292e-07
+          },
+          {
+            "bone": "head",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.725290298504266e-09
+          },
+          {
+            "bone": "clavicle.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.5359765386647212e-08
+          },
+          {
+            "bone": "upper_arm.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.2753339684474237e-07
+          },
+          {
+            "bone": "forearm.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.5998159320547414e-07
+          },
+          {
+            "bone": "hand.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.3339712671781986e-07
+          },
+          {
+            "bone": "clavicle.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.5359765386647212e-08
+          },
+          {
+            "bone": "upper_arm.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.2731557704981462e-07
+          },
+          {
+            "bone": "forearm.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.5946026687193282e-07
+          },
+          {
+            "bone": "hand.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.064333243705223e-08
+          },
+          {
+            "bone": "thigh.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.143906154658885e-08
+          },
+          {
+            "bone": "shin.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.666000468656264e-08
+          },
+          {
+            "bone": "foot.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.414284955677271e-08
+          },
+          {
+            "bone": "thigh.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.300725890540647e-08
+          },
+          {
+            "bone": "shin.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.006850114687196e-08
+          },
+          {
+            "bone": "foot.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.0719530773294423e-08
           }
         ]
       },
       "cross-body-reach": {
-        "space": "armature_world",
+        "space": "Blender_armature_space_Z_up_forward_negative_Y",
         "targets": [
           {
             "bone": "hand.L",
             "targetWorld": [
-              -0.016039,
-              -0.248165,
-              1.275492
+              -0.009443,
+              -0.246006,
+              1.275602
             ],
             "role": "lead_cross_body"
+          }
+        ],
+        "ikChains": [
+          {
+            "chain": "arm.L",
+            "space": "authoring_armature",
+            "poleWorld": [
+              0.330037,
+              -0.084983,
+              1.311136
+            ],
+            "poleAngleDegrees": -82.0,
+            "poleOffsetFraction": 0.2999999356410044,
+            "targetWorld": [
+              0.175964,
+              -0.180761,
+              1.279965
+            ],
+            "actualEndpointWorld": [
+              0.175931,
+              -0.180798,
+              1.27995
+            ],
+            "endpointErrorMetres": 5.176920967098804e-05,
+            "jointTargetWorld": [
+              0.386291,
+              -0.092729,
+              1.302684
+            ],
+            "jointErrorMetres": 0.008153848815110663,
+            "authoredTwistDegrees": 0
+          }
+        ],
+        "terminalOrientationIntent": {
+          "hand.L": "lead_palm_neutral_along_reach"
+        },
+        "authoringToDeform": [
+          {
+            "bone": "root",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 9.313225746154785e-10
+          },
+          {
+            "bone": "pelvis",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.006850114687239e-08
+          },
+          {
+            "bone": "spine",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 0.0
+          },
+          {
+            "bone": "chest",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 2.7939677238464865e-08
+          },
+          {
+            "bone": "neck",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.301187962038292e-07
+          },
+          {
+            "bone": "head",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.725290298504266e-09
+          },
+          {
+            "bone": "clavicle.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 2.9802322387695312e-08
+          },
+          {
+            "bone": "upper_arm.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.9097336557472194e-07
+          },
+          {
+            "bone": "forearm.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.4057727354849284e-07
+          },
+          {
+            "bone": "hand.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.210576058124894e-07
+          },
+          {
+            "bone": "clavicle.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.4901161193847656e-08
+          },
+          {
+            "bone": "upper_arm.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.1944189326376765e-07
+          },
+          {
+            "bone": "forearm.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.1828894262453654e-08
+          },
+          {
+            "bone": "hand.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.828569911354542e-08
+          },
+          {
+            "bone": "thigh.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.143906154658885e-08
+          },
+          {
+            "bone": "shin.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.666000468656264e-08
+          },
+          {
+            "bone": "foot.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.414284955677271e-08
+          },
+          {
+            "bone": "thigh.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.300725890540647e-08
+          },
+          {
+            "bone": "shin.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.006850114687196e-08
+          },
+          {
+            "bone": "foot.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.0719530773294423e-08
           }
         ]
       },
       "deep-elbow-bend": {
-        "space": "armature_world",
+        "space": "Blender_armature_space_Z_up_forward_negative_Y",
         "targets": [
           {
             "bone": "forearm.L",
             "flexionTargetDegrees": 135
           }
+        ],
+        "ikChains": [
+          {
+            "chain": "arm.L",
+            "space": "authoring_armature",
+            "poleWorld": [
+              0.369934,
+              -0.02597,
+              1.400599
+            ],
+            "poleAngleDegrees": -82.0,
+            "poleOffsetFraction": 0.2999999684847315,
+            "targetWorld": [
+              0.28216,
+              -0.070718,
+              1.548432
+            ],
+            "actualEndpointWorld": [
+              0.282153,
+              -0.070724,
+              1.548448
+            ],
+            "endpointErrorMetres": 1.8037373993004457e-05,
+            "jointTargetWorld": [
+              0.427391,
+              -0.034026,
+              1.375041
+            ],
+            "jointErrorMetres": 0.005436568015191553,
+            "authoredTwistDegrees": 0
+          }
+        ],
+        "terminalOrientationIntent": {
+          "hand.L": "palm_neutral_toward_same_shoulder"
+        },
+        "authoringToDeform": [
+          {
+            "bone": "root",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 9.313225746154785e-10
+          },
+          {
+            "bone": "pelvis",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.006850114687239e-08
+          },
+          {
+            "bone": "spine",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 0.0
+          },
+          {
+            "bone": "chest",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 2.7939677238464865e-08
+          },
+          {
+            "bone": "neck",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.301187962038292e-07
+          },
+          {
+            "bone": "head",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.725290298504266e-09
+          },
+          {
+            "bone": "clavicle.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.4901161193847656e-08
+          },
+          {
+            "bone": "upper_arm.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.4901161193847656e-08
+          },
+          {
+            "bone": "forearm.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.3328003749250113e-07
+          },
+          {
+            "bone": "hand.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.228781230931777e-07
+          },
+          {
+            "bone": "clavicle.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.4901161193847656e-08
+          },
+          {
+            "bone": "upper_arm.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.1944189326376765e-07
+          },
+          {
+            "bone": "forearm.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.1828894262453654e-08
+          },
+          {
+            "bone": "hand.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.828569911354542e-08
+          },
+          {
+            "bone": "thigh.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.143906154658885e-08
+          },
+          {
+            "bone": "shin.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.666000468656264e-08
+          },
+          {
+            "bone": "foot.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.414284955677271e-08
+          },
+          {
+            "bone": "thigh.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.300725890540647e-08
+          },
+          {
+            "bone": "shin.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.006850114687196e-08
+          },
+          {
+            "bone": "foot.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.0719530773294423e-08
+          }
         ]
       },
       "long-stride": {
-        "space": "armature_world",
+        "space": "Blender_armature_space_Z_up_forward_negative_Y",
         "targets": [
           {
             "bone": "foot.L",
@@ -1625,20 +2333,1436 @@
             ],
             "role": "trail"
           }
+        ],
+        "ikChains": [
+          {
+            "chain": "leg.L",
+            "space": "authoring_armature",
+            "poleWorld": [
+              0.127985,
+              -0.256832,
+              0.558197
+            ],
+            "poleAngleDegrees": 123.75000000000001,
+            "poleOffsetFraction": 0.29999999218018875,
+            "targetWorld": [
+              0.194607,
+              -0.075982,
+              0.162667
+            ],
+            "actualEndpointWorld": [
+              0.194608,
+              -0.075982,
+              0.162652
+            ],
+            "endpointErrorMetres": 1.4556245666134922e-05,
+            "jointTargetWorld": [
+              0.13851,
+              -0.188597,
+              0.550559
+            ],
+            "jointErrorMetres": 0.00029230984537902973,
+            "authoredTwistDegrees": 0
+          },
+          {
+            "chain": "leg.R",
+            "space": "authoring_armature",
+            "poleWorld": [
+              -0.110028,
+              -0.193466,
+              0.493587
+            ],
+            "poleAngleDegrees": 56.25,
+            "poleOffsetFraction": 0.30000002442993845,
+            "targetWorld": [
+              -0.194607,
+              0.054018,
+              0.121667
+            ],
+            "actualEndpointWorld": [
+              -0.194608,
+              0.054019,
+              0.121659
+            ],
+            "endpointErrorMetres": 8.176573474656032e-06,
+            "jointTargetWorld": [
+              -0.136961,
+              -0.079881,
+              0.502504
+            ],
+            "jointErrorMetres": 0.00020696824388060275,
+            "authoredTwistDegrees": 0
+          }
+        ],
+        "terminalOrientationIntent": {
+          "foot.L": "sole_parallel_to_bind_ground",
+          "foot.R": "sole_parallel_to_bind_ground"
+        },
+        "authoringToDeform": [
+          {
+            "bone": "root",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 9.313225746154785e-10
+          },
+          {
+            "bone": "pelvis",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 8.381903171539343e-09
+          },
+          {
+            "bone": "spine",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.143906154658885e-08
+          },
+          {
+            "bone": "chest",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.4901161193850303e-08
+          },
+          {
+            "bone": "neck",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.2383438750054435e-07
+          },
+          {
+            "bone": "head",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 4.284083843232144e-08
+          },
+          {
+            "bone": "clavicle.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.4901161193847656e-08
+          },
+          {
+            "bone": "upper_arm.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.3328003749250113e-07
+          },
+          {
+            "bone": "forearm.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.003425057343598e-08
+          },
+          {
+            "bone": "hand.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.032785304152089e-08
+          },
+          {
+            "bone": "clavicle.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.4901161193847656e-08
+          },
+          {
+            "bone": "upper_arm.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.3348812510944096e-07
+          },
+          {
+            "bone": "forearm.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.2065570608304177e-07
+          },
+          {
+            "bone": "hand.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.3457530638715954e-07
+          },
+          {
+            "bone": "thigh.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 2.9802322387695312e-08
+          },
+          {
+            "bone": "shin.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.0133885226201597e-07
+          },
+          {
+            "bone": "foot.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 2.1073424255447017e-08
+          },
+          {
+            "bone": "thigh.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.501712528671799e-08
+          },
+          {
+            "bone": "shin.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 5.6250649953415616e-08
+          },
+          {
+            "bone": "foot.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.666000468656264e-08
+          }
         ]
       },
       "head-turn": {
-        "space": "armature_world",
+        "space": "Blender_armature_space_Z_up_forward_negative_Y",
         "targets": [
           {
             "bone": "head",
             "worldYawDegrees": 45
+          }
+        ],
+        "ikChains": [],
+        "terminalOrientationIntent": {},
+        "authoringToDeform": [
+          {
+            "bone": "root",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 9.313225746154785e-10
+          },
+          {
+            "bone": "pelvis",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.006850114687239e-08
+          },
+          {
+            "bone": "spine",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 0.0
+          },
+          {
+            "bone": "chest",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 2.7939677238464865e-08
+          },
+          {
+            "bone": "neck",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.2202813740193247e-07
+          },
+          {
+            "bone": "head",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.2181471427338163e-07
+          },
+          {
+            "bone": "clavicle.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.4901161193847656e-08
+          },
+          {
+            "bone": "upper_arm.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 8.971687092477304e-08
+          },
+          {
+            "bone": "forearm.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.514431838712321e-08
+          },
+          {
+            "bone": "hand.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.3433016637044245e-07
+          },
+          {
+            "bone": "clavicle.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.4901161193847656e-08
+          },
+          {
+            "bone": "upper_arm.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.1944189326376765e-07
+          },
+          {
+            "bone": "forearm.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.1828894262453654e-08
+          },
+          {
+            "bone": "hand.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.828569911354542e-08
+          },
+          {
+            "bone": "thigh.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.143906154658885e-08
+          },
+          {
+            "bone": "shin.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 1.666000468656264e-08
+          },
+          {
+            "bone": "foot.L",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.414284955677271e-08
+          },
+          {
+            "bone": "thigh.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.300725890540647e-08
+          },
+          {
+            "bone": "shin.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 6.006850114687196e-08
+          },
+          {
+            "bone": "foot.R",
+            "orientationErrorDegrees": 0.0,
+            "endpointErrorMetres": 3.0719530773294423e-08
           }
         ]
       }
     },
     "diagnosticOnly": true
   },
+  "orientationEvidence": {
+    "measurementSpace": "evaluated_armature_space_after_constant_action_sampling",
+    "maximumUncommandedAxialTwistDegrees": 60,
+    "maximumOverheadBilateralAbsoluteDifferenceDegrees": 15,
+    "maximumConnectedChainGapMetres": 0.001,
+    "minimumPoleOffsetFraction": 0.1,
+    "poses": [
+      {
+        "name": "bind",
+        "frame": 0,
+        "axialTwistDegrees": {},
+        "chainGapsMetres": {
+          "clavicle.L->upper_arm.L": 1.0457388198091238e-07,
+          "upper_arm.L->forearm.L": 9.06402249678704e-08,
+          "forearm.L->hand.L": 1.2300511435493124e-07,
+          "clavicle.R->upper_arm.R": 1.0536712127723508e-07,
+          "upper_arm.R->forearm.R": 1.4919776018337002e-07,
+          "forearm.R->hand.R": 8.823513449972131e-08,
+          "thigh.L->shin.L": 0.0,
+          "shin.L->foot.L": 1.8250120749944284e-08,
+          "thigh.R->shin.R": 6.188917057900187e-08,
+          "shin.R->foot.R": 3.7438704152110554e-08
+        },
+        "bendPlanes": {
+          "arm.L": {
+            "worldNormal": [
+              -0.908158,
+              -0.138395,
+              -0.395089
+            ],
+            "mirrorNormalizedNormal": [
+              -0.908158,
+              -0.138395,
+              -0.395089
+            ]
+          },
+          "leg.L": {
+            "worldNormal": [
+              -0.855833,
+              -0.508499,
+              -0.094758
+            ],
+            "mirrorNormalizedNormal": [
+              -0.855833,
+              -0.508499,
+              -0.094758
+            ]
+          },
+          "arm.R": {
+            "worldNormal": [
+              -0.908158,
+              0.138395,
+              0.395089
+            ],
+            "mirrorNormalizedNormal": [
+              0.908158,
+              0.138395,
+              0.395089
+            ]
+          },
+          "leg.R": {
+            "worldNormal": [
+              -0.855832,
+              0.508499,
+              0.094758
+            ],
+            "mirrorNormalizedNormal": [
+              0.855832,
+              0.508499,
+              0.094758
+            ]
+          }
+        },
+        "authoringToDeform": {
+          "root": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 9.313225746154785e-10
+          },
+          "pelvis": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.006850114687239e-08
+          },
+          "spine": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 0.0
+          },
+          "chest": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 2.7939677238464865e-08
+          },
+          "neck": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.301187962038292e-07
+          },
+          "head": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.725290298504266e-09
+          },
+          "clavicle.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.4901161193847656e-08
+          },
+          "upper_arm.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 8.971687092477304e-08
+          },
+          "forearm.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.514431838712321e-08
+          },
+          "hand.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.3433016637044245e-07
+          },
+          "clavicle.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.4901161193847656e-08
+          },
+          "upper_arm.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.1944189326376765e-07
+          },
+          "forearm.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.1828894262453654e-08
+          },
+          "hand.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.828569911354542e-08
+          },
+          "thigh.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.143906154658885e-08
+          },
+          "shin.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.666000468656264e-08
+          },
+          "foot.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.414284955677271e-08
+          },
+          "thigh.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.300725890540647e-08
+          },
+          "shin.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.006850114687196e-08
+          },
+          "foot.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.0719530773294423e-08
+          }
+        },
+        "ikChains": [],
+        "terminalOrientationIntent": {},
+        "pass": true
+      },
+      {
+        "name": "overhead-reach",
+        "frame": 10,
+        "axialTwistDegrees": {
+          "upper_arm.L": 4.098113501527223e-05,
+          "forearm.L": 1.0245283760923485e-05,
+          "hand.L": 8.196227003054446e-05,
+          "upper_arm.R": -2.049056507757996e-05,
+          "forearm.R": -5.80566079406708e-05,
+          "hand.R": 6.14717025371192e-05
+        },
+        "chainGapsMetres": {
+          "clavicle.L->upper_arm.L": 1.1944189326376765e-07,
+          "upper_arm.L->forearm.L": 1.9579049867686502e-07,
+          "forearm.L->hand.L": 4.059199116108756e-07,
+          "clavicle.R->upper_arm.R": 1.3333208984265686e-07,
+          "upper_arm.R->forearm.R": 2.5509399646177873e-07,
+          "forearm.R->hand.R": 3.948807716369629e-07,
+          "thigh.L->shin.L": 0.0,
+          "shin.L->foot.L": 1.8250120749944284e-08,
+          "thigh.R->shin.R": 6.188917057900187e-08,
+          "shin.R->foot.R": 3.7438704152110554e-08
+        },
+        "bendPlanes": {
+          "arm.L": {
+            "worldNormal": [
+              -0.403025,
+              -0.908183,
+              -0.113022
+            ],
+            "mirrorNormalizedNormal": [
+              -0.403025,
+              -0.908183,
+              -0.113022
+            ]
+          },
+          "leg.L": {
+            "worldNormal": [
+              -0.855833,
+              -0.508499,
+              -0.094758
+            ],
+            "mirrorNormalizedNormal": [
+              -0.855833,
+              -0.508499,
+              -0.094758
+            ]
+          },
+          "arm.R": {
+            "worldNormal": [
+              -0.403024,
+              0.908184,
+              0.113022
+            ],
+            "mirrorNormalizedNormal": [
+              0.403024,
+              0.908184,
+              0.113022
+            ]
+          },
+          "leg.R": {
+            "worldNormal": [
+              -0.855832,
+              0.508499,
+              0.094758
+            ],
+            "mirrorNormalizedNormal": [
+              0.855832,
+              0.508499,
+              0.094758
+            ]
+          }
+        },
+        "authoringToDeform": {
+          "root": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 9.313225746154785e-10
+          },
+          "pelvis": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.006850114687239e-08
+          },
+          "spine": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 0.0
+          },
+          "chest": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 2.7939677238464865e-08
+          },
+          "neck": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.301187962038292e-07
+          },
+          "head": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.725290298504266e-09
+          },
+          "clavicle.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.5359765386647212e-08
+          },
+          "upper_arm.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.2753339684474237e-07
+          },
+          "forearm.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.5998159320547414e-07
+          },
+          "hand.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.3339712671781986e-07
+          },
+          "clavicle.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.5359765386647212e-08
+          },
+          "upper_arm.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.2731557704981462e-07
+          },
+          "forearm.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.5946026687193282e-07
+          },
+          "hand.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.064333243705223e-08
+          },
+          "thigh.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.143906154658885e-08
+          },
+          "shin.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.666000468656264e-08
+          },
+          "foot.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.414284955677271e-08
+          },
+          "thigh.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.300725890540647e-08
+          },
+          "shin.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.006850114687196e-08
+          },
+          "foot.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.0719530773294423e-08
+          }
+        },
+        "ikChains": [
+          {
+            "chain": "arm.L",
+            "space": "authoring_armature",
+            "poleWorld": [
+              0.367535,
+              -0.040966,
+              1.55956
+            ],
+            "poleAngleDegrees": -82.0,
+            "poleOffsetFraction": 0.3000000405448366,
+            "targetWorld": [
+              0.27487,
+              -0.029029,
+              1.794787
+            ],
+            "actualEndpointWorld": [
+              0.27487,
+              -0.02903,
+              1.79479
+            ],
+            "endpointErrorMetres": 3.514866673391686e-06,
+            "jointTargetWorld": [
+              0.318292,
+              -0.020374,
+              1.56997
+            ],
+            "jointErrorMetres": 4.8034169889647876e-05,
+            "authoredTwistDegrees": 0
+          },
+          {
+            "chain": "arm.R",
+            "space": "authoring_armature",
+            "poleWorld": [
+              -0.367535,
+              -0.040966,
+              1.55956
+            ],
+            "poleAngleDegrees": -98.0,
+            "poleOffsetFraction": 0.3000000405448366,
+            "targetWorld": [
+              -0.27487,
+              -0.029029,
+              1.794787
+            ],
+            "actualEndpointWorld": [
+              -0.27487,
+              -0.02903,
+              1.79479
+            ],
+            "endpointErrorMetres": 3.4107921643743216e-06,
+            "jointTargetWorld": [
+              -0.318292,
+              -0.020374,
+              1.56997
+            ],
+            "jointErrorMetres": 4.805742999766769e-05,
+            "authoredTwistDegrees": 0
+          }
+        ],
+        "terminalOrientationIntent": {
+          "hand.L": "palm_neutral_fingers_up",
+          "hand.R": "palm_neutral_fingers_up"
+        },
+        "pass": true
+      },
+      {
+        "name": "cross-body-reach",
+        "frame": 20,
+        "axialTwistDegrees": {
+          "upper_arm.L": 1.3660378328950173e-05,
+          "forearm.L": -2.561321244343162e-05,
+          "hand.L": -3.41509499435233e-06
+        },
+        "chainGapsMetres": {
+          "clavicle.L->upper_arm.L": 1.1920928955078125e-07,
+          "upper_arm.L->forearm.L": 4.3501438429936765e-07,
+          "forearm.L->hand.L": 5.031211082975308e-07,
+          "clavicle.R->upper_arm.R": 1.0536712127723508e-07,
+          "upper_arm.R->forearm.R": 1.4919776018337002e-07,
+          "forearm.R->hand.R": 8.823513449972131e-08,
+          "thigh.L->shin.L": 0.0,
+          "shin.L->foot.L": 1.8250120749944284e-08,
+          "thigh.R->shin.R": 6.188917057900187e-08,
+          "shin.R->foot.R": 3.7438704152110554e-08
+        },
+        "bendPlanes": {
+          "arm.L": {
+            "worldNormal": [
+              -0.077458,
+              0.419757,
+              -0.904325
+            ],
+            "mirrorNormalizedNormal": [
+              -0.077458,
+              0.419757,
+              -0.904325
+            ]
+          },
+          "leg.L": {
+            "worldNormal": [
+              -0.855833,
+              -0.508499,
+              -0.094758
+            ],
+            "mirrorNormalizedNormal": [
+              -0.855833,
+              -0.508499,
+              -0.094758
+            ]
+          },
+          "arm.R": {
+            "worldNormal": [
+              -0.908158,
+              0.138395,
+              0.395089
+            ],
+            "mirrorNormalizedNormal": [
+              0.908158,
+              0.138395,
+              0.395089
+            ]
+          },
+          "leg.R": {
+            "worldNormal": [
+              -0.855832,
+              0.508499,
+              0.094758
+            ],
+            "mirrorNormalizedNormal": [
+              0.855832,
+              0.508499,
+              0.094758
+            ]
+          }
+        },
+        "authoringToDeform": {
+          "root": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 9.313225746154785e-10
+          },
+          "pelvis": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.006850114687239e-08
+          },
+          "spine": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 0.0
+          },
+          "chest": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 2.7939677238464865e-08
+          },
+          "neck": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.301187962038292e-07
+          },
+          "head": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.725290298504266e-09
+          },
+          "clavicle.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 2.9802322387695312e-08
+          },
+          "upper_arm.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.9097336557472194e-07
+          },
+          "forearm.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.4057727354849284e-07
+          },
+          "hand.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.210576058124894e-07
+          },
+          "clavicle.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.4901161193847656e-08
+          },
+          "upper_arm.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.1944189326376765e-07
+          },
+          "forearm.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.1828894262453654e-08
+          },
+          "hand.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.828569911354542e-08
+          },
+          "thigh.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.143906154658885e-08
+          },
+          "shin.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.666000468656264e-08
+          },
+          "foot.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.414284955677271e-08
+          },
+          "thigh.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.300725890540647e-08
+          },
+          "shin.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.006850114687196e-08
+          },
+          "foot.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.0719530773294423e-08
+          }
+        },
+        "ikChains": [
+          {
+            "chain": "arm.L",
+            "space": "authoring_armature",
+            "poleWorld": [
+              0.330037,
+              -0.084983,
+              1.311136
+            ],
+            "poleAngleDegrees": -82.0,
+            "poleOffsetFraction": 0.2999999356410044,
+            "targetWorld": [
+              0.175964,
+              -0.180761,
+              1.279965
+            ],
+            "actualEndpointWorld": [
+              0.175931,
+              -0.180798,
+              1.27995
+            ],
+            "endpointErrorMetres": 5.176920967098804e-05,
+            "jointTargetWorld": [
+              0.386291,
+              -0.092729,
+              1.302684
+            ],
+            "jointErrorMetres": 0.008153848815110663,
+            "authoredTwistDegrees": 0
+          }
+        ],
+        "terminalOrientationIntent": {
+          "hand.L": "lead_palm_neutral_along_reach"
+        },
+        "pass": true
+      },
+      {
+        "name": "deep-elbow-bend",
+        "frame": 30,
+        "axialTwistDegrees": {
+          "upper_arm.L": 6.830189164475087e-06,
+          "forearm.L": -3.9273587731258885e-05,
+          "hand.L": 0.0
+        },
+        "chainGapsMetres": {
+          "clavicle.L->upper_arm.L": 0.0,
+          "upper_arm.L->forearm.L": 2.6656007498500226e-07,
+          "forearm.L->hand.L": 2.6987150723151616e-07,
+          "clavicle.R->upper_arm.R": 1.0536712127723508e-07,
+          "upper_arm.R->forearm.R": 1.4919776018337002e-07,
+          "forearm.R->hand.R": 8.823513449972131e-08,
+          "thigh.L->shin.L": 0.0,
+          "shin.L->foot.L": 1.8250120749944284e-08,
+          "thigh.R->shin.R": 6.188917057900187e-08,
+          "shin.R->foot.R": 3.7438704152110554e-08
+        },
+        "bendPlanes": {
+          "arm.L": {
+            "worldNormal": [
+              -0.313482,
+              -0.840876,
+              -0.441199
+            ],
+            "mirrorNormalizedNormal": [
+              -0.313482,
+              -0.840876,
+              -0.441199
+            ]
+          },
+          "leg.L": {
+            "worldNormal": [
+              -0.855833,
+              -0.508499,
+              -0.094758
+            ],
+            "mirrorNormalizedNormal": [
+              -0.855833,
+              -0.508499,
+              -0.094758
+            ]
+          },
+          "arm.R": {
+            "worldNormal": [
+              -0.908158,
+              0.138395,
+              0.395089
+            ],
+            "mirrorNormalizedNormal": [
+              0.908158,
+              0.138395,
+              0.395089
+            ]
+          },
+          "leg.R": {
+            "worldNormal": [
+              -0.855832,
+              0.508499,
+              0.094758
+            ],
+            "mirrorNormalizedNormal": [
+              0.855832,
+              0.508499,
+              0.094758
+            ]
+          }
+        },
+        "authoringToDeform": {
+          "root": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 9.313225746154785e-10
+          },
+          "pelvis": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.006850114687239e-08
+          },
+          "spine": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 0.0
+          },
+          "chest": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 2.7939677238464865e-08
+          },
+          "neck": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.301187962038292e-07
+          },
+          "head": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.725290298504266e-09
+          },
+          "clavicle.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.4901161193847656e-08
+          },
+          "upper_arm.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.4901161193847656e-08
+          },
+          "forearm.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.3328003749250113e-07
+          },
+          "hand.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.228781230931777e-07
+          },
+          "clavicle.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.4901161193847656e-08
+          },
+          "upper_arm.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.1944189326376765e-07
+          },
+          "forearm.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.1828894262453654e-08
+          },
+          "hand.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.828569911354542e-08
+          },
+          "thigh.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.143906154658885e-08
+          },
+          "shin.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.666000468656264e-08
+          },
+          "foot.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.414284955677271e-08
+          },
+          "thigh.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.300725890540647e-08
+          },
+          "shin.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.006850114687196e-08
+          },
+          "foot.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.0719530773294423e-08
+          }
+        },
+        "ikChains": [
+          {
+            "chain": "arm.L",
+            "space": "authoring_armature",
+            "poleWorld": [
+              0.369934,
+              -0.02597,
+              1.400599
+            ],
+            "poleAngleDegrees": -82.0,
+            "poleOffsetFraction": 0.2999999684847315,
+            "targetWorld": [
+              0.28216,
+              -0.070718,
+              1.548432
+            ],
+            "actualEndpointWorld": [
+              0.282153,
+              -0.070724,
+              1.548448
+            ],
+            "endpointErrorMetres": 1.8037373993004457e-05,
+            "jointTargetWorld": [
+              0.427391,
+              -0.034026,
+              1.375041
+            ],
+            "jointErrorMetres": 0.005436568015191553,
+            "authoredTwistDegrees": 0
+          }
+        ],
+        "terminalOrientationIntent": {
+          "hand.L": "palm_neutral_toward_same_shoulder"
+        },
+        "pass": true
+      },
+      {
+        "name": "long-stride",
+        "frame": 40,
+        "axialTwistDegrees": {
+          "thigh.L": -5.122641880461742e-06,
+          "shin.L": 1.7075472840133443e-06,
+          "foot.L": -1.3660379153179747e-05,
+          "thigh.R": -5.762972108414033e-06,
+          "shin.R": -1.408726348017808e-05,
+          "foot.R": -2.5613209373887003e-05
+        },
+        "chainGapsMetres": {
+          "clavicle.L->upper_arm.L": 1.2731557704981462e-07,
+          "upper_arm.L->forearm.L": 1.3348812510944096e-07,
+          "forearm.L->hand.L": 6.7903571328365e-08,
+          "clavicle.R->upper_arm.R": 1.2753339684474237e-07,
+          "upper_arm.R->forearm.R": 3.332000937312528e-08,
+          "forearm.R->hand.R": 2.1811248612857532e-07,
+          "thigh.L->shin.L": 5.092623081992585e-07,
+          "shin.L->foot.L": 3.405331040032637e-07,
+          "thigh.R->shin.R": 7.051335912991073e-07,
+          "shin.R->foot.R": 5.468061249834008e-07
+        },
+        "bendPlanes": {
+          "arm.L": {
+            "worldNormal": [
+              -0.908158,
+              -0.138395,
+              -0.395089
+            ],
+            "mirrorNormalizedNormal": [
+              -0.908158,
+              -0.138395,
+              -0.395089
+            ]
+          },
+          "leg.L": {
+            "worldNormal": [
+              0.984571,
+              -0.142304,
+              0.101827
+            ],
+            "mirrorNormalizedNormal": [
+              0.984571,
+              -0.142304,
+              0.101827
+            ]
+          },
+          "arm.R": {
+            "worldNormal": [
+              -0.908158,
+              0.138395,
+              0.395089
+            ],
+            "mirrorNormalizedNormal": [
+              0.908158,
+              0.138395,
+              0.395089
+            ]
+          },
+          "leg.R": {
+            "worldNormal": [
+              0.969453,
+              0.23677,
+              -0.064038
+            ],
+            "mirrorNormalizedNormal": [
+              -0.969453,
+              0.23677,
+              -0.064038
+            ]
+          }
+        },
+        "authoringToDeform": {
+          "root": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 9.313225746154785e-10
+          },
+          "pelvis": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 8.381903171539343e-09
+          },
+          "spine": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.143906154658885e-08
+          },
+          "chest": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.4901161193850303e-08
+          },
+          "neck": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.2383438750054435e-07
+          },
+          "head": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 4.284083843232144e-08
+          },
+          "clavicle.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.4901161193847656e-08
+          },
+          "upper_arm.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.3328003749250113e-07
+          },
+          "forearm.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.003425057343598e-08
+          },
+          "hand.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.032785304152089e-08
+          },
+          "clavicle.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.4901161193847656e-08
+          },
+          "upper_arm.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.3348812510944096e-07
+          },
+          "forearm.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.2065570608304177e-07
+          },
+          "hand.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.3457530638715954e-07
+          },
+          "thigh.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 2.9802322387695312e-08
+          },
+          "shin.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.0133885226201597e-07
+          },
+          "foot.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 2.1073424255447017e-08
+          },
+          "thigh.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.501712528671799e-08
+          },
+          "shin.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 5.6250649953415616e-08
+          },
+          "foot.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.666000468656264e-08
+          }
+        },
+        "ikChains": [
+          {
+            "chain": "leg.L",
+            "space": "authoring_armature",
+            "poleWorld": [
+              0.127985,
+              -0.256832,
+              0.558197
+            ],
+            "poleAngleDegrees": 123.75000000000001,
+            "poleOffsetFraction": 0.29999999218018875,
+            "targetWorld": [
+              0.194607,
+              -0.075982,
+              0.162667
+            ],
+            "actualEndpointWorld": [
+              0.194608,
+              -0.075982,
+              0.162652
+            ],
+            "endpointErrorMetres": 1.4556245666134922e-05,
+            "jointTargetWorld": [
+              0.13851,
+              -0.188597,
+              0.550559
+            ],
+            "jointErrorMetres": 0.00029230984537902973,
+            "authoredTwistDegrees": 0
+          },
+          {
+            "chain": "leg.R",
+            "space": "authoring_armature",
+            "poleWorld": [
+              -0.110028,
+              -0.193466,
+              0.493587
+            ],
+            "poleAngleDegrees": 56.25,
+            "poleOffsetFraction": 0.30000002442993845,
+            "targetWorld": [
+              -0.194607,
+              0.054018,
+              0.121667
+            ],
+            "actualEndpointWorld": [
+              -0.194608,
+              0.054019,
+              0.121659
+            ],
+            "endpointErrorMetres": 8.176573474656032e-06,
+            "jointTargetWorld": [
+              -0.136961,
+              -0.079881,
+              0.502504
+            ],
+            "jointErrorMetres": 0.00020696824388060275,
+            "authoredTwistDegrees": 0
+          }
+        ],
+        "terminalOrientationIntent": {
+          "foot.L": "sole_parallel_to_bind_ground",
+          "foot.R": "sole_parallel_to_bind_ground"
+        },
+        "pass": true
+      },
+      {
+        "name": "head-turn",
+        "frame": 50,
+        "axialTwistDegrees": {},
+        "chainGapsMetres": {
+          "clavicle.L->upper_arm.L": 1.0457388198091238e-07,
+          "upper_arm.L->forearm.L": 9.06402249678704e-08,
+          "forearm.L->hand.L": 1.2300511435493124e-07,
+          "clavicle.R->upper_arm.R": 1.0536712127723508e-07,
+          "upper_arm.R->forearm.R": 1.4919776018337002e-07,
+          "forearm.R->hand.R": 8.823513449972131e-08,
+          "thigh.L->shin.L": 0.0,
+          "shin.L->foot.L": 1.8250120749944284e-08,
+          "thigh.R->shin.R": 6.188917057900187e-08,
+          "shin.R->foot.R": 3.7438704152110554e-08
+        },
+        "bendPlanes": {
+          "arm.L": {
+            "worldNormal": [
+              -0.908158,
+              -0.138395,
+              -0.395089
+            ],
+            "mirrorNormalizedNormal": [
+              -0.908158,
+              -0.138395,
+              -0.395089
+            ]
+          },
+          "leg.L": {
+            "worldNormal": [
+              -0.855833,
+              -0.508499,
+              -0.094758
+            ],
+            "mirrorNormalizedNormal": [
+              -0.855833,
+              -0.508499,
+              -0.094758
+            ]
+          },
+          "arm.R": {
+            "worldNormal": [
+              -0.908158,
+              0.138395,
+              0.395089
+            ],
+            "mirrorNormalizedNormal": [
+              0.908158,
+              0.138395,
+              0.395089
+            ]
+          },
+          "leg.R": {
+            "worldNormal": [
+              -0.855832,
+              0.508499,
+              0.094758
+            ],
+            "mirrorNormalizedNormal": [
+              0.855832,
+              0.508499,
+              0.094758
+            ]
+          }
+        },
+        "authoringToDeform": {
+          "root": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 9.313225746154785e-10
+          },
+          "pelvis": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.006850114687239e-08
+          },
+          "spine": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 0.0
+          },
+          "chest": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 2.7939677238464865e-08
+          },
+          "neck": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.2202813740193247e-07
+          },
+          "head": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.2181471427338163e-07
+          },
+          "clavicle.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.4901161193847656e-08
+          },
+          "upper_arm.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 8.971687092477304e-08
+          },
+          "forearm.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.514431838712321e-08
+          },
+          "hand.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.3433016637044245e-07
+          },
+          "clavicle.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.4901161193847656e-08
+          },
+          "upper_arm.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.1944189326376765e-07
+          },
+          "forearm.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.1828894262453654e-08
+          },
+          "hand.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.828569911354542e-08
+          },
+          "thigh.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.143906154658885e-08
+          },
+          "shin.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 1.666000468656264e-08
+          },
+          "foot.L": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.414284955677271e-08
+          },
+          "thigh.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.300725890540647e-08
+          },
+          "shin.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 6.006850114687196e-08
+          },
+          "foot.R": {
+            "orientationDegrees": 0.0,
+            "endpointMetres": 3.0719530773294423e-08
+          }
+        },
+        "ikChains": [],
+        "terminalOrientationIntent": {},
+        "pass": true
+      }
+    ],
+    "pass": true
+  },
+  "bakeVerification": {
+    "reopenedSavedBlend": true,
+    "explicitSpaces": [
+      "armature",
+      "world",
+      "parent_relative_action_channels"
+    ],
+    "maximumSavedMatrixDelta": 0.0,
+    "maximumAuthoringToDeformOrientationDegrees": 0.0,
+    "maximumAuthoringToDeformEndpointMetres": 1.9097336557472194e-07,
+    "deformConstraintCount": 0,
+    "pass": true
+  },
+  "bindGeometryMaximumDeviationMetres": 2.8361180887631e-07,
   "seams": {
     "thresholdMetres": 0.03,
     "maximumBaselineMultiplier": 2,
@@ -2135,7 +4259,7 @@
           },
           {
             "name": "negative-x-hand-body",
-            "maximumMetres": 0.013711389361723602,
+            "maximumMetres": 0.013711388399919273,
             "minimumMetres": 0.008496206136742174,
             "pass": true,
             "pairs": [
@@ -2157,35 +4281,35 @@
                 "primaryVertex": 1991,
                 "secondaryVertex": 795,
                 "baselineMetres": 0.00934117608294397,
-                "distanceMetres": 0.00934117608294397,
+                "distanceMetres": 0.009341177835496641,
                 "pass": true
               },
               {
                 "primaryVertex": 2030,
                 "secondaryVertex": 797,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689743312710305,
+                "distanceMetres": 0.012689742524322251,
                 "pass": true
               },
               {
                 "primaryVertex": 2031,
                 "secondaryVertex": 209,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689743312710305,
+                "distanceMetres": 0.012689742524322251,
                 "pass": true
               },
               {
                 "primaryVertex": 2033,
                 "secondaryVertex": 206,
                 "baselineMetres": 0.01268979660046202,
-                "distanceMetres": 0.01268979660046202,
+                "distanceMetres": 0.012689795417884888,
                 "pass": true
               },
               {
                 "primaryVertex": 2083,
                 "secondaryVertex": 118,
                 "baselineMetres": 0.01275213178470909,
-                "distanceMetres": 0.01275213178470909,
+                "distanceMetres": 0.012752131570746108,
                 "pass": true
               },
               {
@@ -2199,42 +4323,42 @@
                 "primaryVertex": 2078,
                 "secondaryVertex": 507,
                 "baselineMetres": 0.013240395991051741,
-                "distanceMetres": 0.013240395991051741,
+                "distanceMetres": 0.013240395819324494,
                 "pass": true
               },
               {
                 "primaryVertex": 2084,
                 "secondaryVertex": 512,
                 "baselineMetres": 0.013240448264722577,
-                "distanceMetres": 0.013240448264722577,
+                "distanceMetres": 0.013240448127341322,
                 "pass": true
               },
               {
                 "primaryVertex": 2077,
                 "secondaryVertex": 113,
                 "baselineMetres": 0.013507308332627954,
-                "distanceMetres": 0.013507308332627954,
+                "distanceMetres": 0.013507307995960317,
                 "pass": true
               },
               {
                 "primaryVertex": 2075,
                 "secondaryVertex": 116,
                 "baselineMetres": 0.013507359640677598,
-                "distanceMetres": 0.013507359640677598,
+                "distanceMetres": 0.013507359304011242,
                 "pass": true
               },
               {
                 "primaryVertex": 2029,
                 "secondaryVertex": 200,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711389361723602,
+                "distanceMetres": 0.013711388399919273,
                 "pass": true
               }
             ]
           },
           {
             "name": "positive-x-hand-body",
-            "maximumMetres": 0.013711389627048922,
+            "maximumMetres": 0.013711389859208573,
             "minimumMetres": 0.01268974173593415,
             "pass": true,
             "pairs": [
@@ -2263,14 +4387,14 @@
                 "primaryVertex": 4733,
                 "secondaryVertex": 288,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.012689796994654374,
+                "distanceMetres": 0.01268979660046202,
                 "pass": true
               },
               {
                 "primaryVertex": 4749,
                 "secondaryVertex": 258,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.012689796994654374,
+                "distanceMetres": 0.01268979660046202,
                 "pass": true
               },
               {
@@ -2284,14 +4408,14 @@
                 "primaryVertex": 4750,
                 "secondaryVertex": 256,
                 "baselineMetres": 0.01290673111406965,
-                "distanceMetres": 0.012906730867436211,
+                "distanceMetres": 0.012906731642569863,
                 "pass": true
               },
               {
                 "primaryVertex": 4728,
                 "secondaryVertex": 249,
                 "baselineMetres": 0.013240395510215441,
-                "distanceMetres": 0.013240395510215441,
+                "distanceMetres": 0.013240395372833638,
                 "pass": true
               },
               {
@@ -2305,14 +4429,14 @@
                 "primaryVertex": 4726,
                 "secondaryVertex": 248,
                 "baselineMetres": 0.013507307995960317,
-                "distanceMetres": 0.013507307995960317,
+                "distanceMetres": 0.013507307659292674,
                 "pass": true
               },
               {
                 "primaryVertex": 4755,
                 "secondaryVertex": 250,
                 "baselineMetres": 0.013507359169344696,
-                "distanceMetres": 0.013507359169344696,
+                "distanceMetres": 0.01350735903467815,
                 "pass": true
               },
               {
@@ -2326,7 +4450,7 @@
                 "primaryVertex": 4731,
                 "secondaryVertex": 289,
                 "baselineMetres": 0.013711389859208573,
-                "distanceMetres": 0.013711389627048922,
+                "distanceMetres": 0.013711389859208573,
                 "pass": true
               }
             ]
@@ -2537,198 +4661,198 @@
           },
           {
             "name": "negative-x-hand-body",
-            "maximumMetres": 0.013711357388430297,
-            "minimumMetres": 0.008496221262261835,
+            "maximumMetres": 0.01371138424591877,
+            "minimumMetres": 0.008496174015844278,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 1982,
                 "secondaryVertex": 794,
                 "baselineMetres": 0.008496206136742174,
-                "distanceMetres": 0.008496221262261835,
+                "distanceMetres": 0.008496174015844278,
                 "pass": true
               },
               {
                 "primaryVertex": 1992,
                 "secondaryVertex": 796,
                 "baselineMetres": 0.008861832774556575,
-                "distanceMetres": 0.008861786026221338,
+                "distanceMetres": 0.008861854981212301,
                 "pass": true
               },
               {
                 "primaryVertex": 1991,
                 "secondaryVertex": 795,
                 "baselineMetres": 0.00934117608294397,
-                "distanceMetres": 0.009341182533309818,
+                "distanceMetres": 0.009341168999706908,
                 "pass": true
               },
               {
                 "primaryVertex": 2030,
                 "secondaryVertex": 797,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689698908412676,
+                "distanceMetres": 0.01268987695721591,
                 "pass": true
               },
               {
                 "primaryVertex": 2031,
                 "secondaryVertex": 209,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689830249410701,
+                "distanceMetres": 0.012689772751801878,
                 "pass": true
               },
               {
                 "primaryVertex": 2033,
                 "secondaryVertex": 206,
                 "baselineMetres": 0.01268979660046202,
-                "distanceMetres": 0.012689830951563959,
+                "distanceMetres": 0.012689895811123876,
                 "pass": true
               },
               {
                 "primaryVertex": 2083,
                 "secondaryVertex": 118,
                 "baselineMetres": 0.01275213178470909,
-                "distanceMetres": 0.012752165207465636,
+                "distanceMetres": 0.012752141219135706,
                 "pass": true
               },
               {
                 "primaryVertex": 2034,
                 "secondaryVertex": 804,
                 "baselineMetres": 0.012906732135836707,
-                "distanceMetres": 0.012906764135381926,
+                "distanceMetres": 0.012906812634971496,
                 "pass": true
               },
               {
                 "primaryVertex": 2078,
                 "secondaryVertex": 507,
                 "baselineMetres": 0.013240395991051741,
-                "distanceMetres": 0.013240432825421719,
+                "distanceMetres": 0.013240394274852454,
                 "pass": true
               },
               {
                 "primaryVertex": 2084,
                 "secondaryVertex": 512,
                 "baselineMetres": 0.013240448264722577,
-                "distanceMetres": 0.013240446260888022,
+                "distanceMetres": 0.013240501294854224,
                 "pass": true
               },
               {
                 "primaryVertex": 2077,
                 "secondaryVertex": 113,
                 "baselineMetres": 0.013507308332627954,
-                "distanceMetres": 0.013507338851514302,
+                "distanceMetres": 0.013507293961120773,
                 "pass": true
               },
               {
                 "primaryVertex": 2075,
                 "secondaryVertex": 116,
                 "baselineMetres": 0.013507359640677598,
-                "distanceMetres": 0.013507453587096693,
+                "distanceMetres": 0.013507289113100847,
                 "pass": true
               },
               {
                 "primaryVertex": 2029,
                 "secondaryVertex": 200,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711357388430297,
+                "distanceMetres": 0.01371138424591877,
                 "pass": true
               }
             ]
           },
           {
             "name": "positive-x-hand-body",
-            "maximumMetres": 0.013711436121086289,
-            "minimumMetres": 0.012689580982128888,
+            "maximumMetres": 0.013711384726821088,
+            "minimumMetres": 0.012689760733386103,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 4736,
                 "secondaryVertex": 286,
                 "baselineMetres": 0.01268974173593415,
-                "distanceMetres": 0.012689717410105585,
+                "distanceMetres": 0.012689767573536917,
                 "pass": true
               },
               {
                 "primaryVertex": 4739,
                 "secondaryVertex": 261,
                 "baselineMetres": 0.012689742524322251,
-                "distanceMetres": 0.012689580982128888,
+                "distanceMetres": 0.012689760733386103,
                 "pass": true
               },
               {
                 "primaryVertex": 4734,
                 "secondaryVertex": 287,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689717410105585,
+                "distanceMetres": 0.01268977355810592,
                 "pass": true
               },
               {
                 "primaryVertex": 4733,
                 "secondaryVertex": 288,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.012689816114648594,
+                "distanceMetres": 0.012689767121110553,
                 "pass": true
               },
               {
                 "primaryVertex": 4749,
                 "secondaryVertex": 258,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.01268970825403171,
+                "distanceMetres": 0.01268976797668911,
                 "pass": true
               },
               {
                 "primaryVertex": 4752,
                 "secondaryVertex": 252,
                 "baselineMetres": 0.01275213128546213,
-                "distanceMetres": 0.012752081824255624,
+                "distanceMetres": 0.012752146354242369,
                 "pass": true
               },
               {
                 "primaryVertex": 4750,
                 "secondaryVertex": 256,
                 "baselineMetres": 0.01290673111406965,
-                "distanceMetres": 0.012906739970849505,
+                "distanceMetres": 0.012906684658816505,
                 "pass": true
               },
               {
                 "primaryVertex": 4728,
                 "secondaryVertex": 249,
                 "baselineMetres": 0.013240395510215441,
-                "distanceMetres": 0.013240324715465976,
+                "distanceMetres": 0.013240386444086654,
                 "pass": true
               },
               {
                 "primaryVertex": 4751,
                 "secondaryVertex": 254,
                 "baselineMetres": 0.013240448024305379,
-                "distanceMetres": 0.013240451544699643,
+                "distanceMetres": 0.013240616144625563,
                 "pass": true
               },
               {
                 "primaryVertex": 4726,
                 "secondaryVertex": 248,
                 "baselineMetres": 0.013507307995960317,
-                "distanceMetres": 0.013507352553849009,
+                "distanceMetres": 0.013507178332004672,
                 "pass": true
               },
               {
                 "primaryVertex": 4755,
                 "secondaryVertex": 250,
                 "baselineMetres": 0.013507359169344696,
-                "distanceMetres": 0.013507340686348625,
+                "distanceMetres": 0.01350728301730249,
                 "pass": true
               },
               {
                 "primaryVertex": 4738,
                 "secondaryVertex": 263,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711310870806211,
+                "distanceMetres": 0.013711369362812819,
                 "pass": true
               },
               {
                 "primaryVertex": 4731,
                 "secondaryVertex": 289,
                 "baselineMetres": 0.013711389859208573,
-                "distanceMetres": 0.013711436121086289,
+                "distanceMetres": 0.013711384726821088,
                 "pass": true
               }
             ]
@@ -2939,7 +5063,7 @@
           },
           {
             "name": "negative-x-hand-body",
-            "maximumMetres": 0.013711389361723602,
+            "maximumMetres": 0.013711388399919273,
             "minimumMetres": 0.008496206136742174,
             "pass": true,
             "pairs": [
@@ -2961,35 +5085,35 @@
                 "primaryVertex": 1991,
                 "secondaryVertex": 795,
                 "baselineMetres": 0.00934117608294397,
-                "distanceMetres": 0.00934117608294397,
+                "distanceMetres": 0.009341177835496641,
                 "pass": true
               },
               {
                 "primaryVertex": 2030,
                 "secondaryVertex": 797,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689743312710305,
+                "distanceMetres": 0.012689742524322251,
                 "pass": true
               },
               {
                 "primaryVertex": 2031,
                 "secondaryVertex": 209,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689743312710305,
+                "distanceMetres": 0.012689742524322251,
                 "pass": true
               },
               {
                 "primaryVertex": 2033,
                 "secondaryVertex": 206,
                 "baselineMetres": 0.01268979660046202,
-                "distanceMetres": 0.01268979660046202,
+                "distanceMetres": 0.012689795417884888,
                 "pass": true
               },
               {
                 "primaryVertex": 2083,
                 "secondaryVertex": 118,
                 "baselineMetres": 0.01275213178470909,
-                "distanceMetres": 0.01275213178470909,
+                "distanceMetres": 0.012752131570746108,
                 "pass": true
               },
               {
@@ -3003,134 +5127,134 @@
                 "primaryVertex": 2078,
                 "secondaryVertex": 507,
                 "baselineMetres": 0.013240395991051741,
-                "distanceMetres": 0.013240395991051741,
+                "distanceMetres": 0.013240395819324494,
                 "pass": true
               },
               {
                 "primaryVertex": 2084,
                 "secondaryVertex": 512,
                 "baselineMetres": 0.013240448264722577,
-                "distanceMetres": 0.013240448264722577,
+                "distanceMetres": 0.013240448127341322,
                 "pass": true
               },
               {
                 "primaryVertex": 2077,
                 "secondaryVertex": 113,
                 "baselineMetres": 0.013507308332627954,
-                "distanceMetres": 0.013507308332627954,
+                "distanceMetres": 0.013507307995960317,
                 "pass": true
               },
               {
                 "primaryVertex": 2075,
                 "secondaryVertex": 116,
                 "baselineMetres": 0.013507359640677598,
-                "distanceMetres": 0.013507359640677598,
+                "distanceMetres": 0.013507359304011242,
                 "pass": true
               },
               {
                 "primaryVertex": 2029,
                 "secondaryVertex": 200,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711389361723602,
+                "distanceMetres": 0.013711388399919273,
                 "pass": true
               }
             ]
           },
           {
             "name": "positive-x-hand-body",
-            "maximumMetres": 0.013711401873983356,
-            "minimumMetres": 0.012689757320028522,
+            "maximumMetres": 0.013711343477467046,
+            "minimumMetres": 0.012689726501220345,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 4736,
                 "secondaryVertex": 286,
                 "baselineMetres": 0.01268974173593415,
-                "distanceMetres": 0.012689770227621947,
+                "distanceMetres": 0.012689770292574232,
                 "pass": true
               },
               {
                 "primaryVertex": 4739,
                 "secondaryVertex": 261,
                 "baselineMetres": 0.012689742524322251,
-                "distanceMetres": 0.012689757320028522,
+                "distanceMetres": 0.012689726501220345,
                 "pass": true
               },
               {
                 "primaryVertex": 4734,
                 "secondaryVertex": 287,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689770227621947,
+                "distanceMetres": 0.012689781544992644,
                 "pass": true
               },
               {
                 "primaryVertex": 4733,
                 "secondaryVertex": 288,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.012689776821397037,
+                "distanceMetres": 0.012689820888063455,
                 "pass": true
               },
               {
                 "primaryVertex": 4749,
                 "secondaryVertex": 258,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.012689817237311137,
+                "distanceMetres": 0.012689770292574232,
                 "pass": true
               },
               {
                 "primaryVertex": 4752,
                 "secondaryVertex": 252,
                 "baselineMetres": 0.01275213128546213,
-                "distanceMetres": 0.012752136563214726,
+                "distanceMetres": 0.012752120729950384,
                 "pass": true
               },
               {
                 "primaryVertex": 4750,
                 "secondaryVertex": 256,
                 "baselineMetres": 0.01290673111406965,
-                "distanceMetres": 0.012906760119890927,
+                "distanceMetres": 0.012906794639640042,
                 "pass": true
               },
               {
                 "primaryVertex": 4728,
                 "secondaryVertex": 249,
                 "baselineMetres": 0.013240395510215441,
-                "distanceMetres": 0.013240358279694567,
+                "distanceMetres": 0.013240349901524985,
                 "pass": true
               },
               {
                 "primaryVertex": 4751,
                 "secondaryVertex": 254,
                 "baselineMetres": 0.013240448024305379,
-                "distanceMetres": 0.013240402817208055,
+                "distanceMetres": 0.013240469011422458,
                 "pass": true
               },
               {
                 "primaryVertex": 4726,
                 "secondaryVertex": 248,
                 "baselineMetres": 0.013507307995960317,
-                "distanceMetres": 0.013507282409195426,
+                "distanceMetres": 0.013507312694577254,
                 "pass": true
               },
               {
                 "primaryVertex": 4755,
                 "secondaryVertex": 250,
                 "baselineMetres": 0.013507359169344696,
-                "distanceMetres": 0.013507340181348377,
+                "distanceMetres": 0.013507365057322506,
                 "pass": true
               },
               {
                 "primaryVertex": 4738,
                 "secondaryVertex": 263,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711390887344122,
+                "distanceMetres": 0.013711343477467046,
                 "pass": true
               },
               {
                 "primaryVertex": 4731,
                 "secondaryVertex": 289,
                 "baselineMetres": 0.013711389859208573,
-                "distanceMetres": 0.013711401873983356,
+                "distanceMetres": 0.013711331354852226,
                 "pass": true
               }
             ]
@@ -3341,7 +5465,7 @@
           },
           {
             "name": "negative-x-hand-body",
-            "maximumMetres": 0.013711389361723602,
+            "maximumMetres": 0.013711388399919273,
             "minimumMetres": 0.008496206136742174,
             "pass": true,
             "pairs": [
@@ -3363,35 +5487,35 @@
                 "primaryVertex": 1991,
                 "secondaryVertex": 795,
                 "baselineMetres": 0.00934117608294397,
-                "distanceMetres": 0.00934117608294397,
+                "distanceMetres": 0.009341177835496641,
                 "pass": true
               },
               {
                 "primaryVertex": 2030,
                 "secondaryVertex": 797,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689743312710305,
+                "distanceMetres": 0.012689742524322251,
                 "pass": true
               },
               {
                 "primaryVertex": 2031,
                 "secondaryVertex": 209,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689743312710305,
+                "distanceMetres": 0.012689742524322251,
                 "pass": true
               },
               {
                 "primaryVertex": 2033,
                 "secondaryVertex": 206,
                 "baselineMetres": 0.01268979660046202,
-                "distanceMetres": 0.01268979660046202,
+                "distanceMetres": 0.012689795417884888,
                 "pass": true
               },
               {
                 "primaryVertex": 2083,
                 "secondaryVertex": 118,
                 "baselineMetres": 0.01275213178470909,
-                "distanceMetres": 0.01275213178470909,
+                "distanceMetres": 0.012752131570746108,
                 "pass": true
               },
               {
@@ -3405,134 +5529,134 @@
                 "primaryVertex": 2078,
                 "secondaryVertex": 507,
                 "baselineMetres": 0.013240395991051741,
-                "distanceMetres": 0.013240395991051741,
+                "distanceMetres": 0.013240395819324494,
                 "pass": true
               },
               {
                 "primaryVertex": 2084,
                 "secondaryVertex": 512,
                 "baselineMetres": 0.013240448264722577,
-                "distanceMetres": 0.013240448264722577,
+                "distanceMetres": 0.013240448127341322,
                 "pass": true
               },
               {
                 "primaryVertex": 2077,
                 "secondaryVertex": 113,
                 "baselineMetres": 0.013507308332627954,
-                "distanceMetres": 0.013507308332627954,
+                "distanceMetres": 0.013507307995960317,
                 "pass": true
               },
               {
                 "primaryVertex": 2075,
                 "secondaryVertex": 116,
                 "baselineMetres": 0.013507359640677598,
-                "distanceMetres": 0.013507359640677598,
+                "distanceMetres": 0.013507359304011242,
                 "pass": true
               },
               {
                 "primaryVertex": 2029,
                 "secondaryVertex": 200,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711389361723602,
+                "distanceMetres": 0.013711388399919273,
                 "pass": true
               }
             ]
           },
           {
             "name": "positive-x-hand-body",
-            "maximumMetres": 0.013711455626562823,
-            "minimumMetres": 0.012689751931221968,
+            "maximumMetres": 0.013711419807770579,
+            "minimumMetres": 0.01268968249917889,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 4736,
                 "secondaryVertex": 286,
                 "baselineMetres": 0.01268974173593415,
-                "distanceMetres": 0.012689769096556242,
+                "distanceMetres": 0.01268968249917889,
                 "pass": true
               },
               {
                 "primaryVertex": 4739,
                 "secondaryVertex": 261,
                 "baselineMetres": 0.012689742524322251,
-                "distanceMetres": 0.012689753275064216,
+                "distanceMetres": 0.012689742170443507,
                 "pass": true
               },
               {
                 "primaryVertex": 4734,
                 "secondaryVertex": 287,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689755281868375,
+                "distanceMetres": 0.012689773181830708,
                 "pass": true
               },
               {
                 "primaryVertex": 4733,
                 "secondaryVertex": 288,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.01268976775271567,
+                "distanceMetres": 0.012689811794776587,
                 "pass": true
               },
               {
                 "primaryVertex": 4749,
                 "secondaryVertex": 258,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.012689751931221968,
+                "distanceMetres": 0.01268968288441579,
                 "pass": true
               },
               {
                 "primaryVertex": 4752,
                 "secondaryVertex": 252,
                 "baselineMetres": 0.01275213128546213,
-                "distanceMetres": 0.01275209070375095,
+                "distanceMetres": 0.012752071598564091,
                 "pass": true
               },
               {
                 "primaryVertex": 4750,
                 "secondaryVertex": 256,
                 "baselineMetres": 0.01290673111406965,
-                "distanceMetres": 0.012906743128635781,
+                "distanceMetres": 0.012906683769171232,
                 "pass": true
               },
               {
                 "primaryVertex": 4728,
                 "secondaryVertex": 249,
                 "baselineMetres": 0.013240395510215441,
-                "distanceMetres": 0.013240334615591366,
+                "distanceMetres": 0.013240436965109507,
                 "pass": true
               },
               {
                 "primaryVertex": 4751,
                 "secondaryVertex": 254,
                 "baselineMetres": 0.013240448024305379,
-                "distanceMetres": 0.013240447715197546,
+                "distanceMetres": 0.013240373906909344,
                 "pass": true
               },
               {
                 "primaryVertex": 4726,
                 "secondaryVertex": 248,
                 "baselineMetres": 0.013507307995960317,
-                "distanceMetres": 0.013507292576573593,
+                "distanceMetres": 0.013507210193656752,
                 "pass": true
               },
               {
                 "primaryVertex": 4755,
                 "secondaryVertex": 250,
                 "baselineMetres": 0.013507359169344696,
-                "distanceMetres": 0.013507396404593313,
+                "distanceMetres": 0.013507216809222164,
                 "pass": true
               },
               {
                 "primaryVertex": 4738,
                 "secondaryVertex": 263,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711367339704133,
+                "distanceMetres": 0.013711383723559335,
                 "pass": true
               },
               {
                 "primaryVertex": 4731,
                 "secondaryVertex": 289,
                 "baselineMetres": 0.013711389859208573,
-                "distanceMetres": 0.013711455626562823,
+                "distanceMetres": 0.013711419807770579,
                 "pass": true
               }
             ]
@@ -3743,7 +5867,7 @@
           },
           {
             "name": "negative-x-hand-body",
-            "maximumMetres": 0.013711389361723602,
+            "maximumMetres": 0.013711388399919273,
             "minimumMetres": 0.008496206136742174,
             "pass": true,
             "pairs": [
@@ -3765,35 +5889,35 @@
                 "primaryVertex": 1991,
                 "secondaryVertex": 795,
                 "baselineMetres": 0.00934117608294397,
-                "distanceMetres": 0.00934117608294397,
+                "distanceMetres": 0.009341177835496641,
                 "pass": true
               },
               {
                 "primaryVertex": 2030,
                 "secondaryVertex": 797,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689743312710305,
+                "distanceMetres": 0.012689742524322251,
                 "pass": true
               },
               {
                 "primaryVertex": 2031,
                 "secondaryVertex": 209,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689743312710305,
+                "distanceMetres": 0.012689742524322251,
                 "pass": true
               },
               {
                 "primaryVertex": 2033,
                 "secondaryVertex": 206,
                 "baselineMetres": 0.01268979660046202,
-                "distanceMetres": 0.01268979660046202,
+                "distanceMetres": 0.012689795417884888,
                 "pass": true
               },
               {
                 "primaryVertex": 2083,
                 "secondaryVertex": 118,
                 "baselineMetres": 0.01275213178470909,
-                "distanceMetres": 0.01275213178470909,
+                "distanceMetres": 0.012752131570746108,
                 "pass": true
               },
               {
@@ -3807,42 +5931,42 @@
                 "primaryVertex": 2078,
                 "secondaryVertex": 507,
                 "baselineMetres": 0.013240395991051741,
-                "distanceMetres": 0.013240395991051741,
+                "distanceMetres": 0.013240395819324494,
                 "pass": true
               },
               {
                 "primaryVertex": 2084,
                 "secondaryVertex": 512,
                 "baselineMetres": 0.013240448264722577,
-                "distanceMetres": 0.013240448264722577,
+                "distanceMetres": 0.013240448127341322,
                 "pass": true
               },
               {
                 "primaryVertex": 2077,
                 "secondaryVertex": 113,
                 "baselineMetres": 0.013507308332627954,
-                "distanceMetres": 0.013507308332627954,
+                "distanceMetres": 0.013507307995960317,
                 "pass": true
               },
               {
                 "primaryVertex": 2075,
                 "secondaryVertex": 116,
                 "baselineMetres": 0.013507359640677598,
-                "distanceMetres": 0.013507359640677598,
+                "distanceMetres": 0.013507359304011242,
                 "pass": true
               },
               {
                 "primaryVertex": 2029,
                 "secondaryVertex": 200,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711389361723602,
+                "distanceMetres": 0.013711388399919273,
                 "pass": true
               }
             ]
           },
           {
             "name": "positive-x-hand-body",
-            "maximumMetres": 0.013711389627048922,
+            "maximumMetres": 0.013711389859208573,
             "minimumMetres": 0.01268974173593415,
             "pass": true,
             "pairs": [
@@ -3871,14 +5995,14 @@
                 "primaryVertex": 4733,
                 "secondaryVertex": 288,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.012689796994654374,
+                "distanceMetres": 0.01268979660046202,
                 "pass": true
               },
               {
                 "primaryVertex": 4749,
                 "secondaryVertex": 258,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.012689796994654374,
+                "distanceMetres": 0.01268979660046202,
                 "pass": true
               },
               {
@@ -3892,14 +6016,14 @@
                 "primaryVertex": 4750,
                 "secondaryVertex": 256,
                 "baselineMetres": 0.01290673111406965,
-                "distanceMetres": 0.012906730867436211,
+                "distanceMetres": 0.012906731642569863,
                 "pass": true
               },
               {
                 "primaryVertex": 4728,
                 "secondaryVertex": 249,
                 "baselineMetres": 0.013240395510215441,
-                "distanceMetres": 0.013240395510215441,
+                "distanceMetres": 0.013240395372833638,
                 "pass": true
               },
               {
@@ -3913,14 +6037,14 @@
                 "primaryVertex": 4726,
                 "secondaryVertex": 248,
                 "baselineMetres": 0.013507307995960317,
-                "distanceMetres": 0.013507307995960317,
+                "distanceMetres": 0.013507307659292674,
                 "pass": true
               },
               {
                 "primaryVertex": 4755,
                 "secondaryVertex": 250,
                 "baselineMetres": 0.013507359169344696,
-                "distanceMetres": 0.013507359169344696,
+                "distanceMetres": 0.01350735903467815,
                 "pass": true
               },
               {
@@ -3934,7 +6058,7 @@
                 "primaryVertex": 4731,
                 "secondaryVertex": 289,
                 "baselineMetres": 0.013711389859208573,
-                "distanceMetres": 0.013711389627048922,
+                "distanceMetres": 0.013711389859208573,
                 "pass": true
               }
             ]
@@ -3948,7 +6072,7 @@
         "groups": [
           {
             "name": "head-body",
-            "maximumMetres": 0.014769678912150225,
+            "maximumMetres": 0.014769678173208184,
             "minimumMetres": 0.005116333275479485,
             "pass": true,
             "pairs": [
@@ -3970,14 +6094,14 @@
                 "primaryVertex": 880,
                 "secondaryVertex": 1247,
                 "baselineMetres": 0.0051933112255551995,
-                "distanceMetres": 0.005193309977767372,
+                "distanceMetres": 0.005193312429560714,
                 "pass": true
               },
               {
                 "primaryVertex": 879,
                 "secondaryVertex": 1253,
                 "baselineMetres": 0.007290272631365992,
-                "distanceMetres": 0.007290271459842676,
+                "distanceMetres": 0.00729027155633254,
                 "pass": true
               },
               {
@@ -3991,49 +6115,49 @@
                 "primaryVertex": 808,
                 "secondaryVertex": 61,
                 "baselineMetres": 0.009957715411279253,
-                "distanceMetres": 0.009957714583549581,
+                "distanceMetres": 0.009957715839415198,
                 "pass": true
               },
               {
                 "primaryVertex": 812,
                 "secondaryVertex": 65,
                 "baselineMetres": 0.009957715411279253,
-                "distanceMetres": 0.009957715896499995,
+                "distanceMetres": 0.009957715839415198,
                 "pass": true
               },
               {
                 "primaryVertex": 880,
                 "secondaryVertex": 1246,
                 "baselineMetres": 0.010271485416888344,
-                "distanceMetres": 0.010271486258071384,
+                "distanceMetres": 0.010271485593979517,
                 "pass": true
               },
               {
                 "primaryVertex": 814,
                 "secondaryVertex": 66,
                 "baselineMetres": 0.010724754781113413,
-                "distanceMetres": 0.010724754265668284,
+                "distanceMetres": 0.010724755429063681,
                 "pass": true
               },
               {
                 "primaryVertex": 807,
                 "secondaryVertex": 60,
                 "baselineMetres": 0.010724755401237598,
-                "distanceMetres": 0.010724755640740678,
+                "distanceMetres": 0.01072475553473655,
                 "pass": true
               },
               {
                 "primaryVertex": 911,
                 "secondaryVertex": 1240,
                 "baselineMetres": 0.011088449505432986,
-                "distanceMetres": 0.011088448767236667,
+                "distanceMetres": 0.011088450325651058,
                 "pass": true
               },
               {
                 "primaryVertex": 877,
                 "secondaryVertex": 1258,
                 "baselineMetres": 0.01130099230164435,
-                "distanceMetres": 0.011300992583321508,
+                "distanceMetres": 0.011300993083801445,
                 "pass": true
               },
               {
@@ -4054,35 +6178,35 @@
                 "primaryVertex": 806,
                 "secondaryVertex": 1343,
                 "baselineMetres": 0.011612645729045423,
-                "distanceMetres": 0.01161264550265359,
+                "distanceMetres": 0.011612645869469545,
                 "pass": true
               },
               {
                 "primaryVertex": 876,
                 "secondaryVertex": 1256,
                 "baselineMetres": 0.011748470515553465,
-                "distanceMetres": 0.01174847047926571,
+                "distanceMetres": 0.011748470711507352,
                 "pass": true
               },
               {
                 "primaryVertex": 910,
                 "secondaryVertex": 1243,
                 "baselineMetres": 0.011748470655866124,
-                "distanceMetres": 0.01174847054639806,
+                "distanceMetres": 0.011748469871748162,
                 "pass": true
               },
               {
                 "primaryVertex": 816,
                 "secondaryVertex": 1260,
                 "baselineMetres": 0.012469116340994395,
-                "distanceMetres": 0.012469114544851986,
+                "distanceMetres": 0.012469116441286602,
                 "pass": true
               },
               {
                 "primaryVertex": 905,
                 "secondaryVertex": 1245,
                 "baselineMetres": 0.012469116340994395,
-                "distanceMetres": 0.012469115611596493,
+                "distanceMetres": 0.012469116195114817,
                 "pass": true
               },
               {
@@ -4103,21 +6227,21 @@
                 "primaryVertex": 803,
                 "secondaryVertex": 47,
                 "baselineMetres": 0.014082443297169022,
-                "distanceMetres": 0.014082443390007929,
+                "distanceMetres": 0.014082442025679596,
                 "pass": true
               },
               {
                 "primaryVertex": 769,
                 "secondaryVertex": 71,
                 "baselineMetres": 0.014082444233631003,
-                "distanceMetres": 0.014082444185193315,
+                "distanceMetres": 0.014082445186238815,
                 "pass": true
               },
               {
                 "primaryVertex": 815,
                 "secondaryVertex": 43,
                 "baselineMetres": 0.014278156692014385,
-                "distanceMetres": 0.014278156596466893,
+                "distanceMetres": 0.01427815799783004,
                 "pass": true
               },
               {
@@ -4131,21 +6255,21 @@
                 "primaryVertex": 908,
                 "secondaryVertex": 73,
                 "baselineMetres": 0.014769677018611168,
-                "distanceMetres": 0.014769678912150225,
+                "distanceMetres": 0.014769677434266104,
                 "pass": true
               },
               {
                 "primaryVertex": 804,
                 "secondaryVertex": 45,
                 "baselineMetres": 0.01476967868123084,
-                "distanceMetres": 0.014769678111629677,
+                "distanceMetres": 0.014769678173208184,
                 "pass": true
               }
             ]
           },
           {
             "name": "negative-x-hand-body",
-            "maximumMetres": 0.013711389361723602,
+            "maximumMetres": 0.013711388399919273,
             "minimumMetres": 0.008496206136742174,
             "pass": true,
             "pairs": [
@@ -4167,35 +6291,35 @@
                 "primaryVertex": 1991,
                 "secondaryVertex": 795,
                 "baselineMetres": 0.00934117608294397,
-                "distanceMetres": 0.00934117608294397,
+                "distanceMetres": 0.009341177835496641,
                 "pass": true
               },
               {
                 "primaryVertex": 2030,
                 "secondaryVertex": 797,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689743312710305,
+                "distanceMetres": 0.012689742524322251,
                 "pass": true
               },
               {
                 "primaryVertex": 2031,
                 "secondaryVertex": 209,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689743312710305,
+                "distanceMetres": 0.012689742524322251,
                 "pass": true
               },
               {
                 "primaryVertex": 2033,
                 "secondaryVertex": 206,
                 "baselineMetres": 0.01268979660046202,
-                "distanceMetres": 0.01268979660046202,
+                "distanceMetres": 0.012689795417884888,
                 "pass": true
               },
               {
                 "primaryVertex": 2083,
                 "secondaryVertex": 118,
                 "baselineMetres": 0.01275213178470909,
-                "distanceMetres": 0.01275213178470909,
+                "distanceMetres": 0.012752131570746108,
                 "pass": true
               },
               {
@@ -4209,42 +6333,42 @@
                 "primaryVertex": 2078,
                 "secondaryVertex": 507,
                 "baselineMetres": 0.013240395991051741,
-                "distanceMetres": 0.013240395991051741,
+                "distanceMetres": 0.013240395819324494,
                 "pass": true
               },
               {
                 "primaryVertex": 2084,
                 "secondaryVertex": 512,
                 "baselineMetres": 0.013240448264722577,
-                "distanceMetres": 0.013240448264722577,
+                "distanceMetres": 0.013240448127341322,
                 "pass": true
               },
               {
                 "primaryVertex": 2077,
                 "secondaryVertex": 113,
                 "baselineMetres": 0.013507308332627954,
-                "distanceMetres": 0.013507308332627954,
+                "distanceMetres": 0.013507307995960317,
                 "pass": true
               },
               {
                 "primaryVertex": 2075,
                 "secondaryVertex": 116,
                 "baselineMetres": 0.013507359640677598,
-                "distanceMetres": 0.013507359640677598,
+                "distanceMetres": 0.013507359304011242,
                 "pass": true
               },
               {
                 "primaryVertex": 2029,
                 "secondaryVertex": 200,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711389361723602,
+                "distanceMetres": 0.013711388399919273,
                 "pass": true
               }
             ]
           },
           {
             "name": "positive-x-hand-body",
-            "maximumMetres": 0.013711389627048922,
+            "maximumMetres": 0.013711389859208573,
             "minimumMetres": 0.01268974173593415,
             "pass": true,
             "pairs": [
@@ -4273,14 +6397,14 @@
                 "primaryVertex": 4733,
                 "secondaryVertex": 288,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.012689796994654374,
+                "distanceMetres": 0.01268979660046202,
                 "pass": true
               },
               {
                 "primaryVertex": 4749,
                 "secondaryVertex": 258,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.012689796994654374,
+                "distanceMetres": 0.01268979660046202,
                 "pass": true
               },
               {
@@ -4294,14 +6418,14 @@
                 "primaryVertex": 4750,
                 "secondaryVertex": 256,
                 "baselineMetres": 0.01290673111406965,
-                "distanceMetres": 0.012906730867436211,
+                "distanceMetres": 0.012906731642569863,
                 "pass": true
               },
               {
                 "primaryVertex": 4728,
                 "secondaryVertex": 249,
                 "baselineMetres": 0.013240395510215441,
-                "distanceMetres": 0.013240395510215441,
+                "distanceMetres": 0.013240395372833638,
                 "pass": true
               },
               {
@@ -4315,14 +6439,14 @@
                 "primaryVertex": 4726,
                 "secondaryVertex": 248,
                 "baselineMetres": 0.013507307995960317,
-                "distanceMetres": 0.013507307995960317,
+                "distanceMetres": 0.013507307659292674,
                 "pass": true
               },
               {
                 "primaryVertex": 4755,
                 "secondaryVertex": 250,
                 "baselineMetres": 0.013507359169344696,
-                "distanceMetres": 0.013507359169344696,
+                "distanceMetres": 0.01350735903467815,
                 "pass": true
               },
               {
@@ -4336,7 +6460,7 @@
                 "primaryVertex": 4731,
                 "secondaryVertex": 289,
                 "baselineMetres": 0.013711389859208573,
-                "distanceMetres": 0.013711389627048922,
+                "distanceMetres": 0.013711389859208573,
                 "pass": true
               }
             ]
@@ -4361,41 +6485,41 @@
       {
         "name": "overhead-reach",
         "leftHandWorld": [
-          0.289295,
-          -0.029473,
-          1.997091
+          0.289827,
+          -0.029029,
+          1.990821
         ],
         "rightHandWorld": [
-          -0.289295,
-          -0.029473,
-          1.996854
+          -0.289827,
+          -0.029029,
+          1.990585
         ],
-        "symmetryHeightErrorMetres": 0.00023639202117919922,
+        "symmetryHeightErrorMetres": 0.00023674964904785156,
         "pass": true
       },
       {
         "name": "cross-body-reach",
         "leadHand": "hand.L",
         "targetWorld": [
-          -0.016039,
-          -0.248165,
-          1.275492
+          -0.009443,
+          -0.246006,
+          1.275602
         ],
         "actualWorld": [
-          -0.016039,
-          -0.248165,
-          1.275492
+          -0.009485,
+          -0.246021,
+          1.275601
         ],
-        "targetErrorMetres": 4.629600677713343e-07,
-        "verticalTargetErrorMetres": 1.1920928955078125e-07,
+        "targetErrorMetres": 4.4368014152043306e-05,
+        "verticalTargetErrorMetres": 1.1920928955078125e-06,
         "crossedMidline": true,
         "pass": true
       },
       {
         "name": "deep-elbow-bend",
-        "actualFlexionDegrees": 119.33717446148951,
+        "actualFlexionDegrees": 121.92699094946158,
         "targetFlexionDegrees": 135,
-        "errorDegrees": 15.66282553851049,
+        "errorDegrees": 13.073009050538417,
         "pass": true
       },
       {
@@ -4403,17 +6527,17 @@
         "leadLeg": "leg.L",
         "trailLeg": "leg.R",
         "pelvisBindWorld": [
-          0.0,
-          0.012469,
-          0.777536
+          -0.0,
+          0.01051,
+          0.87907
         ],
         "pelvisWorld": [
           0.0,
-          0.012469,
-          0.752536
+          0.01051,
+          0.85407
         ],
         "pelvisWorldDelta": [
-          -0.0,
+          0.0,
           0.0,
           -0.025
         ],
@@ -4423,14 +6547,14 @@
           0.112667
         ],
         "leadFootWorld": [
-          0.194607,
+          0.194608,
           -0.075982,
-          0.162667
+          0.162652
         ],
         "leadFootWorldDelta": [
-          0.0,
+          1e-06,
           -0.13,
-          0.05
+          0.049985
         ],
         "trailFootBindWorld": [
           -0.194607,
@@ -4438,20 +6562,20 @@
           0.112667
         ],
         "trailFootWorld": [
-          -0.194607,
-          0.054018,
-          0.121667
+          -0.194608,
+          0.054019,
+          0.121659
         ],
         "trailFootWorldDelta": [
-          0.0,
-          0.0,
-          0.009
+          -1e-06,
+          1e-06,
+          0.008992
         ],
-        "trailFootDisplacementMetres": 0.00899995099581873,
-        "leadSolePatchLiftMetres": 0.03284504624772122,
-        "trailSolePatchMinimumZ": -0.0070861950516700745,
-        "trailSolePatchPenetrationMetres": 0.0070861950516700745,
-        "trailFootGroundErrorMetres": 0.007086179603566833,
+        "trailFootDisplacementMetres": 0.008991874794022471,
+        "leadSolePatchLiftMetres": 0.04999162659365797,
+        "trailSolePatchMinimumZ": 0.008995174430310726,
+        "trailSolePatchPenetrationMetres": 0,
+        "trailFootGroundErrorMetres": 0.008995157283866462,
         "knees": {
           "L": {
             "hipWorld": [
@@ -4460,19 +6584,19 @@
               0.85407
             ],
             "kneeWorld": [
-              0.13851,
-              -0.188597,
-              0.550559
+              0.138225,
+              -0.188541,
+              0.55052
             ],
             "ankleWorld": [
-              0.194607,
+              0.194608,
               -0.075982,
-              0.162667
+              0.162653
             ],
-            "kneeLateralDriftMetres": -0.015438798069953907,
-            "sameSideMarginMetres": 0.13850973546504974,
-            "signedSagittalBend": 0.11141149961207386,
-            "flexionDegrees": 49.83795743004793
+            "kneeLateralDriftMetres": -0.015723082423210133,
+            "sameSideMarginMetres": 0.13822545111179352,
+            "signedSagittalBend": 0.11137253014872606,
+            "flexionDegrees": 49.83307384479137
           },
           "R": {
             "hipWorld": [
@@ -4481,19 +6605,19 @@
               0.85407
             ],
             "kneeWorld": [
-              -0.13696,
-              -0.079881,
-              0.502504
+              -0.136765,
+              -0.079818,
+              0.502487
             ],
             "ankleWorld": [
-              -0.194606,
-              0.054018,
-              0.121667
+              -0.194608,
+              0.054019,
+              0.121659
             ],
-            "kneeLateralDriftMetres": 0.016988295316696156,
-            "sameSideMarginMetres": 0.1369602382183075,
-            "signedSagittalBend": 0.08149821684294922,
-            "flexionDegrees": 34.587739862580655
+            "kneeLateralDriftMetres": 0.017183932662010182,
+            "sameSideMarginMetres": 0.13676460087299347,
+            "signedSagittalBend": 0.08145400527141344,
+            "flexionDegrees": 34.58329340943098
           }
         },
         "kneesStayOnAnatomicalSide": true,
@@ -4503,7 +6627,7 @@
         "name": "head-turn",
         "intendedWorldYawDegrees": 45,
         "actualWorldYawDegrees": 45.00000466733367,
-        "faceGazeWorldYawDegrees": 44.944159156494806,
+        "faceGazeWorldYawDegrees": 44.94417102149555,
         "pass": true
       }
     ],
@@ -4517,14 +6641,14 @@
         "minimum": [
           -0.482286,
           -0.158981,
-          -0.0
+          0.0
         ],
         "maximum": [
           0.482286,
           0.158981,
           1.8
         ],
-        "groundMinimumZ": -1.5448103241055833e-08,
+        "groundMinimumZ": 3.42409944842359e-09,
         "finite": true,
         "pass": true
       },
@@ -4532,16 +6656,16 @@
         "name": "overhead-reach",
         "frame": 10,
         "minimum": [
-          -0.359383,
+          -0.37133,
           -0.158981,
-          -0.0
+          0.0
         ],
         "maximum": [
-          0.365441,
-          0.155586,
-          2.023607
+          0.37138,
+          0.153809,
+          2.015995
         ],
-        "groundMinimumZ": -1.5448103241055833e-08,
+        "groundMinimumZ": 3.42409944842359e-09,
         "finite": true,
         "pass": true
       },
@@ -4550,15 +6674,15 @@
         "frame": 20,
         "minimum": [
           -0.482286,
-          -0.318895,
-          -0.0
+          -0.313991,
+          0.0
         ],
         "maximum": [
-          0.391259,
+          0.404181,
           0.158981,
           1.8
         ],
-        "groundMinimumZ": -1.5448103241055833e-08,
+        "groundMinimumZ": 3.42409944842359e-09,
         "finite": true,
         "pass": true
       },
@@ -4568,14 +6692,14 @@
         "minimum": [
           -0.482286,
           -0.158981,
-          -0.0
+          0.0
         ],
         "maximum": [
-          0.447032,
+          0.443227,
           0.158981,
           1.8
         ],
-        "groundMinimumZ": -1.5448103241055833e-08,
+        "groundMinimumZ": 3.42409944842359e-09,
         "finite": true,
         "pass": true
       },
@@ -4584,15 +6708,15 @@
         "frame": 40,
         "minimum": [
           -0.482286,
-          -0.285864,
-          -0.008088
+          -0.288986,
+          0.008995
         ],
         "maximum": [
           0.482286,
           0.158981,
           1.775
         ],
-        "groundMinimumZ": -0.008087731897830963,
+        "groundMinimumZ": 0.008995174430310726,
         "finite": true,
         "pass": true
       },
@@ -4602,14 +6726,14 @@
         "minimum": [
           -0.482286,
           -0.158981,
-          -0.0
+          0.0
         ],
         "maximum": [
           0.482286,
           0.161536,
           1.8
         ],
-        "groundMinimumZ": -1.5448103241055833e-08,
+        "groundMinimumZ": 3.42409944842359e-09,
         "finite": true,
         "pass": true
       }
@@ -4633,6 +6757,59 @@
         "LINEAR",
         "STEP"
       ],
+      "animationTargetNodeNames": [
+        "chest",
+        "clavicle.L",
+        "clavicle.R",
+        "foot.L",
+        "foot.R",
+        "forearm.L",
+        "forearm.R",
+        "hand.L",
+        "hand.R",
+        "head",
+        "neck",
+        "pelvis",
+        "root",
+        "shin.L",
+        "shin.R",
+        "spine",
+        "thigh.L",
+        "thigh.R",
+        "upper_arm.L",
+        "upper_arm.R"
+      ],
+      "nodeNames": [
+        "Ashveil_DiagnosticRig",
+        "Body",
+        "Eye_NegativeX",
+        "Eye_PositiveX",
+        "Facial_Feature_01",
+        "Hand_NegativeX",
+        "Hand_PositiveX",
+        "Head",
+        "chest",
+        "clavicle.L",
+        "clavicle.R",
+        "foot.L",
+        "foot.R",
+        "forearm.L",
+        "forearm.R",
+        "hand.L",
+        "hand.R",
+        "head",
+        "neck",
+        "pelvis",
+        "root",
+        "shin.L",
+        "shin.R",
+        "spine",
+        "thigh.L",
+        "thigh.R",
+        "upper_arm.L",
+        "upper_arm.R"
+      ],
+      "authoringRigLeakage": [],
       "jointNames": [
         "root",
         "pelvis",
@@ -4681,9 +6858,9 @@
         "count": 20,
         "type": "MAT4",
         "componentType": 5126,
-        "sha256": "1744e672746254ee66fc59fb387d98c002f37e89807b9abd2d66b49436073c19"
+        "sha256": "641fd82903cffe2ae9d4c0eb9aa036c6c444357b1bc6aa8df75a89b14b225afa"
       },
-      "runtimeRestSignatureSha256": "37893c2e678432c2424a77a5af452bd92a1fcab616bcbc363928c0443ca45d5a",
+      "runtimeRestSignatureSha256": "0e9552af0702b38081d1cc2f67ac0efdfe6ac21c6b7cb88336704f13456f9c10",
       "rigifyControlLeakage": [],
       "skinnedMeshNames": [
         "Body",
@@ -4724,13 +6901,13 @@
   "artifacts": [
     {
       "path": "masculine-rig-spike.blend",
-      "bytes": 1021258,
-      "sha256": "70bcbdf3f7e7d3f2a805da35590defaee52c77c8d2396de9ddfeb6efa536475f"
+      "bytes": 1035137,
+      "sha256": "2a46302f44be2c120dab6bee09b57e926d9f364f66756ec6849c38993d3fe3b0"
     },
     {
       "path": "masculine-rigged-diagnostic.glb",
-      "bytes": 488512,
-      "sha256": "3bb27d33026116f4c6cdb458712aebd40de0af740676be5a032e843f2c26ea53",
+      "bytes": 487052,
+      "sha256": "48c418c505fd89344f57b59dc0ba48c7504186f3ecd0a4fd1d356652fcd56901",
       "gltfStructure": {
         "meshes": 7,
         "primitives": 7,
@@ -4746,6 +6923,59 @@
           "LINEAR",
           "STEP"
         ],
+        "animationTargetNodeNames": [
+          "chest",
+          "clavicle.L",
+          "clavicle.R",
+          "foot.L",
+          "foot.R",
+          "forearm.L",
+          "forearm.R",
+          "hand.L",
+          "hand.R",
+          "head",
+          "neck",
+          "pelvis",
+          "root",
+          "shin.L",
+          "shin.R",
+          "spine",
+          "thigh.L",
+          "thigh.R",
+          "upper_arm.L",
+          "upper_arm.R"
+        ],
+        "nodeNames": [
+          "Ashveil_DiagnosticRig",
+          "Body",
+          "Eye_NegativeX",
+          "Eye_PositiveX",
+          "Facial_Feature_01",
+          "Hand_NegativeX",
+          "Hand_PositiveX",
+          "Head",
+          "chest",
+          "clavicle.L",
+          "clavicle.R",
+          "foot.L",
+          "foot.R",
+          "forearm.L",
+          "forearm.R",
+          "hand.L",
+          "hand.R",
+          "head",
+          "neck",
+          "pelvis",
+          "root",
+          "shin.L",
+          "shin.R",
+          "spine",
+          "thigh.L",
+          "thigh.R",
+          "upper_arm.L",
+          "upper_arm.R"
+        ],
+        "authoringRigLeakage": [],
         "jointNames": [
           "root",
           "pelvis",
@@ -4794,9 +7024,9 @@
           "count": 20,
           "type": "MAT4",
           "componentType": 5126,
-          "sha256": "1744e672746254ee66fc59fb387d98c002f37e89807b9abd2d66b49436073c19"
+          "sha256": "641fd82903cffe2ae9d4c0eb9aa036c6c444357b1bc6aa8df75a89b14b225afa"
         },
-        "runtimeRestSignatureSha256": "37893c2e678432c2424a77a5af452bd92a1fcab616bcbc363928c0443ca45d5a",
+        "runtimeRestSignatureSha256": "0e9552af0702b38081d1cc2f67ac0efdfe6ac21c6b7cb88336704f13456f9c10",
         "rigifyControlLeakage": [],
         "skinnedMeshNames": [
           "Body",
@@ -4811,103 +7041,103 @@
     },
     {
       "path": "validation-bind-front.png",
-      "bytes": 261287,
-      "sha256": "adb587f787d61954049ae7964fbe85a26e20f4e1c7e751fe096abf618a1d30c3"
+      "bytes": 261232,
+      "sha256": "74970202253af8d79c37412386cbde69e7f31a3af6124559c533bbd1476ffea4"
     },
     {
       "path": "validation-bind-back.png",
-      "bytes": 255257,
-      "sha256": "a3e1e6374cec76c5d07be446d96cb7da0a313dba8c9b1648ef759e57f20a3ec6"
+      "bytes": 255290,
+      "sha256": "d06112d38d75df895dd116a0ade44e85bc3312e7d25399ec327a15067b30bed4"
     },
     {
       "path": "validation-bind-right.png",
-      "bytes": 204578,
-      "sha256": "af6bdeef40a01f35baf206ea36ad9cfb96ce7838ab427c7a0b5597b9665086ac"
+      "bytes": 204623,
+      "sha256": "5a4dbbd441fb03c9960d029fd2b0b4a4d2c698159378ecf6ce04c468bd182108"
     },
     {
       "path": "validation-overhead-reach-front.png",
-      "bytes": 238673,
-      "sha256": "311c1ffaf048ea8c5be0a8cbde767707c51e5086e5f5205fb90e7298236c8fd2"
+      "bytes": 244341,
+      "sha256": "3c62eabe157901af0bd7fa06875516d45772ee1d0461696d4f1b947d616524cc"
     },
     {
       "path": "validation-overhead-reach-back.png",
-      "bytes": 233972,
-      "sha256": "2d38ab287078056e90a6857e0daf7bba1e2af16daec6acaac9b51e0320d2b651"
+      "bytes": 238357,
+      "sha256": "9a0542ab61127bbd93fca570ff2ea547811e35f20356d92b040581d6a10f1bde"
     },
     {
       "path": "validation-overhead-reach-right.png",
-      "bytes": 194397,
-      "sha256": "9a482b3cf03e9edbff402138a5ea931b0997c830779d67a2773b307000d310d9"
+      "bytes": 191133,
+      "sha256": "b207c6368d72f7c90549629809ea52911f39816576f23a07a8958beac7eb139d"
     },
     {
       "path": "validation-cross-body-reach-front.png",
-      "bytes": 255433,
-      "sha256": "7c675dd6a8a7a6c260c0f1b55d5a0bdd8382c94f903b04ab44719ff5fcfb3eee"
+      "bytes": 254669,
+      "sha256": "a28ad8f5d5637f158daf8a7c8d7e0382870e6db2293f4e1191884007ca8970f0"
     },
     {
       "path": "validation-cross-body-reach-back.png",
-      "bytes": 243781,
-      "sha256": "f11b46c99e2e25bc53fd46d24430da40c90d5550ae49b2e11902354d19bb38c6"
+      "bytes": 243973,
+      "sha256": "289b9e69d2c872c610c0511cd16850556a0e3ffd3e54618a45991375f3984431"
     },
     {
       "path": "validation-cross-body-reach-right.png",
-      "bytes": 202012,
-      "sha256": "cf39a54193817705f5b262f30c510b3de5a988a8c2c0b4e258de59807b4db997"
+      "bytes": 203281,
+      "sha256": "2158dcafa356664cf469a7aef229d74a882f11da6962dc130f0568d68f96c15d"
     },
     {
       "path": "validation-deep-elbow-bend-front.png",
-      "bytes": 257985,
-      "sha256": "9dd2464fd39155a677eb93169befee35d41598dfa1603a3cab474b736dfdefcf"
+      "bytes": 258547,
+      "sha256": "5f105c21a2cc1dead3b70eb43de49dff7a21bf2a2940a24a7d908b24f5a2c98b"
     },
     {
       "path": "validation-deep-elbow-bend-back.png",
-      "bytes": 248472,
-      "sha256": "e4b019d72a971625c589590c4cbb904f754058c5890bbaf2a24e07471bdaef1a"
+      "bytes": 248698,
+      "sha256": "0e13d4497537ce911495a2b1e94fc0cfb225b675ec71a97d8d4317a6633f30f3"
     },
     {
       "path": "validation-deep-elbow-bend-right.png",
-      "bytes": 200801,
-      "sha256": "9f3537c4696c8ba40128e36e4417b7a15edd4d581e7cf795446a0f9a681d1da9"
+      "bytes": 200904,
+      "sha256": "e586129e10293c4f1b0f91c17975294ae1e91b2b96df955ab7dfd92ba9059a0d"
     },
     {
       "path": "validation-long-stride-front.png",
-      "bytes": 261833,
-      "sha256": "731cd9c065ccce0c779374c6c6ca0978f71b5eab98c179b44ef53d31a93659be"
+      "bytes": 262325,
+      "sha256": "76cf99d7a833889da907ab5857feb0b6a99af65dd01485f9dab1f8de9497ebe6"
     },
     {
       "path": "validation-long-stride-back.png",
-      "bytes": 255382,
-      "sha256": "8b6ccacc946fa238d472764fd62a53e33d60e9cecf732d065ec132c7cc2f0c31"
+      "bytes": 256479,
+      "sha256": "cfd84552babe99c175682f7524a51418f5bc12e48adf1df8b86c232bce693e9c"
     },
     {
       "path": "validation-long-stride-right.png",
-      "bytes": 215313,
-      "sha256": "8d607cff890f674b11d7220bd2efd57565d72c798ade56f44596e3326c2dbf62"
+      "bytes": 221138,
+      "sha256": "2d72d34b4f3316819f232f5353c0bd0885d1a94313461518f503d105169bc6ac"
     },
     {
       "path": "validation-head-turn-front.png",
-      "bytes": 261202,
-      "sha256": "db19ec80ccb5d6741336d7effc495b76edea6fea1f7295c255a86e65a4fe350b"
+      "bytes": 261081,
+      "sha256": "d249180695cb29ebee640c668de339aa26e42d5db903b9691adb3277e08b6f43"
     },
     {
       "path": "validation-head-turn-back.png",
-      "bytes": 255615,
-      "sha256": "6a8fa2902975b0268ac6b8858e42f6c8293b41bbdcbbe44f2543e5123eb43fbf"
+      "bytes": 255257,
+      "sha256": "7bdb2eb201466e3c0632399f1704210ae550616f780b321e89c0f6700aedd7cc"
     },
     {
       "path": "validation-head-turn-right.png",
-      "bytes": 206314,
-      "sha256": "0ac3d317286c24ac8b66802ea75a55b7f25f78bec6200036e39380966d9d131b"
+      "bytes": 205544,
+      "sha256": "93f335bcf06136e25aeee7e277a663adb06e4d6e104d6084e9e5e386c7b28027"
     },
     {
       "path": "validation-bind-skeleton-front.png",
-      "bytes": 275788,
-      "sha256": "b8a9dfe0c77fe718a9cc86a4073a6e8b0a1b009745d3904d7185ad634f690ac5"
+      "bytes": 275499,
+      "sha256": "523712894d9856b06f0c90e0b09e05e71eb7094c1447a5dbbf3d57f3f67d48ac"
     },
     {
       "path": "validation-bind-skeleton-right.png",
-      "bytes": 216637,
-      "sha256": "b77b70d02e01ee491607330a3bce4513a9e719020cc0653950df9ef392044a79"
+      "bytes": 216447,
+      "sha256": "5e53a0549153d00026f38cb70082f41cc05169847e8a11fb1071164ba21234f8"
     }
   ],
   "knownLimitations": [

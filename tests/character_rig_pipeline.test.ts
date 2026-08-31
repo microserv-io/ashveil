@@ -10,7 +10,13 @@ import {
   characterRigSpikeArtifactNames,
   parseCharacterRigSpikeArgs,
 } from '../scripts/art/character-rig-spike'
-import { assertJointFitRecords, assertStrideIntent } from '../scripts/art/rig-contract'
+import {
+  assertJointFitRecords,
+  assertPoseOrientationEvidence,
+  assertStrideIntent,
+  mirrorNormalizedTwist,
+  type PoseOrientationEvidence,
+} from '../scripts/art/rig-contract'
 import { summarizeAsset } from '../spike/character/asset-inspection'
 import {
   assertCharacterAssetSummary,
@@ -102,6 +108,16 @@ describe('diagnostic character rig artifact', () => {
     })
     expect(report.jointFit.joints.every((joint: { sampleCount: number }) => joint.sampleCount >= 12)).toBe(true)
     expect(() => assertJointFitRecords(report.jointFit.joints)).not.toThrow()
+    expect(report.pelvisCogFit).toMatchObject({ pass: true })
+    expect(report.pelvisCogFit.pelvisToHipMidpointMetres).toBeLessThanOrEqual(0.02)
+    expect(report.pelvisCogFit.cogToHipMidpointMetres).toBeLessThanOrEqual(0.02)
+    expect(report.bindGeometryMaximumDeviationMetres).toBeLessThanOrEqual(0.0001)
+    expect(report.orientationEvidence).toMatchObject({ pass: true })
+    expect(report.bakeVerification).toMatchObject({
+      reopenedSavedBlend: true,
+      deformConstraintCount: 0,
+      pass: true,
+    })
     expect(report.weights).toMatchObject({
       vertices: 7966,
       weightedVertices: 7966,
@@ -172,6 +188,7 @@ describe('diagnostic character rig artifact', () => {
       animations: 1,
       inverseBindMatrices: { count: 20, type: 'MAT4', componentType: 5126 },
       rigifyControlLeakage: [],
+      authoringRigLeakage: [],
     })
     const manifest = JSON.parse(readFileSync(resolve('scripts/art/contracts/humanoid.v1.json'), 'utf8'))
     expect(report.skeleton.acceptedMaleRestSignatureSha256).toBe(
@@ -182,6 +199,35 @@ describe('diagnostic character rig artifact', () => {
     )
     expect(report.export.gltfStructure.skinnedMeshNames).toEqual([...REQUIRED_SEMANTIC_MESHES].sort())
     expect(report.renders).toHaveLength(18)
+  })
+
+  it('mirror-normalizes bilateral twist fixtures before comparing symmetry', () => {
+    expect(mirrorNormalizedTwist('L', 20)).toBe(20)
+    expect(mirrorNormalizedTwist('R', -20)).toBe(20)
+    expect(() =>
+      assertPoseOrientationEvidence({
+        pose: 'overhead-reach',
+        axialTwists: {
+          'upper_arm.L': 20,
+          'upper_arm.R': -20,
+          'forearm.L': 10,
+          'forearm.R': -10,
+        },
+        chainGapsMetres: {},
+      }),
+    ).not.toThrow()
+    expect(() =>
+      assertPoseOrientationEvidence({
+        pose: 'overhead-reach',
+        axialTwists: {
+          'upper_arm.L': 20,
+          'upper_arm.R': 20,
+          'forearm.L': 10,
+          'forearm.R': 10,
+        },
+        chainGapsMetres: {},
+      }),
+    ).toThrow(/bilateral twist/)
   })
 
   it('fails closed when fitted evidence or stride direction is perturbed', () => {
@@ -248,6 +294,65 @@ describe('diagnostic character rig artifact', () => {
       ).toBe(socket.gltfName)
       expect(bones.filter((bone) => bone.name === socket.threeName), socket.role).toHaveLength(1)
     }
+    const bonesByName = new Map(bones.map((bone) => [bone.name, bone]))
+    mixerAtFrame(gltf.scene, gltf.animations[0]!, 0)
+    const pelvisHead = worldPosition(bonesByName.get('pelvis')!)
+    const hipMidpoint = worldPosition(bonesByName.get('thighL')!)
+      .add(worldPosition(bonesByName.get('thighR')!))
+      .multiplyScalar(0.5)
+    expect.soft(pelvisHead.distanceTo(hipMidpoint), 'pelvis-to-hip midpoint').toBeLessThanOrEqual(0.02)
+
+    const bindOrientations = new Map(
+      bones.map((bone) => [bone.name, bone.getWorldQuaternion(new THREE.Quaternion())]),
+    )
+    const chainLengths = bindChainLengths(bonesByName)
+    const orientationEvidence = [
+      measureOrientation(gltf.scene, gltf.animations[0]!, 10, 'overhead-reach', bonesByName, bindOrientations, chainLengths, [
+        'upper_armL', 'forearmL', 'upper_armR', 'forearmR',
+      ]),
+      measureOrientation(gltf.scene, gltf.animations[0]!, 20, 'cross-body-reach', bonesByName, bindOrientations, chainLengths, [
+        'upper_armL', 'forearmL',
+      ]),
+      measureOrientation(gltf.scene, gltf.animations[0]!, 30, 'deep-elbow-bend', bonesByName, bindOrientations, chainLengths, [
+        'upper_armL', 'forearmL',
+      ]),
+      measureOrientation(gltf.scene, gltf.animations[0]!, 40, 'long-stride', bonesByName, bindOrientations, chainLengths, [
+        'thighL', 'shinL', 'thighR', 'shinR',
+      ]),
+    ]
+    for (const evidence of orientationEvidence) {
+      expect.soft(() => assertPoseOrientationEvidence(evidence), evidence.pose).not.toThrow()
+      for (const [chain, gap] of Object.entries(evidence.chainGapsMetres)) {
+        expect.soft(gap, `${evidence.pose} ${chain}`).toBeLessThanOrEqual(0.001)
+      }
+    }
+
+    const bindUpperArmWorld = bindOrientations.get('upper_armL')!
+    const primaryAxis = new THREE.Vector3(0, 1, 0).applyQuaternion(bindUpperArmWorld)
+    const physicallyTwisted = new THREE.Quaternion()
+      .setFromAxisAngle(primaryAxis, Math.PI)
+      .multiply(bindUpperArmWorld)
+    const mutationHead = worldPosition(bonesByName.get('upper_armL')!)
+    const mutationTailBefore = primaryAxis.clone().multiplyScalar(chainLengths.get('upper_armL->forearmL')!).add(mutationHead)
+    const mutationTailAfter = new THREE.Vector3(0, 1, 0)
+      .applyQuaternion(physicallyTwisted)
+      .multiplyScalar(chainLengths.get('upper_armL->forearmL')!)
+      .add(mutationHead)
+    expect(
+      new THREE.Vector3(0, 1, 0)
+        .applyQuaternion(physicallyTwisted)
+        .distanceTo(primaryAxis),
+    ).toBeLessThan(1e-6)
+    expect(mutationTailAfter.distanceTo(mutationTailBefore)).toBeLessThan(1e-6)
+    expect(() =>
+      assertPoseOrientationEvidence({
+        pose: 'physical-axis-mutation',
+        axialTwists: {
+          'upper_arm.L': signedAxialTwistDegrees(bindUpperArmWorld, physicallyTwisted),
+        },
+        chainGapsMetres: { unchangedEndpoints: 0 },
+      }),
+    ).toThrow(/uncommanded axial twist/)
     for (const name of REQUIRED_SEMANTIC_MESHES) {
       expect(clonedSkinnedMeshes.get(name)!.skeleton).not.toBe(
         originalSkinnedMeshes.get(name)!.skeleton,
@@ -286,4 +391,79 @@ function skinnedMeshes(root: THREE.Object3D): Map<string, THREE.SkinnedMesh> {
     if (child instanceof THREE.SkinnedMesh) meshes.set(child.name, child)
   })
   return meshes
+}
+
+function mixerAtFrame(root: THREE.Object3D, clip: THREE.AnimationClip, frame: number): void {
+  const mixer = new THREE.AnimationMixer(root)
+  const action = mixer.clipAction(clip)
+  action.setLoop(THREE.LoopOnce, 1)
+  action.clampWhenFinished = true
+  action.play()
+  mixer.setTime(sampleTimeForFrame(frame, 30, clip.duration))
+  root.updateMatrixWorld(true)
+}
+
+function worldPosition(bone: THREE.Bone): THREE.Vector3 {
+  return bone.getWorldPosition(new THREE.Vector3())
+}
+
+function signedAxialTwistDegrees(bind: THREE.Quaternion, pose: THREE.Quaternion): number {
+  const bindRotation = bind.clone().normalize()
+  const poseRotation = pose.clone().normalize()
+  if (bindRotation.dot(poseRotation) < 0) poseRotation.set(-poseRotation.x, -poseRotation.y, -poseRotation.z, -poseRotation.w)
+  const primary = new THREE.Vector3(0, 1, 0)
+  const swing = new THREE.Quaternion().setFromUnitVectors(
+    primary.clone().applyQuaternion(bindRotation),
+    primary.clone().applyQuaternion(poseRotation),
+  )
+  const residual = swing.clone().multiply(bindRotation).invert().multiply(poseRotation).normalize()
+  const magnitude = Math.hypot(residual.w, residual.y)
+  const angle = THREE.MathUtils.radToDeg(2 * Math.atan2(residual.y / magnitude, residual.w / magnitude))
+  return ((((angle + 180) % 360) + 360) % 360) - 180
+}
+
+function bindChainLengths(bones: Map<string, THREE.Bone>): Map<string, number> {
+  return new Map(
+    ([
+      ['clavicleL', 'upper_armL'], ['upper_armL', 'forearmL'], ['forearmL', 'handL'],
+      ['clavicleR', 'upper_armR'], ['upper_armR', 'forearmR'], ['forearmR', 'handR'],
+      ['thighL', 'shinL'], ['shinL', 'footL'], ['thighR', 'shinR'], ['shinR', 'footR'],
+    ] as const).map(([parent, child]) => [
+      `${parent}->${child}`,
+      worldPosition(bones.get(parent)!).distanceTo(worldPosition(bones.get(child)!)),
+    ]),
+  )
+}
+
+function measureOrientation(
+  root: THREE.Object3D,
+  clip: THREE.AnimationClip,
+  frame: number,
+  pose: string,
+  bones: Map<string, THREE.Bone>,
+  bindOrientations: Map<string, THREE.Quaternion>,
+  chainLengths: Map<string, number>,
+  measuredBones: string[],
+): PoseOrientationEvidence {
+  mixerAtFrame(root, clip, frame)
+  const axialTwists = Object.fromEntries(
+    measuredBones.map((name) => [
+      name.replace(/([LR])$/, '.$1'),
+      signedAxialTwistDegrees(
+        bindOrientations.get(name)!,
+        bones.get(name)!.getWorldQuaternion(new THREE.Quaternion()),
+      ),
+    ]),
+  )
+  const chainGapsMetres = Object.fromEntries(
+    [...chainLengths].map(([chain, length]) => {
+      const [parent, child] = chain.split('->')
+      const parentBone = bones.get(parent!)!
+      const expectedTail = new THREE.Vector3(0, length, 0)
+        .applyQuaternion(parentBone.getWorldQuaternion(new THREE.Quaternion()))
+        .add(worldPosition(parentBone))
+      return [chain.replace(/([LR])(?=->|$)/g, '.$1'), expectedTail.distanceTo(worldPosition(bones.get(child!)!))]
+    }),
+  )
+  return { pose, axialTwists, chainGapsMetres }
 }

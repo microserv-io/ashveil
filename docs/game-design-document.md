@@ -216,6 +216,13 @@ evidence for one masculine mannequin only, not approval of the feminine fit or a
 production rig architecture. Rigify may support authoring, but cannot substitute for
 measured landmarks or an Ashveil-owned deform/export contract.
 
+Each approved chain contract should also freeze its rest orientation frame, explicit
+bend reference and non-collinear pole rule. Blender authoring controls solve and
+expose that intent, then their evaluated matrices are baked onto the versioned,
+constraint-free Ashveil deform rig. Uncommanded long-axis rotation, a changed bend
+plane or a disconnected parent-tail/child-head pair fails validation even when limb
+endpoints still match. Nonhumanoid chains require separate contracts and evidence.
+
 Attach rigid modular equipment and transfer deforming wearables only after the
 target archetype's skeleton contract passes technical and human review.
 

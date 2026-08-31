@@ -86,3 +86,37 @@ export function assertStrideIntent(stride: StrideIntentRecord): void {
     }
   }
 }
+
+export interface PoseOrientationEvidence {
+  pose: string
+  axialTwists: Record<string, number>
+  chainGapsMetres: Record<string, number>
+}
+
+export function mirrorNormalizedTwist(side: 'L' | 'R', degrees: number): number {
+  return side === 'L' ? degrees : -degrees
+}
+
+export function assertPoseOrientationEvidence(evidence: PoseOrientationEvidence): void {
+  for (const [bone, twist] of Object.entries(evidence.axialTwists)) {
+    if (!Number.isFinite(twist) || Math.abs(twist) > 60) {
+      throw new Error(`${evidence.pose} ${bone} has uncommanded axial twist ${twist}.`)
+    }
+  }
+  if (evidence.pose === 'overhead-reach') {
+    for (const segment of ['upper_arm', 'forearm']) {
+      const difference = Math.abs(
+        mirrorNormalizedTwist('L', evidence.axialTwists[`${segment}.L`]!) -
+          mirrorNormalizedTwist('R', evidence.axialTwists[`${segment}.R`]!),
+      )
+      if (difference > 15) {
+        throw new Error(`overhead-reach ${segment} bilateral twist differs by ${difference}.`)
+      }
+    }
+  }
+  for (const [chain, gap] of Object.entries(evidence.chainGapsMetres)) {
+    if (!Number.isFinite(gap) || gap > 0.001) {
+      throw new Error(`${evidence.pose} ${chain} chain gap is ${gap} metres.`)
+    }
+  }
+}

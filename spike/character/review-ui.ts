@@ -69,7 +69,13 @@ export class ReviewUi {
     this.meshToggles.replaceChildren(...REQUIRED_SEMANTIC_MESHES.map((name) => this.meshToggle(name)))
     this.enableRigControls(true)
     const passingJoints = report.jointFit.joints.filter((joint) => joint.pass).length
-    this.fitState.textContent = `${report.jointFit.contract} · ${passingJoints}/${report.jointFit.joints.length} · max ${(report.jointFit.maximumErrorMetres * 1000).toFixed(1)} mm`
+    const maximumTwist = Math.max(
+      0,
+      ...report.orientationEvidence.poses.flatMap((pose) =>
+        Object.values(pose.axialTwistDegrees).map(Math.abs),
+      ),
+    )
+    this.fitState.textContent = `${report.jointFit.contract} · ${passingJoints}/${report.jointFit.joints.length} · fit ${(report.jointFit.maximumErrorMetres * 1000).toFixed(1)} mm · pelvis ${(report.pelvisCogFit.pelvisToHipMidpointMetres * 1000).toFixed(1)} mm · twist ${maximumTwist.toFixed(2)}°`
   }
 
   validated(status: AssetStatus): void {

@@ -15,6 +15,16 @@ export interface RigReport {
     pass: boolean
     joints: { name: string; pass: boolean }[]
   }
+  pelvisCogFit: {
+    pelvisToHipMidpointMetres: number
+    cogToHipMidpointMetres: number
+    pass: boolean
+  }
+  orientationEvidence: {
+    pass: boolean
+    poses: Array<{ name: string; axialTwistDegrees: Record<string, number>; pass: boolean }>
+  }
+  bakeVerification: { reopenedSavedBlend: boolean; pass: boolean }
   poseIntent: {
     pass: boolean
     leadHand: string
@@ -59,6 +69,11 @@ export function assertRigReport(candidate: RigReport): void {
     failures.push('report must contain a passing humanoid.v1 fitted-joint audit')
   }
   if (!candidate.poseIntent.pass) failures.push('report must contain passing evaluated pose intent')
+  if (!candidate.pelvisCogFit.pass) failures.push('report must contain passing pelvis and COG fit')
+  if (!candidate.orientationEvidence.pass) failures.push('report must contain passing evaluated orientation evidence')
+  if (!candidate.bakeVerification.reopenedSavedBlend || !candidate.bakeVerification.pass) {
+    failures.push('report must contain passing reopened authoring-to-deform bake evidence')
+  }
   if (!Number.isFinite(candidate.animation.framesPerSecond) || candidate.animation.framesPerSecond <= 0) {
     failures.push('report animation FPS must be positive')
   }

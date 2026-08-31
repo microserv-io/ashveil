@@ -144,6 +144,16 @@ Current structural evidence:
 - the armature has 20 bones, with its root as the sole non-deforming bone, and its
   accepted masculine source-rest, runtime-rest and inverse-bind signatures are
   pinned in the versioned contract;
+- the pelvis and authoring COG are derived from the bilateral hip midpoint, while
+  the provisionally accepted shoulder estimator remains unchanged;
+- the editable blend retains a lightweight Blender-native FK/IK authoring rig with
+  independently calibrated left/right elbow and knee poles. Evaluated authoring
+  matrices are baked onto the constraint-free Ashveil deform rig; only that frozen
+  rig is exported;
+- every posed limb preserves its fitted rest orientation frame unless a bone-specific
+  twist is authored. The audit rejects uncommanded axial twist above 60 degrees,
+  mirrored overhead disagreement above 15 degrees, near-collinear poles and connected
+  chain gaps above 1 mm;
 - the editable blend stores six fully keyed poses with constant F-curves at 30 fps;
   the exported GLB contains both STEP and LINEAR transform tracks, so review tools
   sample just after each diagnostic marker rather than assuming identical key times;
@@ -161,7 +171,7 @@ cross-body reach, deep-elbow and head-turn intentions now read correctly in the
 validation views. The long-stride frame has the correct lead/trail direction, pelvis
 axis, knee sides and planted trail sole, but still exposes collapsed knee topology;
 it is negative deformation evidence, not an approved motion. Production controls,
-IK, twist/finger/toe/facial bones, retargeting, root motion, feminine parity, armor
+twist/finger/toe/facial bones, retargeting, root motion, feminine parity, armor
 transfer, UVs, textures and canonical runtime scale remain unresolved. `humanoid.v1`
 currently authenticates only this masculine diagnostic; it does not prove that the
 feminine mannequin or any nonhumanoid can share its rest signature.

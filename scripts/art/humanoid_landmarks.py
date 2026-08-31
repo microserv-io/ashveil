@@ -6,7 +6,6 @@ HUMANOID_V1 = {
     "heightBands": {
         "ankle": (0.045, 0.09),
         "knee": (0.255, 0.315),
-        "pelvis": (0.40, 0.445),
         "hip": (0.455, 0.51),
         "spine": (0.515, 0.57),
         "elbow": (0.60, 0.68),
@@ -169,10 +168,17 @@ def fit_humanoid_landmarks(components):
     landmarks["wrist.L"], landmarks["wrist.R"], raw_pairs["wrist"] = mirror_pair(left_wrist, right_wrist)
     head_base = closest_surface_center(body, components["Head"], minimum[2], height)
     head_minimum, head_maximum = mesh_bounds(components["Head"])
-    landmarks["pelvis"] = central_slice(body, minimum[2], height, width, HUMANOID_V1["heightBands"]["pelvis"])
+    landmarks["pelvis"] = tuple(
+        (landmarks["hip.L"][axis] + landmarks["hip.R"][axis]) / 2 for axis in range(3)
+    )
     landmarks["spine"] = central_slice(body, minimum[2], height, width, HUMANOID_V1["heightBands"]["spine"])
     landmarks["chest"] = central_slice(body, minimum[2], height, width, HUMANOID_V1["heightBands"]["chest"])
-    for name in ("pelvis", "spine", "chest"):
+    measurements["pelvis"] = {
+        "method": "bilateral_hip_midpoint",
+        "sourceObjects": ["Body"],
+        "sampleCount": measurements["hip.L"]["sampleCount"] + measurements["hip.R"]["sampleCount"],
+    }
+    for name in ("spine", "chest"):
         central_points = [
             point
             for point in points_in_height_band(body, minimum[2], height, HUMANOID_V1["heightBands"][name])
