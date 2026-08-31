@@ -74,6 +74,48 @@ and transforms, decide which body seams remain intentionally separate, repair th
 remaining topology issues, create UVs, rig to the canonical skeleton and pass joint
 deformation tests.
 
+## Repeatable masculine-model spike
+
+The first preparation pass is automated through Blender rather than preserved as a
+manual edit. The command only accepts the audited masculine FBX fingerprint and its
+eight-island vertex signature. It fails closed for any other model until that model
+receives an explicit, reviewed component map.
+
+```text
+npm run art:character-spike -- \
+  --input docs/art-pipeline/tripo-style-test/output/base-models/masculine/raw/main-character-male.fbx \
+  --output docs/art-pipeline/tripo-style-test/output/base-models/masculine/prepared \
+  --target-height 1.8
+```
+
+The generated `report.json` is the machine-readable evidence record. The prepared
+directory also contains the editable Blender source, bald-base and armor-fit GLBs,
+front/back/right validation renders, and a fit-proxy diagnostic render. A successful
+run atomically replaces the prepared directory, so partial reruns cannot mix with a
+previous result.
+
+Current evidence:
+
+- the raw FBX hash remains unchanged;
+- the hair island is excluded while the visually reviewed scalp remains complete;
+- two zero-area faces are removed and normals are recalculated without welding or
+  remeshing intentional component boundaries;
+- the bald derivative is normalized to the provisional 1.8 m spike parameter;
+- semantic separation produces seven meshes and seven primitives in the bald GLB,
+  compared with the single Blender mesh in the raw FBX; this is evidence for later
+  runtime packaging work, not an approved draw-call budget; and
+- the axis-aligned torso shell is a negative fit-quality diagnostic: its jagged open
+  boundaries and shoulder fragments demonstrate that production body masks need
+  authored slot boundaries and animation-pose validation.
+
+GDD candidates supported by this spike are keeping raw generations immutable,
+maintaining bald mannequin derivatives with hair as a separate cosmetic, and using
+one controlled mannequin before exploring more body shapes. The 1.8 m target is not
+a canonical gameplay scale: the current actor view scales models from actor radius,
+so asset-to-runtime scale remains open. Rigging, deformation stress poses, UVs,
+textures, authored equipment masks, primitive consolidation and the feminine-body
+comparison also remain open.
+
 ## Planned Tripo run
 
 Tripo CLI `0.3.1` is installed globally and authenticated against the international

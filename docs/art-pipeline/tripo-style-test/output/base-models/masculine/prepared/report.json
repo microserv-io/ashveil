@@ -1,0 +1,446 @@
+{
+  "schemaVersion": 1,
+  "pipeline": "ashveil-character-model-spike",
+  "scope": "fingerprinted_masculine_mannequin_only",
+  "status": "spike_not_production_ready",
+  "source": {
+    "path": "main-character-male.fbx",
+    "sha256Before": "375e25dea0da0c8d4267ee4402a64cf4582520341b367e1163730b8f8fc56edb",
+    "sha256After": "375e25dea0da0c8d4267ee4402a64cf4582520341b367e1163730b8f8fc56edb",
+    "preserved": true
+  },
+  "blender": {
+    "version": "5.2.1 LTS",
+    "background": true
+  },
+  "parameters": {
+    "targetHeightMetres": 1.8,
+    "status": "provisional_spike_parameter_not_canonical_scale"
+  },
+  "import": {
+    "meshObjects": 1,
+    "bounds": {
+      "minimum": [
+        -0.264404,
+        -0.087158,
+        0.0
+      ],
+      "maximum": [
+        0.264404,
+        0.087158,
+        0.999512
+      ],
+      "dimensions": [
+        0.528809,
+        0.174317,
+        0.999512
+      ]
+    },
+    "objectTransforms": [
+      {
+        "name": "tripo_95f34735_05df_4987_8afe_85e657bfa456",
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotationEuler": [
+          1.570796,
+          -0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    ],
+    "meshHealth": {
+      "vertices": 10925,
+      "edges": 22853,
+      "faces": 11922,
+      "triangles": 2443,
+      "quads": 9479,
+      "ngons": 0,
+      "runtimeTriangles": 21401,
+      "boundaryEdges": 469,
+      "overConnectedEdges": 6,
+      "wireEdges": 0,
+      "zeroAreaFaces": 2
+    },
+    "acceptedIslandVertexSignature": [
+      61,
+      61,
+      114,
+      806,
+      807,
+      1345,
+      2959,
+      4772
+    ]
+  },
+  "preparation": {
+    "looseComponents": 8,
+    "removedZeroAreaFaces": 2,
+    "normalization": {
+      "scaleFactor": 1.8240475012370114,
+      "sourceBounds": {
+        "minimum": [
+          -0.264404,
+          -0.087158,
+          0.0
+        ],
+        "maximum": [
+          0.264404,
+          0.087158,
+          0.986816
+        ],
+        "dimensions": [
+          0.528809,
+          0.174317,
+          0.986816
+        ]
+      },
+      "normalizedBounds": {
+        "minimum": [
+          -0.482286,
+          -0.158981,
+          0.0
+        ],
+        "maximum": [
+          0.482286,
+          0.158981,
+          1.8
+        ],
+        "dimensions": [
+          0.964572,
+          0.317962,
+          1.8
+        ]
+      }
+    },
+    "baldBounds": {
+      "minimum": [
+        -0.482286,
+        -0.158981,
+        0.0
+      ],
+      "maximum": [
+        0.482286,
+        0.158981,
+        1.8
+      ],
+      "dimensions": [
+        0.964572,
+        0.317962,
+        1.8
+      ]
+    },
+    "meshHealth": {
+      "vertices": 7966,
+      "edges": 16444,
+      "faces": 8471,
+      "triangles": 1283,
+      "quads": 7188,
+      "ngons": 0,
+      "runtimeTriangles": 15659,
+      "boundaryEdges": 295,
+      "overConnectedEdges": 6,
+      "wireEdges": 0,
+      "zeroAreaFaces": 0
+    },
+    "components": [
+      {
+        "name": "Hand_NegativeX",
+        "vertices": 807,
+        "center": [
+          -0.428847,
+          -0.022712,
+          0.869718
+        ],
+        "dimensions": [
+          0.106878,
+          0.156754,
+          0.228897
+        ],
+        "relativeCenterHeight": 0.483177,
+        "classificationEvidence": {
+          "relativeHeight": 0.127165,
+          "boundingBoxVolume": 0.003834825
+        }
+      },
+      {
+        "name": "Body",
+        "vertices": 4772,
+        "center": [
+          0.0,
+          0.0,
+          0.804255
+        ],
+        "dimensions": [
+          0.864819,
+          0.317962,
+          1.608511
+        ],
+        "relativeCenterHeight": 0.446809,
+        "classificationEvidence": {
+          "relativeHeight": 0.893617,
+          "boundingBoxVolume": 0.442307197
+        }
+      },
+      {
+        "name": "Head",
+        "vertices": 1345,
+        "center": [
+          -0.0,
+          -0.020485,
+          1.659278
+        ],
+        "dimensions": [
+          0.17902,
+          0.221771,
+          0.281445
+        ],
+        "relativeCenterHeight": 0.921821,
+        "classificationEvidence": {
+          "relativeHeight": 0.156358,
+          "boundingBoxVolume": 0.011173803
+        }
+      },
+      {
+        "name": "Facial_Feature_01",
+        "vertices": 114,
+        "center": [
+          -0.034735,
+          -0.093518,
+          1.705591
+        ],
+        "dimensions": [
+          0.052548,
+          0.048986,
+          0.021376
+        ],
+        "relativeCenterHeight": 0.947551,
+        "classificationEvidence": {
+          "relativeHeight": 0.011875,
+          "boundingBoxVolume": 5.5023e-05
+        }
+      },
+      {
+        "name": "Hair_Source",
+        "vertices": 2959,
+        "center": [
+          -0.0,
+          -0.01425,
+          1.718506
+        ],
+        "dimensions": [
+          0.168333,
+          0.230678,
+          0.209302
+        ],
+        "relativeCenterHeight": 0.954725,
+        "classificationEvidence": {
+          "relativeHeight": 0.116279,
+          "boundingBoxVolume": 0.008127331
+        }
+      },
+      {
+        "name": "Eye_NegativeX",
+        "vertices": 61,
+        "center": [
+          -0.031173,
+          -0.080604,
+          1.691341
+        ],
+        "dimensions": [
+          0.032954,
+          0.019594,
+          0.033845
+        ],
+        "relativeCenterHeight": 0.939634,
+        "classificationEvidence": {
+          "relativeHeight": 0.018803,
+          "boundingBoxVolume": 2.1854e-05
+        }
+      },
+      {
+        "name": "Hand_PositiveX",
+        "vertices": 806,
+        "center": [
+          0.428847,
+          -0.022711,
+          0.869718
+        ],
+        "dimensions": [
+          0.106878,
+          0.156754,
+          0.228897
+        ],
+        "relativeCenterHeight": 0.483177,
+        "classificationEvidence": {
+          "relativeHeight": 0.127165,
+          "boundingBoxVolume": 0.003834825
+        }
+      },
+      {
+        "name": "Eye_PositiveX",
+        "vertices": 61,
+        "center": [
+          0.031173,
+          -0.080604,
+          1.691341
+        ],
+        "dimensions": [
+          0.032954,
+          0.019594,
+          0.033845
+        ],
+        "relativeCenterHeight": 0.939634,
+        "classificationEvidence": {
+          "relativeHeight": 0.018803,
+          "boundingBoxVolume": 2.1854e-05
+        }
+      }
+    ],
+    "hairExcludedFromRuntime": "Hair_Source"
+  },
+  "armorFitSpike": {
+    "status": "fit_proxy_not_production_armor",
+    "bodyMaskObject": "MASK_Torso",
+    "fitProxyObject": "PROXY_Torso_ArmorFit_NOT_PRODUCTION_ARMOR",
+    "maskFaces": 1322,
+    "maskVertices": 1343,
+    "proxyFaces": 2892,
+    "proxyVertices": 2686,
+    "clearanceMetres": 0.014400000000000001,
+    "selectionRule": "body face center: 53%-80% target height and within 12% target height of center X",
+    "diagnosticAssessment": "Negative fit-quality diagnostic: axis-aligned extraction leaves jagged open boundaries and shoulder fragments. Production slot masks require authored boundaries and pose tests."
+  },
+  "runtimePackagingObservation": {
+    "sourceBlenderMeshObjects": 1,
+    "preparedSemanticMeshObjects": 7,
+    "assessment": "Semantic Blender objects export as separate glTF meshes/primitives. Draw calls depend on engine packaging and materials; this spike sets no runtime budget."
+  },
+  "exports": [
+    {
+      "path": "masculine-character-spike.blend",
+      "bytes": 658911,
+      "sha256": "c9212b65a98456dbb2eaa2a51b4347d12ec6571e2162e9eda1592db6e25480c7"
+    },
+    {
+      "path": "masculine-bald-base.glb",
+      "bytes": 290804,
+      "sha256": "76c95673872e1ac2042d8d965e950c846b7990f6701ac6d7df016015964f185d",
+      "gltfStructure": {
+        "meshes": 7,
+        "primitives": 7,
+        "nodes": 7,
+        "materials": 2,
+        "meshPrimitiveCounts": [
+          {
+            "name": "Body_Mesh",
+            "primitives": 1
+          },
+          {
+            "name": "Eye_NegativeX_Mesh",
+            "primitives": 1
+          },
+          {
+            "name": "Eye_PositiveX_Mesh",
+            "primitives": 1
+          },
+          {
+            "name": "Facial_Feature_01_Mesh",
+            "primitives": 1
+          },
+          {
+            "name": "Hand_NegativeX_Mesh",
+            "primitives": 1
+          },
+          {
+            "name": "Hand_PositiveX_Mesh",
+            "primitives": 1
+          },
+          {
+            "name": "Head_Mesh",
+            "primitives": 1
+          }
+        ]
+      }
+    },
+    {
+      "path": "masculine-armor-fit-proxy.glb",
+      "bytes": 389152,
+      "sha256": "0f95d462d203a58df130b3504ec29b800cb26826d5c20bb55368e0d4d43e9da9",
+      "gltfStructure": {
+        "meshes": 8,
+        "primitives": 8,
+        "nodes": 8,
+        "materials": 3,
+        "meshPrimitiveCounts": [
+          {
+            "name": "Body_Mesh",
+            "primitives": 1
+          },
+          {
+            "name": "Eye_NegativeX_Mesh",
+            "primitives": 1
+          },
+          {
+            "name": "Eye_PositiveX_Mesh",
+            "primitives": 1
+          },
+          {
+            "name": "Facial_Feature_01_Mesh",
+            "primitives": 1
+          },
+          {
+            "name": "Hand_NegativeX_Mesh",
+            "primitives": 1
+          },
+          {
+            "name": "Hand_PositiveX_Mesh",
+            "primitives": 1
+          },
+          {
+            "name": "Head_Mesh",
+            "primitives": 1
+          },
+          {
+            "name": "PROXY_Torso_ArmorFit_Mesh",
+            "primitives": 1
+          }
+        ]
+      }
+    },
+    {
+      "path": "validation-front.png",
+      "bytes": 328827,
+      "sha256": "dc7b5dd842d9b251de4d7135f036375e2cdf9ec0518194df6caaa8268862940a"
+    },
+    {
+      "path": "validation-back.png",
+      "bytes": 316324,
+      "sha256": "4bfa783783d08cc49d18fe004d3f01bc41e99dc612fc54d8323e2ff00fcbeae4"
+    },
+    {
+      "path": "validation-right.png",
+      "bytes": 270723,
+      "sha256": "9b957cfe184baf3dac0ed710db0bd2d6b3a1c2fd9673a479610295a68d8b838e"
+    },
+    {
+      "path": "validation-fit-proxy-front.png",
+      "bytes": 340078,
+      "sha256": "670551cb978e752d985e0f8863e6cdcd8dd5c01f2b3d3b86d401702af78ab0bd"
+    }
+  ],
+  "knownLimitations": [
+    "Component labels are inferred from geometry size and position and need artist confirmation.",
+    "The torso shell is an automated fit proxy, not authored or deformation-tested armor.",
+    "The spike does not add UVs, textures, a skeleton, skin weights, or animation.",
+    "Open component boundaries are preserved; the pipeline does not weld or remesh the source.",
+    "The 1.8 m normalization target is provisional and is not integrated with runtime actor-radius scaling."
+  ]
+}
