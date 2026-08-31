@@ -145,6 +145,11 @@ When a feature changes a player-facing rule, its PR must:
   pose and skeleton while allowing a fitted mesh per body. Covered body regions
   should be maskable, and every piece should pass clipping checks across
   representative gameplay animations on both bodies.
+- Treat hairstyles as modular cosmetics rather than permanent body geometry. Both
+  canonical bodies should expose a compatible scalp envelope, hairline and head
+  socket so one hairstyle asset can serve either fit where its silhouette allows.
+  Short styles may follow the head rigidly; longer styles need controlled secondary
+  bones and explicit compatibility behaviour for helmets, back pieces and weapons.
 - Present cosmetics at three useful scales: normal gameplay for recognition, social
   or hub spaces for status, and a character view for appreciation.
 - Make Web3 optional in the moment-to-moment user experience and initially favour
@@ -228,6 +233,8 @@ These are unresolved decisions, not implied future features.
 
 - Which outfit zones are valuable at gameplay distance and where their silhouette
   limits lie.
+- How headgear resolves incompatible hair silhouettes: preserve, compress, swap to
+  a fitted variant or hide the hairstyle.
 - What Web3 ownership means to the player, which assets participate, and where the
   boundary between cosmetic value and gameplay power lies.
 - A wallet and account experience that preserves traditional access, plus a
