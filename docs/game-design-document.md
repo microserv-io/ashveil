@@ -128,6 +128,8 @@ When a feature changes a player-facing rule, its PR must:
   feminine humanoid body models with the same height, joint placement, bind pose and
   skeleton. Every wearable piece must fit and animate on both before additional body
   shapes enter scope.
+- **Bald canonical mannequins.** Each canonical body must include a complete bald
+  scalp. Hairstyle geometry is separate cosmetic content, not part of either body.
 - **Items outlive body shapes.** Equipment identity, ownership and gameplay data
   must remain independent from its fitted mesh. A future brute, slim or other body
   archetype may supply another visual fit without becoming a different item.
@@ -145,8 +147,12 @@ When a feature changes a player-facing rule, its PR must:
   pose and skeleton while allowing a fitted mesh per body. Covered body regions
   should be maskable, and every piece should pass clipping checks across
   representative gameplay animations on both bodies.
+- Treat the axis-cropped armor proxy as a failed fitting experiment, not a reusable
+  production method. Body masks and armor-fit cages need authored slot boundaries
+  plus representative pose and clipping tests; the final fitting method remains
+  open.
 - Treat hairstyles as modular cosmetics rather than permanent body geometry. Both
-  canonical bodies should expose a compatible scalp envelope, hairline and head
+  canonical bodies should share a compatible scalp-envelope fit, hairline and head
   socket so one hairstyle asset can serve either fit where its silhouette allows.
   Short styles may follow the head rigidly; longer styles need controlled secondary
   bones and explicit compatibility behaviour for helmets, back pieces and weapons.
@@ -172,6 +178,13 @@ When a feature changes a player-facing rule, its PR must:
   generation does not invent the rules.
 - **Generated does not mean accepted.** Every asset must pass visual, technical,
   licensing and runtime validation before entering the game.
+- **Preserve the asset lineage.** Retain the immutable generated raw, an editable
+  source derivative and a separately validated runtime derivative.
+- **Judge topology at its use boundary.** Source topology is reviewed as editable,
+  quad-dominant geometry; runtime GLBs are reviewed using their triangulated metrics.
+- **Humanoid rigging has an entry gate.** A generated humanoid cannot enter rigging
+  until it has an explicit scale, applied transforms, validated semantic components
+  and a recorded topology report.
 
 ### Direction
 
@@ -245,8 +258,18 @@ These are unresolved decisions, not implied future features.
 - Measured polygon, material, texture, animation and LOD budgets for browser and
   Steam Deck targets. These must come from representative assets and profiling, not
   invented defaults.
-- Tripo's real acceptance rate for the chosen style: topology, UVs, materials,
-  modular seams, skeleton consistency, deformation, animation quality and exports.
+- The canonical source height and how it maps to the renderer's actor-radius scaling.
+- The source/runtime coordinate contract: up and forward axes, ground origin and
+  anatomical side naming.
+- Whether neck and wrist component seams are welded or intentionally retained.
+- Whether semantic source objects remain separate or are consolidated into fewer
+  runtime meshes and primitives.
+- Tripo's real acceptance and repeatability rate across masculine and feminine
+  mannequins and shared hairstyle fits: topology, UVs, textures, materials, modular
+  seams, rig deformation, animation quality and exports.
+- The production body-mask and armor-cage fitting method. The axis-cropped proxy
+  failed its boundary-quality review, so it cannot stand in for authored slot
+  boundaries or representative pose and clipping tests.
 - How later body archetypes receive equipment fits: separately authored meshes,
   corrective shapes or a controlled deformation system. This is deliberately not
   required while Ashveil targets its two canonical launch bodies.
