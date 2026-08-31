@@ -33,6 +33,7 @@
     "heightStatus": "provisional_not_canonical_runtime_scale"
   },
   "skeleton": {
+    "contract": "humanoid.v1",
     "name": "Ashveil_DiagnosticRig",
     "bones": 20,
     "deformBones": 19,
@@ -59,7 +60,1391 @@
       "thigh.R",
       "shin.R",
       "foot.R"
-    ]
+    ],
+    "manifest": "scripts/art/contracts/humanoid.v1.json",
+    "restRecords": [
+      {
+        "name": "root",
+        "parent": null,
+        "deform": false,
+        "head": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tail": [
+          0.0,
+          0.012469,
+          0.777536
+        ],
+        "roll": 0.0,
+        "matrixLocal": [
+          1.0,
+          0.0,
+          -0.0,
+          0.0,
+          -0.0,
+          0.016035,
+          -0.999871,
+          0.0,
+          -0.0,
+          0.999871,
+          0.016035,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "pelvis",
+        "parent": "root",
+        "deform": true,
+        "head": [
+          0.0,
+          0.012469,
+          0.777536
+        ],
+        "tail": [
+          -0.0,
+          0.019728,
+          0.967244
+        ],
+        "roll": -0.0,
+        "matrixLocal": [
+          1.0,
+          -0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.038235,
+          -0.999269,
+          0.012469,
+          0.0,
+          0.999269,
+          0.038235,
+          0.777536,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "spine",
+        "parent": "pelvis",
+        "deform": true,
+        "head": [
+          -0.0,
+          0.019728,
+          0.967244
+        ],
+        "tail": [
+          -0.0,
+          -0.008372,
+          1.205938
+        ],
+        "roll": -0.0,
+        "matrixLocal": [
+          1.0,
+          -0.0,
+          0.0,
+          -0.0,
+          0.0,
+          -0.116916,
+          -0.993142,
+          0.019728,
+          0.0,
+          0.993142,
+          -0.116916,
+          0.967244,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "chest",
+        "parent": "spine",
+        "deform": true,
+        "head": [
+          -0.0,
+          -0.008372,
+          1.205938
+        ],
+        "tail": [
+          0.0,
+          0.05473,
+          1.371153
+        ],
+        "roll": 0.0,
+        "matrixLocal": [
+          1.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.356802,
+          -0.93418,
+          -0.008372,
+          -0.0,
+          0.93418,
+          0.356802,
+          1.205938,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "neck",
+        "parent": "chest",
+        "deform": true,
+        "head": [
+          0.0,
+          0.05473,
+          1.371153
+        ],
+        "tail": [
+          0.0,
+          0.020663,
+          1.569322
+        ],
+        "roll": -0.0,
+        "matrixLocal": [
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          -0.169425,
+          -0.985543,
+          0.05473,
+          0.0,
+          0.985543,
+          -0.169425,
+          1.371153,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "head",
+        "parent": "neck",
+        "deform": true,
+        "head": [
+          0.0,
+          0.020663,
+          1.569322
+        ],
+        "tail": [
+          -0.0,
+          -0.020485,
+          1.773
+        ],
+        "roll": -0.0,
+        "matrixLocal": [
+          1.0,
+          -0.0,
+          0.0,
+          0.0,
+          0.0,
+          -0.198024,
+          -0.980197,
+          0.020663,
+          0.0,
+          0.980197,
+          -0.198024,
+          1.569322,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "clavicle.L",
+        "parent": "chest",
+        "deform": true,
+        "head": [
+          0.0,
+          0.05473,
+          1.371153
+        ],
+        "tail": [
+          0.221326,
+          0.05473,
+          1.371153
+        ],
+        "roll": 1.570796,
+        "matrixLocal": [
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          -1.0,
+          0.05473,
+          -1.0,
+          0.0,
+          0.0,
+          1.371153,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "upper_arm.L",
+        "parent": "clavicle.L",
+        "deform": true,
+        "head": [
+          0.221326,
+          0.05473,
+          1.371153
+        ],
+        "tail": [
+          0.305849,
+          0.065819,
+          1.172984
+        ],
+        "roll": 2.738438,
+        "matrixLocal": [
+          -0.919828,
+          0.391803,
+          0.020165,
+          0.221326,
+          0.0,
+          0.051401,
+          -0.998678,
+          0.05473,
+          -0.392322,
+          -0.918612,
+          -0.04728,
+          1.371153,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "forearm.L",
+        "parent": "upper_arm.L",
+        "deform": true,
+        "head": [
+          0.305849,
+          0.065819,
+          1.172984
+        ],
+        "tail": [
+          0.401192,
+          0.021153,
+          0.969471
+        ],
+        "roll": 2.703469,
+        "matrixLocal": [
+          -0.905549,
+          0.416102,
+          -0.082699,
+          0.305849,
+          0.0,
+          -0.194933,
+          -0.980817,
+          0.065819,
+          -0.424241,
+          -0.888178,
+          0.176521,
+          1.172984,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "hand.L",
+        "parent": "forearm.L",
+        "deform": true,
+        "head": [
+          0.401192,
+          0.021153,
+          0.969471
+        ],
+        "tail": [
+          0.45429,
+          -0.019199,
+          0.784527
+        ],
+        "roll": 2.86201,
+        "matrixLocal": [
+          -0.96117,
+          0.270079,
+          -0.05664,
+          0.401192,
+          0.0,
+          -0.205251,
+          -0.97871,
+          0.021153,
+          -0.275954,
+          -0.940707,
+          0.197281,
+          0.969471,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "clavicle.R",
+        "parent": "chest",
+        "deform": true,
+        "head": [
+          0.0,
+          0.05473,
+          1.371153
+        ],
+        "tail": [
+          -0.221326,
+          0.05473,
+          1.371153
+        ],
+        "roll": -1.570796,
+        "matrixLocal": [
+          0.0,
+          -1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          -1.0,
+          0.05473,
+          1.0,
+          0.0,
+          0.0,
+          1.371153,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "upper_arm.R",
+        "parent": "clavicle.R",
+        "deform": true,
+        "head": [
+          -0.221326,
+          0.05473,
+          1.371153
+        ],
+        "tail": [
+          -0.305849,
+          0.065819,
+          1.172984
+        ],
+        "roll": -2.738438,
+        "matrixLocal": [
+          -0.919828,
+          -0.391804,
+          -0.020165,
+          -0.221326,
+          -0.0,
+          0.051401,
+          -0.998678,
+          0.05473,
+          0.392322,
+          -0.918612,
+          -0.04728,
+          1.371153,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "forearm.R",
+        "parent": "upper_arm.R",
+        "deform": true,
+        "head": [
+          -0.305849,
+          0.065819,
+          1.172984
+        ],
+        "tail": [
+          -0.401192,
+          0.021153,
+          0.969471
+        ],
+        "roll": -2.703469,
+        "matrixLocal": [
+          -0.905549,
+          -0.416102,
+          0.082699,
+          -0.305849,
+          -0.0,
+          -0.194933,
+          -0.980817,
+          0.065819,
+          0.424241,
+          -0.888178,
+          0.176521,
+          1.172984,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "hand.R",
+        "parent": "forearm.R",
+        "deform": true,
+        "head": [
+          -0.401192,
+          0.021153,
+          0.969471
+        ],
+        "tail": [
+          -0.454224,
+          -0.019152,
+          0.784748
+        ],
+        "roll": -2.862024,
+        "matrixLocal": [
+          -0.961174,
+          -0.270066,
+          0.056639,
+          -0.401192,
+          0.0,
+          -0.205256,
+          -0.978708,
+          0.021153,
+          0.275941,
+          -0.940709,
+          0.197287,
+          0.969471,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "thigh.L",
+        "parent": "pelvis",
+        "deform": true,
+        "head": [
+          0.135601,
+          0.01051,
+          0.87907
+        ],
+        "tail": [
+          0.153949,
+          0.046848,
+          0.518357
+        ],
+        "roll": -0.04567,
+        "matrixLocal": [
+          0.997678,
+          0.050543,
+          0.045654,
+          0.135601,
+          -0.050544,
+          0.100105,
+          0.993693,
+          0.01051,
+          0.045654,
+          -0.993692,
+          0.102427,
+          0.87907,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "shin.L",
+        "parent": "thigh.L",
+        "deform": true,
+        "head": [
+          0.153949,
+          0.046848,
+          0.518357
+        ],
+        "tail": [
+          0.194607,
+          0.054018,
+          0.112667
+        ],
+        "roll": -0.097633,
+        "matrixLocal": [
+          0.990231,
+          0.099705,
+          0.097478,
+          0.153949,
+          -0.099705,
+          0.017582,
+          0.994862,
+          0.046848,
+          0.097478,
+          -0.994862,
+          0.027351,
+          0.518357,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "foot.L",
+        "parent": "shin.L",
+        "deform": true,
+        "head": [
+          0.194607,
+          0.054018,
+          0.112667
+        ],
+        "tail": [
+          0.238248,
+          -0.142504,
+          0.008016
+        ],
+        "roll": 0.395094,
+        "matrixLocal": [
+          -0.922961,
+          0.192351,
+          -0.333384,
+          0.194607,
+          0.0,
+          -0.866169,
+          -0.499751,
+          0.054018,
+          -0.384895,
+          -0.46125,
+          0.79944,
+          0.112667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "thigh.R",
+        "parent": "pelvis",
+        "deform": true,
+        "head": [
+          -0.135601,
+          0.01051,
+          0.87907
+        ],
+        "tail": [
+          -0.153949,
+          0.046848,
+          0.518357
+        ],
+        "roll": 0.04567,
+        "matrixLocal": [
+          0.997677,
+          -0.050543,
+          -0.045654,
+          -0.135601,
+          0.050537,
+          0.100105,
+          0.993684,
+          0.01051,
+          -0.045654,
+          -0.993692,
+          0.102428,
+          0.87907,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "shin.R",
+        "parent": "thigh.R",
+        "deform": true,
+        "head": [
+          -0.153949,
+          0.046848,
+          0.518357
+        ],
+        "tail": [
+          -0.194607,
+          0.054018,
+          0.112667
+        ],
+        "roll": 0.097634,
+        "matrixLocal": [
+          0.99023,
+          -0.099705,
+          -0.097478,
+          -0.153949,
+          0.099698,
+          0.017582,
+          0.994854,
+          0.046848,
+          -0.097479,
+          -0.994862,
+          0.027351,
+          0.518357,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "foot.R",
+        "parent": "shin.R",
+        "deform": true,
+        "head": [
+          -0.194607,
+          0.054018,
+          0.112667
+        ],
+        "tail": [
+          -0.238248,
+          -0.142504,
+          0.008016
+        ],
+        "roll": -0.395093,
+        "matrixLocal": [
+          -0.92296,
+          -0.192349,
+          0.333384,
+          -0.194607,
+          5e-06,
+          -0.866163,
+          -0.499745,
+          0.054018,
+          0.384894,
+          -0.461247,
+          0.799442,
+          0.112667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ],
+    "acceptedMaleRestSignatureSha256": "06b8b7f511219087ffd2843bc91b012651acf6353b0e9260e9709b906b67238f",
+    "rigify": "not_used_direct_fitted_deform_rig_is_less_brittle_for_this_diagnostic"
+  },
+  "jointFit": {
+    "contract": "humanoid.v1",
+    "targetsFrozenBeforeArmature": true,
+    "toleranceMetres": 0.035999999046325684,
+    "symmetryToleranceMetres": 0.021599999427795412,
+    "rawSymmetryErrorMetres": {
+      "shoulder": 0.0016055638543858992,
+      "elbow": 9.470318808353462e-08,
+      "hip": 0.0025829240425672634,
+      "knee": 4.6701532431452246e-08,
+      "ankle": 7.906292736408536e-08,
+      "wrist": 0.0035914156061627785
+    },
+    "canonicalization": {
+      "transformsApplied": true,
+      "heightMetres": 1.7999999523162842,
+      "positiveXHandCenter": [
+        0.433746,
+        -0.004453,
+        0.853241
+      ],
+      "negativeXHandCenter": [
+        -0.433746,
+        -0.004453,
+        0.853241
+      ],
+      "mirroredInputRejected": true
+    },
+    "maximumErrorMetres": 0.0,
+    "joints": [
+      {
+        "name": "shoulder.L",
+        "targetWorld": [
+          0.221326,
+          0.05473,
+          1.371153
+        ],
+        "actualWorld": [
+          0.221326,
+          0.05473,
+          1.371153
+        ],
+        "errorVectorMetres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "errorMetres": 0.0,
+        "thresholdMetres": 0.035999999046325684,
+        "derivation": "robust_height_slice_outer_cluster",
+        "sourceObjects": [
+          "Body"
+        ],
+        "sourceVertexPairs": [],
+        "sampleCount": 99,
+        "confidence": 1.0,
+        "pass": true
+      },
+      {
+        "name": "shoulder.R",
+        "targetWorld": [
+          -0.221326,
+          0.05473,
+          1.371153
+        ],
+        "actualWorld": [
+          -0.221326,
+          0.05473,
+          1.371153
+        ],
+        "errorVectorMetres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "errorMetres": 0.0,
+        "thresholdMetres": 0.035999999046325684,
+        "derivation": "robust_height_slice_outer_cluster",
+        "sourceObjects": [
+          "Body"
+        ],
+        "sourceVertexPairs": [],
+        "sampleCount": 97,
+        "confidence": 1.0,
+        "pass": true
+      },
+      {
+        "name": "elbow.L",
+        "targetWorld": [
+          0.305849,
+          0.065819,
+          1.172984
+        ],
+        "actualWorld": [
+          0.305849,
+          0.065819,
+          1.172984
+        ],
+        "errorVectorMetres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "errorMetres": 0.0,
+        "thresholdMetres": 0.035999999046325684,
+        "derivation": "robust_height_slice_outer_cluster",
+        "sourceObjects": [
+          "Body"
+        ],
+        "sourceVertexPairs": [],
+        "sampleCount": 133,
+        "confidence": 1.0,
+        "pass": true
+      },
+      {
+        "name": "elbow.R",
+        "targetWorld": [
+          -0.305849,
+          0.065819,
+          1.172984
+        ],
+        "actualWorld": [
+          -0.305849,
+          0.065819,
+          1.172984
+        ],
+        "errorVectorMetres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "errorMetres": 0.0,
+        "thresholdMetres": 0.035999999046325684,
+        "derivation": "robust_height_slice_outer_cluster",
+        "sourceObjects": [
+          "Body"
+        ],
+        "sourceVertexPairs": [],
+        "sampleCount": 133,
+        "confidence": 1.0,
+        "pass": true
+      },
+      {
+        "name": "wrist.L",
+        "targetWorld": [
+          0.401192,
+          0.021153,
+          0.969471
+        ],
+        "actualWorld": [
+          0.401192,
+          0.021153,
+          0.969471
+        ],
+        "errorVectorMetres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "errorMetres": 0.0,
+        "thresholdMetres": 0.035999999046325684,
+        "derivation": "frozen_boundary_pair_midpoints",
+        "sourceObjects": [
+          "Body",
+          "Hand_PositiveX"
+        ],
+        "sourceVertexPairs": [
+          [
+            4736,
+            286
+          ],
+          [
+            4739,
+            261
+          ],
+          [
+            4734,
+            287
+          ],
+          [
+            4733,
+            288
+          ],
+          [
+            4749,
+            258
+          ],
+          [
+            4752,
+            252
+          ],
+          [
+            4750,
+            256
+          ],
+          [
+            4728,
+            249
+          ],
+          [
+            4751,
+            254
+          ],
+          [
+            4726,
+            248
+          ],
+          [
+            4755,
+            250
+          ],
+          [
+            4738,
+            263
+          ],
+          [
+            4731,
+            289
+          ]
+        ],
+        "sampleCount": 13,
+        "confidence": 0.5416666666666666,
+        "pass": true
+      },
+      {
+        "name": "wrist.R",
+        "targetWorld": [
+          -0.401192,
+          0.021153,
+          0.969471
+        ],
+        "actualWorld": [
+          -0.401192,
+          0.021153,
+          0.969471
+        ],
+        "errorVectorMetres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "errorMetres": 0.0,
+        "thresholdMetres": 0.035999999046325684,
+        "derivation": "frozen_boundary_pair_midpoints",
+        "sourceObjects": [
+          "Body",
+          "Hand_NegativeX"
+        ],
+        "sourceVertexPairs": [
+          [
+            1982,
+            794
+          ],
+          [
+            1992,
+            796
+          ],
+          [
+            1991,
+            795
+          ],
+          [
+            2030,
+            797
+          ],
+          [
+            2031,
+            209
+          ],
+          [
+            2033,
+            206
+          ],
+          [
+            2083,
+            118
+          ],
+          [
+            2034,
+            804
+          ],
+          [
+            2078,
+            507
+          ],
+          [
+            2084,
+            512
+          ],
+          [
+            2077,
+            113
+          ],
+          [
+            2075,
+            116
+          ],
+          [
+            2029,
+            200
+          ]
+        ],
+        "sampleCount": 13,
+        "confidence": 0.5416666666666666,
+        "pass": true
+      },
+      {
+        "name": "hip.L",
+        "targetWorld": [
+          0.135601,
+          0.01051,
+          0.87907
+        ],
+        "actualWorld": [
+          0.135601,
+          0.01051,
+          0.87907
+        ],
+        "errorVectorMetres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "errorMetres": 0.0,
+        "thresholdMetres": 0.035999999046325684,
+        "derivation": "robust_height_slice_outer_cluster",
+        "sourceObjects": [
+          "Body"
+        ],
+        "sourceVertexPairs": [],
+        "sampleCount": 49,
+        "confidence": 1.0,
+        "pass": true
+      },
+      {
+        "name": "hip.R",
+        "targetWorld": [
+          -0.135601,
+          0.01051,
+          0.87907
+        ],
+        "actualWorld": [
+          -0.135601,
+          0.01051,
+          0.87907
+        ],
+        "errorVectorMetres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "errorMetres": 0.0,
+        "thresholdMetres": 0.035999999046325684,
+        "derivation": "robust_height_slice_outer_cluster",
+        "sourceObjects": [
+          "Body"
+        ],
+        "sourceVertexPairs": [],
+        "sampleCount": 45,
+        "confidence": 1.0,
+        "pass": true
+      },
+      {
+        "name": "knee.L",
+        "targetWorld": [
+          0.153949,
+          0.046848,
+          0.518357
+        ],
+        "actualWorld": [
+          0.153949,
+          0.046848,
+          0.518357
+        ],
+        "errorVectorMetres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "errorMetres": 0.0,
+        "thresholdMetres": 0.035999999046325684,
+        "derivation": "robust_height_slice_outer_cluster",
+        "sourceObjects": [
+          "Body"
+        ],
+        "sourceVertexPairs": [],
+        "sampleCount": 74,
+        "confidence": 1.0,
+        "pass": true
+      },
+      {
+        "name": "knee.R",
+        "targetWorld": [
+          -0.153949,
+          0.046848,
+          0.518357
+        ],
+        "actualWorld": [
+          -0.153949,
+          0.046848,
+          0.518357
+        ],
+        "errorVectorMetres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "errorMetres": 0.0,
+        "thresholdMetres": 0.035999999046325684,
+        "derivation": "robust_height_slice_outer_cluster",
+        "sourceObjects": [
+          "Body"
+        ],
+        "sourceVertexPairs": [],
+        "sampleCount": 74,
+        "confidence": 1.0,
+        "pass": true
+      },
+      {
+        "name": "ankle.L",
+        "targetWorld": [
+          0.194607,
+          0.054018,
+          0.112667
+        ],
+        "actualWorld": [
+          0.194607,
+          0.054018,
+          0.112667
+        ],
+        "errorVectorMetres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "errorMetres": 0.0,
+        "thresholdMetres": 0.035999999046325684,
+        "derivation": "robust_height_slice_outer_cluster",
+        "sourceObjects": [
+          "Body"
+        ],
+        "sourceVertexPairs": [],
+        "sampleCount": 114,
+        "confidence": 1.0,
+        "pass": true
+      },
+      {
+        "name": "ankle.R",
+        "targetWorld": [
+          -0.194607,
+          0.054018,
+          0.112667
+        ],
+        "actualWorld": [
+          -0.194607,
+          0.054018,
+          0.112667
+        ],
+        "errorVectorMetres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "errorMetres": 0.0,
+        "thresholdMetres": 0.035999999046325684,
+        "derivation": "robust_height_slice_outer_cluster",
+        "sourceObjects": [
+          "Body"
+        ],
+        "sourceVertexPairs": [],
+        "sampleCount": 114,
+        "confidence": 1.0,
+        "pass": true
+      },
+      {
+        "name": "pelvis",
+        "targetWorld": [
+          0.0,
+          0.012469,
+          0.777536
+        ],
+        "actualWorld": [
+          0.0,
+          0.012469,
+          0.777536
+        ],
+        "errorVectorMetres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "errorMetres": 0.0,
+        "thresholdMetres": 0.035999999046325684,
+        "derivation": "robust_height_slice_central_cluster",
+        "sourceObjects": [
+          "Body"
+        ],
+        "sourceVertexPairs": [],
+        "sampleCount": 82,
+        "confidence": 1.0,
+        "pass": true
+      },
+      {
+        "name": "chest",
+        "targetWorld": [
+          -0.0,
+          -0.008372,
+          1.205938
+        ],
+        "actualWorld": [
+          -0.0,
+          -0.008372,
+          1.205938
+        ],
+        "errorVectorMetres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "errorMetres": 0.0,
+        "thresholdMetres": 0.035999999046325684,
+        "derivation": "robust_height_slice_central_cluster",
+        "sourceObjects": [
+          "Body"
+        ],
+        "sourceVertexPairs": [],
+        "sampleCount": 137,
+        "confidence": 1.0,
+        "pass": true
+      },
+      {
+        "name": "neck",
+        "targetWorld": [
+          0.0,
+          0.020663,
+          1.569322
+        ],
+        "actualWorld": [
+          0.0,
+          0.020663,
+          1.569322
+        ],
+        "errorVectorMetres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "errorMetres": 0.0,
+        "thresholdMetres": 0.035999999046325684,
+        "derivation": "frozen_boundary_pair_midpoints",
+        "sourceObjects": [
+          "Body",
+          "Head"
+        ],
+        "sourceVertexPairs": [
+          [
+            875,
+            1254
+          ],
+          [
+            863,
+            1252
+          ],
+          [
+            880,
+            1247
+          ],
+          [
+            879,
+            1253
+          ],
+          [
+            810,
+            64
+          ],
+          [
+            808,
+            61
+          ],
+          [
+            812,
+            65
+          ],
+          [
+            880,
+            1246
+          ],
+          [
+            814,
+            66
+          ],
+          [
+            807,
+            60
+          ],
+          [
+            911,
+            1240
+          ],
+          [
+            877,
+            1258
+          ],
+          [
+            909,
+            1244
+          ],
+          [
+            773,
+            67
+          ],
+          [
+            806,
+            1343
+          ],
+          [
+            876,
+            1256
+          ],
+          [
+            910,
+            1243
+          ],
+          [
+            816,
+            1260
+          ],
+          [
+            905,
+            1245
+          ],
+          [
+            771,
+            69
+          ],
+          [
+            805,
+            1344
+          ],
+          [
+            803,
+            47
+          ],
+          [
+            769,
+            71
+          ],
+          [
+            815,
+            43
+          ],
+          [
+            907,
+            74
+          ],
+          [
+            908,
+            73
+          ],
+          [
+            804,
+            45
+          ]
+        ],
+        "sampleCount": 27,
+        "confidence": 1.0,
+        "pass": true
+      },
+      {
+        "name": "head",
+        "targetWorld": [
+          -0.0,
+          -0.020485,
+          1.773
+        ],
+        "actualWorld": [
+          -0.0,
+          -0.020485,
+          1.773
+        ],
+        "errorVectorMetres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "errorMetres": 0.0,
+        "thresholdMetres": 0.035999999046325684,
+        "derivation": "head_bounds_crown_center",
+        "sourceObjects": [
+          "Head"
+        ],
+        "sourceVertexPairs": [],
+        "sampleCount": 1345,
+        "confidence": 1.0,
+        "pass": true
+      }
+    ],
+    "pass": true
   },
   "weights": {
     "vertices": 7966,
@@ -68,6 +1453,7 @@
     "normalized": true,
     "finite": true,
     "sharedArmatureModifier": true,
+    "semanticAllowedBoneSets": true,
     "objects": [
       {
         "name": "Body",
@@ -79,7 +1465,7 @@
         "name": "Head",
         "vertices": 1345,
         "weightedVertices": 1345,
-        "maximumInfluences": 1
+        "maximumInfluences": 2
       },
       {
         "name": "Hand_NegativeX",
@@ -111,6 +1497,23 @@
         "weightedVertices": 114,
         "maximumInfluences": 1
       }
+    ],
+    "seamHarmonization": [
+      {
+        "name": "head-body",
+        "sharedBone": "neck",
+        "pairCount": 27
+      },
+      {
+        "name": "negative-x-hand-body",
+        "sharedBone": "forearm.R",
+        "pairCount": 13
+      },
+      {
+        "name": "positive-x-hand-body",
+        "sharedBone": "forearm.L",
+        "pairCount": 13
+      }
     ]
   },
   "animation": {
@@ -124,8 +1527,8 @@
       "LINEAR",
       "STEP"
     ],
-    "fCurves": 180,
-    "keyframes": 1080,
+    "fCurves": 200,
+    "keyframes": 1200,
     "poses": [
       {
         "name": "bind",
@@ -136,7 +1539,7 @@
         "frame": 10
       },
       {
-        "name": "horizontal-attack",
+        "name": "cross-body-reach",
         "frame": 20
       },
       {
@@ -153,132 +1556,86 @@
       }
     ],
     "poseChannels": {
-      "bind": [],
-      "overhead-reach": [
-        {
-          "bone": "clavicle.L",
-          "axis": "Z",
-          "degrees": 20
-        },
-        {
-          "bone": "clavicle.R",
-          "axis": "Z",
-          "degrees": -20
-        },
-        {
-          "bone": "upper_arm.L",
-          "axis": "Z",
-          "degrees": 145
-        },
-        {
-          "bone": "upper_arm.R",
-          "axis": "Z",
-          "degrees": -145
-        },
-        {
-          "bone": "forearm.L",
-          "axis": "Z",
-          "degrees": -8
-        },
-        {
-          "bone": "forearm.R",
-          "axis": "Z",
-          "degrees": 8
-        }
-      ],
-      "horizontal-attack": [
-        {
-          "bone": "chest",
-          "axis": "Y",
-          "degrees": 35
-        },
-        {
-          "bone": "clavicle.L",
-          "axis": "Z",
-          "degrees": 12
-        },
-        {
-          "bone": "upper_arm.L",
-          "axis": "Z",
-          "degrees": 70
-        },
-        {
-          "bone": "upper_arm.L",
-          "axis": "Y",
-          "degrees": -25
-        },
-        {
-          "bone": "forearm.L",
-          "axis": "Z",
-          "degrees": 35
-        },
-        {
-          "bone": "clavicle.R",
-          "axis": "Z",
-          "degrees": -12
-        },
-        {
-          "bone": "upper_arm.R",
-          "axis": "Z",
-          "degrees": -45
-        },
-        {
-          "bone": "upper_arm.R",
-          "axis": "Y",
-          "degrees": 20
-        }
-      ],
-      "deep-elbow-bend": [
-        {
-          "bone": "upper_arm.L",
-          "axis": "Z",
-          "degrees": 35
-        },
-        {
-          "bone": "forearm.L",
-          "axis": "Z",
-          "degrees": 135
-        }
-      ],
-      "long-stride": [
-        {
-          "bone": "pelvis",
-          "axis": "location.Z",
-          "metres": -0.1
-        },
-        {
-          "bone": "thigh.L",
-          "axis": "X",
-          "degrees": 60
-        },
-        {
-          "bone": "shin.L",
-          "axis": "X",
-          "degrees": -100
-        },
-        {
-          "bone": "thigh.R",
-          "axis": "X",
-          "degrees": -30
-        },
-        {
-          "bone": "shin.R",
-          "axis": "X",
-          "degrees": 18
-        }
-      ],
-      "head-turn": [
-        {
-          "bone": "neck",
-          "axis": "Y",
-          "degrees": 25
-        },
-        {
-          "bone": "head",
-          "axis": "Y",
-          "degrees": 45
-        }
-      ]
+      "bind": {
+        "space": "armature_world",
+        "targets": []
+      },
+      "overhead-reach": {
+        "space": "armature_world",
+        "targets": [
+          {
+            "bone": "hand.L",
+            "targetWorld": [
+              0.289338,
+              -0.029473,
+              1.99766
+            ]
+          },
+          {
+            "bone": "hand.R",
+            "targetWorld": [
+              -0.289338,
+              -0.029473,
+              1.997424
+            ]
+          }
+        ]
+      },
+      "cross-body-reach": {
+        "space": "armature_world",
+        "targets": [
+          {
+            "bone": "hand.L",
+            "targetWorld": [
+              -0.016039,
+              -0.248165,
+              1.275492
+            ],
+            "role": "lead_cross_body"
+          }
+        ]
+      },
+      "deep-elbow-bend": {
+        "space": "armature_world",
+        "targets": [
+          {
+            "bone": "forearm.L",
+            "flexionTargetDegrees": 135
+          }
+        ]
+      },
+      "long-stride": {
+        "space": "armature_world",
+        "targets": [
+          {
+            "bone": "foot.L",
+            "targetWorld": [
+              0.194607,
+              -0.075982,
+              0.162667
+            ],
+            "role": "lead"
+          },
+          {
+            "bone": "foot.R",
+            "targetWorld": [
+              -0.194607,
+              0.054018,
+              0.121667
+            ],
+            "role": "trail"
+          }
+        ]
+      },
+      "head-turn": {
+        "space": "armature_world",
+        "targets": [
+          {
+            "bone": "head",
+            "worldYawDegrees": 45
+          }
+        ]
+      }
     },
     "diagnosticOnly": true
   },
@@ -778,198 +2135,198 @@
           },
           {
             "name": "negative-x-hand-body",
-            "maximumMetres": 0.013711333311634618,
-            "minimumMetres": 0.008496225455386603,
+            "maximumMetres": 0.013711389361723602,
+            "minimumMetres": 0.008496206136742174,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 1982,
                 "secondaryVertex": 794,
                 "baselineMetres": 0.008496206136742174,
-                "distanceMetres": 0.008496225455386603,
+                "distanceMetres": 0.008496206136742174,
                 "pass": true
               },
               {
                 "primaryVertex": 1992,
                 "secondaryVertex": 796,
                 "baselineMetres": 0.008861832774556575,
-                "distanceMetres": 0.008861846770785704,
+                "distanceMetres": 0.008861832774556575,
                 "pass": true
               },
               {
                 "primaryVertex": 1991,
                 "secondaryVertex": 795,
                 "baselineMetres": 0.00934117608294397,
-                "distanceMetres": 0.009341190955290221,
+                "distanceMetres": 0.00934117608294397,
                 "pass": true
               },
               {
                 "primaryVertex": 2030,
                 "secondaryVertex": 797,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.01268968726536483,
+                "distanceMetres": 0.012689743312710305,
                 "pass": true
               },
               {
                 "primaryVertex": 2031,
                 "secondaryVertex": 209,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689632006166775,
+                "distanceMetres": 0.012689743312710305,
                 "pass": true
               },
               {
                 "primaryVertex": 2033,
                 "secondaryVertex": 206,
                 "baselineMetres": 0.01268979660046202,
-                "distanceMetres": 0.01268968531230389,
+                "distanceMetres": 0.01268979660046202,
                 "pass": true
               },
               {
                 "primaryVertex": 2083,
                 "secondaryVertex": 118,
                 "baselineMetres": 0.01275213178470909,
-                "distanceMetres": 0.012752079862920481,
+                "distanceMetres": 0.01275213178470909,
                 "pass": true
               },
               {
                 "primaryVertex": 2034,
                 "secondaryVertex": 804,
                 "baselineMetres": 0.012906732135836707,
-                "distanceMetres": 0.012906676008995501,
+                "distanceMetres": 0.012906732135836707,
                 "pass": true
               },
               {
                 "primaryVertex": 2078,
                 "secondaryVertex": 507,
                 "baselineMetres": 0.013240395991051741,
-                "distanceMetres": 0.013240342652461348,
+                "distanceMetres": 0.013240395991051741,
                 "pass": true
               },
               {
                 "primaryVertex": 2084,
                 "secondaryVertex": 512,
                 "baselineMetres": 0.013240448264722577,
-                "distanceMetres": 0.013240394067706433,
+                "distanceMetres": 0.013240448264722577,
                 "pass": true
               },
               {
                 "primaryVertex": 2077,
                 "secondaryVertex": 113,
                 "baselineMetres": 0.013507308332627954,
-                "distanceMetres": 0.013507255879709069,
+                "distanceMetres": 0.013507308332627954,
                 "pass": true
               },
               {
                 "primaryVertex": 2075,
                 "secondaryVertex": 116,
                 "baselineMetres": 0.013507359640677598,
-                "distanceMetres": 0.013507306918623826,
+                "distanceMetres": 0.013507359640677598,
                 "pass": true
               },
               {
                 "primaryVertex": 2029,
                 "secondaryVertex": 200,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711333311634618,
+                "distanceMetres": 0.013711389361723602,
                 "pass": true
               }
             ]
           },
           {
             "name": "positive-x-hand-body",
-            "maximumMetres": 0.013711334273442812,
-            "minimumMetres": 0.012689631217771806,
+            "maximumMetres": 0.013711389627048922,
+            "minimumMetres": 0.01268974173593415,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 4736,
                 "secondaryVertex": 286,
                 "baselineMetres": 0.01268974173593415,
-                "distanceMetres": 0.01268968568858171,
+                "distanceMetres": 0.01268974173593415,
                 "pass": true
               },
               {
                 "primaryVertex": 4739,
                 "secondaryVertex": 261,
                 "baselineMetres": 0.012689742524322251,
-                "distanceMetres": 0.012689631217771806,
+                "distanceMetres": 0.012689742524322251,
                 "pass": true
               },
               {
                 "primaryVertex": 4734,
                 "secondaryVertex": 287,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689686476973295,
+                "distanceMetres": 0.012689743312710305,
                 "pass": true
               },
               {
                 "primaryVertex": 4733,
                 "secondaryVertex": 288,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.012689740947545998,
+                "distanceMetres": 0.012689796994654374,
                 "pass": true
               },
               {
                 "primaryVertex": 4749,
                 "secondaryVertex": 258,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.01268968568858171,
+                "distanceMetres": 0.012689796994654374,
                 "pass": true
               },
               {
                 "primaryVertex": 4752,
                 "secondaryVertex": 252,
                 "baselineMetres": 0.01275213128546213,
-                "distanceMetres": 0.012752079577635345,
+                "distanceMetres": 0.01275213128546213,
                 "pass": true
               },
               {
                 "primaryVertex": 4750,
                 "secondaryVertex": 256,
                 "baselineMetres": 0.01290673111406965,
-                "distanceMetres": 0.012906674987224002,
+                "distanceMetres": 0.012906730867436211,
                 "pass": true
               },
               {
                 "primaryVertex": 4728,
                 "secondaryVertex": 249,
                 "baselineMetres": 0.013240395510215441,
-                "distanceMetres": 0.013240342309005464,
+                "distanceMetres": 0.013240395510215441,
                 "pass": true
               },
               {
                 "primaryVertex": 4751,
                 "secondaryVertex": 254,
                 "baselineMetres": 0.013240448024305379,
-                "distanceMetres": 0.013240393792942796,
+                "distanceMetres": 0.013240448024305379,
                 "pass": true
               },
               {
                 "primaryVertex": 4726,
                 "secondaryVertex": 248,
                 "baselineMetres": 0.013507307995960317,
-                "distanceMetres": 0.013507255610373914,
+                "distanceMetres": 0.013507307995960317,
                 "pass": true
               },
               {
                 "primaryVertex": 4755,
                 "secondaryVertex": 250,
                 "baselineMetres": 0.013507359169344696,
-                "distanceMetres": 0.013507306581956155,
+                "distanceMetres": 0.013507359169344696,
                 "pass": true
               },
               {
                 "primaryVertex": 4738,
                 "secondaryVertex": 263,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711278223128634,
+                "distanceMetres": 0.013711389361723602,
                 "pass": true
               },
               {
                 "primaryVertex": 4731,
                 "secondaryVertex": 289,
                 "baselineMetres": 0.013711389859208573,
-                "distanceMetres": 0.013711334273442812,
+                "distanceMetres": 0.013711389627048922,
                 "pass": true
               }
             ]
@@ -983,7 +2340,7 @@
         "groups": [
           {
             "name": "head-body",
-            "maximumMetres": 0.01595620346099933,
+            "maximumMetres": 0.01476967868123084,
             "minimumMetres": 0.005116333542123964,
             "pass": true,
             "pairs": [
@@ -1019,21 +2376,21 @@
                 "primaryVertex": 810,
                 "secondaryVertex": 64,
                 "baselineMetres": 0.00995771541127923,
-                "distanceMetres": 0.010534936731493676,
+                "distanceMetres": 0.00995771541127923,
                 "pass": true
               },
               {
                 "primaryVertex": 808,
                 "secondaryVertex": 61,
                 "baselineMetres": 0.009957715411279253,
-                "distanceMetres": 0.010557001510050972,
+                "distanceMetres": 0.009957715411279253,
                 "pass": true
               },
               {
                 "primaryVertex": 812,
                 "secondaryVertex": 65,
                 "baselineMetres": 0.009957715411279253,
-                "distanceMetres": 0.010537567901926158,
+                "distanceMetres": 0.009957715411279253,
                 "pass": true
               },
               {
@@ -1047,14 +2404,14 @@
                 "primaryVertex": 814,
                 "secondaryVertex": 66,
                 "baselineMetres": 0.010724754781113413,
-                "distanceMetres": 0.011318326593418419,
+                "distanceMetres": 0.010724754781113413,
                 "pass": true
               },
               {
                 "primaryVertex": 807,
                 "secondaryVertex": 60,
                 "baselineMetres": 0.010724755401237598,
-                "distanceMetres": 0.011348682030831243,
+                "distanceMetres": 0.010724755401237598,
                 "pass": true
               },
               {
@@ -1068,28 +2425,28 @@
                 "primaryVertex": 877,
                 "secondaryVertex": 1258,
                 "baselineMetres": 0.01130099230164435,
-                "distanceMetres": 0.011359901563991538,
+                "distanceMetres": 0.01130099230164435,
                 "pass": true
               },
               {
                 "primaryVertex": 909,
                 "secondaryVertex": 1244,
                 "baselineMetres": 0.011300992570746635,
-                "distanceMetres": 0.011354480143326658,
+                "distanceMetres": 0.011300992570746635,
                 "pass": true
               },
               {
                 "primaryVertex": 773,
                 "secondaryVertex": 67,
                 "baselineMetres": 0.011612645729045423,
-                "distanceMetres": 0.011921885185036974,
+                "distanceMetres": 0.011612645729045423,
                 "pass": true
               },
               {
                 "primaryVertex": 806,
                 "secondaryVertex": 1343,
                 "baselineMetres": 0.011612645729045423,
-                "distanceMetres": 0.011947671971947937,
+                "distanceMetres": 0.011612645729045423,
                 "pass": true
               },
               {
@@ -1110,268 +2467,268 @@
                 "primaryVertex": 816,
                 "secondaryVertex": 1260,
                 "baselineMetres": 0.012469116340994395,
-                "distanceMetres": 0.012983706437654285,
+                "distanceMetres": 0.012469116340994395,
                 "pass": true
               },
               {
                 "primaryVertex": 905,
                 "secondaryVertex": 1245,
                 "baselineMetres": 0.012469116340994395,
-                "distanceMetres": 0.012909249841299927,
+                "distanceMetres": 0.012469116340994395,
                 "pass": true
               },
               {
                 "primaryVertex": 771,
                 "secondaryVertex": 69,
                 "baselineMetres": 0.012627213901545137,
-                "distanceMetres": 0.01331719363401511,
+                "distanceMetres": 0.012627213901545137,
                 "pass": true
               },
               {
                 "primaryVertex": 805,
                 "secondaryVertex": 1344,
                 "baselineMetres": 0.012627213901545137,
-                "distanceMetres": 0.013342029362687177,
+                "distanceMetres": 0.012627213901545137,
                 "pass": true
               },
               {
                 "primaryVertex": 803,
                 "secondaryVertex": 47,
                 "baselineMetres": 0.014082443297169022,
-                "distanceMetres": 0.01506251622691719,
+                "distanceMetres": 0.014082443297169022,
                 "pass": true
               },
               {
                 "primaryVertex": 769,
                 "secondaryVertex": 71,
                 "baselineMetres": 0.014082444233631003,
-                "distanceMetres": 0.015022279466693841,
+                "distanceMetres": 0.014082444233631003,
                 "pass": true
               },
               {
                 "primaryVertex": 815,
                 "secondaryVertex": 43,
                 "baselineMetres": 0.014278156692014385,
-                "distanceMetres": 0.015211341820197139,
+                "distanceMetres": 0.014278156692014385,
                 "pass": true
               },
               {
                 "primaryVertex": 907,
                 "secondaryVertex": 74,
                 "baselineMetres": 0.014278157456394295,
-                "distanceMetres": 0.015112794354833795,
+                "distanceMetres": 0.014278157456394295,
                 "pass": true
               },
               {
                 "primaryVertex": 908,
                 "secondaryVertex": 73,
                 "baselineMetres": 0.014769677018611168,
-                "distanceMetres": 0.01589908531322867,
+                "distanceMetres": 0.014769677018611168,
                 "pass": true
               },
               {
                 "primaryVertex": 804,
                 "secondaryVertex": 45,
                 "baselineMetres": 0.01476967868123084,
-                "distanceMetres": 0.01595620346099933,
+                "distanceMetres": 0.01476967868123084,
                 "pass": true
               }
             ]
           },
           {
             "name": "negative-x-hand-body",
-            "maximumMetres": 0.013711476539470656,
-            "minimumMetres": 0.00849623777246303,
+            "maximumMetres": 0.013711357388430297,
+            "minimumMetres": 0.008496221262261835,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 1982,
                 "secondaryVertex": 794,
                 "baselineMetres": 0.008496206136742174,
-                "distanceMetres": 0.00849623777246303,
+                "distanceMetres": 0.008496221262261835,
                 "pass": true
               },
               {
                 "primaryVertex": 1992,
                 "secondaryVertex": 796,
                 "baselineMetres": 0.008861832774556575,
-                "distanceMetres": 0.008861817970088509,
+                "distanceMetres": 0.008861786026221338,
                 "pass": true
               },
               {
                 "primaryVertex": 1991,
                 "secondaryVertex": 795,
                 "baselineMetres": 0.00934117608294397,
-                "distanceMetres": 0.009341190626687082,
+                "distanceMetres": 0.009341182533309818,
                 "pass": true
               },
               {
                 "primaryVertex": 2030,
                 "secondaryVertex": 797,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689710431063572,
+                "distanceMetres": 0.012689698908412676,
                 "pass": true
               },
               {
                 "primaryVertex": 2031,
                 "secondaryVertex": 209,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.01268982898858636,
+                "distanceMetres": 0.012689830249410701,
                 "pass": true
               },
               {
                 "primaryVertex": 2033,
                 "secondaryVertex": 206,
                 "baselineMetres": 0.01268979660046202,
-                "distanceMetres": 0.012689709978075234,
+                "distanceMetres": 0.012689830951563959,
                 "pass": true
               },
               {
                 "primaryVertex": 2083,
                 "secondaryVertex": 118,
                 "baselineMetres": 0.01275213178470909,
-                "distanceMetres": 0.012752227595188138,
+                "distanceMetres": 0.012752165207465636,
                 "pass": true
               },
               {
                 "primaryVertex": 2034,
                 "secondaryVertex": 804,
                 "baselineMetres": 0.012906732135836707,
-                "distanceMetres": 0.01290684369293436,
+                "distanceMetres": 0.012906764135381926,
                 "pass": true
               },
               {
                 "primaryVertex": 2078,
                 "secondaryVertex": 507,
                 "baselineMetres": 0.013240395991051741,
-                "distanceMetres": 0.01324032352195513,
+                "distanceMetres": 0.013240432825421719,
                 "pass": true
               },
               {
                 "primaryVertex": 2084,
                 "secondaryVertex": 512,
                 "baselineMetres": 0.013240448264722577,
-                "distanceMetres": 0.013240438132851123,
+                "distanceMetres": 0.013240446260888022,
                 "pass": true
               },
               {
                 "primaryVertex": 2077,
                 "secondaryVertex": 113,
                 "baselineMetres": 0.013507308332627954,
-                "distanceMetres": 0.013507318782471578,
+                "distanceMetres": 0.013507338851514302,
                 "pass": true
               },
               {
                 "primaryVertex": 2075,
                 "secondaryVertex": 116,
                 "baselineMetres": 0.013507359640677598,
-                "distanceMetres": 0.013507319527348117,
+                "distanceMetres": 0.013507453587096693,
                 "pass": true
               },
               {
                 "primaryVertex": 2029,
                 "secondaryVertex": 200,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711476539470656,
+                "distanceMetres": 0.013711357388430297,
                 "pass": true
               }
             ]
           },
           {
             "name": "positive-x-hand-body",
-            "maximumMetres": 0.013711480969130952,
-            "minimumMetres": 0.012689825582526243,
+            "maximumMetres": 0.013711436121086289,
+            "minimumMetres": 0.012689580982128888,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 4736,
                 "secondaryVertex": 286,
                 "baselineMetres": 0.01268974173593415,
-                "distanceMetres": 0.012689941432851445,
+                "distanceMetres": 0.012689717410105585,
                 "pass": true
               },
               {
                 "primaryVertex": 4739,
                 "secondaryVertex": 261,
                 "baselineMetres": 0.012689742524322251,
-                "distanceMetres": 0.01268982830771037,
+                "distanceMetres": 0.012689580982128888,
                 "pass": true
               },
               {
                 "primaryVertex": 4734,
                 "secondaryVertex": 287,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.01268982762683434,
+                "distanceMetres": 0.012689717410105585,
                 "pass": true
               },
               {
                 "primaryVertex": 4733,
                 "secondaryVertex": 288,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.012689825582526243,
+                "distanceMetres": 0.012689816114648594,
                 "pass": true
               },
               {
                 "primaryVertex": 4749,
                 "secondaryVertex": 258,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.012689826945958277,
+                "distanceMetres": 0.01268970825403171,
                 "pass": true
               },
               {
                 "primaryVertex": 4752,
                 "secondaryVertex": 252,
                 "baselineMetres": 0.01275213128546213,
-                "distanceMetres": 0.012752229197669558,
+                "distanceMetres": 0.012752081824255624,
                 "pass": true
               },
               {
                 "primaryVertex": 4750,
                 "secondaryVertex": 256,
                 "baselineMetres": 0.01290673111406965,
-                "distanceMetres": 0.012906727670009409,
+                "distanceMetres": 0.012906739970849505,
                 "pass": true
               },
               {
                 "primaryVertex": 4728,
                 "secondaryVertex": 249,
                 "baselineMetres": 0.013240395510215441,
-                "distanceMetres": 0.013240323075461836,
+                "distanceMetres": 0.013240324715465976,
                 "pass": true
               },
               {
                 "primaryVertex": 4751,
                 "secondaryVertex": 254,
                 "baselineMetres": 0.013240448024305379,
-                "distanceMetres": 0.013240438132851123,
+                "distanceMetres": 0.013240451544699643,
                 "pass": true
               },
               {
                 "primaryVertex": 4726,
                 "secondaryVertex": 248,
                 "baselineMetres": 0.013507307995960317,
-                "distanceMetres": 0.013507318513137677,
+                "distanceMetres": 0.013507352553849009,
                 "pass": true
               },
               {
                 "primaryVertex": 4755,
                 "secondaryVertex": 250,
                 "baselineMetres": 0.013507359169344696,
-                "distanceMetres": 0.013507318782471578,
+                "distanceMetres": 0.013507340686348625,
                 "pass": true
               },
               {
                 "primaryVertex": 4738,
                 "secondaryVertex": 263,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711363287267292,
+                "distanceMetres": 0.013711310870806211,
                 "pass": true
               },
               {
                 "primaryVertex": 4731,
                 "secondaryVertex": 289,
                 "baselineMetres": 0.013711389859208573,
-                "distanceMetres": 0.013711480969130952,
+                "distanceMetres": 0.013711436121086289,
                 "pass": true
               }
             ]
@@ -1379,401 +2736,401 @@
         ]
       },
       {
-        "name": "horizontal-attack",
+        "name": "cross-body-reach",
         "frame": 20,
         "pass": true,
         "groups": [
           {
             "name": "head-body",
-            "maximumMetres": 0.015276833682950084,
-            "minimumMetres": 0.00511633425873093,
+            "maximumMetres": 0.01476967868123084,
+            "minimumMetres": 0.005116333542123964,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 875,
                 "secondaryVertex": 1254,
                 "baselineMetres": 0.005116333542123964,
-                "distanceMetres": 0.00511633425873093,
+                "distanceMetres": 0.005116333542123964,
                 "pass": true
               },
               {
                 "primaryVertex": 863,
                 "secondaryVertex": 1252,
                 "baselineMetres": 0.0051933097807482145,
-                "distanceMetres": 0.00519330980537561,
+                "distanceMetres": 0.0051933097807482145,
                 "pass": true
               },
               {
                 "primaryVertex": 880,
                 "secondaryVertex": 1247,
                 "baselineMetres": 0.0051933112255551995,
-                "distanceMetres": 0.0051933107658439295,
+                "distanceMetres": 0.0051933112255551995,
                 "pass": true
               },
               {
                 "primaryVertex": 879,
                 "secondaryVertex": 1253,
                 "baselineMetres": 0.007290272631365992,
-                "distanceMetres": 0.007290272225913684,
+                "distanceMetres": 0.007290272631365992,
                 "pass": true
               },
               {
                 "primaryVertex": 810,
                 "secondaryVertex": 64,
                 "baselineMetres": 0.00995771541127923,
-                "distanceMetres": 0.010198130209395112,
+                "distanceMetres": 0.00995771541127923,
                 "pass": true
               },
               {
                 "primaryVertex": 808,
                 "secondaryVertex": 61,
                 "baselineMetres": 0.009957715411279253,
-                "distanceMetres": 0.010185835655021777,
+                "distanceMetres": 0.009957715411279253,
                 "pass": true
               },
               {
                 "primaryVertex": 812,
                 "secondaryVertex": 65,
                 "baselineMetres": 0.009957715411279253,
-                "distanceMetres": 0.010179745064043245,
+                "distanceMetres": 0.009957715411279253,
                 "pass": true
               },
               {
                 "primaryVertex": 880,
                 "secondaryVertex": 1246,
                 "baselineMetres": 0.010271485416888344,
-                "distanceMetres": 0.010271485660388704,
+                "distanceMetres": 0.010271485416888344,
                 "pass": true
               },
               {
                 "primaryVertex": 814,
                 "secondaryVertex": 66,
                 "baselineMetres": 0.010724754781113413,
-                "distanceMetres": 0.010883276587977848,
+                "distanceMetres": 0.010724754781113413,
                 "pass": true
               },
               {
                 "primaryVertex": 807,
                 "secondaryVertex": 60,
                 "baselineMetres": 0.010724755401237598,
-                "distanceMetres": 0.010892789091774244,
+                "distanceMetres": 0.010724755401237598,
                 "pass": true
               },
               {
                 "primaryVertex": 911,
                 "secondaryVertex": 1240,
                 "baselineMetres": 0.011088449505432986,
-                "distanceMetres": 0.011088450140461201,
+                "distanceMetres": 0.011088449505432986,
                 "pass": true
               },
               {
                 "primaryVertex": 877,
                 "secondaryVertex": 1258,
                 "baselineMetres": 0.01130099230164435,
-                "distanceMetres": 0.011313878405113024,
+                "distanceMetres": 0.01130099230164435,
                 "pass": true
               },
               {
                 "primaryVertex": 909,
                 "secondaryVertex": 1244,
                 "baselineMetres": 0.011300992570746635,
-                "distanceMetres": 0.011312539853515055,
+                "distanceMetres": 0.011300992570746635,
                 "pass": true
               },
               {
                 "primaryVertex": 773,
                 "secondaryVertex": 67,
                 "baselineMetres": 0.011612645729045423,
-                "distanceMetres": 0.011538000242406083,
+                "distanceMetres": 0.011612645729045423,
                 "pass": true
               },
               {
                 "primaryVertex": 806,
                 "secondaryVertex": 1343,
                 "baselineMetres": 0.011612645729045423,
-                "distanceMetres": 0.011541681445150937,
+                "distanceMetres": 0.011612645729045423,
                 "pass": true
               },
               {
                 "primaryVertex": 876,
                 "secondaryVertex": 1256,
                 "baselineMetres": 0.011748470515553465,
-                "distanceMetres": 0.01174847054458367,
+                "distanceMetres": 0.011748470515553465,
                 "pass": true
               },
               {
                 "primaryVertex": 910,
                 "secondaryVertex": 1243,
                 "baselineMetres": 0.011748470655866124,
-                "distanceMetres": 0.011748470754145465,
+                "distanceMetres": 0.011748470655866124,
                 "pass": true
               },
               {
                 "primaryVertex": 816,
                 "secondaryVertex": 1260,
                 "baselineMetres": 0.012469116340994395,
-                "distanceMetres": 0.012699191319320438,
+                "distanceMetres": 0.012469116340994395,
                 "pass": true
               },
               {
                 "primaryVertex": 905,
                 "secondaryVertex": 1245,
                 "baselineMetres": 0.012469116340994395,
-                "distanceMetres": 0.012666398041731712,
+                "distanceMetres": 0.012469116340994395,
                 "pass": true
               },
               {
                 "primaryVertex": 771,
                 "secondaryVertex": 69,
                 "baselineMetres": 0.012627213901545137,
-                "distanceMetres": 0.012773800160815025,
+                "distanceMetres": 0.012627213901545137,
                 "pass": true
               },
               {
                 "primaryVertex": 805,
                 "secondaryVertex": 1344,
                 "baselineMetres": 0.012627213901545137,
-                "distanceMetres": 0.012780856102740767,
+                "distanceMetres": 0.012627213901545137,
                 "pass": true
               },
               {
                 "primaryVertex": 803,
                 "secondaryVertex": 47,
                 "baselineMetres": 0.014082443297169022,
-                "distanceMetres": 0.014421372718588909,
+                "distanceMetres": 0.014082443297169022,
                 "pass": true
               },
               {
                 "primaryVertex": 769,
                 "secondaryVertex": 71,
                 "baselineMetres": 0.014082444233631003,
-                "distanceMetres": 0.014406819936275754,
+                "distanceMetres": 0.014082444233631003,
                 "pass": true
               },
               {
                 "primaryVertex": 815,
                 "secondaryVertex": 43,
                 "baselineMetres": 0.014278156692014385,
-                "distanceMetres": 0.014690157916941636,
+                "distanceMetres": 0.014278156692014385,
                 "pass": true
               },
               {
                 "primaryVertex": 907,
                 "secondaryVertex": 74,
                 "baselineMetres": 0.014278157456394295,
-                "distanceMetres": 0.014647324441864366,
+                "distanceMetres": 0.014278157456394295,
                 "pass": true
               },
               {
                 "primaryVertex": 908,
                 "secondaryVertex": 73,
                 "baselineMetres": 0.014769677018611168,
-                "distanceMetres": 0.015252714365873114,
+                "distanceMetres": 0.014769677018611168,
                 "pass": true
               },
               {
                 "primaryVertex": 804,
                 "secondaryVertex": 45,
                 "baselineMetres": 0.01476967868123084,
-                "distanceMetres": 0.015276833682950084,
+                "distanceMetres": 0.01476967868123084,
                 "pass": true
               }
             ]
           },
           {
             "name": "negative-x-hand-body",
-            "maximumMetres": 0.013711347572921596,
-            "minimumMetres": 0.008496260292394725,
+            "maximumMetres": 0.013711389361723602,
+            "minimumMetres": 0.008496206136742174,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 1982,
                 "secondaryVertex": 794,
                 "baselineMetres": 0.008496206136742174,
-                "distanceMetres": 0.008496260292394725,
+                "distanceMetres": 0.008496206136742174,
                 "pass": true
               },
               {
                 "primaryVertex": 1992,
                 "secondaryVertex": 796,
                 "baselineMetres": 0.008861832774556575,
-                "distanceMetres": 0.008861848002350178,
+                "distanceMetres": 0.008861832774556575,
                 "pass": true
               },
               {
                 "primaryVertex": 1991,
                 "secondaryVertex": 795,
                 "baselineMetres": 0.00934117608294397,
-                "distanceMetres": 0.009341244894730328,
+                "distanceMetres": 0.00934117608294397,
                 "pass": true
               },
               {
                 "primaryVertex": 2030,
                 "secondaryVertex": 797,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689720978016145,
+                "distanceMetres": 0.012689743312710305,
                 "pass": true
               },
               {
                 "primaryVertex": 2031,
                 "secondaryVertex": 209,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689637981840685,
+                "distanceMetres": 0.012689743312710305,
                 "pass": true
               },
               {
                 "primaryVertex": 2033,
                 "secondaryVertex": 206,
                 "baselineMetres": 0.01268979660046202,
-                "distanceMetres": 0.012689826693429397,
+                "distanceMetres": 0.01268979660046202,
                 "pass": true
               },
               {
                 "primaryVertex": 2083,
                 "secondaryVertex": 118,
                 "baselineMetres": 0.01275213178470909,
-                "distanceMetres": 0.012752134927847152,
+                "distanceMetres": 0.01275213178470909,
                 "pass": true
               },
               {
                 "primaryVertex": 2034,
                 "secondaryVertex": 804,
                 "baselineMetres": 0.012906732135836707,
-                "distanceMetres": 0.012906685522036613,
+                "distanceMetres": 0.012906732135836707,
                 "pass": true
               },
               {
                 "primaryVertex": 2078,
                 "secondaryVertex": 507,
                 "baselineMetres": 0.013240395991051741,
-                "distanceMetres": 0.013240391133316348,
+                "distanceMetres": 0.013240395991051741,
                 "pass": true
               },
               {
                 "primaryVertex": 2084,
                 "secondaryVertex": 512,
                 "baselineMetres": 0.013240448264722577,
-                "distanceMetres": 0.013240395403422554,
+                "distanceMetres": 0.013240448264722577,
                 "pass": true
               },
               {
                 "primaryVertex": 2077,
                 "secondaryVertex": 113,
                 "baselineMetres": 0.013507308332627954,
-                "distanceMetres": 0.013507352202453313,
+                "distanceMetres": 0.013507308332627954,
                 "pass": true
               },
               {
                 "primaryVertex": 2075,
                 "secondaryVertex": 116,
                 "baselineMetres": 0.013507359640677598,
-                "distanceMetres": 0.013507303501972616,
+                "distanceMetres": 0.013507359640677598,
                 "pass": true
               },
               {
                 "primaryVertex": 2029,
                 "secondaryVertex": 200,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711347572921596,
+                "distanceMetres": 0.013711389361723602,
                 "pass": true
               }
             ]
           },
           {
             "name": "positive-x-hand-body",
-            "maximumMetres": 0.013711427336357827,
-            "minimumMetres": 0.012689671085410546,
+            "maximumMetres": 0.013711401873983356,
+            "minimumMetres": 0.012689757320028522,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 4736,
                 "secondaryVertex": 286,
                 "baselineMetres": 0.01268974173593415,
-                "distanceMetres": 0.012689671085410546,
+                "distanceMetres": 0.012689770227621947,
                 "pass": true
               },
               {
                 "primaryVertex": 4739,
                 "secondaryVertex": 261,
                 "baselineMetres": 0.012689742524322251,
-                "distanceMetres": 0.012689753507996858,
+                "distanceMetres": 0.012689757320028522,
                 "pass": true
               },
               {
                 "primaryVertex": 4734,
                 "secondaryVertex": 287,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689676675828977,
+                "distanceMetres": 0.012689770227621947,
                 "pass": true
               },
               {
                 "primaryVertex": 4733,
                 "secondaryVertex": 288,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.012689811131817488,
+                "distanceMetres": 0.012689776821397037,
                 "pass": true
               },
               {
                 "primaryVertex": 4749,
                 "secondaryVertex": 258,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.01268968685325108,
+                "distanceMetres": 0.012689817237311137,
                 "pass": true
               },
               {
                 "primaryVertex": 4752,
                 "secondaryVertex": 252,
                 "baselineMetres": 0.01275213128546213,
-                "distanceMetres": 0.012752106554882858,
+                "distanceMetres": 0.012752136563214726,
                 "pass": true
               },
               {
                 "primaryVertex": 4750,
                 "secondaryVertex": 256,
                 "baselineMetres": 0.01290673111406965,
-                "distanceMetres": 0.01290681518056457,
+                "distanceMetres": 0.012906760119890927,
                 "pass": true
               },
               {
                 "primaryVertex": 4728,
                 "secondaryVertex": 249,
                 "baselineMetres": 0.013240395510215441,
-                "distanceMetres": 0.013240394205088251,
+                "distanceMetres": 0.013240358279694567,
                 "pass": true
               },
               {
                 "primaryVertex": 4751,
                 "secondaryVertex": 254,
                 "baselineMetres": 0.013240448024305379,
-                "distanceMetres": 0.013240500915983992,
+                "distanceMetres": 0.013240402817208055,
                 "pass": true
               },
               {
                 "primaryVertex": 4726,
                 "secondaryVertex": 248,
                 "baselineMetres": 0.013507307995960317,
-                "distanceMetres": 0.013507372568659366,
+                "distanceMetres": 0.013507282409195426,
                 "pass": true
               },
               {
                 "primaryVertex": 4755,
                 "secondaryVertex": 250,
                 "baselineMetres": 0.013507359169344696,
-                "distanceMetres": 0.013507309342630811,
+                "distanceMetres": 0.013507340181348377,
                 "pass": true
               },
               {
                 "primaryVertex": 4738,
                 "secondaryVertex": 263,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711402661148953,
+                "distanceMetres": 0.013711390887344122,
                 "pass": true
               },
               {
                 "primaryVertex": 4731,
                 "secondaryVertex": 289,
                 "baselineMetres": 0.013711389859208573,
-                "distanceMetres": 0.013711427336357827,
+                "distanceMetres": 0.013711401873983356,
                 "pass": true
               }
             ]
@@ -1984,198 +3341,198 @@
           },
           {
             "name": "negative-x-hand-body",
-            "maximumMetres": 0.013711333311634618,
-            "minimumMetres": 0.008496225455386603,
+            "maximumMetres": 0.013711389361723602,
+            "minimumMetres": 0.008496206136742174,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 1982,
                 "secondaryVertex": 794,
                 "baselineMetres": 0.008496206136742174,
-                "distanceMetres": 0.008496225455386603,
+                "distanceMetres": 0.008496206136742174,
                 "pass": true
               },
               {
                 "primaryVertex": 1992,
                 "secondaryVertex": 796,
                 "baselineMetres": 0.008861832774556575,
-                "distanceMetres": 0.008861846770785704,
+                "distanceMetres": 0.008861832774556575,
                 "pass": true
               },
               {
                 "primaryVertex": 1991,
                 "secondaryVertex": 795,
                 "baselineMetres": 0.00934117608294397,
-                "distanceMetres": 0.009341190955290221,
+                "distanceMetres": 0.00934117608294397,
                 "pass": true
               },
               {
                 "primaryVertex": 2030,
                 "secondaryVertex": 797,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.01268968726536483,
+                "distanceMetres": 0.012689743312710305,
                 "pass": true
               },
               {
                 "primaryVertex": 2031,
                 "secondaryVertex": 209,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689632006166775,
+                "distanceMetres": 0.012689743312710305,
                 "pass": true
               },
               {
                 "primaryVertex": 2033,
                 "secondaryVertex": 206,
                 "baselineMetres": 0.01268979660046202,
-                "distanceMetres": 0.01268968531230389,
+                "distanceMetres": 0.01268979660046202,
                 "pass": true
               },
               {
                 "primaryVertex": 2083,
                 "secondaryVertex": 118,
                 "baselineMetres": 0.01275213178470909,
-                "distanceMetres": 0.012752079862920481,
+                "distanceMetres": 0.01275213178470909,
                 "pass": true
               },
               {
                 "primaryVertex": 2034,
                 "secondaryVertex": 804,
                 "baselineMetres": 0.012906732135836707,
-                "distanceMetres": 0.012906676008995501,
+                "distanceMetres": 0.012906732135836707,
                 "pass": true
               },
               {
                 "primaryVertex": 2078,
                 "secondaryVertex": 507,
                 "baselineMetres": 0.013240395991051741,
-                "distanceMetres": 0.013240342652461348,
+                "distanceMetres": 0.013240395991051741,
                 "pass": true
               },
               {
                 "primaryVertex": 2084,
                 "secondaryVertex": 512,
                 "baselineMetres": 0.013240448264722577,
-                "distanceMetres": 0.013240394067706433,
+                "distanceMetres": 0.013240448264722577,
                 "pass": true
               },
               {
                 "primaryVertex": 2077,
                 "secondaryVertex": 113,
                 "baselineMetres": 0.013507308332627954,
-                "distanceMetres": 0.013507255879709069,
+                "distanceMetres": 0.013507308332627954,
                 "pass": true
               },
               {
                 "primaryVertex": 2075,
                 "secondaryVertex": 116,
                 "baselineMetres": 0.013507359640677598,
-                "distanceMetres": 0.013507306918623826,
+                "distanceMetres": 0.013507359640677598,
                 "pass": true
               },
               {
                 "primaryVertex": 2029,
                 "secondaryVertex": 200,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711333311634618,
+                "distanceMetres": 0.013711389361723602,
                 "pass": true
               }
             ]
           },
           {
             "name": "positive-x-hand-body",
-            "maximumMetres": 0.013711553879019522,
-            "minimumMetres": 0.012689646273419538,
+            "maximumMetres": 0.013711455626562823,
+            "minimumMetres": 0.012689751931221968,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 4736,
                 "secondaryVertex": 286,
                 "baselineMetres": 0.01268974173593415,
-                "distanceMetres": 0.01268976196972012,
+                "distanceMetres": 0.012689769096556242,
                 "pass": true
               },
               {
                 "primaryVertex": 4739,
                 "secondaryVertex": 261,
                 "baselineMetres": 0.012689742524322251,
-                "distanceMetres": 0.012689762668517552,
+                "distanceMetres": 0.012689753275064216,
                 "pass": true
               },
               {
                 "primaryVertex": 4734,
                 "secondaryVertex": 287,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689646273419538,
+                "distanceMetres": 0.012689755281868375,
                 "pass": true
               },
               {
                 "primaryVertex": 4733,
                 "secondaryVertex": 288,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.012689755434170462,
+                "distanceMetres": 0.01268976775271567,
                 "pass": true
               },
               {
                 "primaryVertex": 4749,
                 "secondaryVertex": 258,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.01268976196972012,
+                "distanceMetres": 0.012689751931221968,
                 "pass": true
               },
               {
                 "primaryVertex": 4752,
                 "secondaryVertex": 252,
                 "baselineMetres": 0.01275213128546213,
-                "distanceMetres": 0.012752166910249767,
+                "distanceMetres": 0.01275209070375095,
                 "pass": true
               },
               {
                 "primaryVertex": 4750,
                 "secondaryVertex": 256,
                 "baselineMetres": 0.01290673111406965,
-                "distanceMetres": 0.012906693678582947,
+                "distanceMetres": 0.012906743128635781,
                 "pass": true
               },
               {
                 "primaryVertex": 4728,
                 "secondaryVertex": 249,
                 "baselineMetres": 0.013240395510215441,
-                "distanceMetres": 0.01324036370628992,
+                "distanceMetres": 0.013240334615591366,
                 "pass": true
               },
               {
                 "primaryVertex": 4751,
                 "secondaryVertex": 254,
                 "baselineMetres": 0.013240448024305379,
-                "distanceMetres": 0.013240462638228614,
+                "distanceMetres": 0.013240447715197546,
                 "pass": true
               },
               {
                 "primaryVertex": 4726,
                 "secondaryVertex": 248,
                 "baselineMetres": 0.013507307995960317,
-                "distanceMetres": 0.013507384654964464,
+                "distanceMetres": 0.013507292576573593,
                 "pass": true
               },
               {
                 "primaryVertex": 4755,
                 "secondaryVertex": 250,
                 "baselineMetres": 0.013507359169344696,
-                "distanceMetres": 0.01350737034666338,
+                "distanceMetres": 0.013507396404593313,
                 "pass": true
               },
               {
                 "primaryVertex": 4738,
                 "secondaryVertex": 263,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711315733748867,
+                "distanceMetres": 0.013711367339704133,
                 "pass": true
               },
               {
                 "primaryVertex": 4731,
                 "secondaryVertex": 289,
                 "baselineMetres": 0.013711389859208573,
-                "distanceMetres": 0.013711553879019522,
+                "distanceMetres": 0.013711455626562823,
                 "pass": true
               }
             ]
@@ -2189,64 +3546,64 @@
         "groups": [
           {
             "name": "head-body",
-            "maximumMetres": 0.014769679235437356,
-            "minimumMetres": 0.005116334208735098,
+            "maximumMetres": 0.01476967868123084,
+            "minimumMetres": 0.005116333542123964,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 875,
                 "secondaryVertex": 1254,
                 "baselineMetres": 0.005116333542123964,
-                "distanceMetres": 0.005116334208735098,
+                "distanceMetres": 0.005116333542123964,
                 "pass": true
               },
               {
                 "primaryVertex": 863,
                 "secondaryVertex": 1252,
                 "baselineMetres": 0.0051933097807482145,
-                "distanceMetres": 0.005193313633565948,
+                "distanceMetres": 0.0051933097807482145,
                 "pass": true
               },
               {
                 "primaryVertex": 880,
                 "secondaryVertex": 1247,
                 "baselineMetres": 0.0051933112255551995,
-                "distanceMetres": 0.005193313151963887,
+                "distanceMetres": 0.0051933112255551995,
                 "pass": true
               },
               {
                 "primaryVertex": 879,
                 "secondaryVertex": 1253,
                 "baselineMetres": 0.007290272631365992,
-                "distanceMetres": 0.007290264647070242,
+                "distanceMetres": 0.007290272631365992,
                 "pass": true
               },
               {
                 "primaryVertex": 810,
                 "secondaryVertex": 64,
                 "baselineMetres": 0.00995771541127923,
-                "distanceMetres": 0.009957716747063451,
+                "distanceMetres": 0.00995771541127923,
                 "pass": true
               },
               {
                 "primaryVertex": 808,
                 "secondaryVertex": 61,
                 "baselineMetres": 0.009957715411279253,
-                "distanceMetres": 0.009957716747063474,
+                "distanceMetres": 0.009957715411279253,
                 "pass": true
               },
               {
                 "primaryVertex": 812,
                 "secondaryVertex": 65,
                 "baselineMetres": 0.009957715411279253,
-                "distanceMetres": 0.009957716747063474,
+                "distanceMetres": 0.009957715411279253,
                 "pass": true
               },
               {
                 "primaryVertex": 880,
                 "secondaryVertex": 1246,
                 "baselineMetres": 0.010271485416888344,
-                "distanceMetres": 0.010271486390889751,
+                "distanceMetres": 0.010271485416888344,
                 "pass": true
               },
               {
@@ -2260,21 +3617,21 @@
                 "primaryVertex": 807,
                 "secondaryVertex": 60,
                 "baselineMetres": 0.010724755401237598,
-                "distanceMetres": 0.010724756018711644,
+                "distanceMetres": 0.010724755401237598,
                 "pass": true
               },
               {
                 "primaryVertex": 911,
                 "secondaryVertex": 1240,
                 "baselineMetres": 0.011088449505432986,
-                "distanceMetres": 0.011088449956552933,
+                "distanceMetres": 0.011088449505432986,
                 "pass": true
               },
               {
                 "primaryVertex": 877,
                 "secondaryVertex": 1258,
                 "baselineMetres": 0.01130099230164435,
-                "distanceMetres": 0.011300992864998662,
+                "distanceMetres": 0.01130099230164435,
                 "pass": true
               },
               {
@@ -2302,70 +3659,70 @@
                 "primaryVertex": 876,
                 "secondaryVertex": 1256,
                 "baselineMetres": 0.011748470515553465,
-                "distanceMetres": 0.011748470658285309,
+                "distanceMetres": 0.011748470515553465,
                 "pass": true
               },
               {
                 "primaryVertex": 910,
                 "secondaryVertex": 1243,
                 "baselineMetres": 0.011748470655866124,
-                "distanceMetres": 0.011748470372821621,
+                "distanceMetres": 0.011748470655866124,
                 "pass": true
               },
               {
                 "primaryVertex": 816,
                 "secondaryVertex": 1260,
                 "baselineMetres": 0.012469116340994395,
-                "distanceMetres": 0.012469114955138347,
+                "distanceMetres": 0.012469116340994395,
                 "pass": true
               },
               {
                 "primaryVertex": 905,
                 "secondaryVertex": 1245,
                 "baselineMetres": 0.012469116340994395,
-                "distanceMetres": 0.012469114955138347,
+                "distanceMetres": 0.012469116340994395,
                 "pass": true
               },
               {
                 "primaryVertex": 771,
                 "secondaryVertex": 69,
                 "baselineMetres": 0.012627213901545137,
-                "distanceMetres": 0.01262721443274096,
+                "distanceMetres": 0.012627213901545137,
                 "pass": true
               },
               {
                 "primaryVertex": 805,
                 "secondaryVertex": 1344,
                 "baselineMetres": 0.012627213901545137,
-                "distanceMetres": 0.01262721443274096,
+                "distanceMetres": 0.012627213901545137,
                 "pass": true
               },
               {
                 "primaryVertex": 803,
                 "secondaryVertex": 47,
                 "baselineMetres": 0.014082443297169022,
-                "distanceMetres": 0.01408244520238471,
+                "distanceMetres": 0.014082443297169022,
                 "pass": true
               },
               {
                 "primaryVertex": 769,
                 "secondaryVertex": 71,
                 "baselineMetres": 0.014082444233631003,
-                "distanceMetres": 0.014082441424244875,
+                "distanceMetres": 0.014082444233631003,
                 "pass": true
               },
               {
                 "primaryVertex": 815,
                 "secondaryVertex": 43,
                 "baselineMetres": 0.014278156692014385,
-                "distanceMetres": 0.014278158093377524,
+                "distanceMetres": 0.014278156692014385,
                 "pass": true
               },
               {
                 "primaryVertex": 907,
                 "secondaryVertex": 74,
                 "baselineMetres": 0.014278157456394295,
-                "distanceMetres": 0.014278162042672897,
+                "distanceMetres": 0.014278157456394295,
                 "pass": true
               },
               {
@@ -2379,205 +3736,205 @@
                 "primaryVertex": 804,
                 "secondaryVertex": 45,
                 "baselineMetres": 0.01476967868123084,
-                "distanceMetres": 0.014769679235437356,
+                "distanceMetres": 0.01476967868123084,
                 "pass": true
               }
             ]
           },
           {
             "name": "negative-x-hand-body",
-            "maximumMetres": 0.013711333311634618,
-            "minimumMetres": 0.008496225261364072,
+            "maximumMetres": 0.013711389361723602,
+            "minimumMetres": 0.008496206136742174,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 1982,
                 "secondaryVertex": 794,
                 "baselineMetres": 0.008496206136742174,
-                "distanceMetres": 0.008496225261364072,
+                "distanceMetres": 0.008496206136742174,
                 "pass": true
               },
               {
                 "primaryVertex": 1992,
                 "secondaryVertex": 796,
                 "baselineMetres": 0.008861832774556575,
-                "distanceMetres": 0.008861862370589736,
+                "distanceMetres": 0.008861832774556575,
                 "pass": true
               },
               {
                 "primaryVertex": 1991,
                 "secondaryVertex": 795,
                 "baselineMetres": 0.00934117608294397,
-                "distanceMetres": 0.009341194557753509,
+                "distanceMetres": 0.00934117608294397,
                 "pass": true
               },
               {
                 "primaryVertex": 2030,
                 "secondaryVertex": 797,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689684129716387,
+                "distanceMetres": 0.012689743312710305,
                 "pass": true
               },
               {
                 "primaryVertex": 2031,
                 "secondaryVertex": 209,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689626523237114,
+                "distanceMetres": 0.012689743312710305,
                 "pass": true
               },
               {
                 "primaryVertex": 2033,
                 "secondaryVertex": 206,
                 "baselineMetres": 0.01268979660046202,
-                "distanceMetres": 0.012689684129716387,
+                "distanceMetres": 0.01268979660046202,
                 "pass": true
               },
               {
                 "primaryVertex": 2083,
                 "secondaryVertex": 118,
                 "baselineMetres": 0.01275213178470909,
-                "distanceMetres": 0.012752076296855814,
+                "distanceMetres": 0.01275213178470909,
                 "pass": true
               },
               {
                 "primaryVertex": 2034,
                 "secondaryVertex": 804,
                 "baselineMetres": 0.012906732135836707,
-                "distanceMetres": 0.012906675762361009,
+                "distanceMetres": 0.012906732135836707,
                 "pass": true
               },
               {
                 "primaryVertex": 2078,
                 "secondaryVertex": 507,
                 "baselineMetres": 0.013240395991051741,
-                "distanceMetres": 0.01324034309895398,
+                "distanceMetres": 0.013240395991051741,
                 "pass": true
               },
               {
                 "primaryVertex": 2084,
                 "secondaryVertex": 512,
                 "baselineMetres": 0.013240448264722577,
-                "distanceMetres": 0.013240393312106415,
+                "distanceMetres": 0.013240448264722577,
                 "pass": true
               },
               {
                 "primaryVertex": 2077,
                 "secondaryVertex": 113,
                 "baselineMetres": 0.013507308332627954,
-                "distanceMetres": 0.013507256822382066,
+                "distanceMetres": 0.013507308332627954,
                 "pass": true
               },
               {
                 "primaryVertex": 2075,
                 "secondaryVertex": 116,
                 "baselineMetres": 0.013507359640677598,
-                "distanceMetres": 0.013507303080611877,
+                "distanceMetres": 0.013507359640677598,
                 "pass": true
               },
               {
                 "primaryVertex": 2029,
                 "secondaryVertex": 200,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711333311634618,
+                "distanceMetres": 0.013711389361723602,
                 "pass": true
               }
             ]
           },
           {
             "name": "positive-x-hand-body",
-            "maximumMetres": 0.013711333311634618,
-            "minimumMetres": 0.012689629658899792,
+            "maximumMetres": 0.013711389627048922,
+            "minimumMetres": 0.01268974173593415,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 4736,
                 "secondaryVertex": 286,
                 "baselineMetres": 0.01268974173593415,
-                "distanceMetres": 0.012689680994067169,
+                "distanceMetres": 0.01268974173593415,
                 "pass": true
               },
               {
                 "primaryVertex": 4739,
                 "secondaryVertex": 261,
                 "baselineMetres": 0.012689742524322251,
-                "distanceMetres": 0.012689629658899792,
+                "distanceMetres": 0.012689742524322251,
                 "pass": true
               },
               {
                 "primaryVertex": 4734,
                 "secondaryVertex": 287,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689684129716387,
+                "distanceMetres": 0.012689743312710305,
                 "pass": true
               },
               {
                 "primaryVertex": 4733,
                 "secondaryVertex": 288,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.01268974173593415,
+                "distanceMetres": 0.012689796994654374,
                 "pass": true
               },
               {
                 "primaryVertex": 4749,
                 "secondaryVertex": 258,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.012689684129716387,
+                "distanceMetres": 0.012689796994654374,
                 "pass": true
               },
               {
                 "primaryVertex": 4752,
                 "secondaryVertex": 252,
                 "baselineMetres": 0.01275213128546213,
-                "distanceMetres": 0.012752076296855814,
+                "distanceMetres": 0.01275213128546213,
                 "pass": true
               },
               {
                 "primaryVertex": 4750,
                 "secondaryVertex": 256,
                 "baselineMetres": 0.01290673111406965,
-                "distanceMetres": 0.012906673718817891,
+                "distanceMetres": 0.012906730867436211,
                 "pass": true
               },
               {
                 "primaryVertex": 4728,
                 "secondaryVertex": 249,
                 "baselineMetres": 0.013240395510215441,
-                "distanceMetres": 0.013240341106909807,
+                "distanceMetres": 0.013240395510215441,
                 "pass": true
               },
               {
                 "primaryVertex": 4751,
                 "secondaryVertex": 254,
                 "baselineMetres": 0.013240448024305379,
-                "distanceMetres": 0.013240391320069796,
+                "distanceMetres": 0.013240448024305379,
                 "pass": true
               },
               {
                 "primaryVertex": 4726,
                 "secondaryVertex": 248,
                 "baselineMetres": 0.013507307995960317,
-                "distanceMetres": 0.013507254331031858,
+                "distanceMetres": 0.013507307995960317,
                 "pass": true
               },
               {
                 "primaryVertex": 4755,
                 "secondaryVertex": 250,
                 "baselineMetres": 0.013507359169344696,
-                "distanceMetres": 0.01350730550461955,
+                "distanceMetres": 0.013507359169344696,
                 "pass": true
               },
               {
                 "primaryVertex": 4738,
                 "secondaryVertex": 263,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711279184940691,
+                "distanceMetres": 0.013711389361723602,
                 "pass": true
               },
               {
                 "primaryVertex": 4731,
                 "secondaryVertex": 289,
                 "baselineMetres": 0.013711389859208573,
-                "distanceMetres": 0.013711333311634618,
+                "distanceMetres": 0.013711389627048922,
                 "pass": true
               }
             ]
@@ -2591,400 +3948,563 @@
         "groups": [
           {
             "name": "head-body",
-            "maximumMetres": 0.024220958766600097,
-            "minimumMetres": 0.007114344086918046,
+            "maximumMetres": 0.014769678912150225,
+            "minimumMetres": 0.005116333275479485,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 875,
                 "secondaryVertex": 1254,
                 "baselineMetres": 0.005116333542123964,
-                "distanceMetres": 0.008088503815396476,
+                "distanceMetres": 0.005116333275479485,
                 "pass": true
               },
               {
                 "primaryVertex": 863,
                 "secondaryVertex": 1252,
                 "baselineMetres": 0.0051933097807482145,
-                "distanceMetres": 0.007114344086918046,
+                "distanceMetres": 0.005193309977767372,
                 "pass": true
               },
               {
                 "primaryVertex": 880,
                 "secondaryVertex": 1247,
                 "baselineMetres": 0.0051933112255551995,
-                "distanceMetres": 0.009405530547251292,
+                "distanceMetres": 0.005193309977767372,
                 "pass": true
               },
               {
                 "primaryVertex": 879,
                 "secondaryVertex": 1253,
                 "baselineMetres": 0.007290272631365992,
-                "distanceMetres": 0.00884578031003099,
+                "distanceMetres": 0.007290271459842676,
                 "pass": true
               },
               {
                 "primaryVertex": 810,
                 "secondaryVertex": 64,
                 "baselineMetres": 0.00995771541127923,
-                "distanceMetres": 0.019332932974224008,
+                "distanceMetres": 0.009957715953584792,
                 "pass": true
               },
               {
                 "primaryVertex": 808,
                 "secondaryVertex": 61,
                 "baselineMetres": 0.009957715411279253,
-                "distanceMetres": 0.019406372818029333,
+                "distanceMetres": 0.009957714583549581,
                 "pass": true
               },
               {
                 "primaryVertex": 812,
                 "secondaryVertex": 65,
                 "baselineMetres": 0.009957715411279253,
-                "distanceMetres": 0.019757451240145472,
+                "distanceMetres": 0.009957715896499995,
                 "pass": true
               },
               {
                 "primaryVertex": 880,
                 "secondaryVertex": 1246,
                 "baselineMetres": 0.010271485416888344,
-                "distanceMetres": 0.013445420024487667,
+                "distanceMetres": 0.010271486258071384,
                 "pass": true
               },
               {
                 "primaryVertex": 814,
                 "secondaryVertex": 66,
                 "baselineMetres": 0.010724754781113413,
-                "distanceMetres": 0.020811085652478543,
+                "distanceMetres": 0.010724754265668284,
                 "pass": true
               },
               {
                 "primaryVertex": 807,
                 "secondaryVertex": 60,
                 "baselineMetres": 0.010724755401237598,
-                "distanceMetres": 0.020537872011764602,
+                "distanceMetres": 0.010724755640740678,
                 "pass": true
               },
               {
                 "primaryVertex": 911,
                 "secondaryVertex": 1240,
                 "baselineMetres": 0.011088449505432986,
-                "distanceMetres": 0.014298917890473445,
+                "distanceMetres": 0.011088448767236667,
                 "pass": true
               },
               {
                 "primaryVertex": 877,
                 "secondaryVertex": 1258,
                 "baselineMetres": 0.01130099230164435,
-                "distanceMetres": 0.015668757166030823,
+                "distanceMetres": 0.011300992583321508,
                 "pass": true
               },
               {
                 "primaryVertex": 909,
                 "secondaryVertex": 1244,
                 "baselineMetres": 0.011300992570746635,
-                "distanceMetres": 0.012931443422187845,
+                "distanceMetres": 0.011300993005837236,
                 "pass": true
               },
               {
                 "primaryVertex": 773,
                 "secondaryVertex": 67,
                 "baselineMetres": 0.011612645729045423,
-                "distanceMetres": 0.021960997385787422,
+                "distanceMetres": 0.01161264550265359,
                 "pass": true
               },
               {
                 "primaryVertex": 806,
                 "secondaryVertex": 1343,
                 "baselineMetres": 0.011612645729045423,
-                "distanceMetres": 0.021103944213279838,
+                "distanceMetres": 0.01161264550265359,
                 "pass": true
               },
               {
                 "primaryVertex": 876,
                 "secondaryVertex": 1256,
                 "baselineMetres": 0.011748470515553465,
-                "distanceMetres": 0.013624785231560013,
+                "distanceMetres": 0.01174847047926571,
                 "pass": true
               },
               {
                 "primaryVertex": 910,
                 "secondaryVertex": 1243,
                 "baselineMetres": 0.011748470655866124,
-                "distanceMetres": 0.014155407111474104,
+                "distanceMetres": 0.01174847054639806,
                 "pass": true
               },
               {
                 "primaryVertex": 816,
                 "secondaryVertex": 1260,
                 "baselineMetres": 0.012469116340994395,
-                "distanceMetres": 0.01903738496296589,
+                "distanceMetres": 0.012469114544851986,
                 "pass": true
               },
               {
                 "primaryVertex": 905,
                 "secondaryVertex": 1245,
                 "baselineMetres": 0.012469116340994395,
-                "distanceMetres": 0.014132154473167043,
+                "distanceMetres": 0.012469115611596493,
                 "pass": true
               },
               {
                 "primaryVertex": 771,
                 "secondaryVertex": 69,
                 "baselineMetres": 0.012627213901545137,
-                "distanceMetres": 0.019920255344073278,
+                "distanceMetres": 0.01262721373498373,
                 "pass": true
               },
               {
                 "primaryVertex": 805,
                 "secondaryVertex": 1344,
                 "baselineMetres": 0.012627213901545137,
-                "distanceMetres": 0.022951837238505784,
+                "distanceMetres": 0.012627214407278448,
                 "pass": true
               },
               {
                 "primaryVertex": 803,
                 "secondaryVertex": 47,
                 "baselineMetres": 0.014082443297169022,
-                "distanceMetres": 0.024220958766600097,
+                "distanceMetres": 0.014082443390007929,
                 "pass": true
               },
               {
                 "primaryVertex": 769,
                 "secondaryVertex": 71,
                 "baselineMetres": 0.014082444233631003,
-                "distanceMetres": 0.01793981352409292,
+                "distanceMetres": 0.014082444185193315,
                 "pass": true
               },
               {
                 "primaryVertex": 815,
                 "secondaryVertex": 43,
                 "baselineMetres": 0.014278156692014385,
-                "distanceMetres": 0.022297574140119115,
+                "distanceMetres": 0.014278156596466893,
                 "pass": true
               },
               {
                 "primaryVertex": 907,
                 "secondaryVertex": 74,
                 "baselineMetres": 0.014278157456394295,
-                "distanceMetres": 0.0157721789083666,
+                "distanceMetres": 0.014278157360846809,
                 "pass": true
               },
               {
                 "primaryVertex": 908,
                 "secondaryVertex": 73,
                 "baselineMetres": 0.014769677018611168,
-                "distanceMetres": 0.016984835157978394,
+                "distanceMetres": 0.014769678912150225,
                 "pass": true
               },
               {
                 "primaryVertex": 804,
                 "secondaryVertex": 45,
                 "baselineMetres": 0.01476967868123084,
-                "distanceMetres": 0.024063665571683223,
+                "distanceMetres": 0.014769678111629677,
                 "pass": true
               }
             ]
           },
           {
             "name": "negative-x-hand-body",
-            "maximumMetres": 0.013711333311634618,
-            "minimumMetres": 0.008496225455386603,
+            "maximumMetres": 0.013711389361723602,
+            "minimumMetres": 0.008496206136742174,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 1982,
                 "secondaryVertex": 794,
                 "baselineMetres": 0.008496206136742174,
-                "distanceMetres": 0.008496225455386603,
+                "distanceMetres": 0.008496206136742174,
                 "pass": true
               },
               {
                 "primaryVertex": 1992,
                 "secondaryVertex": 796,
                 "baselineMetres": 0.008861832774556575,
-                "distanceMetres": 0.008861846770785704,
+                "distanceMetres": 0.008861832774556575,
                 "pass": true
               },
               {
                 "primaryVertex": 1991,
                 "secondaryVertex": 795,
                 "baselineMetres": 0.00934117608294397,
-                "distanceMetres": 0.009341190955290221,
+                "distanceMetres": 0.00934117608294397,
                 "pass": true
               },
               {
                 "primaryVertex": 2030,
                 "secondaryVertex": 797,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.01268968726536483,
+                "distanceMetres": 0.012689743312710305,
                 "pass": true
               },
               {
                 "primaryVertex": 2031,
                 "secondaryVertex": 209,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689632006166775,
+                "distanceMetres": 0.012689743312710305,
                 "pass": true
               },
               {
                 "primaryVertex": 2033,
                 "secondaryVertex": 206,
                 "baselineMetres": 0.01268979660046202,
-                "distanceMetres": 0.01268968531230389,
+                "distanceMetres": 0.01268979660046202,
                 "pass": true
               },
               {
                 "primaryVertex": 2083,
                 "secondaryVertex": 118,
                 "baselineMetres": 0.01275213178470909,
-                "distanceMetres": 0.012752079862920481,
+                "distanceMetres": 0.01275213178470909,
                 "pass": true
               },
               {
                 "primaryVertex": 2034,
                 "secondaryVertex": 804,
                 "baselineMetres": 0.012906732135836707,
-                "distanceMetres": 0.012906676008995501,
+                "distanceMetres": 0.012906732135836707,
                 "pass": true
               },
               {
                 "primaryVertex": 2078,
                 "secondaryVertex": 507,
                 "baselineMetres": 0.013240395991051741,
-                "distanceMetres": 0.013240342652461348,
+                "distanceMetres": 0.013240395991051741,
                 "pass": true
               },
               {
                 "primaryVertex": 2084,
                 "secondaryVertex": 512,
                 "baselineMetres": 0.013240448264722577,
-                "distanceMetres": 0.013240394067706433,
+                "distanceMetres": 0.013240448264722577,
                 "pass": true
               },
               {
                 "primaryVertex": 2077,
                 "secondaryVertex": 113,
                 "baselineMetres": 0.013507308332627954,
-                "distanceMetres": 0.013507255879709069,
+                "distanceMetres": 0.013507308332627954,
                 "pass": true
               },
               {
                 "primaryVertex": 2075,
                 "secondaryVertex": 116,
                 "baselineMetres": 0.013507359640677598,
-                "distanceMetres": 0.013507306918623826,
+                "distanceMetres": 0.013507359640677598,
                 "pass": true
               },
               {
                 "primaryVertex": 2029,
                 "secondaryVertex": 200,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711333311634618,
+                "distanceMetres": 0.013711389361723602,
                 "pass": true
               }
             ]
           },
           {
             "name": "positive-x-hand-body",
-            "maximumMetres": 0.013711334273442812,
-            "minimumMetres": 0.012689631217771806,
+            "maximumMetres": 0.013711389627048922,
+            "minimumMetres": 0.01268974173593415,
             "pass": true,
             "pairs": [
               {
                 "primaryVertex": 4736,
                 "secondaryVertex": 286,
                 "baselineMetres": 0.01268974173593415,
-                "distanceMetres": 0.01268968568858171,
+                "distanceMetres": 0.01268974173593415,
                 "pass": true
               },
               {
                 "primaryVertex": 4739,
                 "secondaryVertex": 261,
                 "baselineMetres": 0.012689742524322251,
-                "distanceMetres": 0.012689631217771806,
+                "distanceMetres": 0.012689742524322251,
                 "pass": true
               },
               {
                 "primaryVertex": 4734,
                 "secondaryVertex": 287,
                 "baselineMetres": 0.012689743312710305,
-                "distanceMetres": 0.012689686476973295,
+                "distanceMetres": 0.012689743312710305,
                 "pass": true
               },
               {
                 "primaryVertex": 4733,
                 "secondaryVertex": 288,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.012689740947545998,
+                "distanceMetres": 0.012689796994654374,
                 "pass": true
               },
               {
                 "primaryVertex": 4749,
                 "secondaryVertex": 258,
                 "baselineMetres": 0.012689796994654374,
-                "distanceMetres": 0.01268968568858171,
+                "distanceMetres": 0.012689796994654374,
                 "pass": true
               },
               {
                 "primaryVertex": 4752,
                 "secondaryVertex": 252,
                 "baselineMetres": 0.01275213128546213,
-                "distanceMetres": 0.012752079577635345,
+                "distanceMetres": 0.01275213128546213,
                 "pass": true
               },
               {
                 "primaryVertex": 4750,
                 "secondaryVertex": 256,
                 "baselineMetres": 0.01290673111406965,
-                "distanceMetres": 0.012906674987224002,
+                "distanceMetres": 0.012906730867436211,
                 "pass": true
               },
               {
                 "primaryVertex": 4728,
                 "secondaryVertex": 249,
                 "baselineMetres": 0.013240395510215441,
-                "distanceMetres": 0.013240342309005464,
+                "distanceMetres": 0.013240395510215441,
                 "pass": true
               },
               {
                 "primaryVertex": 4751,
                 "secondaryVertex": 254,
                 "baselineMetres": 0.013240448024305379,
-                "distanceMetres": 0.013240393792942796,
+                "distanceMetres": 0.013240448024305379,
                 "pass": true
               },
               {
                 "primaryVertex": 4726,
                 "secondaryVertex": 248,
                 "baselineMetres": 0.013507307995960317,
-                "distanceMetres": 0.013507255610373914,
+                "distanceMetres": 0.013507307995960317,
                 "pass": true
               },
               {
                 "primaryVertex": 4755,
                 "secondaryVertex": 250,
                 "baselineMetres": 0.013507359169344696,
-                "distanceMetres": 0.013507306581956155,
+                "distanceMetres": 0.013507359169344696,
                 "pass": true
               },
               {
                 "primaryVertex": 4738,
                 "secondaryVertex": 263,
                 "baselineMetres": 0.013711389361723602,
-                "distanceMetres": 0.013711278223128634,
+                "distanceMetres": 0.013711389361723602,
                 "pass": true
               },
               {
                 "primaryVertex": 4731,
                 "secondaryVertex": 289,
                 "baselineMetres": 0.013711389859208573,
-                "distanceMetres": 0.013711334273442812,
+                "distanceMetres": 0.013711389627048922,
                 "pass": true
               }
             ]
           }
         ]
+      }
+    ],
+    "pass": true
+  },
+  "poseIntent": {
+    "contract": "humanoid.v1",
+    "measurementSpace": "evaluated_armature_and_skinned_geometry",
+    "forward": [
+      0,
+      -1,
+      0
+    ],
+    "leadHand": "hand.L",
+    "leadLeg": "leg.L",
+    "trailLeg": "leg.R",
+    "poses": [
+      {
+        "name": "overhead-reach",
+        "leftHandWorld": [
+          0.289295,
+          -0.029473,
+          1.997091
+        ],
+        "rightHandWorld": [
+          -0.289295,
+          -0.029473,
+          1.996854
+        ],
+        "symmetryHeightErrorMetres": 0.00023639202117919922,
+        "pass": true
+      },
+      {
+        "name": "cross-body-reach",
+        "leadHand": "hand.L",
+        "targetWorld": [
+          -0.016039,
+          -0.248165,
+          1.275492
+        ],
+        "actualWorld": [
+          -0.016039,
+          -0.248165,
+          1.275492
+        ],
+        "targetErrorMetres": 4.629600677713343e-07,
+        "verticalTargetErrorMetres": 1.1920928955078125e-07,
+        "crossedMidline": true,
+        "pass": true
+      },
+      {
+        "name": "deep-elbow-bend",
+        "actualFlexionDegrees": 119.33717446148951,
+        "targetFlexionDegrees": 135,
+        "errorDegrees": 15.66282553851049,
+        "pass": true
+      },
+      {
+        "name": "long-stride",
+        "leadLeg": "leg.L",
+        "trailLeg": "leg.R",
+        "pelvisBindWorld": [
+          0.0,
+          0.012469,
+          0.777536
+        ],
+        "pelvisWorld": [
+          0.0,
+          0.012469,
+          0.752536
+        ],
+        "pelvisWorldDelta": [
+          -0.0,
+          0.0,
+          -0.025
+        ],
+        "leadFootBindWorld": [
+          0.194607,
+          0.054018,
+          0.112667
+        ],
+        "leadFootWorld": [
+          0.194607,
+          -0.075982,
+          0.162667
+        ],
+        "leadFootWorldDelta": [
+          0.0,
+          -0.13,
+          0.05
+        ],
+        "trailFootBindWorld": [
+          -0.194607,
+          0.054018,
+          0.112667
+        ],
+        "trailFootWorld": [
+          -0.194607,
+          0.054018,
+          0.121667
+        ],
+        "trailFootWorldDelta": [
+          0.0,
+          0.0,
+          0.009
+        ],
+        "trailFootDisplacementMetres": 0.00899995099581873,
+        "leadSolePatchLiftMetres": 0.03284504624772122,
+        "trailSolePatchMinimumZ": -0.0070861950516700745,
+        "trailSolePatchPenetrationMetres": 0.0070861950516700745,
+        "trailFootGroundErrorMetres": 0.007086179603566833,
+        "knees": {
+          "L": {
+            "hipWorld": [
+              0.135601,
+              0.01051,
+              0.85407
+            ],
+            "kneeWorld": [
+              0.13851,
+              -0.188597,
+              0.550559
+            ],
+            "ankleWorld": [
+              0.194607,
+              -0.075982,
+              0.162667
+            ],
+            "kneeLateralDriftMetres": -0.015438798069953907,
+            "sameSideMarginMetres": 0.13850973546504974,
+            "signedSagittalBend": 0.11141149961207386,
+            "flexionDegrees": 49.83795743004793
+          },
+          "R": {
+            "hipWorld": [
+              -0.135601,
+              0.01051,
+              0.85407
+            ],
+            "kneeWorld": [
+              -0.13696,
+              -0.079881,
+              0.502504
+            ],
+            "ankleWorld": [
+              -0.194606,
+              0.054018,
+              0.121667
+            ],
+            "kneeLateralDriftMetres": 0.016988295316696156,
+            "sameSideMarginMetres": 0.1369602382183075,
+            "signedSagittalBend": 0.08149821684294922,
+            "flexionDegrees": 34.587739862580655
+          }
+        },
+        "kneesStayOnAnatomicalSide": true,
+        "pass": true
+      },
+      {
+        "name": "head-turn",
+        "intendedWorldYawDegrees": 45,
+        "actualWorldYawDegrees": 45.00000466733367,
+        "faceGazeWorldYawDegrees": 44.944159156494806,
+        "pass": true
       }
     ],
     "pass": true
@@ -2997,14 +4517,14 @@
         "minimum": [
           -0.482286,
           -0.158981,
-          0.0
+          -0.0
         ],
         "maximum": [
           0.482286,
           0.158981,
           1.8
         ],
-        "groundMinimumZ": 0.0,
+        "groundMinimumZ": -1.5448103241055833e-08,
         "finite": true,
         "pass": true
       },
@@ -3012,33 +4532,33 @@
         "name": "overhead-reach",
         "frame": 10,
         "minimum": [
-          -0.293469,
+          -0.359383,
           -0.158981,
-          0.0
+          -0.0
         ],
         "maximum": [
-          0.293469,
-          0.158619,
-          2.073099
+          0.365441,
+          0.155586,
+          2.023607
         ],
-        "groundMinimumZ": 0.0,
+        "groundMinimumZ": -1.5448103241055833e-08,
         "finite": true,
         "pass": true
       },
       {
-        "name": "horizontal-attack",
+        "name": "cross-body-reach",
         "frame": 20,
         "minimum": [
-          -0.656311,
-          -0.544796,
-          0.0
+          -0.482286,
+          -0.318895,
+          -0.0
         ],
         "maximum": [
-          0.575652,
-          0.465229,
-          1.815249
+          0.391259,
+          0.158981,
+          1.8
         ],
-        "groundMinimumZ": 0.0,
+        "groundMinimumZ": -1.5448103241055833e-08,
         "finite": true,
         "pass": true
       },
@@ -3048,14 +4568,14 @@
         "minimum": [
           -0.482286,
           -0.158981,
-          0.0
+          -0.0
         ],
         "maximum": [
-          0.480336,
+          0.447032,
           0.158981,
           1.8
         ],
-        "groundMinimumZ": 0.0,
+        "groundMinimumZ": -1.5448103241055833e-08,
         "finite": true,
         "pass": true
       },
@@ -3064,15 +4584,15 @@
         "frame": 40,
         "minimum": [
           -0.482286,
-          -0.343819,
-          0.042779
+          -0.285864,
+          -0.008088
         ],
         "maximum": [
           0.482286,
-          0.502549,
-          1.8
+          0.158981,
+          1.775
         ],
-        "groundMinimumZ": 0.042778629809617996,
+        "groundMinimumZ": -0.008087731897830963,
         "finite": true,
         "pass": true
       },
@@ -3082,14 +4602,14 @@
         "minimum": [
           -0.482286,
           -0.158981,
-          0.0
+          -0.0
         ],
         "maximum": [
           0.482286,
-          0.161043,
+          0.161536,
           1.8
         ],
-        "groundMinimumZ": 0.0,
+        "groundMinimumZ": -1.5448103241055833e-08,
         "finite": true,
         "pass": true
       }
@@ -3112,6 +4632,67 @@
       "animationInterpolationModes": [
         "LINEAR",
         "STEP"
+      ],
+      "jointNames": [
+        "root",
+        "pelvis",
+        "spine",
+        "chest",
+        "clavicle.L",
+        "upper_arm.L",
+        "forearm.L",
+        "hand.L",
+        "clavicle.R",
+        "upper_arm.R",
+        "forearm.R",
+        "hand.R",
+        "neck",
+        "head",
+        "thigh.L",
+        "shin.L",
+        "foot.L",
+        "thigh.R",
+        "shin.R",
+        "foot.R"
+      ],
+      "jointParentGraph": {
+        "root": null,
+        "pelvis": "root",
+        "spine": "pelvis",
+        "chest": "spine",
+        "clavicle.L": "chest",
+        "upper_arm.L": "clavicle.L",
+        "forearm.L": "upper_arm.L",
+        "hand.L": "forearm.L",
+        "clavicle.R": "chest",
+        "upper_arm.R": "clavicle.R",
+        "forearm.R": "upper_arm.R",
+        "hand.R": "forearm.R",
+        "neck": "chest",
+        "head": "neck",
+        "thigh.L": "pelvis",
+        "shin.L": "thigh.L",
+        "foot.L": "shin.L",
+        "thigh.R": "pelvis",
+        "shin.R": "thigh.R",
+        "foot.R": "shin.R"
+      },
+      "inverseBindMatrices": {
+        "count": 20,
+        "type": "MAT4",
+        "componentType": 5126,
+        "sha256": "1744e672746254ee66fc59fb387d98c002f37e89807b9abd2d66b49436073c19"
+      },
+      "runtimeRestSignatureSha256": "37893c2e678432c2424a77a5af452bd92a1fcab616bcbc363928c0443ca45d5a",
+      "rigifyControlLeakage": [],
+      "skinnedMeshNames": [
+        "Body",
+        "Eye_NegativeX",
+        "Eye_PositiveX",
+        "Facial_Feature_01",
+        "Hand_NegativeX",
+        "Hand_PositiveX",
+        "Head"
       ]
     },
     "containsArmorProxy": false
@@ -3123,9 +4704,9 @@
     "validation-overhead-reach-front.png",
     "validation-overhead-reach-back.png",
     "validation-overhead-reach-right.png",
-    "validation-horizontal-attack-front.png",
-    "validation-horizontal-attack-back.png",
-    "validation-horizontal-attack-right.png",
+    "validation-cross-body-reach-front.png",
+    "validation-cross-body-reach-back.png",
+    "validation-cross-body-reach-right.png",
     "validation-deep-elbow-bend-front.png",
     "validation-deep-elbow-bend-back.png",
     "validation-deep-elbow-bend-right.png",
@@ -3136,16 +4717,20 @@
     "validation-head-turn-back.png",
     "validation-head-turn-right.png"
   ],
+  "skeletonOverlays": [
+    "validation-bind-skeleton-front.png",
+    "validation-bind-skeleton-right.png"
+  ],
   "artifacts": [
     {
       "path": "masculine-rig-spike.blend",
-      "bytes": 831293,
-      "sha256": "fa270c6fecfb5e0628d2c0a6c8c37730e06e8a19235a1beb6e9d95c616745487"
+      "bytes": 1021258,
+      "sha256": "70bcbdf3f7e7d3f2a805da35590defaee52c77c8d2396de9ddfeb6efa536475f"
     },
     {
       "path": "masculine-rigged-diagnostic.glb",
-      "bytes": 480288,
-      "sha256": "fbb311f1cb29827f4702917bc038e65cf0050c0f2d5b34fd2328e3ebc4b0ea13",
+      "bytes": 488512,
+      "sha256": "3bb27d33026116f4c6cdb458712aebd40de0af740676be5a032e843f2c26ea53",
       "gltfStructure": {
         "meshes": 7,
         "primitives": 7,
@@ -3160,98 +4745,169 @@
         "animationInterpolationModes": [
           "LINEAR",
           "STEP"
+        ],
+        "jointNames": [
+          "root",
+          "pelvis",
+          "spine",
+          "chest",
+          "clavicle.L",
+          "upper_arm.L",
+          "forearm.L",
+          "hand.L",
+          "clavicle.R",
+          "upper_arm.R",
+          "forearm.R",
+          "hand.R",
+          "neck",
+          "head",
+          "thigh.L",
+          "shin.L",
+          "foot.L",
+          "thigh.R",
+          "shin.R",
+          "foot.R"
+        ],
+        "jointParentGraph": {
+          "root": null,
+          "pelvis": "root",
+          "spine": "pelvis",
+          "chest": "spine",
+          "clavicle.L": "chest",
+          "upper_arm.L": "clavicle.L",
+          "forearm.L": "upper_arm.L",
+          "hand.L": "forearm.L",
+          "clavicle.R": "chest",
+          "upper_arm.R": "clavicle.R",
+          "forearm.R": "upper_arm.R",
+          "hand.R": "forearm.R",
+          "neck": "chest",
+          "head": "neck",
+          "thigh.L": "pelvis",
+          "shin.L": "thigh.L",
+          "foot.L": "shin.L",
+          "thigh.R": "pelvis",
+          "shin.R": "thigh.R",
+          "foot.R": "shin.R"
+        },
+        "inverseBindMatrices": {
+          "count": 20,
+          "type": "MAT4",
+          "componentType": 5126,
+          "sha256": "1744e672746254ee66fc59fb387d98c002f37e89807b9abd2d66b49436073c19"
+        },
+        "runtimeRestSignatureSha256": "37893c2e678432c2424a77a5af452bd92a1fcab616bcbc363928c0443ca45d5a",
+        "rigifyControlLeakage": [],
+        "skinnedMeshNames": [
+          "Body",
+          "Eye_NegativeX",
+          "Eye_PositiveX",
+          "Facial_Feature_01",
+          "Hand_NegativeX",
+          "Hand_PositiveX",
+          "Head"
         ]
       }
     },
     {
       "path": "validation-bind-front.png",
-      "bytes": 261283,
-      "sha256": "b3c0eb535f589370a4cd4c2165c8295d2e26ea043ec3cdc1f52b3670b877a682"
+      "bytes": 261287,
+      "sha256": "adb587f787d61954049ae7964fbe85a26e20f4e1c7e751fe096abf618a1d30c3"
     },
     {
       "path": "validation-bind-back.png",
-      "bytes": 255220,
-      "sha256": "becd11da0b77da172963afa0605761b68625bc9ec7963ccf8f65d6425c4b32c1"
+      "bytes": 255257,
+      "sha256": "a3e1e6374cec76c5d07be446d96cb7da0a313dba8c9b1648ef759e57f20a3ec6"
     },
     {
       "path": "validation-bind-right.png",
-      "bytes": 204699,
-      "sha256": "17d11d409ef9f8f58b142122b587e255109281af88dd53c1ed31d03a618ddc94"
+      "bytes": 204578,
+      "sha256": "af6bdeef40a01f35baf206ea36ad9cfb96ce7838ab427c7a0b5597b9665086ac"
     },
     {
       "path": "validation-overhead-reach-front.png",
-      "bytes": 231500,
-      "sha256": "03fb1286f57ab94f79df69256a6cd1e449945ad03abdef625887c49b9850e6a7"
+      "bytes": 238673,
+      "sha256": "311c1ffaf048ea8c5be0a8cbde767707c51e5086e5f5205fb90e7298236c8fd2"
     },
     {
       "path": "validation-overhead-reach-back.png",
-      "bytes": 225563,
-      "sha256": "9bf9355037146521ae2e1ef849a9f26d8f7952d419d657bd9c5279bf34ef3ada"
+      "bytes": 233972,
+      "sha256": "2d38ab287078056e90a6857e0daf7bba1e2af16daec6acaac9b51e0320d2b651"
     },
     {
       "path": "validation-overhead-reach-right.png",
-      "bytes": 192039,
-      "sha256": "2de8fdde7df11fa1580e7b0248ac673440cb88d985ca3c39d8e1f012f42b4b24"
+      "bytes": 194397,
+      "sha256": "9a482b3cf03e9edbff402138a5ea931b0997c830779d67a2773b307000d310d9"
     },
     {
-      "path": "validation-horizontal-attack-front.png",
-      "bytes": 251207,
-      "sha256": "372a96b33f4432b6271c9a6b6e46990e282fc15d4f6869ae954b30a894e3edd5"
+      "path": "validation-cross-body-reach-front.png",
+      "bytes": 255433,
+      "sha256": "7c675dd6a8a7a6c260c0f1b55d5a0bdd8382c94f903b04ab44719ff5fcfb3eee"
     },
     {
-      "path": "validation-horizontal-attack-back.png",
-      "bytes": 242521,
-      "sha256": "93df1f355f4f5ea57d90d401e2e2f13d00a69eace9d9e98b646f9c758fd2f850"
+      "path": "validation-cross-body-reach-back.png",
+      "bytes": 243781,
+      "sha256": "f11b46c99e2e25bc53fd46d24430da40c90d5550ae49b2e11902354d19bb38c6"
     },
     {
-      "path": "validation-horizontal-attack-right.png",
-      "bytes": 224708,
-      "sha256": "283326b5216d2e2b6d54d945240ac2512f8463d6b588a239a213c4ff8bad728a"
+      "path": "validation-cross-body-reach-right.png",
+      "bytes": 202012,
+      "sha256": "cf39a54193817705f5b262f30c510b3de5a988a8c2c0b4e258de59807b4db997"
     },
     {
       "path": "validation-deep-elbow-bend-front.png",
-      "bytes": 262645,
-      "sha256": "a570256e8fce9beee7804fa89348b8eb2acf76636e28d3a3591ff3f177b9b4cd"
+      "bytes": 257985,
+      "sha256": "9dd2464fd39155a677eb93169befee35d41598dfa1603a3cab474b736dfdefcf"
     },
     {
       "path": "validation-deep-elbow-bend-back.png",
-      "bytes": 255302,
-      "sha256": "728acd100424048c779095845f2aa532c6d57005d980488de1f3fb614775735d"
+      "bytes": 248472,
+      "sha256": "e4b019d72a971625c589590c4cbb904f754058c5890bbaf2a24e07471bdaef1a"
     },
     {
       "path": "validation-deep-elbow-bend-right.png",
-      "bytes": 202640,
-      "sha256": "fefa5202da97eb26f4e6ece4f486ffb902a54a24bad1719c8650fe9054621549"
+      "bytes": 200801,
+      "sha256": "9f3537c4696c8ba40128e36e4417b7a15edd4d581e7cf795446a0f9a681d1da9"
     },
     {
       "path": "validation-long-stride-front.png",
-      "bytes": 259749,
-      "sha256": "9629eb084e6e20b9fb87431919385c6235c7b990d6022c1073a4a3b129c011e8"
+      "bytes": 261833,
+      "sha256": "731cd9c065ccce0c779374c6c6ca0978f71b5eab98c179b44ef53d31a93659be"
     },
     {
       "path": "validation-long-stride-back.png",
-      "bytes": 252766,
-      "sha256": "8a38d20c01360cf2044b35fda4daf1e76c9effca0608d75b3675bd444e13829c"
+      "bytes": 255382,
+      "sha256": "8b6ccacc946fa238d472764fd62a53e33d60e9cecf732d065ec132c7cc2f0c31"
     },
     {
       "path": "validation-long-stride-right.png",
-      "bytes": 232074,
-      "sha256": "0b5433896f4b8214c7cd793eb57aa86dcd392e46b1555fde756ca34ae3cbfd29"
+      "bytes": 215313,
+      "sha256": "8d607cff890f674b11d7220bd2efd57565d72c798ade56f44596e3326c2dbf62"
     },
     {
       "path": "validation-head-turn-front.png",
-      "bytes": 261649,
-      "sha256": "e6289c17f3838101abe555e95c806c87eab5a7a3ba1f2d832c9fb90d621d99af"
+      "bytes": 261202,
+      "sha256": "db19ec80ccb5d6741336d7effc495b76edea6fea1f7295c255a86e65a4fe350b"
     },
     {
       "path": "validation-head-turn-back.png",
-      "bytes": 255445,
-      "sha256": "d91b2191f276a4a22a8ac301a049dbe78828b6ba8ab39b095a08e7c6fc002d1f"
+      "bytes": 255615,
+      "sha256": "6a8fa2902975b0268ac6b8858e42f6c8293b41bbdcbbe44f2543e5123eb43fbf"
     },
     {
       "path": "validation-head-turn-right.png",
-      "bytes": 204352,
-      "sha256": "4f071e2b856fe8e22bd0ea56ba73684c06d46e4772085f638bbf6175e5e8ff47"
+      "bytes": 206314,
+      "sha256": "0ac3d317286c24ac8b66802ea75a55b7f25f78bec6200036e39380966d9d131b"
+    },
+    {
+      "path": "validation-bind-skeleton-front.png",
+      "bytes": 275788,
+      "sha256": "b8a9dfe0c77fe718a9cc86a4073a6e8b0a1b009745d3904d7185ad634f690ac5"
+    },
+    {
+      "path": "validation-bind-skeleton-right.png",
+      "bytes": 216637,
+      "sha256": "b77b70d02e01ee491607330a3bce4513a9e719020cc0653950df9ef392044a79"
     }
   ],
   "knownLimitations": [
@@ -3259,6 +4915,7 @@
     "The spike does not validate feminine parity, armor transfer, retargeting, root motion, UVs, or textures.",
     "Passing seam distances does not replace visual review of neck, wrists, shoulders, elbows, hips, and knees.",
     "The long-stride pose lifts the leading foot and exposes a rough knee silhouette; it is negative deformation evidence, not a production animation pass.",
-    "The 1.8 metre source normalization remains provisional relative to actor-radius runtime scaling."
+    "The 1.8 metre source normalization remains provisional relative to actor-radius runtime scaling.",
+    "humanoid.v1 proves only this accepted masculine mannequin; other body archetypes require separately approved fitted rest signatures."
   ]
 }

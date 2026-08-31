@@ -32,7 +32,7 @@ describe('character review contract', () => {
     expect(POSE_FRAMES).toEqual({
       bind: 0,
       'overhead-reach': 10,
-      'horizontal-attack': 20,
+      'cross-body-reach': 20,
       'deep-elbow-bend': 30,
       'long-stride': 40,
       'head-turn': 50,

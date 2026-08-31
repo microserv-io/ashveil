@@ -8,7 +8,10 @@ from pathlib import Path
 
 import bmesh
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from humanoid_landmarks import HUMANOID_V1, fit_humanoid_landmarks, mirror_pair, robust_surface_center
 
 
 SEMANTIC_MESHES = [
@@ -23,7 +26,7 @@ SEMANTIC_MESHES = [
 POSES = [
     ("bind", 0),
     ("overhead-reach", 10),
-    ("horizontal-attack", 20),
+    ("cross-body-reach", 20),
     ("deep-elbow-bend", 30),
     ("long-stride", 40),
     ("head-turn", 50),
@@ -34,6 +37,12 @@ EXPECTED_PREPARED_BLEND_SHA256 = "c9212b65a98456dbb2eaa2a51b4347d12ec6571e2162e9
 EXPECTED_BALD_GLB_SHA256 = "76c95673872e1ac2042d8d965e950c846b7990f6701ac6d7df016015964f185d"
 EXPECTED_VERTEX_COUNT = 7966
 EXPECTED_HEIGHT = 1.8
+CONTRACT_PATH = Path(__file__).resolve().parent / "contracts" / "humanoid.v1.json"
+JOINT_NAMES = [
+    f"{name}.{side}"
+    for name in ("shoulder", "elbow", "wrist", "hip", "knee", "ankle")
+    for side in ("L", "R")
+] + ["pelvis", "chest", "neck", "head"]
 
 
 def parse_args():
@@ -62,12 +71,14 @@ def parse_glb(path):
             raise RuntimeError(f"Invalid GLB header: {path.name}")
         source.read(8)
         document = None
+        binary = b""
         while header := source.read(8):
             chunk_length, chunk_type = struct.unpack("<II", header)
             chunk = source.read(chunk_length)
             if chunk_type == 0x4E4F534A:
                 document = json.loads(chunk.decode("utf-8"))
-                break
+            elif chunk_type == 0x004E4942:
+                binary = chunk
     if document is None:
         raise RuntimeError(f"GLB has no JSON document: {path.name}")
     meshes = document.get("meshes", [])
@@ -80,6 +91,52 @@ def parse_glb(path):
             for sampler in animation.get("samplers", [])
         }
     )
+    nodes = document.get("nodes", [])
+    parent_by_index = {}
+    for parent_index, node in enumerate(nodes):
+        for child_index in node.get("children", []):
+            parent_by_index[child_index] = parent_index
+    joint_names = []
+    joint_parent_graph = {}
+    inverse_bind = None
+    runtime_rest_signature = None
+    rigify_leakage = []
+    if skins:
+        joint_indices = skins[0].get("joints", [])
+        joint_names = [nodes[index].get("name", "") for index in joint_indices]
+        joint_set = set(joint_indices)
+        joint_parent_graph = {
+            nodes[index].get("name", ""): (
+                nodes[parent_by_index[index]].get("name", "") if parent_by_index.get(index) in joint_set else None
+            )
+            for index in joint_indices
+        }
+        rest_records = [
+            {
+                "name": nodes[index].get("name", ""),
+                "parent": joint_parent_graph[nodes[index].get("name", "")],
+                "matrix": nodes[index].get("matrix"),
+                "translation": nodes[index].get("translation"),
+                "rotation": nodes[index].get("rotation"),
+                "scale": nodes[index].get("scale"),
+            }
+            for index in sorted(joint_indices, key=lambda item: nodes[item].get("name", ""))
+        ]
+        runtime_rest_signature = hashlib.sha256(
+            json.dumps(rest_records, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        accessor = document["accessors"][skins[0]["inverseBindMatrices"]]
+        buffer_view = document["bufferViews"][accessor["bufferView"]]
+        byte_offset = buffer_view.get("byteOffset", 0) + accessor.get("byteOffset", 0)
+        byte_length = accessor["count"] * 16 * 4
+        inverse_bytes = binary[byte_offset : byte_offset + byte_length]
+        inverse_bind = {
+            "count": accessor["count"],
+            "type": accessor["type"],
+            "componentType": accessor["componentType"],
+            "sha256": hashlib.sha256(inverse_bytes).hexdigest(),
+        }
+        rigify_leakage = [name for name in joint_names if name.startswith(("ORG-", "MCH-", "CTRL-", "DEF-"))]
     return {
         "meshes": len(meshes),
         "primitives": sum(len(mesh.get("primitives", [])) for mesh in meshes),
@@ -90,6 +147,12 @@ def parse_glb(path):
         "animations": len(animations),
         "animationNames": [animation.get("name", "") for animation in animations],
         "animationInterpolationModes": interpolation_modes,
+        "jointNames": joint_names,
+        "jointParentGraph": joint_parent_graph,
+        "inverseBindMatrices": inverse_bind,
+        "runtimeRestSignatureSha256": runtime_rest_signature,
+        "rigifyControlLeakage": rigify_leakage,
+        "skinnedMeshNames": sorted(node.get("name", "") for node in nodes if "skin" in node and "mesh" in node),
     }
 
 
@@ -137,16 +200,8 @@ def validate_prepared_input(input_directory):
     ):
         raise RuntimeError("Prepared report does not match the audited masculine mannequin contract")
     structure = parse_glb(bald_path)
-    if structure != {
-        "meshes": 7,
-        "primitives": 7,
-        "nodes": 7,
-        "materials": 2,
-        "skins": 0,
-        "joints": 0,
-        "animations": 0,
-        "animationNames": [],
-        "animationInterpolationModes": [],
+    if {key: structure[key] for key in ("meshes", "primitives", "nodes", "materials", "skins", "joints", "animations")} != {
+        "meshes": 7, "primitives": 7, "nodes": 7, "materials": 2, "skins": 0, "joints": 0, "animations": 0
     }:
         raise RuntimeError(f"Prepared bald GLB structure changed: {structure}")
     return report, report_path, blend_path, bald_path
@@ -196,69 +251,92 @@ def create_bone(edit_bones, name, head, tail, parent=None, deform=True):
     return bone
 
 
-def create_armature():
+def load_contract():
+    contract = load_json(CONTRACT_PATH)
+    if contract.get("name") != "humanoid.v1" or len(contract.get("bones", [])) != 20:
+        raise RuntimeError("Invalid humanoid.v1 skeleton manifest")
+    return contract
+
+
+def seam_landmark(contract, meshes_by_name):
+    primary = meshes_by_name[contract["primary"]]
+    secondary = meshes_by_name[contract["secondary"]]
+    primary_points = object_points(primary)
+    secondary_points = object_points(secondary)
+    midpoints = [
+        tuple(
+            (primary_points[pair["primaryVertex"]][axis] + secondary_points[pair["secondaryVertex"]][axis]) / 2
+            for axis in range(3)
+        )
+        for pair in contract["pairs"]
+    ]
+    return robust_surface_center(midpoints), {
+        "method": "frozen_boundary_pair_midpoints",
+        "sourceObjects": [contract["primary"], contract["secondary"]],
+        "sourceVertexPairs": [
+            [pair["primaryVertex"], pair["secondaryVertex"]] for pair in contract["pairs"]
+        ],
+        "sampleCount": len(midpoints),
+        "confidence": min(1.0, len(midpoints) / 24),
+    }
+
+
+def fit_landmarks(meshes_by_name, seam_contracts):
+    components = {
+        name: [tuple(point) for point in object_points(obj)] for name, obj in meshes_by_name.items()
+    }
+    fitted = fit_humanoid_landmarks(components)
+    positive_hand_center = Vector(robust_surface_center(components["Hand_PositiveX"]))
+    negative_hand_center = Vector(robust_surface_center(components["Hand_NegativeX"]))
+    if (
+        abs(fitted["bounds"]["height"] - EXPECTED_HEIGHT) > 1e-6
+        or positive_hand_center.x <= 0
+        or negative_hand_center.x >= 0
+        or abs(positive_hand_center.x + negative_hand_center.x) > fitted["symmetryToleranceMetres"]
+    ):
+        raise RuntimeError("Prepared geometry violates humanoid.v1 orientation or side identity")
+    fitted["canonicalization"] = {
+        "transformsApplied": True,
+        "heightMetres": fitted["bounds"]["height"],
+        "positiveXHandCenter": vector_record(positive_hand_center),
+        "negativeXHandCenter": vector_record(negative_hand_center),
+        "mirroredInputRejected": True,
+    }
+    by_name = {contract["name"]: contract for contract in seam_contracts}
+    left_wrist, left_measurement = seam_landmark(by_name["positive-x-hand-body"], meshes_by_name)
+    right_wrist, right_measurement = seam_landmark(by_name["negative-x-hand-body"], meshes_by_name)
+    fitted["landmarks"]["wrist.L"], fitted["landmarks"]["wrist.R"], wrist_symmetry = mirror_pair(
+        left_wrist, right_wrist
+    )
+    left_measurement["rawTargetWorld"] = left_wrist
+    right_measurement["rawTargetWorld"] = right_wrist
+    fitted["measurements"]["wrist.L"] = left_measurement
+    fitted["measurements"]["wrist.R"] = right_measurement
+    fitted["rawSymmetryErrorMetres"]["wrist"] = wrist_symmetry
+    neck, neck_measurement = seam_landmark(by_name["head-body"], meshes_by_name)
+    fitted["landmarks"]["neck"] = (0.0, neck[1], neck[2])
+    neck_measurement["rawTargetWorld"] = neck
+    fitted["measurements"]["neck"] = neck_measurement
+    if wrist_symmetry > fitted["symmetryToleranceMetres"]:
+        raise RuntimeError("Wrist seam landmarks exceed humanoid.v1 symmetry tolerance")
+    return fitted
+
+
+def create_armature(landmarks, contract):
     armature_data = bpy.data.armatures.new("Ashveil_DiagnosticRig")
     armature = bpy.data.objects.new("Ashveil_DiagnosticRig", armature_data)
     bpy.context.scene.collection.objects.link(armature)
     select_only([armature])
     bpy.ops.object.mode_set(mode="EDIT")
     bones = armature_data.edit_bones
-    create_bone(bones, "root", (0, 0, 0), (0, 0, 0.12), deform=False)
-    create_bone(bones, "pelvis", (0, 0, 0.76), (0, 0, 0.96), "root")
-    create_bone(bones, "spine", (0, 0, 0.96), (0, 0, 1.18), "pelvis")
-    create_bone(bones, "chest", (0, 0, 1.18), (0, 0, 1.4), "spine")
-    create_bone(bones, "neck", (0, 0, 1.4), (0, 0, 1.515), "chest")
-    create_bone(bones, "head", (0, 0, 1.515), (0, 0, 1.77), "neck")
-
-    for suffix, sign in (("L", 1), ("R", -1)):
+    for definition in contract["bones"]:
         create_bone(
             bones,
-            f"clavicle.{suffix}",
-            (0.01 * sign, 0, 1.39),
-            (0.19 * sign, 0, 1.36),
-            "chest",
-        )
-        create_bone(
-            bones,
-            f"upper_arm.{suffix}",
-            (0.19 * sign, 0, 1.36),
-            (0.34 * sign, -0.005, 1.16),
-            f"clavicle.{suffix}",
-        )
-        create_bone(
-            bones,
-            f"forearm.{suffix}",
-            (0.34 * sign, -0.005, 1.16),
-            (0.43 * sign, -0.02, 0.95),
-            f"upper_arm.{suffix}",
-        )
-        create_bone(
-            bones,
-            f"hand.{suffix}",
-            (0.43 * sign, -0.02, 0.95),
-            (0.44 * sign, -0.035, 0.8),
-            f"forearm.{suffix}",
-        )
-        create_bone(
-            bones,
-            f"thigh.{suffix}",
-            (0.105 * sign, 0, 0.88),
-            (0.105 * sign, 0, 0.51),
-            "pelvis",
-        )
-        create_bone(
-            bones,
-            f"shin.{suffix}",
-            (0.105 * sign, 0, 0.51),
-            (0.105 * sign, 0, 0.12),
-            f"thigh.{suffix}",
-        )
-        create_bone(
-            bones,
-            f"foot.{suffix}",
-            (0.105 * sign, 0, 0.12),
-            (0.105 * sign, -0.14, 0.045),
-            f"shin.{suffix}",
+            definition["name"],
+            landmarks[definition["head"]],
+            landmarks[definition["tail"]],
+            definition["parent"],
+            definition["deform"],
         )
     for bone in bones:
         if abs(bone.vector.z) < bone.length * 0.95:
@@ -267,6 +345,7 @@ def create_armature():
     armature.show_in_front = True
     armature.data.display_type = "STICK"
     armature["coordinate_contract"] = "Blender Z-up; front -Y; anatomical .L +X; ground Z=0"
+    armature["skeleton_contract"] = contract["name"]
     return armature
 
 
@@ -280,22 +359,29 @@ def bind_meshes(meshes, armature):
             raise RuntimeError(f"{obj.name} did not bind to the shared armature")
 
 
-def normalize_weights(meshes):
+def normalize_weights(meshes, contract):
     bone_names = {bone.name for bone in bpy.data.objects["Ashveil_DiagnosticRig"].data.bones if bone.use_deform}
     report = []
     total_weighted = 0
     maximum_influences = 0
     all_finite = True
     normalized = True
+    allowed_sets_pass = True
     for obj in meshes:
         group_by_index = {group.index: group for group in obj.vertex_groups if group.name in bone_names}
+        allowed = set(contract["allowedBonesByObject"][obj.name])
+        disallowed = [group for group in group_by_index.values() if group.name not in allowed]
+        for group in disallowed:
+            group.remove(range(len(obj.data.vertices)))
         weighted = 0
         object_maximum = 0
         for vertex in obj.data.vertices:
             influences = [
                 (group_by_index[element.group], element.weight)
                 for element in vertex.groups
-                if element.group in group_by_index and element.weight > 0
+                if element.group in group_by_index
+                and group_by_index[element.group].name in allowed
+                and element.weight > 0
             ]
             influences.sort(key=lambda item: item[1], reverse=True)
             kept = influences[:4]
@@ -311,6 +397,7 @@ def normalize_weights(meshes):
             weighted += 1
             object_maximum = max(object_maximum, len(kept))
             normalized = normalized and abs(sum(weight / total for _, weight in kept) - 1.0) <= 1e-6
+            allowed_sets_pass = allowed_sets_pass and all(group.name in allowed for group, _ in kept)
         total_weighted += weighted
         maximum_influences = max(maximum_influences, object_maximum)
         report.append(
@@ -321,71 +408,174 @@ def normalize_weights(meshes):
                 "maximumInfluences": object_maximum,
             }
         )
-    if total_weighted != EXPECTED_VERTEX_COUNT or maximum_influences > 4 or not normalized or not all_finite:
+    if (
+        total_weighted != EXPECTED_VERTEX_COUNT
+        or maximum_influences > contract["maximumInfluences"]
+        or not normalized
+        or not all_finite
+        or not allowed_sets_pass
+    ):
         raise RuntimeError("Automatic weights failed the normalized four-influence contract")
-    return report, total_weighted, maximum_influences, normalized, all_finite
+    return report, total_weighted, maximum_influences, normalized, all_finite, allowed_sets_pass
+
+
+def harmonize_seam_weights(seam_contracts, meshes_by_name, armature):
+    shared_bones = {
+        "head-body": "neck",
+        "negative-x-hand-body": "forearm.R",
+        "positive-x-hand-body": "forearm.L",
+    }
+    deform_names = {bone.name for bone in armature.data.bones if bone.use_deform}
+    records = []
+    for contract in seam_contracts:
+        bone_name = shared_bones[contract["name"]]
+        for object_name, index_key in ((contract["primary"], "primaryVertex"), (contract["secondary"], "secondaryVertex")):
+            obj = meshes_by_name[object_name]
+            indices = sorted({pair[index_key] for pair in contract["pairs"]})
+            for group in obj.vertex_groups:
+                if group.name in deform_names:
+                    group.remove(indices)
+            group = obj.vertex_groups.get(bone_name) or obj.vertex_groups.new(name=bone_name)
+            group.add(indices, 1.0, "REPLACE")
+        records.append({"name": contract["name"], "sharedBone": bone_name, "pairCount": len(contract["pairs"])})
+    return records
 
 
 def reset_pose(armature):
     for bone in armature.pose.bones:
-        bone.rotation_mode = "XYZ"
-        bone.location = (0, 0, 0)
-        bone.rotation_euler = (0, 0, 0)
-        bone.scale = (1, 1, 1)
+        bone.rotation_mode = "QUATERNION"
+        bone.matrix_basis = Matrix.Identity(4)
 
 
-def set_rotation(armature, name, axis, degrees):
-    armature.pose.bones[name].rotation_euler[axis] = math.radians(degrees)
+def segment_matrix(rest_bone, head, tail):
+    direction = Vector(tail) - Vector(head)
+    if direction.length < 1e-5:
+        raise RuntimeError(f"Degenerate target for {rest_bone.name}")
+    matrix = direction.to_track_quat("Y", "X").to_matrix().to_4x4()
+    matrix.translation = Vector(head)
+    return matrix
 
 
-def apply_pose(armature, pose_name):
+def set_segment(armature, name, head, tail):
+    pose_bone = armature.pose.bones[name]
+    pose_bone.matrix = segment_matrix(armature.data.bones[name], head, tail)
+    bpy.context.view_layer.update()
+
+
+def two_bone_joint(start, target, first_length, second_length, pole):
+    start = Vector(start)
+    target = Vector(target)
+    pole = Vector(pole)
+    delta = target - start
+    distance = min(max(delta.length, abs(first_length - second_length) + 1e-4), first_length + second_length - 1e-4)
+    axis = delta.normalized()
+    projected_target = start + axis * distance
+    pole_direction = pole - start
+    perpendicular = pole_direction - axis * pole_direction.dot(axis)
+    if perpendicular.length < 1e-5:
+        perpendicular = axis.cross(Vector((1, 0, 0)))
+    perpendicular.normalize()
+    along = (first_length * first_length - second_length * second_length + distance * distance) / (2 * distance)
+    height = math.sqrt(max(0.0, first_length * first_length - along * along))
+    return start + axis * along + perpendicular * height, projected_target
+
+
+def point_at_length(start, direction_target, length):
+    start = Vector(start)
+    direction = Vector(direction_target) - start
+    return start + direction.normalized() * length
+
+
+def rotate_about_z(point, pivot, degrees):
+    angle = math.radians(degrees)
+    delta = Vector(point) - Vector(pivot)
+    return Vector(pivot) + Vector(
+        (delta.x * math.cos(angle) - delta.y * math.sin(angle), delta.x * math.sin(angle) + delta.y * math.cos(angle), delta.z)
+    )
+
+
+def apply_pose(armature, pose_name, landmarks):
     reset_pose(armature)
-    channels = []
-
-    def rotate(name, axis, degrees):
-        set_rotation(armature, name, axis, degrees)
-        channels.append({"bone": name, "axis": "XYZ"[axis], "degrees": degrees})
+    channels = {"space": "armature_world", "targets": []}
 
     if pose_name == "overhead-reach":
-        rotate("clavicle.L", 2, 20)
-        rotate("clavicle.R", 2, -20)
-        rotate("upper_arm.L", 2, 145)
-        rotate("upper_arm.R", 2, -145)
-        rotate("forearm.L", 2, -8)
-        rotate("forearm.R", 2, 8)
-    elif pose_name == "horizontal-attack":
-        rotate("chest", 1, 35)
-        rotate("clavicle.L", 2, 12)
-        rotate("upper_arm.L", 2, 70)
-        rotate("upper_arm.L", 1, -25)
-        rotate("forearm.L", 2, 35)
-        rotate("clavicle.R", 2, -12)
-        rotate("upper_arm.R", 2, -45)
-        rotate("upper_arm.R", 1, 20)
+        for side, sign in (("L", 1), ("R", -1)):
+            shoulder = Vector(landmarks[f"shoulder.{side}"]) + Vector((0.02 * sign, -0.01, 0.02))
+            upper_length = (Vector(landmarks[f"elbow.{side}"]) - Vector(landmarks[f"shoulder.{side}"])).length
+            fore_length = (Vector(landmarks[f"wrist.{side}"]) - Vector(landmarks[f"elbow.{side}"])).length
+            elbow = point_at_length(shoulder, Vector((0.34 * sign, -0.035, 1.61)), upper_length)
+            wrist = point_at_length(elbow, Vector((0.27 * sign, -0.03, 1.82)), fore_length)
+            set_segment(armature, f"clavicle.{side}", landmarks["neck.base"], shoulder)
+            set_segment(armature, f"upper_arm.{side}", shoulder, elbow)
+            set_segment(armature, f"forearm.{side}", elbow, wrist)
+            hand_length = (Vector(landmarks[f"hand.{side}"]) - Vector(landmarks[f"wrist.{side}"])).length
+            hand_target = wrist + Vector((0.015 * sign, 0, hand_length))
+            set_segment(armature, f"hand.{side}", wrist, hand_target)
+            channels["targets"].append({"bone": f"hand.{side}", "targetWorld": vector_record(hand_target)})
+    elif pose_name == "cross-body-reach":
+        shoulder = Vector(landmarks["shoulder.L"])
+        upper_length = (Vector(landmarks["elbow.L"]) - shoulder).length
+        fore_length = (Vector(landmarks["wrist.L"]) - Vector(landmarks["elbow.L"])).length
+        hand_length = (Vector(landmarks["hand.L"]) - Vector(landmarks["wrist.L"])).length
+        elbow = point_at_length(shoulder, Vector((0.37, -0.08, 1.31)), upper_length)
+        wrist = point_at_length(elbow, Vector((0.13, -0.20, 1.275)), fore_length)
+        target = point_at_length(wrist, Vector((-0.035, -0.255, 1.275)), hand_length)
+        set_segment(armature, "upper_arm.L", shoulder, elbow)
+        set_segment(armature, "forearm.L", elbow, wrist)
+        set_segment(armature, "hand.L", wrist, target)
+        channels["targets"].append({"bone": "hand.L", "targetWorld": vector_record(target), "role": "lead_cross_body"})
     elif pose_name == "deep-elbow-bend":
-        rotate("upper_arm.L", 2, 35)
-        rotate("forearm.L", 2, 135)
+        shoulder = Vector(landmarks["shoulder.L"])
+        upper_length = (Vector(landmarks["elbow.L"]) - shoulder).length
+        fore_length = (Vector(landmarks["wrist.L"]) - Vector(landmarks["elbow.L"])).length
+        elbow = point_at_length(shoulder, Vector((0.43, -0.035, shoulder.z)), upper_length)
+        wrist = point_at_length(elbow, Vector((0.285, -0.07, shoulder.z + 0.17)), fore_length)
+        set_segment(armature, "upper_arm.L", shoulder, elbow)
+        set_segment(armature, "forearm.L", elbow, wrist)
+        hand_length = (Vector(landmarks["hand.L"]) - Vector(landmarks["wrist.L"])).length
+        set_segment(armature, "hand.L", wrist, wrist + (Vector(shoulder) - wrist).normalized() * hand_length)
+        channels["targets"].append({"bone": "forearm.L", "flexionTargetDegrees": 135})
     elif pose_name == "long-stride":
-        armature.pose.bones["pelvis"].location.z = -0.1
-        channels.append({"bone": "pelvis", "axis": "location.Z", "metres": -0.1})
-        rotate("thigh.L", 0, 60)
-        rotate("shin.L", 0, -100)
-        rotate("thigh.R", 0, -30)
-        rotate("shin.R", 0, 18)
+        pelvis_drop = Vector((0, 0, -0.025))
+        pelvis = armature.pose.bones["pelvis"]
+        pelvis.matrix = Matrix.Translation(pelvis_drop) @ pelvis.bone.matrix_local
+        bpy.context.view_layer.update()
+        for side, lead in (("L", True), ("R", False)):
+            hip = Vector(landmarks[f"hip.{side}"]) + pelvis_drop
+            bind_ankle = Vector(landmarks[f"ankle.{side}"])
+            ankle_target = bind_ankle + (Vector((0, -0.13, 0.05)) if lead else Vector((0, 0, 0.009)))
+            knee, ankle = two_bone_joint(
+                hip,
+                ankle_target,
+                (Vector(landmarks[f"knee.{side}"]) - Vector(landmarks[f"hip.{side}"])).length,
+                (Vector(landmarks[f"ankle.{side}"]) - Vector(landmarks[f"knee.{side}"])).length,
+                Vector((hip.x, hip.y - (0.25 if lead else 0.10), (hip.z + ankle_target.z) / 2)),
+            )
+            set_segment(armature, f"thigh.{side}", hip, knee)
+            set_segment(armature, f"shin.{side}", knee, ankle)
+            foot_delta = Vector(landmarks[f"foot.{side}"]) - bind_ankle
+            foot_tail = ankle + foot_delta
+            set_segment(armature, f"foot.{side}", ankle, foot_tail)
+            channels["targets"].append({"bone": f"foot.{side}", "targetWorld": vector_record(ankle_target), "role": "lead" if lead else "trail"})
     elif pose_name == "head-turn":
-        rotate("neck", 1, 25)
-        rotate("head", 1, 45)
+        neck_bone = armature.pose.bones["neck"]
+        head_bone = armature.pose.bones["head"]
+        neck_bone.matrix = Matrix.Translation(neck_bone.bone.head_local) @ Matrix.Rotation(math.radians(20), 4, "Z") @ Matrix.Translation(-neck_bone.bone.head_local) @ neck_bone.bone.matrix_local
+        bpy.context.view_layer.update()
+        head_bone.matrix = Matrix.Translation(head_bone.bone.head_local) @ Matrix.Rotation(math.radians(45), 4, "Z") @ Matrix.Translation(-head_bone.bone.head_local) @ head_bone.bone.matrix_local
+        bpy.context.view_layer.update()
+        channels["targets"].append({"bone": "head", "worldYawDegrees": 45})
     return channels
 
 
 def key_pose(armature, frame):
     for bone in armature.pose.bones:
         bone.keyframe_insert(data_path="location", frame=frame, group=bone.name)
-        bone.keyframe_insert(data_path="rotation_euler", frame=frame, group=bone.name)
+        bone.keyframe_insert(data_path="rotation_quaternion", frame=frame, group=bone.name)
         bone.keyframe_insert(data_path="scale", frame=frame, group=bone.name)
 
 
-def create_action(armature):
+def create_action(armature, landmarks):
     bpy.context.scene.render.fps = 30
     bpy.context.scene.frame_start = 0
     bpy.context.scene.frame_end = 50
@@ -394,7 +584,7 @@ def create_action(armature):
     armature.animation_data.action = action
     pose_channels = {}
     for pose_name, frame in POSES:
-        pose_channels[pose_name] = apply_pose(armature, pose_name)
+        pose_channels[pose_name] = apply_pose(armature, pose_name, landmarks)
         key_pose(armature, frame)
         marker = action.pose_markers.new(pose_name)
         marker.frame = frame
@@ -419,6 +609,255 @@ def create_action(armature):
     action["frames_per_second"] = 30
     action["diagnostic_only"] = True
     return action, pose_channels, len(curves), keyframe_count
+
+
+def bone_endpoint(armature, bone_name, endpoint):
+    bone = armature.data.bones[bone_name]
+    point = bone.head_local if endpoint == "head" else bone.tail_local
+    return armature.matrix_world @ point
+
+
+def rest_contract(armature, contract):
+    records = []
+    for definition in contract["bones"]:
+        bone = armature.data.bones[definition["name"]]
+        records.append(
+            {
+                "name": bone.name,
+                "parent": bone.parent.name if bone.parent else None,
+                "deform": bone.use_deform,
+                "head": vector_record(bone.head_local),
+                "tail": vector_record(bone.tail_local),
+                "roll": round(bone.matrix_local.to_euler().y, 6),
+                "matrixLocal": [round(value, 6) for row in bone.matrix_local for value in row],
+            }
+        )
+    encoded = json.dumps(records, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return records, hashlib.sha256(encoded).hexdigest()
+
+
+def joint_fit_report(armature, fitted):
+    endpoints = {
+        **{f"shoulder.{side}": (f"upper_arm.{side}", "head") for side in ("L", "R")},
+        **{f"elbow.{side}": (f"forearm.{side}", "head") for side in ("L", "R")},
+        **{f"wrist.{side}": (f"hand.{side}", "head") for side in ("L", "R")},
+        **{f"hip.{side}": (f"thigh.{side}", "head") for side in ("L", "R")},
+        **{f"knee.{side}": (f"shin.{side}", "head") for side in ("L", "R")},
+        **{f"ankle.{side}": (f"foot.{side}", "head") for side in ("L", "R")},
+        "pelvis": ("pelvis", "head"),
+        "chest": ("chest", "head"),
+        "neck": ("head", "head"),
+        "head": ("head", "tail"),
+    }
+    threshold = fitted["jointToleranceMetres"]
+    joints = []
+    for name in JOINT_NAMES:
+        target = Vector(fitted["landmarks"][name])
+        actual = bone_endpoint(armature, *endpoints[name])
+        error = actual - target
+        measurement = fitted["measurements"][name]
+        joints.append(
+            {
+                "name": name,
+                "targetWorld": vector_record(target),
+                "actualWorld": vector_record(actual),
+                "errorVectorMetres": vector_record(error),
+                "errorMetres": error.length,
+                "thresholdMetres": threshold,
+                "derivation": measurement["method"],
+                "sourceObjects": measurement["sourceObjects"],
+                "sourceVertexPairs": measurement.get("sourceVertexPairs", []),
+                "sampleCount": measurement["sampleCount"],
+                "confidence": measurement.get("confidence", min(1.0, measurement["sampleCount"] / 24)),
+                "pass": error.length <= threshold,
+            }
+        )
+    maximum = max(joint["errorMetres"] for joint in joints)
+    report = {
+        "contract": "humanoid.v1",
+        "targetsFrozenBeforeArmature": True,
+        "toleranceMetres": threshold,
+        "symmetryToleranceMetres": fitted["symmetryToleranceMetres"],
+        "rawSymmetryErrorMetres": fitted["rawSymmetryErrorMetres"],
+        "canonicalization": fitted["canonicalization"],
+        "maximumErrorMetres": maximum,
+        "joints": joints,
+        "pass": all(joint["pass"] for joint in joints),
+    }
+    if not report["pass"]:
+        raise RuntimeError(f"Fitted joints exceed humanoid.v1 tolerance: {maximum}")
+    return report
+
+
+def pose_bone_points(armature, name):
+    pose_bone = armature.pose.bones[name]
+    return armature.matrix_world @ pose_bone.head, armature.matrix_world @ pose_bone.tail
+
+
+def angle_degrees(first, second):
+    return math.degrees(Vector(first).angle(Vector(second)))
+
+
+def evaluated_vertex(obj, index):
+    return object_points(obj, evaluated=True)[index]
+
+
+def sole_patch_indices(body, side, minimum_z, height):
+    points = object_points(body)
+    candidates = [
+        (index, point)
+        for index, point in enumerate(points)
+        if point.x * side > 0 and point.z <= minimum_z + height * 0.018 and point.y < 0.08
+    ]
+    if len(candidates) < 4:
+        raise RuntimeError("Could not derive a representative sole patch")
+    return [index for index, _ in sorted(candidates, key=lambda item: item[1].z)[:24]]
+
+
+def pose_intent_report(armature, meshes_by_name, landmarks):
+    body = meshes_by_name["Body"]
+    all_minimum, all_maximum = bounds(list(meshes_by_name.values()))
+    height = all_maximum.z - all_minimum.z
+    sole_indices = {
+        "L": sole_patch_indices(body, 1, all_minimum.z, height),
+        "R": sole_patch_indices(body, -1, all_minimum.z, height),
+    }
+    bpy.context.scene.frame_set(0)
+    bpy.context.view_layer.update()
+    bind = {
+        name: pose_bone_points(armature, name)
+        for name in ("pelvis", "hand.L", "foot.L", "foot.R", "thigh.L", "shin.L", "thigh.R", "shin.R", "head")
+    }
+    bind_soles = {
+        side: [evaluated_vertex(body, index) for index in indices] for side, indices in sole_indices.items()
+    }
+    bind_face_points = object_points(meshes_by_name["Facial_Feature_01"], evaluated=True)
+    bind_head_points = object_points(meshes_by_name["Head"], evaluated=True)
+    bind_face_center = sum(bind_face_points, Vector()) / len(bind_face_points)
+    bind_head_center = sum(bind_head_points, Vector()) / len(bind_head_points)
+    bind_gaze = (bind_face_center - bind_head_center).normalized()
+    bind_gaze_yaw = math.degrees(math.atan2(bind_gaze.x, -bind_gaze.y))
+    results = []
+
+    bpy.context.scene.frame_set(10)
+    bpy.context.view_layer.update()
+    left_hand = pose_bone_points(armature, "hand.L")[1]
+    right_hand = pose_bone_points(armature, "hand.R")[1]
+    overhead_pass = left_hand.z > landmarks["head"][2] and right_hand.z > landmarks["head"][2] and abs(left_hand.z - right_hand.z) < 0.04
+    results.append({"name": "overhead-reach", "leftHandWorld": vector_record(left_hand), "rightHandWorld": vector_record(right_hand), "symmetryHeightErrorMetres": abs(left_hand.z - right_hand.z), "pass": overhead_pass})
+
+    bpy.context.scene.frame_set(20)
+    bpy.context.view_layer.update()
+    attack_hand = pose_bone_points(armature, "hand.L")[1]
+    attack_target = next(Vector(target["targetWorld"]) for target in apply_pose(armature, "cross-body-reach", landmarks)["targets"] if target["bone"] == "hand.L")
+    bpy.context.view_layer.update()
+    attack_hand = pose_bone_points(armature, "hand.L")[1]
+    attack_error = (attack_hand - attack_target).length
+    attack = {
+        "name": "cross-body-reach",
+        "leadHand": "hand.L",
+        "targetWorld": vector_record(attack_target),
+        "actualWorld": vector_record(attack_hand),
+        "targetErrorMetres": attack_error,
+        "verticalTargetErrorMetres": abs(attack_hand.z - attack_target.z),
+        "crossedMidline": attack_hand.x < 0,
+    }
+    attack["pass"] = attack["crossedMidline"] and attack_error <= 0.04 and attack["verticalTargetErrorMetres"] <= 0.04
+    results.append(attack)
+
+    bpy.context.scene.frame_set(30)
+    bpy.context.view_layer.update()
+    upper_head, upper_tail = pose_bone_points(armature, "upper_arm.L")
+    fore_head, fore_tail = pose_bone_points(armature, "forearm.L")
+    elbow_flex = angle_degrees(upper_tail - upper_head, fore_tail - fore_head)
+    results.append({"name": "deep-elbow-bend", "actualFlexionDegrees": elbow_flex, "targetFlexionDegrees": 135, "errorDegrees": abs(elbow_flex - 135), "pass": 105 <= elbow_flex <= 150})
+
+    bpy.context.scene.frame_set(40)
+    bpy.context.view_layer.update()
+    pelvis = pose_bone_points(armature, "pelvis")[0]
+    pelvis_delta = pelvis - bind["pelvis"][0]
+    stride_legs = {}
+    for side in ("L", "R"):
+        hip, knee = pose_bone_points(armature, f"thigh.{side}")
+        _, ankle = pose_bone_points(armature, f"shin.{side}")
+        sign = 1 if side == "L" else -1
+        thigh = knee - hip
+        shin = ankle - knee
+        sagittal_bend = thigh.y * shin.z - thigh.z * shin.y
+        stride_legs[side] = {
+            "hipWorld": vector_record(hip),
+            "kneeWorld": vector_record(knee),
+            "ankleWorld": vector_record(ankle),
+            "kneeLateralDriftMetres": knee.x - landmarks[f"knee.{side}"][0],
+            "sameSideMarginMetres": knee.x * sign,
+            "signedSagittalBend": sagittal_bend,
+            "flexionDegrees": angle_degrees(thigh, shin),
+        }
+    lead_foot = pose_bone_points(armature, "foot.L")[0]
+    trail_foot = pose_bone_points(armature, "foot.R")[0]
+    lead_delta = lead_foot - bind["foot.L"][0]
+    trail_delta = trail_foot - bind["foot.R"][0]
+    posed_soles = {
+        side: [evaluated_vertex(body, index) for index in indices] for side, indices in sole_indices.items()
+    }
+    lead_lift = min(point.z for point in posed_soles["L"]) - min(point.z for point in bind_soles["L"])
+    trail_minimum = min(point.z for point in posed_soles["R"])
+    trail_bind_minimum = min(point.z for point in bind_soles["R"])
+    trail_ground_error = abs(trail_minimum - trail_bind_minimum)
+    stride = {
+        "name": "long-stride",
+        "leadLeg": "leg.L",
+        "trailLeg": "leg.R",
+        "pelvisBindWorld": vector_record(bind["pelvis"][0]),
+        "pelvisWorld": vector_record(pelvis),
+        "pelvisWorldDelta": vector_record(pelvis_delta),
+        "leadFootBindWorld": vector_record(bind["foot.L"][0]),
+        "leadFootWorld": vector_record(lead_foot),
+        "leadFootWorldDelta": vector_record(lead_delta),
+        "trailFootBindWorld": vector_record(bind["foot.R"][0]),
+        "trailFootWorld": vector_record(trail_foot),
+        "trailFootWorldDelta": vector_record(trail_delta),
+        "trailFootDisplacementMetres": trail_delta.length,
+        "leadSolePatchLiftMetres": lead_lift,
+        "trailSolePatchMinimumZ": trail_minimum,
+        "trailSolePatchPenetrationMetres": max(0, -trail_minimum),
+        "trailFootGroundErrorMetres": trail_ground_error,
+        "knees": stride_legs,
+        "kneesStayOnAnatomicalSide": all(item["sameSideMarginMetres"] > 0.035 for item in stride_legs.values()),
+    }
+    stride["pass"] = (
+        -0.04 <= stride["pelvisWorldDelta"][2] <= -0.02
+        and abs(stride["pelvisWorldDelta"][1]) <= 0.02
+        and stride["leadFootWorldDelta"][1] <= -0.12
+        and stride["leadFootWorldDelta"][2] >= 0.04
+        and stride["trailFootDisplacementMetres"] <= 0.035
+        and stride["leadSolePatchLiftMetres"] >= 0.025
+        and stride["trailFootGroundErrorMetres"] <= 0.015
+        and stride["trailSolePatchPenetrationMetres"] <= 0.01
+        and stride["kneesStayOnAnatomicalSide"]
+        and all(abs(item["kneeLateralDriftMetres"]) <= 0.05 and 5 <= item["flexionDegrees"] <= 145 and item["signedSagittalBend"] > 0 for item in stride_legs.values())
+    )
+    results.append(stride)
+
+    bpy.context.scene.frame_set(50)
+    bpy.context.view_layer.update()
+    head_bone = armature.pose.bones["head"]
+    rest_basis = armature.data.bones["head"].matrix_local.to_3x3()
+    actual_basis = head_bone.matrix.to_3x3()
+    actual_yaw = math.degrees((actual_basis @ rest_basis.inverted()).to_euler("XYZ").z)
+    face_points = object_points(meshes_by_name["Facial_Feature_01"], evaluated=True)
+    face_center = sum(face_points, Vector()) / len(face_points)
+    head_center = sum(object_points(meshes_by_name["Head"], evaluated=True), Vector()) / len(object_points(meshes_by_name["Head"], evaluated=True))
+    gaze = (face_center - head_center).normalized()
+    gaze_yaw = math.degrees(math.atan2(gaze.x, -gaze.y)) - bind_gaze_yaw
+    gaze_yaw = (gaze_yaw + 180) % 360 - 180
+    head_turn = {"name": "head-turn", "intendedWorldYawDegrees": 45, "actualWorldYawDegrees": actual_yaw, "faceGazeWorldYawDegrees": gaze_yaw, "pass": abs(actual_yaw - 45) <= 1 and abs(gaze_yaw - actual_yaw) <= 12}
+    results.append(head_turn)
+    report = {"contract": "humanoid.v1", "measurementSpace": "evaluated_armature_and_skinned_geometry", "forward": [0, -1, 0], "leadHand": "hand.L", "leadLeg": "leg.L", "trailLeg": "leg.R", "poses": results, "pass": all(result["pass"] for result in results)}
+    if not report["pass"]:
+        print("POSE_INTENT_DIAGNOSTIC " + json.dumps(results))
+        raise RuntimeError("A world-space pose intent failed humanoid.v1 validation")
+    return report
 
 
 def boundary_vertex_indices(obj):
@@ -559,6 +998,86 @@ def setup_render(meshes, wire_overlays, armature):
     return camera
 
 
+def diagnostic_material(name, color):
+    material = bpy.data.materials.new(name)
+    material.diffuse_color = (*color, 1)
+    material.roughness = 0.65
+    return material
+
+
+def cylinder_between(name, start, end, radius, material):
+    start = Vector(start)
+    end = Vector(end)
+    direction = end - start
+    bpy.ops.mesh.primitive_cylinder_add(vertices=10, radius=radius, depth=direction.length, location=(start + end) / 2)
+    obj = bpy.context.object
+    obj.name = name
+    obj.rotation_mode = "QUATERNION"
+    obj.rotation_quaternion = Vector((0, 0, 1)).rotation_difference(direction.normalized())
+    obj.data.materials.append(material)
+    obj["diagnostic_render_only"] = True
+    return obj
+
+
+def sphere_at(name, point, radius, material):
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=radius, location=point)
+    obj = bpy.context.object
+    obj.name = name
+    obj.data.materials.append(material)
+    obj["diagnostic_render_only"] = True
+    return obj
+
+
+def create_skeleton_overlay(armature, fitted, view, minimum, maximum):
+    bone_material = diagnostic_material(f"Skeleton_{view}", (0.04, 0.75, 1.0))
+    target_material = diagnostic_material(f"Targets_{view}", (1.0, 0.18, 0.08))
+    if view == "front":
+        offset = Vector((0, minimum.y - 0.045, 0))
+        project = lambda point: Vector((point.x, offset.y, point.z))
+    else:
+        offset = Vector((maximum.x + 0.045, 0, 0))
+        project = lambda point: Vector((offset.x, point.y, point.z))
+    objects = []
+    for bone in armature.data.bones:
+        objects.append(cylinder_between(f"OVERLAY_{view}_{bone.name}", project(bone.head_local), project(bone.tail_local), 0.008, bone_material))
+    for name in JOINT_NAMES:
+        objects.append(sphere_at(f"TARGET_{view}_{name}", project(Vector(fitted["landmarks"][name])), 0.015, target_material))
+    for obj in objects:
+        obj.hide_render = True
+    return objects
+
+
+def render_skeleton_overlay(output, camera, meshes, wire_overlays, overlay_by_view):
+    scene = bpy.context.scene
+    scene.frame_set(0)
+    bpy.context.view_layer.update()
+    minimum, maximum = bounds(meshes, evaluated=True)
+    target = (minimum + maximum) / 2
+    dimensions = maximum - minimum
+    camera.data.ortho_scale = max(dimensions.z * 1.14, dimensions.x * 1.2, dimensions.y * 1.2)
+    distance = max(dimensions) * 3
+    positions = {
+        "front": Vector((target.x, minimum.y - distance, target.z)),
+        "right": Vector((maximum.x + distance, target.y, target.z)),
+    }
+    paths = []
+    for view, overlay in overlay_by_view.items():
+        for obj in overlay_by_view["front"] + overlay_by_view["right"]:
+            obj.hide_render = obj not in overlay
+        for obj in meshes + wire_overlays:
+            obj.hide_render = False
+        camera.location = positions[view]
+        point_camera(camera, target)
+        path = output / f"validation-bind-skeleton-{view}.png"
+        scene.render.filepath = str(path)
+        bpy.ops.render.render(write_still=True)
+        paths.append(path)
+    for overlay in overlay_by_view.values():
+        for obj in overlay:
+            obj.hide_render = True
+    return paths
+
+
 def render_pose_views(output, camera, pose_name, frame, meshes):
     scene = bpy.context.scene
     scene.frame_set(frame)
@@ -626,14 +1145,11 @@ def main():
         if obj.type in {"CAMERA", "LIGHT", "ARMATURE"} or (obj.type == "MESH" and obj not in meshes):
             bpy.data.objects.remove(obj, do_unlink=True)
 
-    add_materials(meshes)
-    armature = create_armature()
-    bind_meshes(meshes, armature)
-    weight_objects, weighted_vertices, maximum_influences, normalized, finite_weights = normalize_weights(
-        meshes
-    )
-    action, pose_channels, curve_count, keyframe_count = create_action(armature)
-    wire_overlays = create_wire_overlays(meshes)
+    if any(
+        max(abs(obj.matrix_world[row][column] - Matrix.Identity(4)[row][column]) for row in range(4) for column in range(4)) > 1e-6
+        for obj in meshes
+    ):
+        raise RuntimeError("Prepared semantic meshes must have applied identity transforms")
 
     seam_contracts = [
         {
@@ -646,21 +1162,42 @@ def main():
             "name": "negative-x-hand-body",
             "primary": "Body",
             "secondary": "Hand_NegativeX",
-            "pairs": seam_pairs(
-                meshes_by_name["Body"], meshes_by_name["Hand_NegativeX"], 13, 0.03
-            ),
+            "pairs": seam_pairs(meshes_by_name["Body"], meshes_by_name["Hand_NegativeX"], 13, 0.03),
         },
         {
             "name": "positive-x-hand-body",
             "primary": "Body",
             "secondary": "Hand_PositiveX",
-            "pairs": seam_pairs(
-                meshes_by_name["Body"], meshes_by_name["Hand_PositiveX"], 13, 0.03
-            ),
+            "pairs": seam_pairs(meshes_by_name["Body"], meshes_by_name["Hand_PositiveX"], 13, 0.03),
         },
     ]
+    contract = load_contract()
+    fitted = fit_landmarks(meshes_by_name, seam_contracts)
+
+    add_materials(meshes)
+    armature = create_armature(fitted["landmarks"], contract)
+    joint_fit = joint_fit_report(armature, fitted)
+    rest_records, rest_signature = rest_contract(armature, contract)
+    accepted_rest_signature = contract.get("acceptedMaleRestSignatureSha256")
+    if accepted_rest_signature and rest_signature != accepted_rest_signature:
+        raise RuntimeError(
+            f"humanoid.v1 accepted male rest signature changed: {rest_signature}"
+        )
+    bind_meshes(meshes, armature)
+    weight_objects, weighted_vertices, maximum_influences, normalized, finite_weights, allowed_sets_pass = normalize_weights(
+        meshes, contract
+    )
+    seam_weight_records = harmonize_seam_weights(seam_contracts, meshes_by_name, armature)
+    action, pose_channels, curve_count, keyframe_count = create_action(armature, fitted["landmarks"])
+    pose_intent = pose_intent_report(armature, meshes_by_name, fitted["landmarks"])
+    wire_overlays = create_wire_overlays(meshes)
 
     camera = setup_render(meshes, wire_overlays, armature)
+    bind_minimum, bind_maximum = bounds(meshes)
+    overlay_by_view = {
+        view: create_skeleton_overlay(armature, fitted, view, bind_minimum, bind_maximum)
+        for view in ("front", "right")
+    }
     render_paths = []
     seam_pose_results = []
     bounds_pose_results = []
@@ -690,6 +1227,7 @@ def main():
             }
         )
         render_paths.extend(render_pose_views(output, camera, pose_name, frame, meshes))
+    overlay_paths = render_skeleton_overlay(output, camera, meshes, wire_overlays, overlay_by_view)
     if not seams_pass:
         print(
             "SEAM_DIAGNOSTIC "
@@ -719,6 +1257,14 @@ def main():
     bpy.context.scene.frame_set(0)
     export_glb(glb_path, meshes, armature)
     glb_structure = parse_glb(glb_path)
+    expected_joint_names = sorted(definition["gltfName"] for definition in contract["bones"])
+    gltf_name_by_source = {definition["name"]: definition["gltfName"] for definition in contract["bones"]}
+    expected_parent_graph = {
+        definition["gltfName"]: (
+            gltf_name_by_source[definition["parent"]] if definition["parent"] else None
+        )
+        for definition in contract["bones"]
+    }
     if (
         glb_structure["meshes"] != 7
         or glb_structure["primitives"] != 7
@@ -726,6 +1272,19 @@ def main():
         or glb_structure["joints"] != 20
         or glb_structure["animations"] != 1
         or glb_structure["animationNames"] != ["Ashveil_RigStress"]
+        or sorted(glb_structure["jointNames"]) != expected_joint_names
+        or glb_structure["jointParentGraph"] != expected_parent_graph
+        or glb_structure["inverseBindMatrices"]["count"] != 20
+        or glb_structure["inverseBindMatrices"]["type"] != "MAT4"
+        or glb_structure["inverseBindMatrices"]["sha256"]
+        != contract["acceptedMaleInverseBindMatricesSha256"]
+        or glb_structure["rigifyControlLeakage"]
+        or glb_structure["skinnedMeshNames"] != sorted(SEMANTIC_MESHES)
+        or (
+            contract.get("acceptedMaleRuntimeRestSignatureSha256")
+            and glb_structure["runtimeRestSignatureSha256"]
+            != contract["acceptedMaleRuntimeRestSignatureSha256"]
+        )
     ):
         raise RuntimeError(f"Rigged GLB structure failed: {glb_structure}")
     bpy.ops.wm.save_as_mainfile(filepath=str(blend_output_path))
@@ -733,7 +1292,7 @@ def main():
     input_hashes_after = {path.name: sha256(path) for path in (report_path, blend_path, bald_path)}
     if input_hashes_after != input_hashes_before:
         raise RuntimeError("A prepared input changed during rig generation")
-    artifacts = [blend_output_path, glb_path, *render_paths]
+    artifacts = [blend_output_path, glb_path, *render_paths, *overlay_paths]
     report = {
         "schemaVersion": 1,
         "pipeline": "ashveil-character-rig-spike",
@@ -760,13 +1319,19 @@ def main():
             "heightStatus": "provisional_not_canonical_runtime_scale",
         },
         "skeleton": {
+            "contract": contract["name"],
             "name": armature.name,
             "bones": len(armature.data.bones),
             "deformBones": sum(1 for bone in armature.data.bones if bone.use_deform),
             "rootBone": "root",
             "rootDeforms": armature.data.bones["root"].use_deform,
             "boneNames": [bone.name for bone in armature.data.bones],
+            "manifest": "scripts/art/contracts/humanoid.v1.json",
+            "restRecords": rest_records,
+            "acceptedMaleRestSignatureSha256": rest_signature,
+            "rigify": "not_used_direct_fitted_deform_rig_is_less_brittle_for_this_diagnostic",
         },
+        "jointFit": joint_fit,
         "weights": {
             "vertices": EXPECTED_VERTEX_COUNT,
             "weightedVertices": weighted_vertices,
@@ -774,7 +1339,9 @@ def main():
             "normalized": normalized,
             "finite": finite_weights,
             "sharedArmatureModifier": True,
+            "semanticAllowedBoneSets": allowed_sets_pass,
             "objects": weight_objects,
+            "seamHarmonization": seam_weight_records,
         },
         "animation": {
             "name": action.name,
@@ -797,6 +1364,7 @@ def main():
             "poses": seam_pose_results,
             "pass": seams_pass,
         },
+        "poseIntent": pose_intent,
         "groundAndBounds": {"poses": bounds_pose_results, "pass": bounds_pass},
         "export": {
             "path": glb_path.name,
@@ -804,6 +1372,7 @@ def main():
             "containsArmorProxy": False,
         },
         "renders": [path.name for path in render_paths],
+        "skeletonOverlays": [path.name for path in overlay_paths],
         "artifacts": [artifact_record(path) for path in artifacts],
         "knownLimitations": [
             "This is an automatic-weight diagnostic rig, not a production skeleton or animation set.",
@@ -811,6 +1380,7 @@ def main():
             "Passing seam distances does not replace visual review of neck, wrists, shoulders, elbows, hips, and knees.",
             "The long-stride pose lifts the leading foot and exposes a rough knee silhouette; it is negative deformation evidence, not a production animation pass.",
             "The 1.8 metre source normalization remains provisional relative to actor-radius runtime scaling.",
+            "humanoid.v1 proves only this accepted masculine mannequin; other body archetypes require separately approved fitted rest signatures.",
         ],
     }
     (output / "report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

@@ -31,6 +31,8 @@ export class ReviewUi {
   private readonly timeState = element<HTMLElement>('time-state')
   private readonly assetCounts = element<HTMLElement>('asset-counts')
   private readonly rigCounts = element<HTMLElement>('rig-counts')
+  private readonly fitState = element<HTMLElement>('fit-state')
+  private readonly intentState = element<HTMLElement>('intent-state')
   private readonly renderCounts = element<HTMLElement>('render-counts')
   private readonly heightState = element<HTMLElement>('height-state')
   private readonly scaleState = element<HTMLElement>('scale-state')
@@ -45,6 +47,7 @@ export class ReviewUi {
   private readonly showKnight = element<HTMLInputElement>('show-knight')
   private readonly meshToggles = element<HTMLElement>('mesh-toggles')
   private readonly failure = element<HTMLPreElement>('failure')
+  private report: RigReport | null = null
 
   constructor(private readonly events: ReviewUiEvents) {
     this.bindControls()
@@ -52,6 +55,7 @@ export class ReviewUi {
   }
 
   populateReport(report: RigReport): void {
+    this.report = report
     this.poseSelect.replaceChildren(
       ...report.animation.poses.map((pose) => {
         const option = document.createElement('option')
@@ -64,6 +68,8 @@ export class ReviewUi {
     this.timeScrub.max = String(report.animation.frameEnd)
     this.meshToggles.replaceChildren(...REQUIRED_SEMANTIC_MESHES.map((name) => this.meshToggle(name)))
     this.enableRigControls(true)
+    const passingJoints = report.jointFit.joints.filter((joint) => joint.pass).length
+    this.fitState.textContent = `${report.jointFit.contract} · ${passingJoints}/${report.jointFit.joints.length} · max ${(report.jointFit.maximumErrorMetres * 1000).toFixed(1)} mm`
   }
 
   validated(status: AssetStatus): void {
@@ -80,6 +86,19 @@ export class ReviewUi {
     this.timeScrub.value = String(frame)
     const exactOption = [...this.poseSelect.options].find((option) => Number(option.value) === frame)
     this.poseSelect.value = exactOption?.value ?? ''
+    this.intentState.textContent = this.poseMetric(pose)
+  }
+
+  private poseMetric(name: string): string {
+    const pose = this.report?.poseIntent.poses.find((candidate) => candidate.name === name)
+    if (!pose) return 'Bind · fitted rest contract'
+    if (pose.targetErrorMetres !== undefined) return `Reach error ${(pose.targetErrorMetres * 1000).toFixed(1)} mm`
+    if (pose.actualFlexionDegrees !== undefined) return `Elbow ${pose.actualFlexionDegrees.toFixed(1)}°`
+    if (pose.actualWorldYawDegrees !== undefined) return `Head ${pose.actualWorldYawDegrees.toFixed(1)}° / target ${pose.intendedWorldYawDegrees!.toFixed(1)}°`
+    if (pose.leadFootWorldDelta && pose.knees) {
+      return `Lead ${(-pose.leadFootWorldDelta[1]! * 100).toFixed(0)} cm · knees ${pose.knees.L.flexionDegrees.toFixed(0)}°/${pose.knees.R.flexionDegrees.toFixed(0)}° · trail ${(pose.trailFootGroundErrorMetres! * 1000).toFixed(1)} mm`
+    }
+    return pose.pass ? 'Evaluated intent passed' : 'Evaluated intent failed'
   }
 
   setPlaying(playing: boolean): void {

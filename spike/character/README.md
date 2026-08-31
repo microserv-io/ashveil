@@ -22,9 +22,10 @@ Knight comparison loads from `public/models/player.glb`; its absence does not
 invalidate the generated rig.
 
 The review fails visibly when the generated asset lacks its skin, joints, named
-stress action, seven semantic skinned meshes, finite 1.8 m provisional bounds, or a
-grounded origin. The page exposes `globalThis.characterReview` for browser-driven
-inspection.
+stress action, seven semantic skinned meshes, finite 1.8 m provisional bounds,
+grounded origin, fitted-joint audit or evaluated pose-intent audit. The status panel
+shows the fit contract/error and pose-specific reach, flexion, stride or yaw metric.
+The page exposes `globalThis.characterReview` for browser-driven inspection.
 
 The scene opens in the close front-inspection camera; the exact gameplay camera is
 one click or `G` away. Controls: drag to orbit, wheel or pinch to zoom, Space to

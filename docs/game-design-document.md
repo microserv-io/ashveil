@@ -185,6 +185,10 @@ When a feature changes a player-facing rule, its PR must:
 - **Humanoid rigging has an entry gate.** A generated humanoid cannot enter rigging
   until it has an explicit scale, applied transforms, validated semantic components
   and a recorded topology report.
+- **Acceptance is a controlled handoff.** A provider proposes an asset, Blender
+  normalises and validates it, a human approves the visual evidence, and Ashveil
+  freezes the accepted source/runtime identities and contract. Generated output is
+  never canonical merely because automation completed.
 
 ### Direction
 
@@ -203,6 +207,17 @@ Use one approved humanoid proportion and canonical skeleton rather than independ
 generating a new anatomy and rig for every outfit. Treat clothing, hair and equipment
 as modular pieces within that standard. Static assets may use a simpler topology
 path; deforming characters need joint-friendly topology and animation stress tests.
+
+Define a versioned skeleton contract per approved archetype rather than silently
+reusing one rest pose. Each contract should freeze semantic bone names, hierarchy,
+rest axes and transforms, sockets, root-motion policy, influence limits and runtime
+mapping. The current geometry-fitted `humanoid.v1` implementation is diagnostic
+evidence for one masculine mannequin only, not approval of the feminine fit or a
+production rig architecture. Rigify may support authoring, but cannot substitute for
+measured landmarks or an Ashveil-owned deform/export contract.
+
+Attach rigid modular equipment and transfer deforming wearables only after the
+target archetype's skeleton contract passes technical and human review.
 
 Begin with visually curated Tripo Studio work. Add API automation only after asset
 settings, acceptance criteria and generation reliability are stable enough that
@@ -267,6 +282,10 @@ These are unresolved decisions, not implied future features.
 - Tripo's real acceptance and repeatability rate across masculine and feminine
   mannequins and shared hairstyle fits: topology, UVs, textures, materials, modular
   seams, rig deformation, animation quality and exports.
+- Feminine parity against a reviewed humanoid contract, including independently
+  measured landmarks, shared hair/socket compatibility and deformation stress poses.
+- Skeleton contracts and validation methods for quadrupeds and other nonhumanoid
+  archetypes; `humanoid.v1` does not supply placeholders or evidence for them.
 - The production body-mask and armor-cage fitting method. The axis-cropped proxy
   failed its boundary-quality review, so it cannot stand in for authored slot
   boundaries or representative pose and clipping tests.

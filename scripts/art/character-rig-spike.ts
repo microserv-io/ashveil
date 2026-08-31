@@ -31,11 +31,13 @@ export const characterRigSpikeArtifactNames = [
   ...[
     'bind',
     'overhead-reach',
-    'horizontal-attack',
+    'cross-body-reach',
     'deep-elbow-bend',
     'long-stride',
     'head-turn',
   ].flatMap((pose) => ['front', 'back', 'right'].map((view) => `validation-${pose}-${view}.png`)),
+  'validation-bind-skeleton-front.png',
+  'validation-bind-skeleton-right.png',
   'report.json',
 ] as const
 

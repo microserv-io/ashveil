@@ -1,0 +1,54 @@
+{
+  "name": "humanoid.v1",
+  "status": "diagnostic",
+  "coordinateContract": {
+    "up": "+Z",
+    "forward": "-Y",
+    "anatomicalLeft": "+X",
+    "anatomicalRight": "-X",
+    "bonePrimaryAxis": "+Y",
+    "nonAxialRollReference": "-Y"
+  },
+  "rootMotion": "none",
+  "maximumInfluences": 4,
+  "restSignatureAlgorithm": "sha256(canonical-json[{name,parent,deform,head,tail,roll,matrixLocal}] rounded 1e-6)",
+  "acceptedMaleRestSignatureSha256": "06b8b7f511219087ffd2843bc91b012651acf6353b0e9260e9709b906b67238f",
+  "acceptedMaleRuntimeRestSignatureSha256": "37893c2e678432c2424a77a5af452bd92a1fcab616bcbc363928c0443ca45d5a",
+  "acceptedMaleInverseBindMatricesSha256": "1744e672746254ee66fc59fb387d98c002f37e89807b9abd2d66b49436073c19",
+  "bones": [
+    { "name": "root", "gltfName": "root", "threeName": "root", "parent": null, "deform": false, "head": "root", "tail": "pelvis" },
+    { "name": "pelvis", "gltfName": "pelvis", "threeName": "pelvis", "parent": "root", "deform": true, "head": "pelvis", "tail": "spine" },
+    { "name": "spine", "gltfName": "spine", "threeName": "spine", "parent": "pelvis", "deform": true, "head": "spine", "tail": "chest" },
+    { "name": "chest", "gltfName": "chest", "threeName": "chest", "parent": "spine", "deform": true, "head": "chest", "tail": "neck.base" },
+    { "name": "neck", "gltfName": "neck", "threeName": "neck", "parent": "chest", "deform": true, "head": "neck.base", "tail": "neck" },
+    { "name": "head", "gltfName": "head", "threeName": "head", "parent": "neck", "deform": true, "head": "neck", "tail": "head" },
+    { "name": "clavicle.L", "gltfName": "clavicle.L", "threeName": "clavicleL", "parent": "chest", "deform": true, "head": "neck.base", "tail": "shoulder.L" },
+    { "name": "upper_arm.L", "gltfName": "upper_arm.L", "threeName": "upper_armL", "parent": "clavicle.L", "deform": true, "head": "shoulder.L", "tail": "elbow.L" },
+    { "name": "forearm.L", "gltfName": "forearm.L", "threeName": "forearmL", "parent": "upper_arm.L", "deform": true, "head": "elbow.L", "tail": "wrist.L" },
+    { "name": "hand.L", "gltfName": "hand.L", "threeName": "handL", "parent": "forearm.L", "deform": true, "head": "wrist.L", "tail": "hand.L" },
+    { "name": "clavicle.R", "gltfName": "clavicle.R", "threeName": "clavicleR", "parent": "chest", "deform": true, "head": "neck.base", "tail": "shoulder.R" },
+    { "name": "upper_arm.R", "gltfName": "upper_arm.R", "threeName": "upper_armR", "parent": "clavicle.R", "deform": true, "head": "shoulder.R", "tail": "elbow.R" },
+    { "name": "forearm.R", "gltfName": "forearm.R", "threeName": "forearmR", "parent": "upper_arm.R", "deform": true, "head": "elbow.R", "tail": "wrist.R" },
+    { "name": "hand.R", "gltfName": "hand.R", "threeName": "handR", "parent": "forearm.R", "deform": true, "head": "wrist.R", "tail": "hand.R" },
+    { "name": "thigh.L", "gltfName": "thigh.L", "threeName": "thighL", "parent": "pelvis", "deform": true, "head": "hip.L", "tail": "knee.L" },
+    { "name": "shin.L", "gltfName": "shin.L", "threeName": "shinL", "parent": "thigh.L", "deform": true, "head": "knee.L", "tail": "ankle.L" },
+    { "name": "foot.L", "gltfName": "foot.L", "threeName": "footL", "parent": "shin.L", "deform": true, "head": "ankle.L", "tail": "foot.L" },
+    { "name": "thigh.R", "gltfName": "thigh.R", "threeName": "thighR", "parent": "pelvis", "deform": true, "head": "hip.R", "tail": "knee.R" },
+    { "name": "shin.R", "gltfName": "shin.R", "threeName": "shinR", "parent": "thigh.R", "deform": true, "head": "knee.R", "tail": "ankle.R" },
+    { "name": "foot.R", "gltfName": "foot.R", "threeName": "footR", "parent": "shin.R", "deform": true, "head": "ankle.R", "tail": "foot.R" }
+  ],
+  "sockets": [
+    { "role": "headAttachment", "sourceName": "head", "gltfName": "head", "threeName": "head" },
+    { "role": "leftHand", "sourceName": "hand.L", "gltfName": "hand.L", "threeName": "handL" },
+    { "role": "rightHand", "sourceName": "hand.R", "gltfName": "hand.R", "threeName": "handR" }
+  ],
+  "allowedBonesByObject": {
+    "Body": ["pelvis", "spine", "chest", "neck", "clavicle.L", "upper_arm.L", "forearm.L", "hand.L", "clavicle.R", "upper_arm.R", "forearm.R", "hand.R", "thigh.L", "shin.L", "foot.L", "thigh.R", "shin.R", "foot.R"],
+    "Head": ["neck", "head"],
+    "Hand_PositiveX": ["forearm.L", "hand.L"],
+    "Hand_NegativeX": ["forearm.R", "hand.R"],
+    "Eye_PositiveX": ["head"],
+    "Eye_NegativeX": ["head"],
+    "Facial_Feature_01": ["head"]
+  }
+}

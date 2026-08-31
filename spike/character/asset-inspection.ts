@@ -9,6 +9,29 @@ import {
 
 export interface RigReport {
   status: string
+  jointFit: {
+    contract: string
+    maximumErrorMetres: number
+    pass: boolean
+    joints: { name: string; pass: boolean }[]
+  }
+  poseIntent: {
+    pass: boolean
+    leadHand: string
+    leadLeg: string
+    trailLeg: string
+    poses: Array<{
+      name: string
+      pass: boolean
+      targetErrorMetres?: number
+      actualFlexionDegrees?: number
+      intendedWorldYawDegrees?: number
+      actualWorldYawDegrees?: number
+      leadFootWorldDelta?: number[]
+      trailFootGroundErrorMetres?: number
+      knees?: { L: { flexionDegrees: number }; R: { flexionDegrees: number } }
+    }>
+  }
   animation: {
     name: string
     framesPerSecond: number
@@ -32,6 +55,10 @@ export function assertRigReport(candidate: RigReport): void {
     failures.push('report status must be diagnostic_not_production_ready')
   }
   if (candidate.animation.name !== 'Ashveil_RigStress') failures.push('report must describe Ashveil_RigStress')
+  if (candidate.jointFit.contract !== 'humanoid.v1' || !candidate.jointFit.pass) {
+    failures.push('report must contain a passing humanoid.v1 fitted-joint audit')
+  }
+  if (!candidate.poseIntent.pass) failures.push('report must contain passing evaluated pose intent')
   if (!Number.isFinite(candidate.animation.framesPerSecond) || candidate.animation.framesPerSecond <= 0) {
     failures.push('report animation FPS must be positive')
   }

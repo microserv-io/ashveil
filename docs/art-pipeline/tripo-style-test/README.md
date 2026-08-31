@@ -129,29 +129,42 @@ npm run art:character-rig-spike -- \
 
 The command fails closed unless the prepared report, blend and bald GLB match the
 audited source contract. It preserves their hashes, replaces its output atomically,
-and emits an editable blend, one skinned diagnostic GLB, a machine-readable report
-and shaded-wire front/back/right renders for bind plus five stress poses.
+and emits an editable blend, one skinned diagnostic GLB, a machine-readable report,
+shaded-wire front/back/right renders for bind plus five stress poses, and front/right
+bind overlays that distinguish fitted targets from the exported bones.
 
 Current structural evidence:
 
 - all 7,966 vertices across seven semantic meshes received finite, normalized
   automatic weights with at most four influences and the same armature modifier;
-- the armature has 20 bones, with its root as the sole non-deforming bone;
+- `humanoid.v1` derives shoulder, elbow, hip, knee and ankle targets from robust
+  geometry slices and derives wrists and neck from the audited component seams;
+- all 16 fitted joint targets retain their source components, sample counts and raw
+  target/actual coordinates before the armature is created;
+- the armature has 20 bones, with its root as the sole non-deforming bone, and its
+  accepted masculine source-rest, runtime-rest and inverse-bind signatures are
+  pinned in the versioned contract;
 - the editable blend stores six fully keyed poses with constant F-curves at 30 fps;
   the exported GLB contains both STEP and LINEAR transform tracks, so review tools
   sample just after each diagnostic marker rather than assuming identical key times;
 - the runtime GLB retains seven meshes and seven primitives, one skin with 20 joints,
   and one named animation, with no armor proxy;
 - all fixed head, neck and wrist seam correspondences remain below 30 mm and twice
-  their own bind distance across the six poses; and
-- source bounds remain finite and above the Blender ground plane.
+  their own bind distance across the six poses;
+- evaluated pose evidence records actual world-space endpoints, displacement axes,
+  knee side/pole/flexion, sole-patch ground contact and head/face yaw rather than
+  trusting the pose solver's requested targets; and
+- source bounds remain finite and within the diagnostic ground tolerance.
 
-This remains `diagnostic_not_production_ready`. The long-stride frame lifts the lead
-foot and exposes a rough knee silhouette, so it is useful negative deformation
-evidence rather than an approved motion. Passing distance checks also does not
-approve the neck and wrist seams by eye. Production bone placement, controls, IK,
-twist/finger/toe/facial bones, retargeting, root motion, feminine parity, armor
-transfer, UVs, textures and canonical runtime scale remain unresolved.
+This remains `diagnostic_not_production_ready`. Bind placement and the overhead,
+cross-body reach, deep-elbow and head-turn intentions now read correctly in the
+validation views. The long-stride frame has the correct lead/trail direction, pelvis
+axis, knee sides and planted trail sole, but still exposes collapsed knee topology;
+it is negative deformation evidence, not an approved motion. Production controls,
+IK, twist/finger/toe/facial bones, retargeting, root motion, feminine parity, armor
+transfer, UVs, textures and canonical runtime scale remain unresolved. `humanoid.v1`
+currently authenticates only this masculine diagnostic; it does not prove that the
+feminine mannequin or any nonhumanoid can share its rest signature.
 
 ## Planned Tripo run
 

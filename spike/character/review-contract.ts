@@ -7,7 +7,7 @@ export const CURRENT_PLAYER_RUNTIME_SCALE = 0.44 * 1.93
 export const POSE_FRAMES = {
   bind: 0,
   'overhead-reach': 10,
-  'horizontal-attack': 20,
+  'cross-body-reach': 20,
   'deep-elbow-bend': 30,
   'long-stride': 40,
   'head-turn': 50,
