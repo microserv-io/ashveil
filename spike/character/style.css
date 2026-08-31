@@ -51,17 +51,22 @@ input {
   z-index: 2;
 }
 
-.panel-toggle {
+.review-toolbar {
   position: fixed;
   top: 1rem;
   right: 1rem;
+  display: flex;
+  gap: 0.45rem;
+  z-index: 3;
+}
+
+.review-toolbar button {
   min-height: 2.5rem;
   padding: 0.35rem 0.75rem;
   border-color: #f26a1f;
   background: rgb(27 32 41 / 92%);
   box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 35%);
   backdrop-filter: blur(12px);
-  z-index: 3;
 }
 
 header,
@@ -248,7 +253,7 @@ details p {
 }
 
 @media (max-width: 640px) {
-  .panel-toggle {
+  .review-toolbar {
     top: 0.5rem;
     right: 0.5rem;
   }

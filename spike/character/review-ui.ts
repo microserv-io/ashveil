@@ -1,6 +1,8 @@
 import { REQUIRED_SEMANTIC_MESHES, type SemanticMeshName } from './review-contract'
 import type { RigReport } from './asset-inspection'
 import type { CameraPreset, ScaleMode } from './view-contract'
+import { nextLookMode, type LookMode } from './game-look'
+import type { ReviewClip } from './animation-review'
 
 export interface ReviewUiEvents {
   selectFrame(frame: number): void
@@ -13,6 +15,8 @@ export interface ReviewUiEvents {
   showKnight(visible: boolean): void
   showSemanticMesh(name: SemanticMeshName, visible: boolean): void
   setScale(mode: ScaleMode): void
+  setLookMode(mode: LookMode): void
+  selectClip(name: string): void
 }
 
 export interface AssetStatus {
@@ -34,6 +38,7 @@ export class ReviewUi {
   readonly stage = element<HTMLElement>('stage')
   private readonly reviewPanel = element<HTMLElement>('review-panel')
   private readonly reviewPanelToggle = element<HTMLButtonElement>('review-panel-toggle')
+  private readonly lookModeToggle = element<HTMLButtonElement>('look-mode-toggle')
   private readonly loadState = element<HTMLElement>('load-state')
   private readonly poseState = element<HTMLElement>('pose-state')
   private readonly timeState = element<HTMLElement>('time-state')
@@ -44,7 +49,9 @@ export class ReviewUi {
   private readonly renderCounts = element<HTMLElement>('render-counts')
   private readonly heightState = element<HTMLElement>('height-state')
   private readonly scaleState = element<HTMLElement>('scale-state')
+  private readonly lookState = element<HTMLElement>('look-state')
   private readonly poseSelect = element<HTMLSelectElement>('pose-select')
+  private readonly animationSelect = element<HTMLSelectElement>('animation-select')
   private readonly previousPose = element<HTMLButtonElement>('previous-pose')
   private readonly playPause = element<HTMLButtonElement>('play-pause')
   private readonly nextPose = element<HTMLButtonElement>('next-pose')
@@ -56,6 +63,9 @@ export class ReviewUi {
   private readonly meshToggles = element<HTMLElement>('mesh-toggles')
   private readonly failure = element<HTMLPreElement>('failure')
   private report: RigReport | null = null
+  private lookMode: LookMode = 'diagnostic'
+  private controlsEnabled = false
+  private stressSelected = true
 
   constructor(private readonly events: ReviewUiEvents) {
     this.bindControls()
@@ -113,6 +123,35 @@ export class ReviewUi {
     this.intentState.textContent = this.poseMetric(pose)
   }
 
+  populateClips(clips: readonly ReviewClip[], selected: string): void {
+    this.animationSelect.replaceChildren(
+      ...clips.map((clip) => {
+        const option = document.createElement('option')
+        option.value = clip.name
+        option.textContent = clip.label
+        return option
+      }),
+    )
+    this.setSelectedClip(clips.find((clip) => clip.name === selected)!)
+  }
+
+  setSelectedClip(clip: ReviewClip): void {
+    this.animationSelect.value = clip.name
+    this.timeScrub.min = String(clip.frameStart)
+    this.timeScrub.max = String(clip.frameEnd)
+    this.timeScrub.step = '1'
+    this.stressSelected = clip.kind === 'stress'
+    this.updateControlAvailability()
+  }
+
+  setLocomotionTimeline(phase: string, frame: number, framesPerSecond: number): void {
+    const readablePhase = phase.replaceAll('_', ' ')
+    this.poseState.textContent = `${readablePhase} · frame ${frame}`
+    this.timeState.textContent = `${(frame / framesPerSecond).toFixed(2)} s`
+    this.timeScrub.value = String(frame)
+    this.intentState.textContent = `Nearest contact phase · ${readablePhase}`
+  }
+
   private poseMetric(name: string): string {
     const pose = this.report?.poseIntent?.poses.find((candidate) => candidate.name === name)
     if (this.report?.pipeline === 'ashveil-auto-rig-pro-benchmark') {
@@ -155,6 +194,28 @@ export class ReviewUi {
     this.renderCounts.textContent = `${triangles.toLocaleString()} triangles · ${draws} draws`
   }
 
+  setLookReady(ready: boolean): void {
+    this.lookModeToggle.disabled = !ready
+  }
+
+  setLookMode(mode: LookMode): void {
+    this.lookMode = mode
+    const game = mode === 'game'
+    this.lookModeToggle.setAttribute('aria-pressed', String(game))
+    this.lookModeToggle.setAttribute('aria-label', game ? 'Show neutral rig look' : 'Show Game look')
+    this.lookModeToggle.textContent = game ? 'Rig look' : 'Game look'
+    this.lookState.textContent = game
+      ? 'Palette blockout · bare mannequin'
+      : 'Neutral rig diagnostic'
+  }
+
+  rejectGameLook(error: unknown): void {
+    this.setLookMode('diagnostic')
+    this.lookModeToggle.disabled = true
+    this.lookModeToggle.title = `Game look unavailable: ${messageOf(error)}`
+    this.lookState.textContent = 'Game look unavailable · rig review unaffected'
+  }
+
   setKnightPending(pending: boolean): void {
     this.showKnight.disabled = pending
   }
@@ -176,6 +237,8 @@ export class ReviewUi {
     this.reviewPanelToggle.addEventListener('click', () => {
       this.setReviewPanelOpen(this.reviewPanel.hasAttribute('hidden'))
     })
+    this.lookModeToggle.addEventListener('click', () => this.events.setLookMode(nextLookMode(this.lookMode)))
+    this.animationSelect.addEventListener('change', () => this.events.selectClip(this.animationSelect.value))
     this.poseSelect.addEventListener('change', () => this.events.selectFrame(Number(this.poseSelect.value)))
     this.timeScrub.addEventListener('input', () => this.events.selectFrame(Number(this.timeScrub.value)))
     this.previousPose.addEventListener('click', () => this.events.stepPose(-1))
@@ -242,11 +305,17 @@ export class ReviewUi {
   }
 
   private enableRigControls(enabled: boolean): void {
-    this.poseSelect.disabled = !enabled
-    this.previousPose.disabled = !enabled
-    this.playPause.disabled = !enabled
-    this.nextPose.disabled = !enabled
-    this.timeScrub.disabled = !enabled
+    this.controlsEnabled = enabled
+    this.updateControlAvailability()
+  }
+
+  private updateControlAvailability(): void {
+    this.animationSelect.disabled = !this.controlsEnabled
+    this.poseSelect.disabled = !this.controlsEnabled || !this.stressSelected
+    this.previousPose.disabled = !this.controlsEnabled || !this.stressSelected
+    this.playPause.disabled = !this.controlsEnabled
+    this.nextPose.disabled = !this.controlsEnabled || !this.stressSelected
+    this.timeScrub.disabled = !this.controlsEnabled
   }
 }
 

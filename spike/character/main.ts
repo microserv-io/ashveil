@@ -4,9 +4,19 @@ import { assertCharacterAssetSummary, type SemanticMeshName } from './review-con
 import { assertRigReport, configureAsset, summarizeAsset, type RigReport } from './asset-inspection'
 import { createReviewScene, placeReviewCamera, resizeReviewScene } from './review-scene'
 import { ReviewUi, type ReviewUiEvents } from './review-ui'
+import { GameLookOwner, GAME_LOOK_TEXTURE_URL, type LookMode } from './game-look'
+import {
+  activateReviewAction,
+  assertReviewClipInventory,
+  buildReviewClips,
+  frameForReviewTime,
+  loopConfiguration,
+  nearestContactPhase,
+  sampleTimeForReviewFrame,
+  type ReviewClip,
+} from './animation-review'
 import {
   resetRootYaw,
-  sampleTimeForFrame,
   scaleForMode,
   type CameraPreset,
   type ScaleMode,
@@ -28,6 +38,9 @@ interface ReviewState {
   turntable: boolean
   scaleMode: ScaleMode
   cameraPreset: CameraPreset
+  lookMode: LookMode
+  wireframe: boolean
+  selectedClip: string
   frame: number
   pose: string
   failure: string | null
@@ -39,6 +52,9 @@ const state: ReviewState = {
   turntable: false,
   scaleMode: 'native',
   cameraPreset: 'front',
+  lookMode: 'diagnostic',
+  wireframe: false,
+  selectedClip: 'Ashveil_ARP_Benchmark',
   frame: 0,
   pose: 'bind',
   failure: null,
@@ -48,12 +64,16 @@ let model: THREE.Object3D | null = null
 let knight: THREE.Object3D | null = null
 let skeleton: THREE.SkeletonHelper | null = null
 let mixer: THREE.AnimationMixer | null = null
-let stressAction: THREE.AnimationAction | null = null
+let activeAction: THREE.AnimationAction | null = null
 let report: RigReport | null = null
 let clips: readonly THREE.AnimationClip[] = []
+let reviewClips: readonly ReviewClip[] = []
+let selectedClip: ReviewClip | null = null
 let nativeHeight = 1.8
 let semanticMeshes = new Map<SemanticMeshName, THREE.SkinnedMesh>()
 let sourceMaterials: { material: THREE.Material; wireframe: boolean }[] = []
+let gameLook: GameLookOwner | null = null
+let gameLookActivated = false
 
 const ui = new ReviewUi(createUiEvents())
 const reviewScene = createReviewScene(ui.stage)
@@ -70,12 +90,13 @@ declare global {
         clips: readonly THREE.AnimationClip[]
         report: RigReport | null
         controller: typeof reviewScene.controller
+        gameLook: GameLookOwner | null
         state: ReviewState
       }
     | undefined
 }
 
-globalThis.characterReview = { ...reviewScene, model, mixer, clips, report, state }
+globalThis.characterReview = { ...reviewScene, model, mixer, clips, report, gameLook, state }
 
 placeCamera('front')
 resizeReviewScene(reviewScene)
@@ -85,7 +106,7 @@ reviewScene.renderer.setAnimationLoop(render)
 
 function createUiEvents(): ReviewUiEvents {
   return {
-    selectFrame: showPoseFrame,
+    selectFrame: showReviewFrame,
     stepPose,
     togglePlayback,
     setCamera: placeCamera,
@@ -102,6 +123,8 @@ function createUiEvents(): ReviewUiEvents {
       if (mesh) mesh.visible = visible
     },
     setScale: updateScale,
+    setLookMode: updateLookMode,
+    selectClip: selectAnimationClip,
   }
 }
 
@@ -114,6 +137,8 @@ async function loadReviewAsset(): Promise<void> {
 
     report = loadedReport
     clips = gltf.animations
+    reviewClips = buildReviewClips(report)
+    assertReviewClipInventory(reviewClips, clips)
     model = gltf.scene
     model.name = 'Ashveil_Masculine_Diagnostic'
     const configured = configureAsset(model)
@@ -128,17 +153,12 @@ async function loadReviewAsset(): Promise<void> {
     reviewScene.scene.add(skeleton)
 
     mixer = new THREE.AnimationMixer(model)
-    const stressClip = clips.find((candidate) => candidate.name === report!.animation.name)!
-    stressAction = mixer.clipAction(stressClip)
-    stressAction.setLoop(THREE.LoopOnce, 1)
-    stressAction.clampWhenFinished = true
-    stressAction.play()
     mixer.addEventListener('finished', finishPlayback)
-    mixer.setTime(0)
 
     state.loaded = true
     Object.assign(globalThis.characterReview!, { model, mixer, clips, report })
     ui.populateReport(report)
+    ui.populateClips(reviewClips, report.animation.name)
     ui.validated({
       meshes: configured.meshes,
       primitives: configured.primitives,
@@ -148,11 +168,30 @@ async function loadReviewAsset(): Promise<void> {
       nativeHeight,
     })
     updateScale('native')
-    showPoseFrame(report.animation.frameStart)
+    selectAnimationClip(report.animation.name)
+    void prepareGameLook([...semanticMeshes.values()])
   } catch (error) {
     state.failure = error instanceof Error ? error.message : String(error)
     state.loaded = false
     ui.fail(error)
+    console.error(error)
+  }
+}
+
+async function prepareGameLook(characterMeshes: readonly THREE.Mesh[]): Promise<void> {
+  try {
+    const floorTexture = await new THREE.TextureLoader().loadAsync(GAME_LOOK_TEXTURE_URL)
+    gameLook = new GameLookOwner({
+      scene: reviewScene.scene,
+      diagnosticGround: reviewScene.diagnosticGround,
+      characterMeshes,
+      floorTexture,
+    })
+    gameLook.setWireframe(state.wireframe)
+    Object.assign(globalThis.characterReview!, { gameLook })
+    ui.setLookReady(true)
+  } catch (error) {
+    ui.rejectGameLook(error)
     console.error(error)
   }
 }
@@ -164,35 +203,50 @@ async function loadReport(): Promise<RigReport> {
 }
 
 function togglePlayback(): void {
-  if (!stressAction || !mixer || !report) return
-  if (!state.playing && state.frame >= report.animation.frameEnd) {
-    stressAction.reset().play()
-    showPoseFrame(report.animation.frameStart)
+  if (!activeAction || !mixer || !selectedClip) return
+  if (!state.playing && state.frame >= selectedClip.frameEnd) {
+    activeAction.reset().play()
+    showReviewFrame(selectedClip.frameStart)
   }
   state.playing = !state.playing
-  stressAction.paused = false
+  activeAction.paused = !state.playing
   ui.setPlaying(state.playing)
 }
 
-function showPoseFrame(frame: number): void {
-  if (!report || !mixer || !stressAction) return
+function showReviewFrame(frame: number): void {
+  if (!report || !mixer || !activeAction || !selectedClip) return
   state.playing = false
-  stressAction.paused = false
   ui.setPlaying(false)
-  state.frame = clamp(frame, report.animation.frameStart, report.animation.frameEnd)
-  mixer.setTime(
-    sampleTimeForFrame(state.frame, report.animation.framesPerSecond, stressAction.getClip().duration),
-  )
-  state.pose = report.animation.poses.find((pose) => pose.frame === state.frame)?.name ?? 'between poses'
-  ui.setTimeline(state.pose, state.frame, report.animation.framesPerSecond)
+  state.frame = clamp(frame, selectedClip.frameStart, selectedClip.frameEnd)
+  activeAction.paused = false
+  mixer.setTime(sampleTimeForReviewFrame(selectedClip, state.frame))
+  activeAction.paused = true
+  updateTimelineUi()
 }
 
 function stepPose(direction: -1 | 1): void {
-  if (!report) return
+  if (!report || selectedClip?.kind !== 'stress') return
   const poses = report.animation.poses
   const exact = poses.findIndex((pose) => pose.frame === state.frame)
   const current = exact < 0 ? nearestPoseIndex(poses, state.frame) : exact
-  showPoseFrame(poses[(current + direction + poses.length) % poses.length]!.frame)
+  showReviewFrame(poses[(current + direction + poses.length) % poses.length]!.frame)
+}
+
+function selectAnimationClip(name: string): void {
+  if (!mixer || !report) return
+  const metadata = reviewClips.find((clip) => clip.name === name)
+  const animation = clips.find((clip) => clip.name === name)
+  if (!metadata || !animation) throw new Error(`Unknown review animation clip ${name}`)
+  const nextAction = mixer.clipAction(animation)
+  activateReviewAction(activeAction, nextAction, loopConfiguration(metadata.kind))
+  activeAction = nextAction
+  selectedClip = metadata
+  state.selectedClip = metadata.name
+  state.playing = false
+  ui.setPlaying(false)
+  ui.setSelectedClip(metadata)
+  mixer.setTime(0)
+  showReviewFrame(metadata.frameStart)
 }
 
 function nearestPoseIndex(poses: RigReport['animation']['poses'], frame: number): number {
@@ -217,6 +271,21 @@ function updateScale(mode: ScaleMode): void {
   model?.scale.setScalar(scale)
   knight?.scale.setScalar(scale)
   ui.setScale(mode, scale)
+}
+
+function updateLookMode(mode: LookMode): void {
+  if (!gameLook) return
+  gameLook.setMode(mode)
+  gameLook.setWireframe(state.wireframe)
+  state.lookMode = mode
+  if (mode === 'game' && !gameLookActivated) {
+    gameLookActivated = true
+    state.cameraPreset = 'gameplay'
+    placeReviewCamera(reviewScene, 'gameplay', nativeHeight)
+    ui.setCamera('gameplay')
+    updateScale('runtime')
+  }
+  ui.setLookMode(mode)
 }
 
 async function toggleKnight(visible: boolean): Promise<void> {
@@ -247,16 +316,18 @@ async function toggleKnight(visible: boolean): Promise<void> {
 }
 
 function applyWireframe(visible: boolean): void {
+  state.wireframe = visible
   for (const entry of sourceMaterials) {
     if (!('wireframe' in entry.material)) continue
     ;(entry.material as THREE.MeshStandardMaterial).wireframe = visible || entry.wireframe
     entry.material.needsUpdate = true
   }
+  gameLook?.setWireframe(visible)
 }
 
 function render(): void {
   const delta = Math.min(clock.getDelta(), 0.1)
-  if (state.loaded && state.playing && mixer && report) updatePlayback(delta)
+  if (state.loaded && state.playing && mixer && selectedClip) updatePlayback(delta)
   if (state.turntable && model) {
     model.rotation.y += delta * 0.6
     if (knight) knight.rotation.y = model.rotation.y
@@ -268,20 +339,28 @@ function render(): void {
 
 function updatePlayback(delta: number): void {
   mixer!.update(delta)
-  const animation = report!.animation
-  const seconds = mixer!.time % ((animation.frameEnd + 1) / animation.framesPerSecond)
-  state.frame = clamp(Math.round(seconds * animation.framesPerSecond), animation.frameStart, animation.frameEnd)
-  state.pose = animation.poses.find((pose) => pose.frame === state.frame)?.name ?? 'between poses'
-  ui.setTimeline(state.pose, state.frame, animation.framesPerSecond)
+  state.frame = frameForReviewTime(selectedClip!, activeAction!.time)
+  updateTimelineUi()
 }
 
 function finishPlayback(): void {
-  if (!report) return
+  if (!selectedClip || selectedClip.kind !== 'stress') return
   state.playing = false
-  state.frame = report.animation.frameEnd
-  state.pose = report.animation.poses.at(-1)?.name ?? 'finished'
+  state.frame = selectedClip.frameEnd
   ui.setPlaying(false)
-  ui.setTimeline(state.pose, state.frame, report.animation.framesPerSecond)
+  updateTimelineUi()
+}
+
+function updateTimelineUi(): void {
+  if (!report || !selectedClip) return
+  if (selectedClip.kind === 'stress') {
+    state.pose = report.animation.poses.find((pose) => pose.frame === state.frame)?.name ?? 'between poses'
+    ui.setTimeline(state.pose, state.frame, selectedClip.framesPerSecond)
+    return
+  }
+  const contact = nearestContactPhase(selectedClip.contactSchedule, state.frame)
+  state.pose = contact.phase
+  ui.setLocomotionTimeline(contact.phase, state.frame, selectedClip.framesPerSecond)
 }
 
 function clamp(value: number, minimum: number, maximum: number): number {

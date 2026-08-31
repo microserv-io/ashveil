@@ -229,6 +229,36 @@ The three outputs will be compared for:
 - suitability for later humanoid or quadruped rigging; and
 - generation cost, failure rate and manual cleanup required.
 
+## Look-development floor texture
+
+The character review's optional Game look uses a painterly cream-stone floor texture
+as a palette and gameplay-camera blockout. It is not an approved production material.
+The full-resolution ImageGen result is retained at
+`output/look-dev/textures/ashveil-cream-stone-v2-source.png` with SHA-256
+`91d39bafb6abedd63b7f89b30c86cc1da527378db1e8043af762f1fca7d91f6c`. The 1024 px
+runtime WebP is `spike/character/assets/ashveil-cream-stone-v2.webp`, SHA-256
+`4f449880a573c13e881994cb0c2f28e9f1c96854c49478aa16d58538f4c01e27`.
+
+The asset was made with a built-in ImageGen edit from the v1 generated source,
+SHA-256 `c223028e98d496dc8df431d8ee9d3aeb9b83964a3c60cb60a06c755aceed1dd3`, using this
+final prompt:
+
+```text
+Use case: precise-object-edit
+Asset type: seamless square game floor albedo texture
+Primary request: Make this exact painterly cream-stone floor texture genuinely seamless and tileable on all four edges.
+Edit target: the supplied square floor texture.
+Preserve: the warm cream/parchment stones, oxidized teal mineral accents, tiny saffron accents, broad hand-painted brushwork, medium irregular slab scale, light overall value, and neutral albedo character.
+Change only: redraw/blend edge-crossing stones, grout, and color fields so the left edge continues perfectly into the right edge and the top edge continues perfectly into the bottom edge. Remove any visible seam when repeated in a 2x2 grid. Distribute edge transitions naturally; avoid creating a central focal point or obvious mirrored symmetry.
+Constraints: square, texture fills edge to edge, top-down orthographic, no perspective, no objects, no characters, no text, no watermark, no border, no fog or ash, no directional light, no cast shadows, no vignette.
+Avoid: photorealism, noisy microtexture, excessive cracks, high-contrast grout, central medallion, obvious repetition markers.
+```
+
+The output is not mathematically seamless: normalized opposite-edge RMSE is
+`0.0516663` horizontally and `0.0798994` vertically. The review therefore uses
+Three.js `MirroredRepeatWrapping` on both axes. This avoids a visible hard seam for
+look development but does not convert the source into a production-ready tile.
+
 ## Auto-Rig Pro diagnostic benchmark
 
 The masculine prepared mannequin also has an isolated Auto-Rig Pro 3.78.47 / Smart
@@ -240,13 +270,24 @@ canonical custom-rig artifacts.
 
 The benchmark is diagnostic, not production acceptance. ARP binds all seven semantic
 meshes with negligible bind displacement and provides clavicle, arm, forearm and
-twist chains, but this run has no deforming scapula bones. The source weights exceed
-four influences and are not normalized over deform bones before glTF truncation.
-Strict shoulder and elbow deformation gates fail, while the measured wrist regions
-pass. Human review also found pronounced overhead armpit/lat wings and a cross-body
-pose that sends the forearm behind the torso. These findings keep the result at
+twist chains, but this run has no deforming scapula bones. The diagnostic build now
+normalizes and caps deform weights to four influences, disables Blender Preserve
+Volume so validation matches glTF linear-blend skinning, and authors all animation on
+the scene's measured 30 fps clock. Chest-local arm frames correct the prior backwards
+cross-body recipe and preserve the accepted stride and independent head turn. Strict
+shoulder and elbow deformation gates still fail on the current source topology.
+These findings keep the result at
 `diagnostic_not_production_ready` and make it a benchmark for later ARP configuration
 or mesh-topology work, not a replacement skeleton. The diagnostic GLB intentionally
 contains all 211 ARP joints, including its `c_` controls, reference bones and
 mechanism graph. Runtime skeleton reduction has not been performed and is an
 explicit blocking follow-up, not evidence of a runtime-clean export.
+
+The GLB also carries two review-only in-place locomotion prototypes:
+`Ashveil_Walk_InPlace` is frames 0–30 at 30 fps and
+`Ashveil_Sprint_InPlace` is frames 0–18 at 30 fps. Both use keyed ARP leg IK/FK
+switches, keep the trajectory control fixed, and repeat the first pose at the final
+frame. Their report metrics cover clip timing and control-loop closure; skinned sole
+planting and slide, ground clearance, knee plane, cyclic velocity, bilateral mirror
+error and visual motion quality remain unmeasured production gates rather than
+production claims.

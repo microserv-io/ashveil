@@ -9,6 +9,7 @@ export interface ReviewScene {
   camera: THREE.PerspectiveCamera
   renderer: THREE.WebGLRenderer
   controller: OrbitControls
+  diagnosticGround: THREE.Group
 }
 
 export function createReviewScene(stage: HTMLElement): ReviewScene {
@@ -32,8 +33,8 @@ export function createReviewScene(stage: HTMLElement): ReviewScene {
   controller.maxPolarAngle = Math.PI * 0.49
 
   addLighting(scene)
-  addReviewGround(scene)
-  return { scene, camera, renderer, controller }
+  const diagnosticGround = addReviewGround(scene)
+  return { scene, camera, renderer, controller, diagnosticGround }
 }
 
 export function placeReviewCamera(review: ReviewScene, preset: CameraPreset, nativeHeight: number): void {
@@ -70,15 +71,19 @@ function addLighting(scene: THREE.Scene): void {
   scene.add(rim)
 }
 
-function addReviewGround(scene: THREE.Scene): void {
+function addReviewGround(scene: THREE.Scene): THREE.Group {
+  const group = new THREE.Group()
+  group.name = 'Diagnostic_Ground'
   const ground = new THREE.Mesh(
     new THREE.CircleGeometry(5, 64),
     new THREE.MeshStandardMaterial({ color: PALETTE.floorLow, roughness: 0.95, metalness: 0 }),
   )
   ground.rotation.x = -Math.PI / 2
   ground.receiveShadow = true
-  scene.add(ground)
+  group.add(ground)
   const grid = new THREE.GridHelper(10, 20, PALETTE.playerAccent, PALETTE.floorHigh)
   grid.position.y = 0.002
-  scene.add(grid)
+  group.add(grid)
+  scene.add(group)
+  return group
 }

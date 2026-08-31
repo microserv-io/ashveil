@@ -17,6 +17,21 @@
         <p class="warning">Diagnostic only — not production-ready</p>
       </header>
 
+      <section>
+        <h2>Animation</h2>
+        <label class="field" for="animation-select">Animation clip</label>
+        <select id="animation-select" disabled></select>
+        <label class="field" for="pose-select">Stress pose</label>
+        <select id="pose-select" disabled></select>
+        <div class="button-row">
+          <button id="previous-pose" type="button" disabled>Previous</button>
+          <button id="play-pause" type="button" disabled>Play</button>
+          <button id="next-pose" type="button" disabled>Next</button>
+        </div>
+        <label class="field" for="time-scrub">Timeline</label>
+        <input id="time-scrub" type="range" min="0" max="50" value="0" step="1" disabled />
+      </section>
+
       <section class="status-grid" aria-live="polite">
         <span>File</span><strong id="asset-file">masculine-auto-rig-pro-diagnostic.glb</strong>
         <span>Load</span><strong id="load-state">Loading…</strong>
@@ -29,19 +44,7 @@
         <span>Renderer</span><strong id="render-counts">—</strong>
         <span>Height</span><strong id="height-state">—</strong>
         <span>Scale</span><strong id="scale-state">Native 1:1</strong>
-      </section>
-
-      <section>
-        <h2>Pose</h2>
-        <label class="field" for="pose-select">Stress pose</label>
-        <select id="pose-select" disabled></select>
-        <div class="button-row">
-          <button id="previous-pose" type="button" disabled>Previous</button>
-          <button id="play-pause" type="button" disabled>Play</button>
-          <button id="next-pose" type="button" disabled>Next</button>
-        </div>
-        <label class="field" for="time-scrub">Timeline</label>
-        <input id="time-scrub" type="range" min="0" max="50" value="0" step="1" disabled />
+        <span>Look</span><strong id="look-state">Neutral rig diagnostic</strong>
       </section>
 
       <section>
@@ -81,16 +84,26 @@
       <pre id="failure" role="alert" hidden></pre>
     </aside>
 
-    <button
-      id="review-panel-toggle"
-      class="panel-toggle"
-      type="button"
-      aria-controls="review-panel"
-      aria-expanded="false"
-      aria-label="Show review controls"
-    >
-      Controls
-    </button>
+    <nav class="review-toolbar" aria-label="Review display">
+      <button
+        id="look-mode-toggle"
+        type="button"
+        aria-pressed="false"
+        aria-label="Show Game look"
+        disabled
+      >
+        Game look
+      </button>
+      <button
+        id="review-panel-toggle"
+        type="button"
+        aria-controls="review-panel"
+        aria-expanded="false"
+        aria-label="Show review controls"
+      >
+        Controls
+      </button>
+    </nav>
 
     <script type="module" src="./main.ts"></script>
   </body>

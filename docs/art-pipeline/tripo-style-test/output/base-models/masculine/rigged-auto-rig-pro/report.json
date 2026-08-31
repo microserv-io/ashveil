@@ -65,10 +65,10 @@
   },
   "operators": {
     "matchOperatorResult": [
-      "FINISHED"
+      "REUSED"
     ],
     "bindOperatorResult": [
-      "FINISHED"
+      "REUSED"
     ]
   },
   "skeleton": {
@@ -184,19 +184,23 @@
     },
     "scapulaRequirementPass": false
   },
-  "bindGeometryMaximumDeviationMetres": 1.0534868041729512e-06,
+  "bindGeometryMaximumDeviationMetres": 0.0,
   "weights": {
     "vertices": 7966,
     "weightedVertices": 7966,
-    "maximumInfluences": 7,
-    "maximumNormalizationError": 0.11123013818451,
+    "maximumInfluences": 4,
+    "maximumNormalizationError": 4.470348358154297e-08,
     "finite": true,
-    "normalized": false,
-    "pass": false
+    "normalized": true,
+    "pass": true,
+    "sourceMaximumInfluences": 7,
+    "sourceMaximumNormalizationError": 0.11123013818451,
+    "maximumAllowedInfluences": 4,
+    "preserveVolume": false
   },
   "animation": {
     "name": "Ashveil_ARP_Benchmark",
-    "framesPerSecond": 30,
+    "framesPerSecond": 30.0,
     "frameStart": 0,
     "frameEnd": 50,
     "poses": [
@@ -239,6 +243,7 @@
         "name": "deep-elbow-bend",
         "frame": 30,
         "authoredControls": [
+          "c_arm_fk.l",
           "c_forearm_fk.l",
           "c_hand_fk.l"
         ],
@@ -270,7 +275,202 @@
         "humanReviewRequired": true
       }
     ],
+    "sourceInterpolation": "CONSTANT",
+    "namedPoseIdentity": {
+      "measurementSpace": "evaluated_auto_rig_pro_deform_bones_at_named_scene_frames",
+      "frameIdentityExact": true,
+      "poses": [
+        {
+          "name": "bind",
+          "namedFrame": 0,
+          "evaluatedFrame": 0,
+          "pass": true
+        },
+        {
+          "name": "overhead-reach",
+          "namedFrame": 10,
+          "evaluatedFrame": 10,
+          "upperArmUpDots": {
+            "l": 0.9763046994339675,
+            "r": 0.9763046943116933
+          },
+          "pass": true
+        },
+        {
+          "name": "cross-body-reach",
+          "namedFrame": 20,
+          "evaluatedFrame": 20,
+          "forwardDots": {
+            "arm.l": 0.7226055385544896,
+            "forearm.l": 0.8587555773556232
+          },
+          "pass": true
+        },
+        {
+          "name": "deep-elbow-bend",
+          "namedFrame": 30,
+          "evaluatedFrame": 30,
+          "elbowFlexionDegrees": 127.50008380273349,
+          "pass": true
+        },
+        {
+          "name": "long-stride",
+          "namedFrame": 40,
+          "evaluatedFrame": 40,
+          "thighForwardDots": {
+            "l": -0.5320933684706688,
+            "r": 0.5769346877932549
+          },
+          "pass": true
+        },
+        {
+          "name": "head-turn",
+          "namedFrame": 50,
+          "evaluatedFrame": 50,
+          "headYawDegrees": 31.999979261548756,
+          "legBindDirectionErrorsDegrees": {
+            "l": 0.0,
+            "r": 0.0
+          },
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
     "humanReviewRequired": true
+  },
+  "locomotion": {
+    "clips": [
+      {
+        "name": "Ashveil_Walk_InPlace",
+        "framesPerSecond": 30.0,
+        "frameStart": 0,
+        "frameEnd": 30,
+        "sampleCount": 31,
+        "durationSeconds": 1.0,
+        "explicitLoopDuplicateEndpoint": true,
+        "contactSchedule": [
+          {
+            "frame": 0,
+            "phase": "left_contact"
+          },
+          {
+            "frame": 4,
+            "phase": "down"
+          },
+          {
+            "frame": 8,
+            "phase": "pass"
+          },
+          {
+            "frame": 11,
+            "phase": "up_toeoff"
+          },
+          {
+            "frame": 15,
+            "phase": "right_contact"
+          },
+          {
+            "frame": 19,
+            "phase": "down"
+          },
+          {
+            "frame": 23,
+            "phase": "pass"
+          },
+          {
+            "frame": 26,
+            "phase": "up"
+          },
+          {
+            "frame": 30,
+            "phase": "loop_duplicate"
+          }
+        ],
+        "minimumAuthoredSwingClearanceMetres": 0.08,
+        "maximumLoopEndpointTranslationErrorMetres": 0.0,
+        "maximumLoopEndpointRotationErrorDegrees": 0.0,
+        "maximumScaleDeviation": 2.980232238769531e-07,
+        "trajectoryNetTranslationMetres": 0.0,
+        "trajectoryNetRotationDegrees": 0.0,
+        "evaluatedDeformFootTravelMetres": {
+          "l": 0.24117210144459875,
+          "r": 0.24117213925762743
+        },
+        "measurementSpace": "evaluated_auto_rig_pro_control_and_deform_bone_matrices",
+        "controlAuthoringPass": true,
+        "productionLocomotionPass": false
+      },
+      {
+        "name": "Ashveil_Sprint_InPlace",
+        "framesPerSecond": 30.0,
+        "frameStart": 0,
+        "frameEnd": 18,
+        "sampleCount": 19,
+        "durationSeconds": 0.6,
+        "explicitLoopDuplicateEndpoint": true,
+        "contactSchedule": [
+          {
+            "frame": 0,
+            "phase": "left_contact"
+          },
+          {
+            "frame": 2,
+            "phase": "compression"
+          },
+          {
+            "frame": 5,
+            "phase": "pass_takeoff"
+          },
+          {
+            "frame": 7,
+            "phase": "flight"
+          },
+          {
+            "frame": 9,
+            "phase": "right_contact"
+          },
+          {
+            "frame": 11,
+            "phase": "compression"
+          },
+          {
+            "frame": 14,
+            "phase": "pass"
+          },
+          {
+            "frame": 16,
+            "phase": "flight"
+          },
+          {
+            "frame": 18,
+            "phase": "loop_duplicate"
+          }
+        ],
+        "minimumAuthoredSwingClearanceMetres": 0.12,
+        "maximumLoopEndpointTranslationErrorMetres": 0.0,
+        "maximumLoopEndpointRotationErrorDegrees": 0.0,
+        "maximumScaleDeviation": 2.980232238769531e-07,
+        "trajectoryNetTranslationMetres": 0.0,
+        "trajectoryNetRotationDegrees": 0.0,
+        "evaluatedDeformFootTravelMetres": {
+          "l": 0.32557301310446607,
+          "r": 0.32557311680031326
+        },
+        "measurementSpace": "evaluated_auto_rig_pro_control_and_deform_bone_matrices",
+        "controlAuthoringPass": true,
+        "productionLocomotionPass": false
+      }
+    ],
+    "controlAuthoringPass": true,
+    "productionLocomotionPass": false,
+    "unmeasuredProductionGates": [
+      "skinned sole contact and plant slide",
+      "ground penetration and swing clearance",
+      "knee plane and midline drift",
+      "cyclic velocity continuity",
+      "bilateral half-cycle mirror error"
+    ]
   },
   "productionDeformation": {
     "measurementSpace": "evaluated_auto_rig_pro_skinned_geometry",
@@ -529,10 +729,10 @@
               4770
             ],
             "triangleCount": 413,
-            "covarianceVolumeRatio": 1.3733781237516152,
-            "triangleAreaRatioP05": 0.35017437006236124,
-            "minimumTriangleAreaRatio": 0.13758486267927197,
-            "signedNormalInversions": 33,
+            "covarianceVolumeRatio": 0.3855563882534545,
+            "triangleAreaRatioP05": 0.14028084702905888,
+            "minimumTriangleAreaRatio": 0.02944741186483165,
+            "signedNormalInversions": 66,
             "pass": false
           },
           {
@@ -780,10 +980,10 @@
               4638
             ],
             "triangleCount": 410,
-            "covarianceVolumeRatio": 1.3835883706257404,
-            "triangleAreaRatioP05": 0.3684611814533629,
-            "minimumTriangleAreaRatio": 0.13965952772255213,
-            "signedNormalInversions": 32,
+            "covarianceVolumeRatio": 0.3879749048839958,
+            "triangleAreaRatioP05": 0.14175800071594702,
+            "minimumTriangleAreaRatio": 0.03806016996436758,
+            "signedNormalInversions": 61,
             "pass": false
           }
         ],
@@ -1038,10 +1238,10 @@
               4770
             ],
             "triangleCount": 413,
-            "covarianceVolumeRatio": 1.0095924619847307,
-            "triangleAreaRatioP05": 0.5909266822679751,
-            "minimumTriangleAreaRatio": 0.31617078923306896,
-            "signedNormalInversions": 32,
+            "covarianceVolumeRatio": 0.5001350064685287,
+            "triangleAreaRatioP05": 0.36480526635907007,
+            "minimumTriangleAreaRatio": 0.10548088438353329,
+            "signedNormalInversions": 54,
             "pass": false
           },
           {
@@ -1130,9 +1330,9 @@
               4755
             ],
             "triangleCount": 134,
-            "covarianceVolumeRatio": 1.0000092869966708,
-            "triangleAreaRatioP05": 0.9999218980559488,
-            "minimumTriangleAreaRatio": 0.9998711160167155,
+            "covarianceVolumeRatio": 1.0193831149891392,
+            "triangleAreaRatioP05": 0.9361281670069159,
+            "minimumTriangleAreaRatio": 0.8572932263365922,
             "signedNormalInversions": 0,
             "pass": true
           }
@@ -1388,11 +1588,11 @@
               4770
             ],
             "triangleCount": 413,
-            "covarianceVolumeRatio": 1.0,
-            "triangleAreaRatioP05": 1.0,
-            "minimumTriangleAreaRatio": 1.0,
-            "signedNormalInversions": 0,
-            "pass": true
+            "covarianceVolumeRatio": 0.8971804508562055,
+            "triangleAreaRatioP05": 0.6607597975636958,
+            "minimumTriangleAreaRatio": 0.37189443844025,
+            "signedNormalInversions": 17,
+            "pass": false
           },
           {
             "name": "elbow.L",
@@ -1531,10 +1731,10 @@
               4683
             ],
             "triangleCount": 226,
-            "covarianceVolumeRatio": 0.9216198400571523,
-            "triangleAreaRatioP05": 0.3454708589234605,
-            "minimumTriangleAreaRatio": 0.10216201480939197,
-            "signedNormalInversions": 14,
+            "covarianceVolumeRatio": 0.50308806502957,
+            "triangleAreaRatioP05": 0.38085654559306137,
+            "minimumTriangleAreaRatio": 0.06170548744713077,
+            "signedNormalInversions": 30,
             "pass": false
           },
           {
@@ -1623,9 +1823,9 @@
               4755
             ],
             "triangleCount": 134,
-            "covarianceVolumeRatio": 0.9915375480712771,
-            "triangleAreaRatioP05": 0.9688171554794345,
-            "minimumTriangleAreaRatio": 0.9643300531471483,
+            "covarianceVolumeRatio": 1.0193834175466645,
+            "triangleAreaRatioP05": 0.9361291040129118,
+            "minimumTriangleAreaRatio": 0.8572890740830555,
             "signedNormalInversions": 0,
             "pass": true
           }
@@ -1638,7 +1838,30 @@
   "frozenRegionSourceReportSha256": "3032602ede352088e02743dbb320e9fcf3e520ad122912b87242f6d4a1a6ebe1",
   "export": {
     "skeletonCount": 1,
-    "animationCount": 1,
+    "animationCount": 3,
+    "animationClips": [
+      {
+        "name": "Ashveil_ARP_Benchmark",
+        "startSeconds": 0,
+        "endSeconds": 1.6666666666666667,
+        "sampleCount": 51,
+        "durationSeconds": 1.6666666666666667
+      },
+      {
+        "name": "Ashveil_Sprint_InPlace",
+        "startSeconds": 0,
+        "endSeconds": 0.6,
+        "sampleCount": 19,
+        "durationSeconds": 0.6
+      },
+      {
+        "name": "Ashveil_Walk_InPlace",
+        "startSeconds": 0,
+        "endSeconds": 1,
+        "sampleCount": 31,
+        "durationSeconds": 1
+      }
+    ],
     "runtimeRig": {
       "fullAuthoringRigExported": true,
       "runtimeReductionPending": true,
@@ -1908,9 +2131,11 @@
       "materials": 2,
       "skins": 1,
       "joints": 211,
-      "animations": 1,
+      "animations": 3,
       "animationNames": [
-        "Ashveil_ARP_Benchmark"
+        "Ashveil_ARP_Benchmark",
+        "Ashveil_Sprint_InPlace",
+        "Ashveil_Walk_InPlace"
       ],
       "animationInterpolationModes": [
         "LINEAR",
@@ -2797,6 +3022,9 @@
   "productionAcceptance": {
     "structuralPass": false,
     "deformationPass": false,
+    "poseIdentityPass": true,
+    "locomotionControlAuthoringPass": true,
+    "locomotionProductionPass": false,
     "pass": false
   },
   "renders": [
@@ -2826,19 +3054,20 @@
   "knownLimitations": [
     "This is a diagnostic Auto-Rig Pro benchmark, not an accepted runtime skeleton.",
     "Diagnostic pose controls require human visual review.",
+    "Walk and sprint are in-place control-authoring prototypes and still require skinned-foot contact review.",
     "Production acceptance remains false unless the scapula inventory and unchanged deformation gates pass.",
     "The GLB contains the full ARP authoring/control/mechanism graph; runtime reduction remains pending."
   ],
   "artifacts": [
     {
       "path": "masculine-auto-rig-pro-spike.blend",
-      "bytes": 952490,
-      "sha256": "4e63a2934875aa77b2176c8fa3baa16d2765917be3b72f54e26a7051a593d1df"
+      "bytes": 981706,
+      "sha256": "cf6866872445b2973571cd754fb575381ff692a08d0499bed18029b8cdc10fbd"
     },
     {
       "path": "masculine-auto-rig-pro-diagnostic.glb",
-      "bytes": 703276,
-      "sha256": "98c3b671bd2a1d53d9a771dfc59b6340b7248b5a952b36b424e1e9d2571186ab",
+      "bytes": 956016,
+      "sha256": "c6d289c7e3b678e5390d4d711433c60871417b3cf3423bda70f64a6897093d0c",
       "gltfStructure": {
         "meshes": 7,
         "primitives": 7,
@@ -2846,9 +3075,11 @@
         "materials": 2,
         "skins": 1,
         "joints": 211,
-        "animations": 1,
+        "animations": 3,
         "animationNames": [
-          "Ashveil_ARP_Benchmark"
+          "Ashveil_ARP_Benchmark",
+          "Ashveil_Sprint_InPlace",
+          "Ashveil_Walk_InPlace"
         ],
         "animationInterpolationModes": [
           "LINEAR",
@@ -3734,103 +3965,103 @@
     },
     {
       "path": "validation-bind-front.png",
-      "bytes": 261112,
-      "sha256": "e01b751076551b744bb2e97903af3f76d2221e7590809a551d770f9e7d568bf4"
+      "bytes": 261253,
+      "sha256": "6dc31ac594b3d9a16594865e9f1cbcaa9945302ae149d78947949c12e2896c3b"
     },
     {
       "path": "validation-bind-back.png",
-      "bytes": 255137,
-      "sha256": "0f533bdc3964da4e9672b6b2f9647d15a03ae271e2021d4fd9effdacf5147d84"
+      "bytes": 255200,
+      "sha256": "d5db7404974afa0cf8d5da3040bdbe14b55170d5f46eb08d2382550f8ef13c04"
     },
     {
       "path": "validation-bind-right.png",
-      "bytes": 204401,
-      "sha256": "b6a61f86ca1112155d2251d7773d7740797df6060674f637fbb530a0b4c7acf1"
+      "bytes": 204517,
+      "sha256": "354b42348aa47b9cbe282bfe93b7f83f05b7e1e81acfc4a3a7ecd628a78c52f2"
     },
     {
       "path": "validation-overhead-reach-front.png",
-      "bytes": 238879,
-      "sha256": "c82738c1cc7918d1ca04a88bdf4c4472a09b759c0ab42c11e2320900a218ef4b"
+      "bytes": 227489,
+      "sha256": "ad4d8df37a94a10b8b6bff1207953a85184047effee28a95c6fa3f6ada38fca1"
     },
     {
       "path": "validation-overhead-reach-back.png",
-      "bytes": 232278,
-      "sha256": "2c0116f8def21a2287d84bd335bb01945aa4deca17c5aac7a51607390bc31ef2"
+      "bytes": 223651,
+      "sha256": "1ddd166f66aa58032ae2dfa57695e234a58c09be00a048a0157d19964a6b870a"
     },
     {
       "path": "validation-overhead-reach-right.png",
-      "bytes": 189659,
-      "sha256": "947790babb4af1effecd2af24112dab9c0ff16c0d16cd45cef874d3134dc06ed"
+      "bytes": 187247,
+      "sha256": "2db8c881bf8810cbf0a641b0b69f16cad6c050d5bb10bb61f81cd2eca37b1adb"
     },
     {
       "path": "validation-cross-body-reach-front.png",
-      "bytes": 252309,
-      "sha256": "a6abde7e9e2e860aa1ef89f2c4b993dccaf91f8b351a01568a8cd1f7595a3006"
+      "bytes": 248988,
+      "sha256": "cf8b6dd3d07a09d5c8553643ff02657d5e03c56b6fc72f1d92bb96037044572d"
     },
     {
       "path": "validation-cross-body-reach-back.png",
-      "bytes": 242637,
-      "sha256": "2e11ab4d148cb144dd9240f3f021e48ef88e0c78c8b8b434a31d59ace9a1be31"
+      "bytes": 239795,
+      "sha256": "31eda1d4c9041f4ce3bfce81e3fe3984e36ed3b4561294845f5b0bf4988b502f"
     },
     {
       "path": "validation-cross-body-reach-right.png",
-      "bytes": 211412,
-      "sha256": "2f19a4a2dd0b858dc927695818d01e1e720fc920631a363493916876140fd175"
+      "bytes": 209866,
+      "sha256": "e97ccc3866c258d06510f44645b25ce41e1df08556d2774cb7384fd49dbeb13a"
     },
     {
       "path": "validation-deep-elbow-bend-front.png",
-      "bytes": 264290,
-      "sha256": "246b321fbb182c788a14a00b8b1462c28d535be679f1774832dc721a90ccfe58"
+      "bytes": 255630,
+      "sha256": "e47c262544f4ffa9413923cc6664edf7968a723fc2a8deea83b2a55de7baa6e4"
     },
     {
       "path": "validation-deep-elbow-bend-back.png",
-      "bytes": 254719,
-      "sha256": "63ceae8ea664e45e353037965ab9ec10a4dec91a715d93ecbd7cea0f3f4b2c4a"
+      "bytes": 245462,
+      "sha256": "2120cbf8be7f846bf30744129a26895eb0e060abb93392b317cf7565cde69738"
     },
     {
       "path": "validation-deep-elbow-bend-right.png",
-      "bytes": 201118,
-      "sha256": "2441122c5a1f9800e06c646438a10e0e7caff82b8d9df81c511165883ab45dca"
+      "bytes": 205940,
+      "sha256": "ae54e26548d153a8d69064c47ef378a354e7926efc002b6622f7eab8928951f7"
     },
     {
       "path": "validation-long-stride-front.png",
-      "bytes": 262894,
-      "sha256": "bde64432acc5bbcd285ed94aa42f5e073e3e59c094a9f94dc4d3b43bac92da94"
+      "bytes": 263366,
+      "sha256": "87ccb31405d6b6501d5ae40db003c4bdc4c508f098a1f1a6c07849186bdba135"
     },
     {
       "path": "validation-long-stride-back.png",
-      "bytes": 256178,
-      "sha256": "69eaa2faf2052ab1b6a56902a49ab3e3552c25e18869dc64e1a9c7673ed62fbe"
+      "bytes": 256655,
+      "sha256": "3d57e0c0da72a1be0a662cf8c1e0dfa31c0ad039b3b68f9e09e21ff7b8002c5e"
     },
     {
       "path": "validation-long-stride-right.png",
-      "bytes": 235515,
-      "sha256": "9c5469bf3c8d29607249c2682547a0f8ad91174563d587ae1a0cb09b61450aa8"
+      "bytes": 235004,
+      "sha256": "6037d3ce34238b1e221d837c71afff64013834bd5d693b41f1eaf227beb9a16d"
     },
     {
       "path": "validation-head-turn-front.png",
-      "bytes": 260950,
-      "sha256": "2818ecddcb54a7456c8b33dfd6901d352e6201f482866a4b268482f269c2827b"
+      "bytes": 260805,
+      "sha256": "89443efaee58f698e3b0e628db67de9c467d6b4570d83aced694258aac847292"
     },
     {
       "path": "validation-head-turn-back.png",
-      "bytes": 255601,
-      "sha256": "9a3c72f33d66f7c05329559978d0b2de71b0b8a71283fa214df36c78d7746cf1"
+      "bytes": 255812,
+      "sha256": "0eefc7b7305317a6ae8b87814c187295542a130c2b01b6c65bd89d71cce66df7"
     },
     {
       "path": "validation-head-turn-right.png",
-      "bytes": 204033,
-      "sha256": "609fc0b97ecbc5b95d1dc7d32a65c2a97f5efa7787297dc9d8bd0a21911eabe2"
+      "bytes": 204517,
+      "sha256": "2cf16682a3dfb002f084578eb8349f0d9b8e22ea02933cf3387ca79e5190c501"
     },
     {
       "path": "validation-bind-skeleton-front.png",
-      "bytes": 272029,
-      "sha256": "27f859d317d03bc56161ea6f0df6e89ea41790f36c7a052374d873da637b1470"
+      "bytes": 272143,
+      "sha256": "b1ffd6c01b62e122ed046959e5f85f1a1bc7af40fc5abd23ab1faef15da76a81"
     },
     {
       "path": "validation-bind-skeleton-right.png",
-      "bytes": 213404,
-      "sha256": "236b8997716a1b723127a6154636c370d3179c5748a74224c96fdc2f156ac98b"
+      "bytes": 213582,
+      "sha256": "ae85fb862237746e99069a62ab3a5dc3886c6033a21bd048f1c151f87c1cbb78"
     }
   ]
 }

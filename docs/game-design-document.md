@@ -232,13 +232,20 @@ target archetype's skeleton contract passes technical and human review.
 Auto-Rig Pro is being evaluated as a rigging automation benchmark, not as an
 automatic production acceptance path. The first masculine ARP 3.78.47 / Smart AI
 1.21 run preserves bind geometry and produces a usable diagnostic animation, but it
-does not provide the required deforming scapula chain, exceeds the four-influence
-source limit and fails unchanged shoulder/elbow deformation gates. Its overhead and
-cross-body silhouettes also remain unsuitable. Its diagnostic GLB exports the full
-211-joint ARP authoring graph, including controls, references and mechanisms; a
-runtime-only deform skeleton and verified animation bake remain pending. This keeps
-the current mannequin and ARP output diagnostic while preserving ARP as a candidate
-for a better-topology retest and for authoring-tool comparison.
+does not provide the required deforming scapula chain and fails unchanged
+shoulder/elbow deformation gates even after weights are normalized and capped to four
+influences under runtime-equivalent linear-blend skinning. Its diagnostic animation
+uses transported chest-local arm frames and a measured 30 fps scene clock. Its
+diagnostic GLB exports the full 211-joint ARP authoring graph, including controls,
+references and mechanisms; a runtime-only deform skeleton and verified animation
+bake remain pending. This keeps the current mannequin and ARP output diagnostic while
+preserving ARP as a candidate for a better-topology retest and for authoring-tool
+comparison.
+
+Walk and sprint are now represented by separate, loop-closed in-place diagnostic
+clips at one second and 0.6 seconds respectively. They establish the intended contact
+schedule and runtime clip contract, but do not become player locomotion until skinned
+foot planting, clearance, loop velocity and visual motion review all pass.
 
 The masculine spike now separates rig intent from mesh suitability. Its humeral
 head fit, overhead shoulder-girdle motion, genuine cross-body reach and isolated

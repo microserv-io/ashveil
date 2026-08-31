@@ -67,6 +67,21 @@ export interface RigReport {
     frameEnd: number
     poses: { name: string; frame: number }[]
   }
+  locomotion?: {
+    controlAuthoringPass: boolean
+    productionLocomotionPass: boolean
+    unmeasuredProductionGates: string[]
+    clips: Array<{
+      name: string
+      framesPerSecond: number
+      frameStart: number
+      frameEnd: number
+      durationSeconds: number
+      contactSchedule: Array<{ frame: number; phase: string }>
+      controlAuthoringPass: boolean
+      productionLocomotionPass: boolean
+    }>
+  }
   skeleton?: {
     totalBones: number
     deformBoneCount: number
@@ -111,6 +126,16 @@ export function assertRigReport(candidate: RigReport): void {
     }
     if (!candidate.skeleton || candidate.skeleton.totalBones < 1) {
       failures.push('ARP report must contain a measured skeleton inventory')
+    }
+    if (
+      !candidate.locomotion?.controlAuthoringPass ||
+      candidate.locomotion.productionLocomotionPass ||
+      candidate.locomotion.unmeasuredProductionGates.length === 0 ||
+      candidate.locomotion.clips.some(
+        (clip) => !clip.controlAuthoringPass || clip.productionLocomotionPass,
+      )
+    ) {
+      failures.push('ARP locomotion must remain a control-authoring prototype with explicit production gaps')
     }
     const runtimeRig = candidate.export?.runtimeRig
     if (
