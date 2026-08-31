@@ -49,6 +49,31 @@ geometry, remove it before normalising the body mesh; otherwise regenerate the b
 with an exposed scalp. Production hairstyles will be separate cosmetics fitted to a
 shared scalp envelope and head socket.
 
+## First Tripo Studio result
+
+The first manual Studio run generated the masculine body. Its untouched FBX is
+retained at `output/base-models/masculine/raw/main-character-male.fbx` with SHA-256
+`375e25dea0da0c8d4267ee4402a64cf4582520341b367e1163730b8f8fc56edb`.
+
+Blender `5.2.1` and the runtime Three.js importer measured:
+
+| Property | Result |
+| --- | --- |
+| Meshes | One FBX mesh object containing eight disconnected geometry islands |
+| Topology | 10,925 vertices; 9,479 quads; 2,443 triangles; 21,401 runtime triangles |
+| Hair | Separate 2,959-vertex island, so it can be removed without cutting the body |
+| Other islands | Body, head, both hands and three small facial/eye pieces |
+| Mesh health | 469 boundary edges, 475 non-manifold edges and two zero-area faces |
+| Surface data | No UV layer, texture image, colour attribute, rig, weights or animation |
+| Transform | One-unit total height and an unapplied 90-degree X rotation |
+
+This is a useful topology prototype, not yet a canonical body. It is quad-dominant
+rather than all-quad, and its silhouette matches the concept well. A production
+derivative must preserve this raw file, remove the temporary hair, normalise scale
+and transforms, decide which body seams remain intentionally separate, repair the
+remaining topology issues, create UVs, rig to the canonical skeleton and pass joint
+deformation tests.
+
 ## Planned Tripo run
 
 Tripo CLI `0.3.1` is installed globally and authenticated against the international
@@ -62,8 +87,9 @@ tripo make input/ash-wolf.png --for game-mobile --name ashveil-ash-wolf --out ou
 tripo make input/ashward-gate.png --for game-mobile --name ashveil-ashward-gate --out output/ashward-gate --json --yes
 ```
 
-No generation request has been submitted yet because the authenticated API profile
-has no credits. Tripo Studio credits are separate from Tripo API credits.
+No API generation request has been submitted because the authenticated API profile
+has no credits. The first masculine-body result was generated manually with Studio
+credits; Tripo Studio credits are separate from Tripo API credits.
 
 ## Acceptance review
 
