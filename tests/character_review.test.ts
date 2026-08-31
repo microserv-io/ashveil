@@ -12,6 +12,10 @@ import {
 } from '../spike/character/review-contract'
 import { resetRootYaw, sampleTimeForFrame } from '../spike/character/view-contract'
 import { assertRigReport, type RigReport } from '../spike/character/asset-inspection'
+import {
+  initialReviewPanelOpen,
+  REVIEW_PANEL_MOBILE_QUERY,
+} from '../spike/character/review-ui'
 
 function validSummary(): CharacterAssetSummary {
   return {
@@ -82,6 +86,19 @@ describe('character review contract', () => {
 
     expect(model.rotation.y).toBe(0)
     expect(knight.rotation.y).toBe(0)
+  })
+
+  it('starts the review controls open on desktop and collapsed on narrow screens', () => {
+    expect(REVIEW_PANEL_MOBILE_QUERY).toBe('(max-width: 640px)')
+    expect(initialReviewPanelOpen(false)).toBe(true)
+    expect(initialReviewPanelOpen(true)).toBe(false)
+
+    const html = readFileSync(new URL('../spike/character/index.html', import.meta.url), 'utf8')
+    expect(html).toMatch(/id="review-panel"[^>]*hidden/)
+    expect(html).toMatch(/id="review-panel-toggle"/)
+    expect(html).toMatch(/aria-controls="review-panel"/)
+    expect(html).toMatch(/aria-expanded="false"/)
+    expect(html).toMatch(/aria-label="Show review controls"/)
   })
 
   it('accepts measured ARP diagnostics without treating them as production-ready', () => {

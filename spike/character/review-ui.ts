@@ -24,8 +24,16 @@ export interface AssetStatus {
   nativeHeight: number
 }
 
+export const REVIEW_PANEL_MOBILE_QUERY = '(max-width: 640px)'
+
+export function initialReviewPanelOpen(matchesMobile: boolean): boolean {
+  return !matchesMobile
+}
+
 export class ReviewUi {
   readonly stage = element<HTMLElement>('stage')
+  private readonly reviewPanel = element<HTMLElement>('review-panel')
+  private readonly reviewPanelToggle = element<HTMLButtonElement>('review-panel-toggle')
   private readonly loadState = element<HTMLElement>('load-state')
   private readonly poseState = element<HTMLElement>('pose-state')
   private readonly timeState = element<HTMLElement>('time-state')
@@ -51,6 +59,9 @@ export class ReviewUi {
 
   constructor(private readonly events: ReviewUiEvents) {
     this.bindControls()
+    this.setReviewPanelOpen(
+      initialReviewPanelOpen(globalThis.matchMedia(REVIEW_PANEL_MOBILE_QUERY).matches),
+    )
     this.enableRigControls(false)
   }
 
@@ -162,6 +173,9 @@ export class ReviewUi {
   }
 
   private bindControls(): void {
+    this.reviewPanelToggle.addEventListener('click', () => {
+      this.setReviewPanelOpen(this.reviewPanel.hasAttribute('hidden'))
+    })
     this.poseSelect.addEventListener('change', () => this.events.selectFrame(Number(this.poseSelect.value)))
     this.timeScrub.addEventListener('input', () => this.events.selectFrame(Number(this.timeScrub.value)))
     this.previousPose.addEventListener('click', () => this.events.stepPose(-1))
@@ -181,6 +195,11 @@ export class ReviewUi {
   }
 
   private handleKeyboard(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      this.setReviewPanelOpen(false)
+      this.reviewPanelToggle.focus()
+      return
+    }
     if (keyboardBelongsToControl(event.target)) return
     const command = event.key.toLowerCase()
     if (event.code === 'Space') {
@@ -200,6 +219,15 @@ export class ReviewUi {
     else if (command === 'k') this.showSkeleton.click()
     else if (command === 'w') this.showWireframe.click()
     else if (command === 't') this.turntable.click()
+  }
+
+  private setReviewPanelOpen(open: boolean): void {
+    this.reviewPanel.hidden = !open
+    this.reviewPanelToggle.setAttribute('aria-expanded', String(open))
+    this.reviewPanelToggle.setAttribute(
+      'aria-label',
+      open ? 'Hide review controls' : 'Show review controls',
+    )
   }
 
   private meshToggle(name: SemanticMeshName): HTMLLabelElement {

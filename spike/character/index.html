@@ -10,7 +10,7 @@
   <body>
     <main id="stage" aria-label="Interactive character rig review"></main>
 
-    <aside id="review-panel" aria-label="Character review controls">
+    <aside id="review-panel" aria-label="Character review controls" hidden>
       <header>
         <p class="eyebrow">Ashveil asset spike</p>
         <h1>Character rig review</h1>
@@ -80,6 +80,17 @@
 
       <pre id="failure" role="alert" hidden></pre>
     </aside>
+
+    <button
+      id="review-panel-toggle"
+      class="panel-toggle"
+      type="button"
+      aria-controls="review-panel"
+      aria-expanded="false"
+      aria-label="Show review controls"
+    >
+      Controls
+    </button>
 
     <script type="module" src="./main.ts"></script>
   </body>
