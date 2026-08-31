@@ -136,24 +136,33 @@ bind overlays that distinguish fitted targets from the exported bones.
 Current structural evidence:
 
 - all 7,966 vertices across seven semantic meshes received finite, normalized
-  automatic weights with at most four influences and the same armature modifier;
-- `humanoid.v1` derives shoulder, elbow, hip, knee and ankle targets from robust
-  geometry slices and derives wrists and neck from the audited component seams;
+  weights with at most four influences and the same armature modifier; shoulder,
+  elbow and wrist transitions use deterministic geometry profiles rather than the
+  initial broad automatic-weight transitions;
+- `humanoid.v1` derives the shoulder pivot by extrapolating the proximal upper-arm
+  medial axis from multiple cross sections. Its held-out residual is 6.3 mm, the
+  raw bilateral reflection error is below 0.001 mm and both pivots remain inside
+  the source envelope. Elbow, hip, knee and ankle targets use robust geometry
+  slices, while wrists and neck use audited component seams;
 - all 16 fitted joint targets retain their source components, sample counts and raw
   target/actual coordinates before the armature is created;
 - the armature has 20 bones, with its root as the sole non-deforming bone, and its
   accepted masculine source-rest, runtime-rest and inverse-bind signatures are
   pinned in the versioned contract;
-- the pelvis and authoring COG are derived from the bilateral hip midpoint, while
-  the provisionally accepted shoulder estimator remains unchanged;
+- the pelvis and authoring COG are derived from the bilateral hip midpoint; the
+  sternoclavicular origin is measured independently from the upper torso rather
+  than moving with the shoulder estimate;
 - the editable blend retains a lightweight Blender-native FK/IK authoring rig with
   independently calibrated left/right elbow and knee poles. Evaluated authoring
   matrices are baked onto the constraint-free Ashveil deform rig; only that frozen
   rig is exported;
 - every posed limb preserves its fitted rest orientation frame unless a bone-specific
-  twist is authored. The audit rejects uncommanded axial twist above 60 degrees,
-  mirrored overhead disagreement above 15 degrees, near-collinear poles and connected
-  chain gaps above 1 mm;
+  full orientation is authored. Arm poses transport independent geometry-derived
+  humeral, forearm and palm frames through the bake; Blender and Three.js independently
+  validate primary axes, normals, right-handedness and mirrored overhead frames within
+  one degree. The audit rejects uncommanded axial twist above 60 degrees, mirrored
+  overhead disagreement above 15 degrees, near-collinear poles and connected chain
+  gaps above 1 mm;
 - the editable blend stores six fully keyed poses with constant F-curves at 30 fps;
   the exported GLB contains both STEP and LINEAR transform tracks, so review tools
   sample just after each diagnostic marker rather than assuming identical key times;
@@ -166,11 +175,26 @@ Current structural evidence:
   trusting the pose solver's requested targets; and
 - source bounds remain finite and within the diagnostic ground tolerance.
 
-This remains `diagnostic_not_production_ready`. Bind placement and the overhead,
-cross-body reach, deep-elbow and head-turn intentions now read correctly in the
-validation views. The long-stride frame has the correct lead/trail direction, pelvis
-axis, knee sides and planted trail sole, but still exposes collapsed knee topology;
-it is negative deformation evidence, not an approved motion. Production controls,
+This remains `diagnostic_not_production_ready`. Chest-local evidence, invariant to a
+root/chest rotation, now records 14.93-degree bilateral clavicle elevation and about
+50 mm of socket rise overhead;
+the cross-body wrist and skinned hand centroid genuinely cross the midline; and the
+deep bend holds the upper arm within 0.11 degrees of bind, flexes 127.5 degrees,
+keeps the wrist within 0.11 degrees of the forearm and clears the torso by 90 mm.
+
+Those pose corrections expose a source-topology blocker rather than resolving it.
+With strict production thresholds unchanged, overhead shoulder covariance volume is
+0.636-0.637 versus 0.70 required and its triangle-area p05 is 0.529-0.547 versus 0.60;
+deep-elbow volume is 0.633 and p05 is 0.484. Wrist deformation passes, but its
+separate source shells retain an 8.5-13.7 mm gap and 55.6-degree cyclic tangent
+mismatch, so the seam is not a weld. Production acceptance is the conjunction of
+posed deformation and wrist continuity; it remains false even if either subsystem is
+considered alone. Smart Topology or equivalent authored joint loops are required
+before this mannequin can be approved for animation or armor.
+
+The long-stride frame has the correct lead/trail direction, pelvis axis, knee sides
+and planted trail sole, but still exposes collapsed knee topology; it is negative
+deformation evidence, not an approved motion. Production controls,
 twist/finger/toe/facial bones, retargeting, root motion, feminine parity, armor
 transfer, UVs, textures and canonical runtime scale remain unresolved. `humanoid.v1`
 currently authenticates only this masculine diagnostic; it does not prove that the

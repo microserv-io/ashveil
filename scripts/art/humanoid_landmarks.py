@@ -17,6 +17,9 @@ HUMANOID_V1 = {
     "sliceMinimumPoints": 12,
     "outerClusterMinimumGapHeight": 0.015,
     "centralWidthFraction": 0.18,
+    "proximalArmBands": ((0.10, 0.12), (0.12, 0.14), (0.14, 0.16), (0.16, 0.18)),
+    "shoulderExtrapolationXHeight": 0.105,
+    "upperTorsoBand": (0.775, 0.81),
     "seamCandidateHeightPadding": 0.035,
     "seamPairCount": 32,
 }
@@ -118,6 +121,63 @@ def mirror_pair(left, right):
     return (x, y, z), (-x, y, z), raw_error
 
 
+def linear_fit(samples, value_axis):
+    xs = [sample[0] for sample in samples]
+    values = [sample[value_axis] for sample in samples]
+    mean_x = sum(xs) / len(xs)
+    mean_value = sum(values) / len(values)
+    variance = sum((x - mean_x) ** 2 for x in xs)
+    if variance < 1e-10:
+        raise ValueError("Proximal upper-arm samples cannot define a medial axis")
+    slope = sum((x - mean_x) * (value - mean_value) for x, value in zip(xs, values)) / variance
+    return slope, mean_value - slope * mean_x
+
+
+def proximal_arm_centerline(points, side, minimum_z, height):
+    centers = []
+    samples = []
+    for lower_fraction, upper_fraction in HUMANOID_V1["proximalArmBands"]:
+        lower = height * lower_fraction
+        upper = height * upper_fraction
+        selected = [
+            point
+            for point in points
+            if lower <= abs(point[0]) <= upper
+            and point[0] * side > 0
+            and minimum_z + height * 0.68 <= point[2] <= minimum_z + height * 0.83
+        ]
+        center = robust_surface_center(selected)
+        center = (abs(center[0]), center[1], center[2])
+        centers.append(center)
+        samples.append(len(selected))
+    training = [centers[index] for index in (0, 2)]
+    held_out = centers[1]
+    y_slope, y_intercept = linear_fit(training, 1)
+    z_slope, z_intercept = linear_fit(training, 2)
+    target_x = height * HUMANOID_V1["shoulderExtrapolationXHeight"]
+    target = (side * target_x, y_slope * target_x + y_intercept, z_slope * target_x + z_intercept)
+    predicted_held_out = (
+        side * held_out[0],
+        y_slope * held_out[0] + y_intercept,
+        z_slope * held_out[0] + z_intercept,
+    )
+    held_out_signed = (side * held_out[0], held_out[1], held_out[2])
+    residual = math.sqrt(squared_distance(predicted_held_out, held_out_signed))
+    return target, {
+        "method": "proximal_upper_arm_medial_axis_extrapolation",
+        "sourceObjects": ["Body"],
+        "heightBands": HUMANOID_V1["proximalArmBands"],
+        "crossSectionCenters": [(side * center[0], center[1], center[2]) for center in centers],
+        "trainingSectionIndices": [0, 2],
+        "heldOutSectionIndex": 1,
+        "heldOutResidualMetres": residual,
+        "extrapolationXMetres": side * target_x,
+        "sampleCounts": samples,
+        "sampleCount": sum(samples),
+        "confidence": min(1.0, sum(samples) / 96),
+    }
+
+
 def distal_hand_point(points, wrist):
     center = robust_surface_center(points)
     direction = tuple(center[axis] - wrist[axis] for axis in range(3))
@@ -148,7 +208,7 @@ def fit_humanoid_landmarks(components):
     raw_pairs = {}
     landmarks = {}
     measurements = {}
-    for name in ("shoulder", "elbow", "hip", "knee", "ankle"):
+    for name in ("elbow", "hip", "knee", "ankle"):
         sliced = points_in_height_band(body, minimum[2], height, HUMANOID_V1["heightBands"][name])
         left_cluster = side_outer_cluster(sliced, 1, height)
         right_cluster = side_outer_cluster(sliced, -1, height)
@@ -162,6 +222,20 @@ def fit_humanoid_landmarks(components):
                 "heightBand": HUMANOID_V1["heightBands"][name],
                 "sampleCount": len(cluster),
             }
+
+    raw_left_shoulder, left_shoulder_measurement = proximal_arm_centerline(
+        body, 1, minimum[2], height
+    )
+    raw_right_shoulder, right_shoulder_measurement = proximal_arm_centerline(
+        body, -1, minimum[2], height
+    )
+    landmarks["shoulder.L"], landmarks["shoulder.R"], raw_pairs["shoulder"] = mirror_pair(
+        raw_left_shoulder, raw_right_shoulder
+    )
+    measurements["shoulder.L"] = left_shoulder_measurement
+    measurements["shoulder.R"] = right_shoulder_measurement
+    measurements["shoulder.L"]["rawTargetWorld"] = raw_left_shoulder
+    measurements["shoulder.R"]["rawTargetWorld"] = raw_right_shoulder
 
     left_wrist = closest_surface_center(body, components["Hand_PositiveX"], minimum[2], height)
     right_wrist = closest_surface_center(body, components["Hand_NegativeX"], minimum[2], height)
@@ -190,13 +264,19 @@ def fit_humanoid_landmarks(components):
             "heightBand": HUMANOID_V1["heightBands"][name],
             "sampleCount": len(central_points),
         }
-    shoulder_middle = tuple((landmarks["shoulder.L"][axis] + landmarks["shoulder.R"][axis]) / 2 for axis in range(3))
-    landmarks["neck.base"] = shoulder_middle
+    landmarks["neck.base"] = central_slice(
+        body, minimum[2], height, width, HUMANOID_V1["upperTorsoBand"]
+    )
     landmarks["neck"] = head_base
     measurements["neck.base"] = {
-        "method": "bilateral_shoulder_midpoint",
+        "method": "robust_upper_torso_sternoclavicular_center",
         "sourceObjects": ["Body"],
-        "sampleCount": measurements["shoulder.L"]["sampleCount"] + measurements["shoulder.R"]["sampleCount"],
+        "heightBand": HUMANOID_V1["upperTorsoBand"],
+        "sampleCount": len([
+            point
+            for point in points_in_height_band(body, minimum[2], height, HUMANOID_V1["upperTorsoBand"])
+            if abs(point[0]) <= width * HUMANOID_V1["centralWidthFraction"]
+        ]),
     }
     measurements["neck"] = {
         "method": "closest_component_surface",

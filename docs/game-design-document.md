@@ -221,10 +221,24 @@ bend reference and non-collinear pole rule. Blender authoring controls solve and
 expose that intent, then their evaluated matrices are baked onto the versioned,
 constraint-free Ashveil deform rig. Uncommanded long-axis rotation, a changed bend
 plane or a disconnected parent-tail/child-head pair fails validation even when limb
-endpoints still match. Nonhumanoid chains require separate contracts and evidence.
+endpoints still match. Full humeral, forearm and palm frames must be independently
+measured in Blender and the runtime export, including handedness and bilateral mirror
+checks; endpoint-only orientation is insufficient. Nonhumanoid chains require
+separate contracts and evidence.
 
 Attach rigid modular equipment and transfer deforming wearables only after the
 target archetype's skeleton contract passes technical and human review.
+
+The masculine spike now separates rig intent from mesh suitability. Its humeral
+head fit, overhead shoulder-girdle motion, genuine cross-body reach and isolated
+deep-elbow chain are mechanically credible, while the current Tripo mesh still
+fails fixed shoulder and elbow volume/triangle deformation thresholds. Wrist
+deformation is stable, but the hand remains a separate shell with a measurable gap
+and unapproved tangent continuity. Therefore this source topology is rejected for
+production animation and armor fitting; Smart Topology or an equivalent authored
+joint-loop pass is required without changing the runtime 20-bone contract. Character
+acceptance requires both deformation and wrist-continuity contracts to pass; neither
+can compensate for a failure in the other.
 
 Begin with visually curated Tripo Studio work. Add API automation only after asset
 settings, acceptance criteria and generation reliability are stable enough that

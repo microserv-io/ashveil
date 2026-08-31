@@ -12,7 +12,10 @@ import {
 } from '../scripts/art/character-rig-spike'
 import {
   assertJointFitRecords,
+  assertAppliedOrientationFrames,
   assertPoseOrientationEvidence,
+  assertProductionCharacterAcceptance,
+  assertProductionArmDeformation,
   assertStrideIntent,
   mirrorNormalizedTwist,
   type PoseOrientationEvidence,
@@ -108,11 +111,26 @@ describe('diagnostic character rig artifact', () => {
     })
     expect(report.jointFit.joints.every((joint: { sampleCount: number }) => joint.sampleCount >= 12)).toBe(true)
     expect(() => assertJointFitRecords(report.jointFit.joints)).not.toThrow()
+    expect(report.shoulderFit).toMatchObject({
+      method: 'symmetric_proximal_upper_arm_medial_axis_extrapolation',
+      pass: true,
+    })
+    expect(report.shoulderFit.maximumCenterlineResidualMetres).toBeLessThanOrEqual(0.01)
+    expect(report.shoulderFit.bilateralSymmetryErrorMetres).toBeLessThanOrEqual(0.005)
     expect(report.pelvisCogFit).toMatchObject({ pass: true })
     expect(report.pelvisCogFit.pelvisToHipMidpointMetres).toBeLessThanOrEqual(0.02)
     expect(report.pelvisCogFit.cogToHipMidpointMetres).toBeLessThanOrEqual(0.02)
     expect(report.bindGeometryMaximumDeviationMetres).toBeLessThanOrEqual(0.0001)
     expect(report.orientationEvidence).toMatchObject({ pass: true })
+    expect(report.armOrientationFrames).toMatchObject({
+      measurementSpace: 'evaluated_bones_against_frozen_independent_anatomical_frames',
+      pass: true,
+    })
+    expect(report.productionAcceptance).toMatchObject({
+      deformationPass: false,
+      wristContinuityPass: false,
+      pass: false,
+    })
     expect(report.bakeVerification).toMatchObject({
       reopenedSavedBlend: true,
       deformConstraintCount: 0,
@@ -154,6 +172,8 @@ describe('diagnostic character rig artifact', () => {
       (pose: { name: string }) => pose.name === 'cross-body-reach',
     )
     expect(attack).toMatchObject({ pass: true, leadHand: 'hand.L', crossedMidline: true })
+    expect(attack.wristWorld[0]).toBeLessThan(0)
+    expect(attack.skinnedHandCentroidWorld[0]).toBeLessThan(0)
     expect(attack.targetErrorMetres).toBeLessThanOrEqual(0.04)
     expect(attack.verticalTargetErrorMetres).toBeLessThanOrEqual(0.04)
     const stride = report.poseIntent.poses.find((pose: { name: string }) => pose.name === 'long-stride')
@@ -180,6 +200,21 @@ describe('diagnostic character rig artifact', () => {
     const headTurn = report.poseIntent.poses.find((pose: { name: string }) => pose.name === 'head-turn')
     expect(Math.abs(headTurn.actualWorldYawDegrees - headTurn.intendedWorldYawDegrees)).toBeLessThanOrEqual(1)
     expect(report.seams.pass).toBe(true)
+    expect(report.productionDeformation).toMatchObject({
+      measurementSpace: 'evaluated_skinned_geometry',
+      minimumCovarianceVolumeRatio: 0.7,
+      minimumTriangleAreaRatioP05: 0.6,
+      minimumTriangleAreaRatio: 0.2,
+      maximumSignedNormalInversions: 0,
+      pass: false,
+    })
+    const wristRegions = report.productionDeformation.poses.flatMap(
+      (pose: { regions: Array<{ name: string; pass: boolean }> }) =>
+        pose.regions.filter((region) => region.name.startsWith('wrist.')),
+    )
+    expect(wristRegions.length).toBeGreaterThan(0)
+    expect(wristRegions.every((region: { pass: boolean }) => region.pass)).toBe(true)
+    expect(report.wristContinuity.maximumDynamicGapGrowthMetres).toBeLessThanOrEqual(0.005)
     expect(report.groundAndBounds.pass).toBe(true)
     expect(report.export.gltfStructure).toMatchObject({
       meshes: 7,
@@ -199,6 +234,46 @@ describe('diagnostic character rig artifact', () => {
     )
     expect(report.export.gltfStructure.skinnedMeshNames).toEqual([...REQUIRED_SEMANTIC_MESHES].sort())
     expect(report.renders).toHaveLength(18)
+  })
+
+  it('rejects the current source topology for production arm deformation', () => {
+    const report = JSON.parse(readFileSync(resolve(riggedDirectory, 'report.json'), 'utf8'))
+    expect(() => assertProductionArmDeformation(report.productionDeformation)).toThrow(
+      /overhead-reach shoulder.L.*deep-elbow-bend elbow.L/,
+    )
+  })
+
+  it('rejects current wrist continuity even when deformation is synthetically passing', () => {
+    const report = JSON.parse(readFileSync(resolve(riggedDirectory, 'report.json'), 'utf8'))
+    const passingDeformation = structuredClone(report.productionDeformation)
+    passingDeformation.pass = true
+    for (const pose of passingDeformation.poses) {
+      pose.pass = true
+      for (const region of pose.regions) {
+        region.covarianceVolumeRatio = 1
+        region.triangleAreaRatioP05 = 1
+        region.minimumTriangleAreaRatio = 1
+        region.signedNormalInversions = 0
+        region.pass = true
+      }
+    }
+    expect(() =>
+      assertProductionCharacterAcceptance(passingDeformation, report.wristContinuity),
+    ).toThrow(/wrist continuity/)
+  })
+
+  it('rejects an adversarial 180-degree hand-axis roll', () => {
+    expect(() =>
+      assertAppliedOrientationFrames([
+        {
+          bone: 'hand.L',
+          primaryAxisErrorDegrees: 0,
+          palmNormalErrorDegrees: 180,
+          actualRightHandedDeterminant: 1,
+          pass: false,
+        },
+      ]),
+    ).toThrow(/hand.L applied orientation frame/)
   })
 
   it('mirror-normalizes bilateral twist fixtures before comparing symmetry', () => {
@@ -250,6 +325,7 @@ describe('diagnostic character rig artifact', () => {
   })
 
   it('loads and clones the skinned GLB through the runtime Three.js seams', async () => {
+    const report = JSON.parse(readFileSync(resolve(riggedDirectory, 'report.json'), 'utf8'))
     const bytes = readFileSync(resolve(riggedDirectory, 'masculine-rigged-diagnostic.glb'))
     const gltf = await parseGlb(bytes)
     expect(() => assertCharacterAssetSummary(summarizeAsset(gltf))).not.toThrow()
@@ -306,16 +382,22 @@ describe('diagnostic character rig artifact', () => {
       bones.map((bone) => [bone.name, bone.getWorldQuaternion(new THREE.Quaternion())]),
     )
     const chainLengths = bindChainLengths(bonesByName)
+    const commandedBonesByPose = new Map<string, string[]>(
+      report.orientationEvidence.poses.map((pose: {
+        name: string
+        explicitlyCommandedOrientationBones: string[]
+      }) => [pose.name, pose.explicitlyCommandedOrientationBones]),
+    )
     const orientationEvidence = [
       measureOrientation(gltf.scene, gltf.animations[0]!, 10, 'overhead-reach', bonesByName, bindOrientations, chainLengths, [
         'upper_armL', 'forearmL', 'upper_armR', 'forearmR',
-      ]),
+      ], commandedBonesByPose.get('overhead-reach')),
       measureOrientation(gltf.scene, gltf.animations[0]!, 20, 'cross-body-reach', bonesByName, bindOrientations, chainLengths, [
         'upper_armL', 'forearmL',
-      ]),
+      ], commandedBonesByPose.get('cross-body-reach')),
       measureOrientation(gltf.scene, gltf.animations[0]!, 30, 'deep-elbow-bend', bonesByName, bindOrientations, chainLengths, [
         'upper_armL', 'forearmL',
-      ]),
+      ], commandedBonesByPose.get('deep-elbow-bend')),
       measureOrientation(gltf.scene, gltf.animations[0]!, 40, 'long-stride', bonesByName, bindOrientations, chainLengths, [
         'thighL', 'shinL', 'thighR', 'shinR',
       ]),
@@ -326,6 +408,81 @@ describe('diagnostic character rig artifact', () => {
         expect.soft(gap, `${evidence.pose} ${chain}`).toBeLessThanOrEqual(0.001)
       }
     }
+    for (const pose of report.armOrientationFrames.poses) {
+      mixerAtFrame(gltf.scene, gltf.animations[0]!, pose.frame)
+      const applied = pose.bones.map((evidence: {
+        bone: string
+        intendedPrimaryAxisWorld: number[]
+        intendedNormalWorld: number[]
+      }) => {
+        const threeName = threeNameBySource.get(evidence.bone)!
+        const bone = bonesByName.get(threeName)!
+        const frameName = evidence.bone.replace('upper_arm', 'upperArm')
+        const bindFrame = report.anatomicalFrames[frameName]
+        const delta = bone.getWorldQuaternion(new THREE.Quaternion())
+          .multiply(bindOrientations.get(threeName)!.clone().invert())
+        const actualPrimary = blenderDirectionToRuntime(bindFrame.primaryAxis).applyQuaternion(delta).normalize()
+        const actualNormal = blenderDirectionToRuntime(bindFrame.palmOrBendNormal).applyQuaternion(delta).normalize()
+        const intendedPrimary = blenderDirectionToRuntime(evidence.intendedPrimaryAxisWorld)
+        const intendedNormal = blenderDirectionToRuntime(evidence.intendedNormalWorld)
+        const radial = actualPrimary.clone().cross(actualNormal).normalize()
+        const normalError = THREE.MathUtils.radToDeg(actualNormal.angleTo(intendedNormal))
+        return {
+          bone: evidence.bone,
+          primaryAxisErrorDegrees: THREE.MathUtils.radToDeg(actualPrimary.angleTo(intendedPrimary)),
+          ...(evidence.bone.startsWith('upper_arm')
+            ? { humeralRollErrorDegrees: normalError }
+            : evidence.bone.startsWith('forearm')
+              ? { forearmPronationErrorDegrees: normalError }
+              : { palmNormalErrorDegrees: normalError }),
+          actualRightHandedDeterminant: actualPrimary.dot(actualNormal.clone().cross(radial)),
+          pass: true,
+        }
+      })
+      expect(() => assertAppliedOrientationFrames(applied), `runtime ${pose.name}`).not.toThrow()
+    }
+
+    mixerAtFrame(gltf.scene, gltf.animations[0]!, 10)
+    const bindLeftClavicle = bindOrientations.get('clavicleL')!
+    const bindRightClavicle = bindOrientations.get('clavicleR')!
+    const leftClavicleElevation = THREE.MathUtils.radToDeg(
+      bindLeftClavicle.angleTo(bonesByName.get('clavicleL')!.getWorldQuaternion(new THREE.Quaternion())),
+    )
+    const rightClavicleElevation = THREE.MathUtils.radToDeg(
+      bindRightClavicle.angleTo(bonesByName.get('clavicleR')!.getWorldQuaternion(new THREE.Quaternion())),
+    )
+    expect(leftClavicleElevation).toBeGreaterThanOrEqual(10)
+    expect(leftClavicleElevation).toBeLessThanOrEqual(20)
+    expect(rightClavicleElevation).toBeGreaterThanOrEqual(10)
+    expect(rightClavicleElevation).toBeLessThanOrEqual(20)
+    expect(Math.abs(leftClavicleElevation - rightClavicleElevation)).toBeLessThanOrEqual(5)
+    const chestLocalBefore = runtimeClavicleMetrics(bonesByName)
+    gltf.scene.quaternion.setFromAxisAngle(new THREE.Vector3(0.3, 0.8, 0.2).normalize(), 1.1)
+    gltf.scene.updateMatrixWorld(true)
+    const chestLocalAfter = runtimeClavicleMetrics(bonesByName)
+    expect(chestLocalAfter.leftElevationDegrees).toBeCloseTo(chestLocalBefore.leftElevationDegrees, 4)
+    expect(chestLocalAfter.rightElevationDegrees).toBeCloseTo(chestLocalBefore.rightElevationDegrees, 4)
+    expect(chestLocalAfter.leftSocketHeight).toBeCloseTo(chestLocalBefore.leftSocketHeight, 4)
+    expect(chestLocalAfter.rightSocketHeight).toBeCloseTo(chestLocalBefore.rightSocketHeight, 4)
+    gltf.scene.quaternion.identity()
+    gltf.scene.updateMatrixWorld(true)
+
+    mixerAtFrame(gltf.scene, gltf.animations[0]!, 20)
+    expect(worldPosition(bonesByName.get('handL')!).x, 'runtime cross-body wrist').toBeLessThan(0)
+    expect(
+      skinnedCentroid(originalSkinnedMeshes.get('Hand_PositiveX')!).x,
+      'runtime cross-body skinned hand centroid',
+    ).toBeLessThan(0)
+
+    mixerAtFrame(gltf.scene, gltf.animations[0]!, 30)
+    const forearmDirection = boneDirection(bonesByName, 'forearmL', 'handL')
+    const handDirection = new THREE.Vector3(0, 1, 0).applyQuaternion(
+      bonesByName.get('handL')!.getWorldQuaternion(new THREE.Quaternion()),
+    )
+    expect(
+      THREE.MathUtils.radToDeg(forearmDirection.angleTo(handDirection)),
+      'runtime deep-elbow forearm-to-hand bend',
+    ).toBeLessThanOrEqual(30)
 
     const bindUpperArmWorld = bindOrientations.get('upper_armL')!
     const primaryAxis = new THREE.Vector3(0, 1, 0).applyQuaternion(bindUpperArmWorld)
@@ -407,6 +564,54 @@ function worldPosition(bone: THREE.Bone): THREE.Vector3 {
   return bone.getWorldPosition(new THREE.Vector3())
 }
 
+function boneDirection(
+  bones: Map<string, THREE.Bone>,
+  parentName: string,
+  childName: string,
+): THREE.Vector3 {
+  return worldPosition(bones.get(childName)!).sub(worldPosition(bones.get(parentName)!)).normalize()
+}
+
+function skinnedCentroid(mesh: THREE.SkinnedMesh): THREE.Vector3 {
+  const centroid = new THREE.Vector3()
+  const vertex = new THREE.Vector3()
+  const position = mesh.geometry.getAttribute('position')
+  for (let index = 0; index < position.count; index++) {
+    mesh.getVertexPosition(index, vertex)
+    centroid.add(mesh.localToWorld(vertex.clone()))
+  }
+  return centroid.multiplyScalar(1 / position.count)
+}
+
+function blenderDirectionToRuntime(values: number[]): THREE.Vector3 {
+  return new THREE.Vector3(values[0]!, values[2]!, -values[1]!).normalize()
+}
+
+function runtimeClavicleMetrics(bones: Map<string, THREE.Bone>): {
+  leftElevationDegrees: number
+  rightElevationDegrees: number
+  leftSocketHeight: number
+  rightSocketHeight: number
+} {
+  const chest = bones.get('chest')!
+  const inverseChest = chest.getWorldQuaternion(new THREE.Quaternion()).invert()
+  const metric = (side: 'L' | 'R') => {
+    const clavicle = bones.get(`clavicle${side}`)!
+    const shoulder = bones.get(`upper_arm${side}`)!
+    const direction = worldPosition(shoulder).sub(worldPosition(clavicle)).applyQuaternion(inverseChest)
+    const socket = chest.worldToLocal(worldPosition(shoulder))
+    return { direction, socket }
+  }
+  const left = metric('L')
+  const right = metric('R')
+  return {
+    leftElevationDegrees: THREE.MathUtils.radToDeg(Math.atan2(left.direction.z, Math.hypot(left.direction.x, left.direction.y))),
+    rightElevationDegrees: THREE.MathUtils.radToDeg(Math.atan2(right.direction.z, Math.hypot(right.direction.x, right.direction.y))),
+    leftSocketHeight: left.socket.y,
+    rightSocketHeight: right.socket.y,
+  }
+}
+
 function signedAxialTwistDegrees(bind: THREE.Quaternion, pose: THREE.Quaternion): number {
   const bindRotation = bind.clone().normalize()
   const poseRotation = pose.clone().normalize()
@@ -444,6 +649,7 @@ function measureOrientation(
   bindOrientations: Map<string, THREE.Quaternion>,
   chainLengths: Map<string, number>,
   measuredBones: string[],
+  explicitlyCommandedOrientationBones: string[] = [],
 ): PoseOrientationEvidence {
   mixerAtFrame(root, clip, frame)
   const axialTwists = Object.fromEntries(
@@ -465,5 +671,5 @@ function measureOrientation(
       return [chain.replace(/([LR])(?=->|$)/g, '.$1'), expectedTail.distanceTo(worldPosition(bones.get(child!)!))]
     }),
   )
-  return { pose, axialTwists, chainGapsMetres }
+  return { pose, axialTwists, chainGapsMetres, explicitlyCommandedOrientationBones }
 }

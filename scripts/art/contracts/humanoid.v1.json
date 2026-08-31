@@ -12,9 +12,9 @@
   "rootMotion": "none",
   "maximumInfluences": 4,
   "restSignatureAlgorithm": "sha256(canonical-json[{name,parent,deform,head,tail,roll,matrixLocal}] rounded 1e-6)",
-  "acceptedMaleRestSignatureSha256": "aa7561f79abbe95a94bd3a0fe345594e824855e6eeb70cdce8ca3c06b3567531",
-  "acceptedMaleRuntimeRestSignatureSha256": "0e9552af0702b38081d1cc2f67ac0efdfe6ac21c6b7cb88336704f13456f9c10",
-  "acceptedMaleInverseBindMatricesSha256": "641fd82903cffe2ae9d4c0eb9aa036c6c444357b1bc6aa8df75a89b14b225afa",
+  "acceptedMaleRestSignatureSha256": "e6d26c43466a7982d2129d7a33d80c91b8594880437bd513c42bc049e1fc8a2b",
+  "acceptedMaleRuntimeRestSignatureSha256": "c087c4762ce5d6f62440656ec2167304506526b9f9961b2bb12bde46b16a5733",
+  "acceptedMaleInverseBindMatricesSha256": "be4fe7ed7f6254634767badc293d26b0457e9ec07415cac3d8fcbd12b8bb3b71",
   "bones": [
     { "name": "root", "gltfName": "root", "threeName": "root", "parent": null, "deform": false, "head": "root", "tail": "pelvis" },
     { "name": "pelvis", "gltfName": "pelvis", "threeName": "pelvis", "parent": "root", "deform": true, "head": "pelvis", "tail": "spine" },

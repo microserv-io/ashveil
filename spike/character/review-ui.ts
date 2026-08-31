@@ -75,7 +75,8 @@ export class ReviewUi {
         Object.values(pose.axialTwistDegrees).map(Math.abs),
       ),
     )
-    this.fitState.textContent = `${report.jointFit.contract} · ${passingJoints}/${report.jointFit.joints.length} · fit ${(report.jointFit.maximumErrorMetres * 1000).toFixed(1)} mm · pelvis ${(report.pelvisCogFit.pelvisToHipMidpointMetres * 1000).toFixed(1)} mm · twist ${maximumTwist.toFixed(2)}°`
+    const deformation = report.productionDeformation.pass ? 'deformation passed' : 'deformation blocked'
+    this.fitState.textContent = `${report.jointFit.contract} · ${passingJoints}/${report.jointFit.joints.length} · fit ${(report.jointFit.maximumErrorMetres * 1000).toFixed(1)} mm · pelvis ${(report.pelvisCogFit.pelvisToHipMidpointMetres * 1000).toFixed(1)} mm · twist ${maximumTwist.toFixed(2)}° · ${deformation}`
   }
 
   validated(status: AssetStatus): void {

@@ -91,6 +91,7 @@ export interface PoseOrientationEvidence {
   pose: string
   axialTwists: Record<string, number>
   chainGapsMetres: Record<string, number>
+  explicitlyCommandedOrientationBones?: string[]
 }
 
 export function mirrorNormalizedTwist(side: 'L' | 'R', degrees: number): number {
@@ -98,7 +99,9 @@ export function mirrorNormalizedTwist(side: 'L' | 'R', degrees: number): number 
 }
 
 export function assertPoseOrientationEvidence(evidence: PoseOrientationEvidence): void {
+  const commandedBones = new Set(evidence.explicitlyCommandedOrientationBones ?? [])
   for (const [bone, twist] of Object.entries(evidence.axialTwists)) {
+    if (commandedBones.has(bone)) continue
     if (!Number.isFinite(twist) || Math.abs(twist) > 60) {
       throw new Error(`${evidence.pose} ${bone} has uncommanded axial twist ${twist}.`)
     }
@@ -117,6 +120,101 @@ export function assertPoseOrientationEvidence(evidence: PoseOrientationEvidence)
   for (const [chain, gap] of Object.entries(evidence.chainGapsMetres)) {
     if (!Number.isFinite(gap) || gap > 0.001) {
       throw new Error(`${evidence.pose} ${chain} chain gap is ${gap} metres.`)
+    }
+  }
+}
+
+export interface DeformationRegionEvidence {
+  name: string
+  covarianceVolumeRatio: number
+  triangleAreaRatioP05: number
+  minimumTriangleAreaRatio: number
+  signedNormalInversions: number
+  pass: boolean
+}
+
+export interface ProductionArmDeformationEvidence {
+  minimumCovarianceVolumeRatio: number
+  minimumTriangleAreaRatioP05: number
+  minimumTriangleAreaRatio: number
+  maximumSignedNormalInversions: number
+  poses: Array<{ name: string; regions: DeformationRegionEvidence[]; pass: boolean }>
+  pass: boolean
+}
+
+export function assertProductionArmDeformation(evidence: ProductionArmDeformationEvidence): void {
+  if (
+    evidence.minimumCovarianceVolumeRatio !== 0.7 ||
+    evidence.minimumTriangleAreaRatioP05 !== 0.6 ||
+    evidence.minimumTriangleAreaRatio !== 0.2 ||
+    evidence.maximumSignedNormalInversions !== 0
+  ) {
+    throw new Error('Production arm deformation thresholds changed.')
+  }
+  const failures = evidence.poses.flatMap((pose) =>
+    pose.regions.filter((region) =>
+      region.covarianceVolumeRatio < evidence.minimumCovarianceVolumeRatio ||
+      region.triangleAreaRatioP05 < evidence.minimumTriangleAreaRatioP05 ||
+      region.minimumTriangleAreaRatio < evidence.minimumTriangleAreaRatio ||
+      region.signedNormalInversions > evidence.maximumSignedNormalInversions ||
+      !region.pass,
+    ).map((region) => `${pose.name} ${region.name}`),
+  )
+  if (!evidence.pass || failures.length > 0) {
+    throw new Error(`Production arm deformation rejected: ${failures.join(', ')}.`)
+  }
+}
+
+export interface WristContinuityEvidence {
+  topologyPolicy: string
+  maximumAbsoluteGapMetres: number
+  maximumAllowedAbsoluteGapMetres: number
+  maximumTangentAngleDegrees: number
+  maximumAllowedTangentAngleDegrees: number
+  pass: boolean
+}
+
+export function assertProductionCharacterAcceptance(
+  deformation: ProductionArmDeformationEvidence,
+  wrist: WristContinuityEvidence,
+): void {
+  assertProductionArmDeformation(deformation)
+  if (
+    wrist.topologyPolicy !== 'welded_or_approved_separate_shell' ||
+    wrist.maximumAllowedAbsoluteGapMetres !== 0.005 ||
+    wrist.maximumAllowedTangentAngleDegrees !== 30 ||
+    wrist.maximumAbsoluteGapMetres > wrist.maximumAllowedAbsoluteGapMetres ||
+    wrist.maximumTangentAngleDegrees > wrist.maximumAllowedTangentAngleDegrees ||
+    !wrist.pass
+  ) {
+    throw new Error('Production character rejected by wrist continuity contract.')
+  }
+}
+
+export interface AppliedOrientationFrame {
+  bone: string
+  primaryAxisErrorDegrees: number
+  actualRightHandedDeterminant: number
+  humeralRollErrorDegrees?: number
+  forearmPronationErrorDegrees?: number
+  palmNormalErrorDegrees?: number
+  pass: boolean
+}
+
+export function assertAppliedOrientationFrames(frames: AppliedOrientationFrame[]): void {
+  for (const frame of frames) {
+    const normalError =
+      frame.humeralRollErrorDegrees ??
+      frame.forearmPronationErrorDegrees ??
+      frame.palmNormalErrorDegrees
+    if (
+      normalError === undefined ||
+      frame.primaryAxisErrorDegrees > 1 ||
+      normalError > 1 ||
+      frame.actualRightHandedDeterminant < 0.999 ||
+      !frame.pass
+    ) {
+      throw new Error(`${frame.bone} applied orientation frame is invalid.`)
     }
   }
 }

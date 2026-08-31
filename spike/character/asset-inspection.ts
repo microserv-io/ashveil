@@ -24,6 +24,21 @@ export interface RigReport {
     pass: boolean
     poses: Array<{ name: string; axialTwistDegrees: Record<string, number>; pass: boolean }>
   }
+  productionDeformation: {
+    pass: boolean
+    poses: Array<{
+      name: string
+      regions: Array<{ name: string; pass: boolean }>
+    }>
+  }
+  armOrientationFrames: {
+    pass: boolean
+  }
+  productionAcceptance: {
+    deformationPass: boolean
+    wristContinuityPass: boolean
+    pass: boolean
+  }
   bakeVerification: { reopenedSavedBlend: boolean; pass: boolean }
   poseIntent: {
     pass: boolean
@@ -71,6 +86,13 @@ export function assertRigReport(candidate: RigReport): void {
   if (!candidate.poseIntent.pass) failures.push('report must contain passing evaluated pose intent')
   if (!candidate.pelvisCogFit.pass) failures.push('report must contain passing pelvis and COG fit')
   if (!candidate.orientationEvidence.pass) failures.push('report must contain passing evaluated orientation evidence')
+  if (!candidate.armOrientationFrames.pass) failures.push('report must contain passing applied arm-frame evidence')
+  if (
+    candidate.productionAcceptance.pass !==
+    (candidate.productionAcceptance.deformationPass && candidate.productionAcceptance.wristContinuityPass)
+  ) {
+    failures.push('production acceptance must combine deformation and wrist continuity')
+  }
   if (!candidate.bakeVerification.reopenedSavedBlend || !candidate.bakeVerification.pass) {
     failures.push('report must contain passing reopened authoring-to-deform bake evidence')
   }

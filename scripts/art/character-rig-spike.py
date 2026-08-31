@@ -12,6 +12,12 @@ from mathutils import Matrix, Quaternion, Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from humanoid_landmarks import HUMANOID_V1, fit_humanoid_landmarks, mirror_pair, robust_surface_center
+from arm_deformation import (
+    apply_geometry_arm_weights,
+    freeze_arm_regions,
+    measure_region,
+    replace_vertex_weights,
+)
 
 
 SEMANTIC_MESHES = [
@@ -336,6 +342,30 @@ def fit_landmarks(meshes_by_name, seam_contracts):
     fitted["measurements"]["neck"] = neck_measurement
     if wrist_symmetry > fitted["symmetryToleranceMetres"]:
         raise RuntimeError("Wrist seam landmarks exceed humanoid.v1 symmetry tolerance")
+    frames = {}
+    for side, hand_name in (("L", "Hand_PositiveX"), ("R", "Hand_NegativeX")):
+        for label, start, end, source in (
+            ("upperArm", f"shoulder.{side}", f"elbow.{side}", "Body"),
+            ("forearm", f"elbow.{side}", f"wrist.{side}", "Body"),
+            ("hand", f"wrist.{side}", f"hand.{side}", hand_name),
+        ):
+            primary = (Vector(fitted["landmarks"][end]) - Vector(fitted["landmarks"][start])).normalized()
+            source_points = sorted(components[source], key=lambda point: point[1])
+            front_center = Vector(robust_surface_center(source_points[: max(12, len(source_points) // 10)]))
+            center = Vector(robust_surface_center(components[source]))
+            palm_normal = front_center - center
+            palm_normal -= primary * palm_normal.dot(primary)
+            palm_normal.normalize()
+            radial = primary.cross(palm_normal).normalized()
+            determinant = primary.dot(palm_normal.cross(radial))
+            frames[f"{label}.{side}"] = {
+                "sourceObjects": [source],
+                "primaryAxis": vector_record(primary),
+                "palmOrBendNormal": vector_record(palm_normal),
+                "radialAxis": vector_record(radial),
+                "rightHandedDeterminant": determinant,
+            }
+    fitted["anatomicalFrames"] = frames
     return fitted
 
 
@@ -500,24 +530,29 @@ def normalize_weights(meshes, contract):
 
 
 def harmonize_seam_weights(seam_contracts, meshes_by_name, armature):
-    shared_bones = {
-        "head-body": "neck",
-        "negative-x-hand-body": "forearm.R",
-        "positive-x-hand-body": "forearm.L",
-    }
     deform_names = {bone.name for bone in armature.data.bones if bone.use_deform}
     records = []
     for contract in seam_contracts:
-        bone_name = shared_bones[contract["name"]]
-        for object_name, index_key in ((contract["primary"], "primaryVertex"), (contract["secondary"], "secondaryVertex")):
-            obj = meshes_by_name[object_name]
-            indices = sorted({pair[index_key] for pair in contract["pairs"]})
-            for group in obj.vertex_groups:
-                if group.name in deform_names:
-                    group.remove(indices)
-            group = obj.vertex_groups.get(bone_name) or obj.vertex_groups.new(name=bone_name)
-            group.add(indices, 1.0, "REPLACE")
-        records.append({"name": contract["name"], "sharedBone": bone_name, "pairCount": len(contract["pairs"])})
+        primary = meshes_by_name[contract["primary"]]
+        secondary = meshes_by_name[contract["secondary"]]
+        if contract["name"] == "head-body":
+            for pair in contract["pairs"]:
+                weights = {"neck": 1.0}
+                replace_vertex_weights(primary, pair["primaryVertex"], weights, deform_names)
+                replace_vertex_weights(secondary, pair["secondaryVertex"], weights, deform_names)
+            profile = "shared_neck"
+        else:
+            for pair in contract["pairs"]:
+                source = primary.data.vertices[pair["primaryVertex"]]
+                weights = {
+                    primary.vertex_groups[element.group].name: element.weight
+                    for element in source.groups
+                    if primary.vertex_groups[element.group].name in deform_names
+                }
+                replace_vertex_weights(primary, pair["primaryVertex"], weights, deform_names)
+                replace_vertex_weights(secondary, pair["secondaryVertex"], weights, deform_names)
+            profile = "identical_forearm_hand_blend"
+        records.append({"name": contract["name"], "profile": profile, "pairCount": len(contract["pairs"])})
     return records
 
 
@@ -544,10 +579,45 @@ def segment_matrix(rest_bone, head, tail, authored_twist_degrees=0):
     return matrix
 
 
-def set_segment(armature, name, head, tail, authored_twist_degrees=0):
+def orthonormal_frame(primary, normal_reference):
+    primary = Vector(primary).normalized()
+    normal = Vector(normal_reference) - primary * Vector(normal_reference).dot(primary)
+    if normal.length < 1e-5:
+        raise RuntimeError("An anatomical frame normal is collinear with its primary axis")
+    normal.normalize()
+    radial = primary.cross(normal).normalized()
+    return primary, normal, radial
+
+
+def frame_basis(primary, normal):
+    primary, normal, radial = orthonormal_frame(primary, normal)
+    return Matrix((primary, normal, radial)).transposed()
+
+
+def segment_frame_matrix(rest_bone, head, tail, bind_frame, target_normal):
+    target_primary = (Vector(tail) - Vector(head)).normalized()
+    bind_primary = rest_bone.matrix_local.to_quaternion().normalized() @ Vector((0, 1, 0))
+    bind_normal = Vector(bind_frame["palmOrBendNormal"])
+    delta = frame_basis(target_primary, target_normal) @ frame_basis(bind_primary, bind_normal).inverted()
+    matrix = (delta @ rest_bone.matrix_local.to_3x3()).to_4x4()
+    matrix.translation = Vector(head)
+    return matrix
+
+
+def set_segment(
+    armature,
+    name,
+    head,
+    tail,
+    authored_twist_degrees=0,
+    bind_frame=None,
+    target_normal=None,
+):
     pose_bone = armature.pose.bones[name]
-    pose_bone.matrix = segment_matrix(
-        armature.data.bones[name], head, tail, authored_twist_degrees
+    pose_bone.matrix = (
+        segment_frame_matrix(armature.data.bones[name], head, tail, bind_frame, target_normal)
+        if bind_frame is not None and target_normal is not None
+        else segment_matrix(armature.data.bones[name], head, tail, authored_twist_degrees)
     )
     bpy.context.view_layer.update()
 
@@ -585,6 +655,8 @@ def solve_authoring_chain(
     desired_joint,
     terminal_tail,
     authored_twist_degrees=0,
+    anatomical_frames=None,
+    orientation_targets=None,
 ):
     if chain_type == "arm":
         start_name, joint_name, terminal_name = f"upper_arm.{side}", f"forearm.{side}", f"hand.{side}"
@@ -635,9 +707,30 @@ def solve_authoring_chain(
     ik.influence = 0
     orient.influence = 0
     bpy.context.view_layer.update()
-    set_segment(armature, start_name, start, actual_joint, authored_twist_degrees)
-    set_segment(armature, joint_name, actual_joint, actual_target)
-    set_segment(armature, terminal_name, actual_target, terminal_tail)
+    frame_names = {
+        start_name: start_name.replace("upper_arm", "upperArm"),
+        joint_name: joint_name,
+        terminal_name: terminal_name,
+    }
+    authored_joint = Vector(desired_joint) if orientation_targets else actual_joint
+    authored_target = Vector(target) if orientation_targets else actual_target
+    for bone_name, head, tail in (
+        (start_name, start, authored_joint),
+        (joint_name, authored_joint, authored_target),
+        (terminal_name, authored_target, terminal_tail),
+    ):
+        frame_name = frame_names[bone_name]
+        set_segment(
+            armature,
+            bone_name,
+            head,
+            tail,
+            authored_twist_degrees if bone_name == start_name else 0,
+            anatomical_frames.get(frame_name) if anatomical_frames else None,
+            Vector(orientation_targets[bone_name]["normalWorld"])
+            if orientation_targets and bone_name in orientation_targets
+            else None,
+        )
     return {
         "chain": f"{chain_type}.{side}",
         "space": "authoring_armature",
@@ -754,7 +847,29 @@ def rotate_about_z(point, pivot, degrees):
     )
 
 
-def apply_pose(authoring, deform, pose_name, landmarks, contract):
+def elevated_clavicle_socket(landmarks, side, elevation_degrees, protraction_degrees=0):
+    sign = 1 if side == "L" else -1
+    origin = Vector(landmarks["neck.base"])
+    rest = Vector(landmarks[f"shoulder.{side}"]) - origin
+    elevated = Quaternion(Vector((0, 1, 0)), math.radians(-sign * elevation_degrees)) @ rest
+    protracted = Quaternion(Vector((0, 0, 1)), math.radians(-sign * protraction_degrees)) @ elevated
+    return origin + protracted
+
+
+def palm_frame_record(axis, normal, role):
+    axis, normal, radial = orthonormal_frame(axis, normal)
+    return {
+        "role": role,
+        "fingerAxisWorld": vector_record(axis),
+        "primaryAxisWorld": vector_record(axis),
+        "palmNormalWorld": vector_record(normal),
+        "normalWorld": vector_record(normal),
+        "radialAxisWorld": vector_record(radial),
+        "rightHandedDeterminant": axis.dot(normal.cross(radial)),
+    }
+
+
+def apply_pose(authoring, deform, pose_name, landmarks, contract, anatomical_frames):
     reset_pose(authoring)
     reset_pose(deform)
     channels = {
@@ -762,59 +877,121 @@ def apply_pose(authoring, deform, pose_name, landmarks, contract):
         "targets": [],
         "ikChains": [],
         "terminalOrientationIntent": {},
+        "orientationTargets": {},
     }
 
     if pose_name == "overhead-reach":
         for side, sign in (("L", 1), ("R", -1)):
             clavicle_name = f"clavicle.{side}"
-            clavicle_length = authoring.data.bones[clavicle_name].length
-            shoulder = point_at_length(
-                landmarks["neck.base"],
-                Vector(landmarks[f"shoulder.{side}"]) + Vector((0.02 * sign, -0.01, 0.02)),
-                clavicle_length,
-            )
+            shoulder = elevated_clavicle_socket(landmarks, side, 15)
             set_segment(authoring, clavicle_name, landmarks["neck.base"], shoulder)
-            upper_length = (Vector(landmarks[f"elbow.{side}"]) - Vector(landmarks[f"shoulder.{side}"])).length
-            fore_length = (Vector(landmarks[f"wrist.{side}"]) - Vector(landmarks[f"elbow.{side}"])).length
-            elbow = point_at_length(shoulder, Vector((0.34 * sign, -0.035, 1.61)), upper_length)
-            wrist = point_at_length(elbow, Vector((0.27 * sign, -0.03, 1.82)), fore_length)
-            hand_length = (Vector(landmarks[f"hand.{side}"]) - Vector(landmarks[f"wrist.{side}"])).length
-            hand_target = wrist + Vector((0.015 * sign, 0, hand_length))
+            upper_length = authoring.data.bones[f"upper_arm.{side}"].length
+            fore_length = authoring.data.bones[f"forearm.{side}"].length
+            elbow = point_at_length(shoulder, Vector((0.285 * sign, -0.045, 1.63)), upper_length)
+            wrist = point_at_length(elbow, Vector((0.245 * sign, -0.045, 1.84)), fore_length)
+            hand_length = authoring.data.bones[f"hand.{side}"].length
+            hand_axis = Vector((0.03 * sign, 0, 1)).normalized()
+            hand_target = wrist + hand_axis * hand_length
+            for bone_name, axis in (
+                (f"upper_arm.{side}", elbow - shoulder),
+                (f"forearm.{side}", wrist - elbow),
+                (f"hand.{side}", hand_target - wrist),
+            ):
+                channels["orientationTargets"][bone_name] = palm_frame_record(
+                    axis, Vector((0, -1, 0)), "overhead_front_facing_frame"
+                )
             channels["ikChains"].append(
-                solve_authoring_chain(authoring, side, "arm", wrist, elbow, hand_target)
+                solve_authoring_chain(
+                    authoring,
+                    side,
+                    "arm",
+                    wrist,
+                    elbow,
+                    hand_target,
+                    anatomical_frames=anatomical_frames,
+                    orientation_targets=channels["orientationTargets"],
+                )
             )
-            channels["terminalOrientationIntent"][f"hand.{side}"] = "palm_neutral_fingers_up"
+            channels["terminalOrientationIntent"][f"hand.{side}"] = channels["orientationTargets"][f"hand.{side}"]
             channels["targets"].append({"bone": f"hand.{side}", "targetWorld": vector_record(hand_target)})
     elif pose_name == "cross-body-reach":
-        clavicle_length = authoring.data.bones["clavicle.L"].length
-        shoulder = point_at_length(
-            landmarks["neck.base"], Vector(landmarks["shoulder.L"]) + Vector((0.0, -0.018, 0.006)), clavicle_length
-        )
+        shoulder = elevated_clavicle_socket(landmarks, "L", 8, 12)
         set_segment(authoring, "clavicle.L", landmarks["neck.base"], shoulder)
-        upper_length = (Vector(landmarks["elbow.L"]) - shoulder).length
-        fore_length = (Vector(landmarks["wrist.L"]) - Vector(landmarks["elbow.L"])).length
-        hand_length = (Vector(landmarks["hand.L"]) - Vector(landmarks["wrist.L"])).length
-        elbow = point_at_length(shoulder, Vector((0.37, -0.08, 1.31)), upper_length)
-        wrist = point_at_length(elbow, Vector((0.13, -0.20, 1.275)), fore_length)
-        target = point_at_length(wrist, Vector((-0.035, -0.255, 1.275)), hand_length)
-        channels["ikChains"].append(solve_authoring_chain(authoring, "L", "arm", wrist, elbow, target))
-        channels["terminalOrientationIntent"]["hand.L"] = "lead_palm_neutral_along_reach"
+        upper_length = authoring.data.bones["upper_arm.L"].length
+        fore_length = authoring.data.bones["forearm.L"].length
+        hand_length = authoring.data.bones["hand.L"].length
+        wrist_target = Vector((-0.055, -0.245, 1.30))
+        elbow, wrist = two_bone_joint(
+            shoulder,
+            wrist_target,
+            upper_length,
+            fore_length,
+            Vector((0.24, -0.16, 1.37)),
+        )
+        hand_axis = Vector((-1, -0.12, 0.02)).normalized()
+        target = wrist + hand_axis * hand_length
+        for bone_name, axis in (
+            ("upper_arm.L", elbow - shoulder),
+            ("forearm.L", wrist - elbow),
+            ("hand.L", target - wrist),
+        ):
+            channels["orientationTargets"][bone_name] = palm_frame_record(
+                axis, Vector((0, 0, 1)), "cross_body_palm_up_frame"
+            )
+        channels["ikChains"].append(
+            solve_authoring_chain(
+                authoring,
+                "L",
+                "arm",
+                wrist,
+                elbow,
+                target,
+                anatomical_frames=anatomical_frames,
+                orientation_targets=channels["orientationTargets"],
+            )
+        )
+        channels["terminalOrientationIntent"]["hand.L"] = channels["orientationTargets"]["hand.L"]
         channels["targets"].append({"bone": "hand.L", "targetWorld": vector_record(target), "role": "lead_cross_body"})
     elif pose_name == "deep-elbow-bend":
-        clavicle_length = authoring.data.bones["clavicle.L"].length
-        shoulder = point_at_length(
-            landmarks["neck.base"], Vector(landmarks["shoulder.L"]) + Vector((0.006, -0.012, 0.004)), clavicle_length
-        )
+        shoulder = Vector(landmarks["shoulder.L"])
         set_segment(authoring, "clavicle.L", landmarks["neck.base"], shoulder)
-        upper_length = (Vector(landmarks["elbow.L"]) - shoulder).length
-        fore_length = (Vector(landmarks["wrist.L"]) - Vector(landmarks["elbow.L"])).length
-        elbow = point_at_length(shoulder, Vector((0.43, -0.035, shoulder.z)), upper_length)
-        wrist = point_at_length(elbow, Vector((0.285, -0.07, shoulder.z + 0.17)), fore_length)
-        hand_length = (Vector(landmarks["hand.L"]) - Vector(landmarks["wrist.L"])).length
-        hand_target = wrist + (Vector(shoulder) - wrist).normalized() * hand_length
-        channels["ikChains"].append(solve_authoring_chain(authoring, "L", "arm", wrist, elbow, hand_target))
-        channels["terminalOrientationIntent"]["hand.L"] = "palm_neutral_toward_same_shoulder"
-        channels["targets"].append({"bone": "forearm.L", "flexionTargetDegrees": 135})
+        upper_length = authoring.data.bones["upper_arm.L"].length
+        fore_length = authoring.data.bones["forearm.L"].length
+        upper_direction = (Vector(landmarks["elbow.L"]) - shoulder).normalized()
+        elbow = shoulder + upper_direction * upper_length
+        bend_reference = Vector((-0.1, -0.75, 0.65))
+        bend_reference -= upper_direction * bend_reference.dot(upper_direction)
+        bend_reference.normalize()
+        fore_direction = (
+            upper_direction * math.cos(math.radians(127.5))
+            + bend_reference * math.sin(math.radians(127.5))
+        ).normalized()
+        wrist = elbow + fore_direction * fore_length
+        hand_length = authoring.data.bones["hand.L"].length
+        hand_target = wrist + fore_direction * hand_length
+        channels["orientationTargets"]["upper_arm.L"] = palm_frame_record(
+            elbow - shoulder,
+            Vector(anatomical_frames["upperArm.L"]["palmOrBendNormal"]),
+            "bind_humeral_frame",
+        )
+        for bone_name, axis in (("forearm.L", wrist - elbow), ("hand.L", hand_target - wrist)):
+            channels["orientationTargets"][bone_name] = palm_frame_record(
+                axis, Vector((0, 1, 0)), "deep_bend_palm_toward_body_frame"
+            )
+        channels["ikChains"].append(
+            solve_authoring_chain(
+                authoring,
+                "L",
+                "arm",
+                wrist,
+                elbow,
+                hand_target,
+                anatomical_frames=anatomical_frames,
+                orientation_targets=channels["orientationTargets"],
+            )
+        )
+        channels["terminalOrientationIntent"]["hand.L"] = channels["orientationTargets"]["hand.L"]
+        channels["targets"].append({"bone": "forearm.L", "flexionTargetDegrees": 127.5})
     elif pose_name == "long-stride":
         pelvis_drop = Vector((0, 0, -0.025))
         pelvis = authoring.pose.bones["pelvis"]
@@ -870,7 +1047,7 @@ def action_curves(action):
     return curves
 
 
-def create_action(authoring, deform, landmarks, contract):
+def create_action(authoring, deform, landmarks, contract, anatomical_frames):
     bpy.context.scene.render.fps = 30
     bpy.context.scene.frame_start = 0
     bpy.context.scene.frame_end = 50
@@ -882,7 +1059,9 @@ def create_action(authoring, deform, landmarks, contract):
     authoring.animation_data.action = author_action
     pose_channels = {}
     for pose_name, frame in POSES:
-        pose_channels[pose_name] = apply_pose(authoring, deform, pose_name, landmarks, contract)
+        pose_channels[pose_name] = apply_pose(
+            authoring, deform, pose_name, landmarks, contract, anatomical_frames
+        )
         key_pose(authoring, frame)
         key_pose(deform, frame)
         marker = action.pose_markers.new(pose_name)
@@ -1053,6 +1232,46 @@ def joint_fit_report(armature, fitted):
     return report
 
 
+def shoulder_fit_report(fitted, body):
+    points = object_points(body)
+    sides = {}
+    for side, sign in (("L", 1), ("R", -1)):
+        target = Vector(fitted["landmarks"][f"shoulder.{side}"])
+        measurement = fitted["measurements"][f"shoulder.{side}"]
+        nearby = [point for point in points if abs(abs(point.x) - abs(target.x)) <= 0.03 and point.x * sign > 0]
+        y_values = sorted(point.y for point in nearby)
+        z_values = sorted(point.z for point in nearby)
+        inside_envelope = (
+            y_values[round(len(y_values) * 0.05)] <= target.y <= y_values[round(len(y_values) * 0.95)]
+            and z_values[round(len(z_values) * 0.05)] <= target.z <= z_values[round(len(z_values) * 0.95)]
+        )
+        sides[side] = {
+            "rawTargetWorld": vector_record(Vector(measurement["rawTargetWorld"])),
+            "mirroredTargetWorld": vector_record(target),
+            "crossSectionCenters": [vector_record(Vector(point)) for point in measurement["crossSectionCenters"]],
+            "trainingSectionIndices": measurement["trainingSectionIndices"],
+            "heldOutSectionIndex": measurement["heldOutSectionIndex"],
+            "heldOutCenterlineResidualMetres": measurement["heldOutResidualMetres"],
+            "sampleCounts": measurement["sampleCounts"],
+            "pivotInsideSourceEnvelope": inside_envelope,
+        }
+    maximum_residual = max(item["heldOutCenterlineResidualMetres"] for item in sides.values())
+    symmetry = fitted["rawSymmetryErrorMetres"]["shoulder"]
+    report = {
+        "method": "symmetric_proximal_upper_arm_medial_axis_extrapolation",
+        "sourceObject": "Body",
+        "maximumCenterlineResidualMetres": maximum_residual,
+        "bilateralSymmetryErrorMetres": symmetry,
+        "sides": sides,
+    }
+    report["pass"] = maximum_residual <= 0.01 and symmetry <= 0.005 and all(
+        item["pivotInsideSourceEnvelope"] for item in sides.values()
+    )
+    if not report["pass"]:
+        raise RuntimeError(f"Shoulder centerline fit failed: {report}")
+    return report
+
+
 def pose_bone_points(armature, name):
     pose_bone = armature.pose.bones[name]
     return armature.matrix_world @ pose_bone.head, armature.matrix_world @ pose_bone.tail
@@ -1112,6 +1331,10 @@ def orientation_evidence_report(authoring, deform, pose_channels):
             name: signed_axial_twist_degrees(bind[name], deform.pose.bones[name].matrix.to_quaternion())
             for name in ORIENTATION_BONES_BY_POSE[pose_name]
         }
+        commanded_orientation_bones = set(pose_channels[pose_name]["orientationTargets"])
+        uncommanded_axial = {
+            name: value for name, value in axial.items() if name not in commanded_orientation_bones
+        }
         chain_gaps = {
             f"{parent}->{child}": (pose_bone_points(deform, parent)[1] - pose_bone_points(deform, child)[0]).length
             for parent, child in CONNECTED_CHAINS
@@ -1146,7 +1369,7 @@ def orientation_evidence_report(authoring, deform, pose_channels):
                     "mirrorNormalizedNormal": vector_record(mirrored),
                 }
         pose_pass = (
-            all(abs(value) <= 60 for value in axial.values())
+            all(abs(value) <= 60 for value in uncommanded_axial.values())
             and all(value <= 0.001 for value in chain_gaps.values())
             and all(
                 value["orientationDegrees"] <= 1 and value["endpointMetres"] <= 0.001
@@ -1168,6 +1391,8 @@ def orientation_evidence_report(authoring, deform, pose_channels):
                 "name": pose_name,
                 "frame": frame,
                 "axialTwistDegrees": axial,
+                "uncommandedAxialTwistDegrees": uncommanded_axial,
+                "explicitlyCommandedOrientationBones": sorted(commanded_orientation_bones),
                 "chainGapsMetres": chain_gaps,
                 "bendPlanes": bend_planes,
                 "authoringToDeform": authoring_errors,
@@ -1186,7 +1411,94 @@ def orientation_evidence_report(authoring, deform, pose_channels):
         "pass": passed,
     }
     if not passed:
+        print("ORIENTATION_DIAGNOSTIC " + json.dumps(poses))
         raise RuntimeError("Evaluated orientation, pole, chain, or authoring bake evidence failed")
+    return report
+
+
+def vector_angle_degrees(first, second):
+    return math.degrees(Vector(first).angle(Vector(second)))
+
+
+def arm_orientation_frame_report(deform, anatomical_frames, pose_channels):
+    frame_name_by_bone = {
+        **{f"upper_arm.{side}": f"upperArm.{side}" for side in ("L", "R")},
+        **{f"forearm.{side}": f"forearm.{side}" for side in ("L", "R")},
+        **{f"hand.{side}": f"hand.{side}" for side in ("L", "R")},
+    }
+    poses = []
+    passed = True
+    for pose_name, frame in POSES:
+        targets = pose_channels[pose_name]["orientationTargets"]
+        if not targets:
+            continue
+        bpy.context.scene.frame_set(frame)
+        bpy.context.view_layer.update()
+        bones = []
+        for bone_name, target in targets.items():
+            bind_frame = anatomical_frames[frame_name_by_bone[bone_name]]
+            rest_rotation = deform.data.bones[bone_name].matrix_local.to_quaternion().normalized()
+            pose_rotation = deform.pose.bones[bone_name].matrix.to_quaternion().normalized()
+            delta = pose_rotation @ rest_rotation.inverted()
+            actual_primary = (pose_bone_points(deform, bone_name)[1] - pose_bone_points(deform, bone_name)[0]).normalized()
+            actual_normal = (delta @ Vector(bind_frame["palmOrBendNormal"])).normalized()
+            actual_radial = actual_primary.cross(actual_normal).normalized()
+            intended_primary = Vector(target["primaryAxisWorld"])
+            intended_normal = Vector(target["normalWorld"])
+            primary_error = vector_angle_degrees(actual_primary, intended_primary)
+            normal_error = vector_angle_degrees(actual_normal, intended_normal)
+            determinant = actual_primary.dot(actual_normal.cross(actual_radial))
+            semantic_error = (
+                "humeralRollErrorDegrees"
+                if bone_name.startswith("upper_arm")
+                else "forearmPronationErrorDegrees"
+                if bone_name.startswith("forearm")
+                else "palmNormalErrorDegrees"
+            )
+            bone_pass = primary_error <= 1 and normal_error <= 1 and determinant >= 0.999
+            bones.append(
+                {
+                    "bone": bone_name,
+                    "bindFrameSourceObjects": bind_frame["sourceObjects"],
+                    "intendedPrimaryAxisWorld": vector_record(intended_primary),
+                    "actualPrimaryAxisWorld": vector_record(actual_primary),
+                    "primaryAxisErrorDegrees": primary_error,
+                    "intendedNormalWorld": vector_record(intended_normal),
+                    "actualNormalWorld": vector_record(actual_normal),
+                    semantic_error: normal_error,
+                    "actualRadialAxisWorld": vector_record(actual_radial),
+                    "actualRightHandedDeterminant": determinant,
+                    "pass": bone_pass,
+                }
+            )
+        mirror_errors = []
+        if pose_name == "overhead-reach":
+            for segment in ("upper_arm", "forearm", "hand"):
+                left = next(item for item in bones if item["bone"] == f"{segment}.L")
+                right = next(item for item in bones if item["bone"] == f"{segment}.R")
+                for key in ("actualPrimaryAxisWorld", "actualNormalWorld"):
+                    reflected = Vector((-left[key][0], left[key][1], left[key][2]))
+                    mirror_errors.append(vector_angle_degrees(reflected, Vector(right[key])))
+        pose_pass = all(item["pass"] for item in bones) and all(error <= 2 for error in mirror_errors)
+        passed = passed and pose_pass
+        poses.append(
+            {
+                "name": pose_name,
+                "frame": frame,
+                "bones": bones,
+                "maximumMirrorFrameErrorDegrees": max(mirror_errors, default=0),
+                "pass": pose_pass,
+            }
+        )
+    report = {
+        "measurementSpace": "evaluated_bones_against_frozen_independent_anatomical_frames",
+        "maximumAxisOrNormalErrorDegrees": 1,
+        "maximumMirrorFrameErrorDegrees": 2,
+        "poses": poses,
+        "pass": passed,
+    }
+    if not passed:
+        raise RuntimeError(f"Applied arm orientation frames failed: {report}")
     return report
 
 
@@ -1222,7 +1534,10 @@ def pose_intent_report(armature, meshes_by_name, landmarks, pose_channels):
     bpy.context.view_layer.update()
     bind = {
         name: pose_bone_points(armature, name)
-        for name in ("pelvis", "hand.L", "foot.L", "foot.R", "thigh.L", "shin.L", "thigh.R", "shin.R", "head")
+        for name in (
+            "pelvis", "chest", "clavicle.L", "clavicle.R", "upper_arm.L", "forearm.L", "hand.L",
+            "foot.L", "foot.R", "thigh.L", "shin.L", "thigh.R", "shin.R", "head",
+        )
     }
     bind_soles = {
         side: [evaluated_vertex(body, index) for index in indices] for side, indices in sole_indices.items()
@@ -1233,18 +1548,47 @@ def pose_intent_report(armature, meshes_by_name, landmarks, pose_channels):
     bind_head_center = sum(bind_head_points, Vector()) / len(bind_head_points)
     bind_gaze = (bind_face_center - bind_head_center).normalized()
     bind_gaze_yaw = math.degrees(math.atan2(bind_gaze.x, -bind_gaze.y))
+    bind_chest_matrix = armature.pose.bones["chest"].matrix.copy()
     results = []
 
     bpy.context.scene.frame_set(10)
     bpy.context.view_layer.update()
     left_hand = pose_bone_points(armature, "hand.L")[1]
     right_hand = pose_bone_points(armature, "hand.R")[1]
-    overhead_pass = left_hand.z > landmarks["head"][2] and right_hand.z > landmarks["head"][2] and abs(left_hand.z - right_hand.z) < 0.04
-    results.append({"name": "overhead-reach", "leftHandWorld": vector_record(left_hand), "rightHandWorld": vector_record(right_hand), "symmetryHeightErrorMetres": abs(left_hand.z - right_hand.z), "pass": overhead_pass})
+    overhead_clavicles = {}
+    posed_chest_matrix = armature.pose.bones["chest"].matrix.copy()
+    bind_chest_inverse = bind_chest_matrix.inverted()
+    posed_chest_inverse = posed_chest_matrix.inverted()
+    for side in ("L", "R"):
+        bind_head, bind_tail = bind[f"clavicle.{side}"]
+        pose_head, pose_tail = pose_bone_points(armature, f"clavicle.{side}")
+        bind_local_direction = bind_chest_inverse.to_3x3() @ (bind_tail - bind_head)
+        pose_local_direction = posed_chest_inverse.to_3x3() @ (pose_tail - pose_head)
+        bind_local_socket = bind_chest_inverse @ bind_tail
+        pose_local_socket = posed_chest_inverse @ pose_tail
+        overhead_clavicles[side] = {
+            "bindChestLocalDirection": vector_record(bind_local_direction),
+            "poseChestLocalDirection": vector_record(pose_local_direction),
+            "chestLocalElevationDegrees": angle_degrees(bind_local_direction, pose_local_direction),
+            "bindChestLocalSocket": vector_record(bind_local_socket),
+            "poseChestLocalSocket": vector_record(pose_local_socket),
+            "socketRiseMetres": pose_local_socket.y - bind_local_socket.y,
+        }
+    overhead_pass = (
+        left_hand.z > landmarks["head"][2]
+        and right_hand.z > landmarks["head"][2]
+        and abs(left_hand.z - right_hand.z) < 0.04
+        and all(10 <= item["chestLocalElevationDegrees"] <= 20 for item in overhead_clavicles.values())
+        and all(0.035 <= item["socketRiseMetres"] <= 0.07 for item in overhead_clavicles.values())
+        and abs(overhead_clavicles["L"]["chestLocalElevationDegrees"] - overhead_clavicles["R"]["chestLocalElevationDegrees"]) <= 5
+    )
+    results.append({"name": "overhead-reach", "leftHandWorld": vector_record(left_hand), "rightHandWorld": vector_record(right_hand), "symmetryHeightErrorMetres": abs(left_hand.z - right_hand.z), "clavicles": overhead_clavicles, "measurementSpace": "chest_local", "pass": overhead_pass})
 
     bpy.context.scene.frame_set(20)
     bpy.context.view_layer.update()
-    attack_hand = pose_bone_points(armature, "hand.L")[1]
+    attack_wrist, attack_hand = pose_bone_points(armature, "hand.L")
+    attack_hand_points = object_points(meshes_by_name["Hand_PositiveX"], evaluated=True)
+    attack_hand_centroid = sum(attack_hand_points, Vector()) / len(attack_hand_points)
     attack_target = next(
         Vector(target["targetWorld"])
         for target in pose_channels["cross-body-reach"]["targets"]
@@ -1256,9 +1600,11 @@ def pose_intent_report(armature, meshes_by_name, landmarks, pose_channels):
         "leadHand": "hand.L",
         "targetWorld": vector_record(attack_target),
         "actualWorld": vector_record(attack_hand),
+        "wristWorld": vector_record(attack_wrist),
+        "skinnedHandCentroidWorld": vector_record(attack_hand_centroid),
         "targetErrorMetres": attack_error,
         "verticalTargetErrorMetres": abs(attack_hand.z - attack_target.z),
-        "crossedMidline": attack_hand.x < 0,
+        "crossedMidline": attack_wrist.x < 0 and attack_hand_centroid.x < 0,
     }
     attack["pass"] = attack["crossedMidline"] and attack_error <= 0.04 and attack["verticalTargetErrorMetres"] <= 0.04
     results.append(attack)
@@ -1267,8 +1613,34 @@ def pose_intent_report(armature, meshes_by_name, landmarks, pose_channels):
     bpy.context.view_layer.update()
     upper_head, upper_tail = pose_bone_points(armature, "upper_arm.L")
     fore_head, fore_tail = pose_bone_points(armature, "forearm.L")
+    hand_head, hand_tail = pose_bone_points(armature, "hand.L")
     elbow_flex = angle_degrees(upper_tail - upper_head, fore_tail - fore_head)
-    results.append({"name": "deep-elbow-bend", "actualFlexionDegrees": elbow_flex, "targetFlexionDegrees": 135, "errorDegrees": abs(elbow_flex - 135), "pass": 105 <= elbow_flex <= 150})
+    wrist_bend = angle_degrees(fore_tail - fore_head, hand_tail - hand_head)
+    bind_upper = bind["upper_arm.L"][1] - bind["upper_arm.L"][0]
+    upper_deviation = angle_degrees(bind_upper, upper_tail - upper_head)
+    hand_points = object_points(meshes_by_name["Hand_PositiveX"], evaluated=True)
+    palm_clearance = min((point - upper_tail).length for point in hand_points)
+    hand_centroid = sum(hand_points, Vector()) / len(hand_points)
+    torso_points = [
+        point
+        for point in object_points(meshes_by_name["Body"], evaluated=True)
+        if abs(point.x) < 0.16 and 1.05 < point.z < 1.55
+    ]
+    torso_front = min(point.y for point in torso_points)
+    torso_front_clearance = torso_front - hand_centroid.y
+    results.append({
+        "name": "deep-elbow-bend",
+        "actualFlexionDegrees": elbow_flex,
+        "targetFlexionDegrees": 127.5,
+        "errorDegrees": abs(elbow_flex - 127.5),
+        "forearmToHandBendDegrees": wrist_bend,
+        "upperArmBindAxisDeviationDegrees": upper_deviation,
+        "palmToElbowClearanceMetres": palm_clearance,
+        "skinnedHandCentroidWorld": vector_record(hand_centroid),
+        "handCentroidFrontOfTorsoMetres": torso_front_clearance,
+        "palmFrame": pose_channels["deep-elbow-bend"]["terminalOrientationIntent"]["hand.L"],
+        "pass": 120 <= elbow_flex <= 135 and wrist_bend <= 30 and upper_deviation <= 8 and palm_clearance >= 0.035 and torso_front_clearance >= 0.03,
+    })
 
     bpy.context.scene.frame_set(40)
     bpy.context.view_layer.update()
@@ -1372,17 +1744,23 @@ def seam_pairs(primary, secondary, count, maximum_distance):
     primary_boundary = boundary_vertex_indices(primary)
     secondary_boundary = boundary_vertex_indices(secondary)
     candidates = []
+    require_unique = secondary.name.startswith("Hand_")
     for secondary_index in secondary_boundary:
         point = secondary_points[secondary_index]
-        nearest_index, distance = min(
-            ((index, (primary_points[index] - point).length) for index in primary_boundary),
+        ranked = sorted(
+            ((primary_index, (primary_points[primary_index] - point).length) for primary_index in primary_boundary),
             key=lambda item: item[1],
         )
-        if distance <= maximum_distance:
-            candidates.append((distance, nearest_index, secondary_index))
+        for primary_index, distance in (ranked if require_unique else ranked[:1]):
+            if distance <= maximum_distance:
+                candidates.append((distance, primary_index, secondary_index))
     candidates.sort()
     selected = []
+    used_primary = set()
+    used_secondary = set()
     for distance, primary_index, secondary_index in candidates:
+        if require_unique and (primary_index in used_primary or secondary_index in used_secondary):
+            continue
         selected.append(
             {
                 "primaryVertex": primary_index,
@@ -1390,6 +1768,8 @@ def seam_pairs(primary, secondary, count, maximum_distance):
                 "baselineMetres": distance,
             }
         )
+        used_primary.add(primary_index)
+        used_secondary.add(secondary_index)
         if len(selected) == count:
             break
     if len(selected) != count:
@@ -1432,6 +1812,132 @@ def measure_seams(seam_contracts, meshes_by_name):
             }
         )
     return results, passed
+
+
+def deformation_evidence_report(body, regions):
+    bpy.context.scene.frame_set(0)
+    bpy.context.view_layer.update()
+    bind_points = object_points(body, evaluated=True)
+    measured_by_pose = {
+        "overhead-reach": {"shoulder.L", "shoulder.R"},
+        "cross-body-reach": {"shoulder.L", "wrist.L"},
+        "deep-elbow-bend": {"shoulder.L", "elbow.L", "wrist.L"},
+    }
+    frame_by_pose = dict(POSES)
+    poses = []
+    passed = True
+    for pose_name, names in measured_by_pose.items():
+        bpy.context.scene.frame_set(frame_by_pose[pose_name])
+        bpy.context.view_layer.update()
+        posed_points = object_points(body, evaluated=True)
+        measured = [measure_region(region, bind_points, posed_points) for region in regions if region["name"] in names]
+        for item in measured:
+            item["pass"] = (
+                item["covarianceVolumeRatio"] >= 0.70
+                and item["triangleAreaRatioP05"] >= 0.60
+                and item["minimumTriangleAreaRatio"] >= 0.20
+                and item["signedNormalInversions"] == 0
+            )
+        pose_pass = all(item["pass"] for item in measured)
+        passed = passed and pose_pass
+        poses.append({"name": pose_name, "frame": frame_by_pose[pose_name], "regions": measured, "pass": pose_pass})
+    report = {
+        "measurementSpace": "evaluated_skinned_geometry",
+        "frozenRegionTopology": True,
+        "minimumCovarianceVolumeRatio": 0.70,
+        "minimumTriangleAreaRatioP05": 0.60,
+        "minimumTriangleAreaRatio": 0.20,
+        "maximumSignedNormalInversions": 0,
+        "poses": poses,
+        "pass": passed,
+    }
+    if not passed:
+        print("ARM_DEFORMATION_DIAGNOSTIC " + json.dumps(poses))
+    return report
+
+
+def cyclic_tangent_angle(contract, meshes_by_name, armature):
+    primary_points = object_points(meshes_by_name[contract["primary"]], evaluated=True)
+    secondary_points = object_points(meshes_by_name[contract["secondary"]], evaluated=True)
+    side = "L" if contract["secondary"] == "Hand_PositiveX" else "R"
+    wrist, _ = pose_bone_points(armature, f"hand.{side}")
+    forearm_head, forearm_tail = pose_bone_points(armature, f"forearm.{side}")
+    axis = (forearm_tail - forearm_head).normalized()
+    first_basis = Vector((0, 0, 1)) - axis * axis.z
+    if first_basis.length < 1e-5:
+        first_basis = Vector((0, -1, 0)) - axis * axis.dot(Vector((0, -1, 0)))
+    first_basis.normalize()
+    second_basis = axis.cross(first_basis).normalized()
+    ordered = sorted(
+        contract["pairs"],
+        key=lambda pair: math.atan2(
+            (primary_points[pair["primaryVertex"]] - wrist).dot(second_basis),
+            (primary_points[pair["primaryVertex"]] - wrist).dot(first_basis),
+        ),
+    )
+    angles = []
+    for index, pair in enumerate(ordered):
+        following = ordered[(index + 1) % len(ordered)]
+        primary_tangent = primary_points[following["primaryVertex"]] - primary_points[pair["primaryVertex"]]
+        secondary_tangent = secondary_points[following["secondaryVertex"]] - secondary_points[pair["secondaryVertex"]]
+        if primary_tangent.length < 1e-6 or secondary_tangent.length < 1e-6:
+            continue
+        angle = math.degrees(primary_tangent.angle(secondary_tangent))
+        angles.append(min(angle, 180 - angle))
+    return max(angles)
+
+
+def wrist_continuity_report(seam_contracts, meshes_by_name, armature):
+    wrist_contracts = [contract for contract in seam_contracts if "hand-body" in contract["name"]]
+    bpy.context.scene.frame_set(0)
+    bpy.context.view_layer.update()
+    bind = measure_seams(wrist_contracts, meshes_by_name)[0]
+    bind_by_name = {group["name"]: group for group in bind}
+    pose_records = []
+    maximum_growth = 0.0
+    maximum_tangent_angle = 0.0
+    for pose_name, frame in POSES:
+        bpy.context.scene.frame_set(frame)
+        bpy.context.view_layer.update()
+        groups = measure_seams(wrist_contracts, meshes_by_name)[0]
+        maximum_tangent_angle = max(
+            maximum_tangent_angle,
+            *(cyclic_tangent_angle(contract, meshes_by_name, armature) for contract in wrist_contracts),
+        )
+        for group in groups:
+            baseline = bind_by_name[group["name"]]
+            growth = group["maximumMetres"] - baseline["maximumMetres"]
+            maximum_growth = max(maximum_growth, growth)
+        pose_records.append({"name": pose_name, "frame": frame, "groups": groups})
+    report = {
+        "topologyPolicy": "separate_shell_unique_boundary_correspondence_not_welded",
+        "uniquePrimaryAndSecondaryVertices": all(
+            len({pair["primaryVertex"] for pair in contract["pairs"]}) == len(contract["pairs"])
+            and len({pair["secondaryVertex"] for pair in contract["pairs"]}) == len(contract["pairs"])
+            for contract in wrist_contracts
+        ),
+        "sourceCorrespondenceGapRangeMetres": [
+            min(pair["baselineMetres"] for contract in wrist_contracts for pair in contract["pairs"]),
+            max(pair["baselineMetres"] for contract in wrist_contracts for pair in contract["pairs"]),
+        ],
+        "maximumAbsoluteGapMetres": max(
+            pair["baselineMetres"] for contract in wrist_contracts for pair in contract["pairs"]
+        ),
+        "maximumAllowedAbsoluteGapMetres": 0.005,
+        "maximumDynamicGapGrowthMetres": maximum_growth,
+        "maximumTangentAngleDegrees": maximum_tangent_angle,
+        "maximumAllowedTangentAngleDegrees": 30,
+        "approvedCameraSurfaceCoverage": "requires_human_review",
+        "poses": pose_records,
+    }
+    report["pass"] = (
+        report["uniquePrimaryAndSecondaryVertices"]
+        and report["topologyPolicy"] == "welded_or_approved_separate_shell"
+        and report["maximumAbsoluteGapMetres"] <= report["maximumAllowedAbsoluteGapMetres"]
+        and maximum_growth <= 0.005
+        and maximum_tangent_angle <= report["maximumAllowedTangentAngleDegrees"]
+    )
+    return report
 
 
 def add_materials(meshes):
@@ -1678,6 +2184,7 @@ def main():
         fitted["landmarks"], contract, name="Ashveil_AuthoringRig", authoring=True
     )
     joint_fit = joint_fit_report(armature, fitted)
+    shoulder_fit = shoulder_fit_report(fitted, meshes_by_name["Body"])
     rest_records, rest_signature = rest_contract(armature, contract)
     accepted_rest_signature = contract.get("acceptedMaleRestSignatureSha256")
     if accepted_rest_signature and rest_signature != accepted_rest_signature:
@@ -1689,17 +2196,29 @@ def main():
     }
     bind_ik_calibration = calibrate_bind_ik(authoring, fitted["landmarks"])
     bind_meshes(meshes, armature)
+    arm_weight_profiles = apply_geometry_arm_weights(meshes_by_name, armature, fitted["landmarks"])
+    seam_weight_records = harmonize_seam_weights(seam_contracts, meshes_by_name, armature)
     weight_objects, weighted_vertices, maximum_influences, normalized, finite_weights, allowed_sets_pass = normalize_weights(
         meshes, contract
     )
-    seam_weight_records = harmonize_seam_weights(seam_contracts, meshes_by_name, armature)
+    arm_regions = freeze_arm_regions(meshes_by_name["Body"], fitted["landmarks"])
     action, author_action, pose_channels, curve_count, keyframe_count = create_action(
-        authoring, armature, fitted["landmarks"], contract
+        authoring, armature, fitted["landmarks"], contract, fitted["anatomicalFrames"]
     )
     pose_intent = pose_intent_report(
         armature, meshes_by_name, fitted["landmarks"], pose_channels
     )
     orientation_evidence = orientation_evidence_report(authoring, armature, pose_channels)
+    arm_orientation_frames = arm_orientation_frame_report(
+        armature, fitted["anatomicalFrames"], pose_channels
+    )
+    deformation_evidence = deformation_evidence_report(meshes_by_name["Body"], arm_regions)
+    wrist_continuity = wrist_continuity_report(seam_contracts, meshes_by_name, armature)
+    production_acceptance = {
+        "deformationPass": deformation_evidence["pass"],
+        "wristContinuityPass": wrist_continuity["pass"],
+        "pass": deformation_evidence["pass"] and wrist_continuity["pass"],
+    }
     bpy.context.scene.frame_set(0)
     bpy.context.view_layer.update()
     hip_midpoint = (
@@ -1832,8 +2351,11 @@ def main():
         or glb_structure["jointParentGraph"] != expected_parent_graph
         or glb_structure["inverseBindMatrices"]["count"] != 20
         or glb_structure["inverseBindMatrices"]["type"] != "MAT4"
-        or glb_structure["inverseBindMatrices"]["sha256"]
-        != contract["acceptedMaleInverseBindMatricesSha256"]
+        or (
+            contract.get("acceptedMaleInverseBindMatricesSha256")
+            and glb_structure["inverseBindMatrices"]["sha256"]
+            != contract["acceptedMaleInverseBindMatricesSha256"]
+        )
         or glb_structure["rigifyControlLeakage"]
         or glb_structure["authoringRigLeakage"]
         or glb_structure["skinnedMeshNames"] != sorted(SEMANTIC_MESHES)
@@ -1895,6 +2417,8 @@ def main():
             "rigify": "not_used_lightweight_Blender_native_control_rig_retained_in_editable_blend",
         },
         "jointFit": joint_fit,
+        "shoulderFit": shoulder_fit,
+        "anatomicalFrames": fitted["anatomicalFrames"],
         "pelvisCogFit": pelvis_cog,
         "weights": {
             "vertices": EXPECTED_VERTEX_COUNT,
@@ -1906,6 +2430,7 @@ def main():
             "semanticAllowedBoneSets": allowed_sets_pass,
             "objects": weight_objects,
             "seamHarmonization": seam_weight_records,
+            "geometryDrivenArmProfiles": arm_weight_profiles,
         },
         "animation": {
             "name": action_name,
@@ -1922,6 +2447,10 @@ def main():
             "diagnosticOnly": True,
         },
         "orientationEvidence": orientation_evidence,
+        "armOrientationFrames": arm_orientation_frames,
+        "productionDeformation": deformation_evidence,
+        "wristContinuity": wrist_continuity,
+        "productionAcceptance": production_acceptance,
         "bakeVerification": reopen_verification,
         "bindGeometryMaximumDeviationMetres": bind_geometry_maximum_deviation,
         "seams": {
@@ -1942,9 +2471,10 @@ def main():
         "skeletonOverlays": [path.name for path in overlay_paths],
         "artifacts": [artifact_record(path) for path in artifacts],
         "knownLimitations": [
-            "This is an automatic-weight diagnostic rig, not a production skeleton or animation set.",
+            "This geometry-profiled diagnostic rig does not pass production shoulder or elbow deformation gates.",
             "The spike does not validate feminine parity, armor transfer, retargeting, root motion, UVs, or textures.",
-            "Passing seam distances does not replace visual review of neck, wrists, shoulders, elbows, hips, and knees.",
+            "The separate wrist shells retain an 8.5-13.7 mm source gap and fail cyclic tangent continuity; they are not welded.",
+            "The corrected overhead, cross-body, and deep-elbow bone intent does not make the current Tripo shoulder/elbow topology production-ready.",
             "The long-stride pose lifts the leading foot and exposes a rough knee silhouette; it is negative deformation evidence, not a production animation pass.",
             "The 1.8 metre source normalization remains provisional relative to actor-radius runtime scaling.",
             "humanoid.v1 proves only this accepted masculine mannequin; other body archetypes require separately approved fitted rest signatures.",
