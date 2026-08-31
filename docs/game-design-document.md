@@ -124,6 +124,13 @@ When a feature changes a player-facing rule, its PR must:
   the main value of an item.
 - **Modular presentation.** Characters must support visibly distinct outfit and
   equipment pieces while still reading as one coherent character.
+- **One rig, two launch fits.** Initial production targets canonical masculine and
+  feminine humanoid body models with the same height, joint placement, bind pose and
+  skeleton. Every wearable piece must fit and animate on both before additional body
+  shapes enter scope.
+- **Items outlive body shapes.** Equipment identity, ownership and gameplay data
+  must remain independent from its fitted mesh. A future brute, slim or other body
+  archetype may supply another visual fit without becoming a different item.
 - **No readability arms race.** Cosmetic value may not depend on pieces becoming
   progressively larger, brighter or more obstructive. Gameplay silhouettes,
   telegraphs and actor identification take precedence.
@@ -133,6 +140,11 @@ When a feature changes a player-facing rule, its PR must:
 - Prioritise cosmetic zones that can change silhouette or colour blocking at the
   elevated camera, such as headwear and hair, shoulders, back pieces, torso layers,
   weapons and off-hands.
+- Author wearables against both canonical body mannequins. Rigid pieces should use
+  shared named skeleton sockets; deforming clothing should share the canonical bind
+  pose and skeleton while allowing a fitted mesh per body. Covered body regions
+  should be maskable, and every piece should pass clipping checks across
+  representative gameplay animations on both bodies.
 - Present cosmetics at three useful scales: normal gameplay for recognition, social
   or hub spaces for status, and a character view for appreciation.
 - Make Web3 optional in the moment-to-moment user experience and initially favour
@@ -228,6 +240,9 @@ These are unresolved decisions, not implied future features.
   invented defaults.
 - Tripo's real acceptance rate for the chosen style: topology, UVs, materials,
   modular seams, skeleton consistency, deformation, animation quality and exports.
+- How later body archetypes receive equipment fits: separately authored meshes,
+  corrective shapes or a controlled deformation system. This is deliberately not
+  required while Ashveil targets its two canonical launch bodies.
 - Commercial licensing and provenance controls across the image and 3D pipeline.
 
 ## Not defined by this document yet
