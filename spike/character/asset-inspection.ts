@@ -8,19 +8,20 @@ import {
 } from './review-contract'
 
 export interface RigReport {
+  pipeline?: string
   status: string
-  jointFit: {
+  jointFit?: {
     contract: string
     maximumErrorMetres: number
     pass: boolean
     joints: { name: string; pass: boolean }[]
   }
-  pelvisCogFit: {
+  pelvisCogFit?: {
     pelvisToHipMidpointMetres: number
     cogToHipMidpointMetres: number
     pass: boolean
   }
-  orientationEvidence: {
+  orientationEvidence?: {
     pass: boolean
     poses: Array<{ name: string; axialTwistDegrees: Record<string, number>; pass: boolean }>
   }
@@ -28,19 +29,21 @@ export interface RigReport {
     pass: boolean
     poses: Array<{
       name: string
+      pass?: boolean
       regions: Array<{ name: string; pass: boolean }>
     }>
   }
-  armOrientationFrames: {
+  armOrientationFrames?: {
     pass: boolean
   }
   productionAcceptance: {
+    structuralPass?: boolean
     deformationPass: boolean
-    wristContinuityPass: boolean
+    wristContinuityPass?: boolean
     pass: boolean
   }
-  bakeVerification: { reopenedSavedBlend: boolean; pass: boolean }
-  poseIntent: {
+  bakeVerification?: { reopenedSavedBlend: boolean; pass: boolean }
+  poseIntent?: {
     pass: boolean
     leadHand: string
     leadLeg: string
@@ -64,6 +67,29 @@ export interface RigReport {
     frameEnd: number
     poses: { name: string; frame: number }[]
   }
+  skeleton?: {
+    totalBones: number
+    deformBoneCount: number
+    controlBoneCount: number
+    scapulaRequirementPass: boolean
+  }
+  bindGeometryMaximumDeviationMetres?: number
+  export?: {
+    runtimeRig: {
+      fullAuthoringRigExported: boolean
+      runtimeReductionPending: boolean
+      runtimeClean: boolean
+      jointCount: number
+      deformFlaggedJointCount: number
+      deformOnlyJointCount: number
+      controlJointCount: number
+      referenceJointCount: number
+      mechanismJointCount: number
+      controlJoints: string[]
+      referenceJoints: string[]
+      mechanismJoints: string[]
+    }
+  }
 }
 
 export interface ConfiguredAsset {
@@ -79,22 +105,49 @@ export function assertRigReport(candidate: RigReport): void {
   if (candidate.status !== 'diagnostic_not_production_ready') {
     failures.push('report status must be diagnostic_not_production_ready')
   }
-  if (candidate.animation.name !== 'Ashveil_RigStress') failures.push('report must describe Ashveil_RigStress')
-  if (candidate.jointFit.contract !== 'humanoid.v1' || !candidate.jointFit.pass) {
+  if (candidate.pipeline === 'ashveil-auto-rig-pro-benchmark') {
+    if (candidate.animation.name !== 'Ashveil_ARP_Benchmark') {
+      failures.push('ARP report must describe Ashveil_ARP_Benchmark')
+    }
+    if (!candidate.skeleton || candidate.skeleton.totalBones < 1) {
+      failures.push('ARP report must contain a measured skeleton inventory')
+    }
+    const runtimeRig = candidate.export?.runtimeRig
+    if (
+      !runtimeRig?.fullAuthoringRigExported ||
+      !runtimeRig.runtimeReductionPending ||
+      runtimeRig.runtimeClean ||
+      runtimeRig.controlJointCount !== runtimeRig.controlJoints.length ||
+      runtimeRig.controlJoints.some((name) => !name.startsWith('c_')) ||
+      runtimeRig.jointCount !==
+        runtimeRig.deformOnlyJointCount +
+          runtimeRig.controlJointCount +
+          runtimeRig.referenceJointCount +
+          runtimeRig.mechanismJointCount
+    ) {
+      failures.push('ARP report must disclose the full authoring graph and pending runtime reduction')
+    }
+    if (candidate.productionAcceptance.pass) {
+      failures.push('ARP benchmark must remain diagnostic_not_production_ready')
+    }
+  } else {
+    if (candidate.animation.name !== 'Ashveil_RigStress') failures.push('report must describe Ashveil_RigStress')
+    if (candidate.jointFit?.contract !== 'humanoid.v1' || !candidate.jointFit.pass) {
     failures.push('report must contain a passing humanoid.v1 fitted-joint audit')
-  }
-  if (!candidate.poseIntent.pass) failures.push('report must contain passing evaluated pose intent')
-  if (!candidate.pelvisCogFit.pass) failures.push('report must contain passing pelvis and COG fit')
-  if (!candidate.orientationEvidence.pass) failures.push('report must contain passing evaluated orientation evidence')
-  if (!candidate.armOrientationFrames.pass) failures.push('report must contain passing applied arm-frame evidence')
-  if (
-    candidate.productionAcceptance.pass !==
-    (candidate.productionAcceptance.deformationPass && candidate.productionAcceptance.wristContinuityPass)
-  ) {
-    failures.push('production acceptance must combine deformation and wrist continuity')
-  }
-  if (!candidate.bakeVerification.reopenedSavedBlend || !candidate.bakeVerification.pass) {
-    failures.push('report must contain passing reopened authoring-to-deform bake evidence')
+    }
+    if (!candidate.poseIntent?.pass) failures.push('report must contain passing evaluated pose intent')
+    if (!candidate.pelvisCogFit?.pass) failures.push('report must contain passing pelvis and COG fit')
+    if (!candidate.orientationEvidence?.pass) failures.push('report must contain passing evaluated orientation evidence')
+    if (!candidate.armOrientationFrames?.pass) failures.push('report must contain passing applied arm-frame evidence')
+    if (
+      candidate.productionAcceptance.pass !==
+      (candidate.productionAcceptance.deformationPass && candidate.productionAcceptance.wristContinuityPass)
+    ) {
+      failures.push('production acceptance must combine deformation and wrist continuity')
+    }
+    if (!candidate.bakeVerification?.reopenedSavedBlend || !candidate.bakeVerification.pass) {
+      failures.push('report must contain passing reopened authoring-to-deform bake evidence')
+    }
   }
   if (!Number.isFinite(candidate.animation.framesPerSecond) || candidate.animation.framesPerSecond <= 0) {
     failures.push('report animation FPS must be positive')

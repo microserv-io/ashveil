@@ -39,17 +39,20 @@ export interface CharacterAssetSummary {
 const EXPECTED_NATIVE_HEIGHT = 1.8
 const BOUNDS_TOLERANCE = 0.02
 
-export function assertCharacterAssetSummary(summary: CharacterAssetSummary): void {
+export function assertCharacterAssetSummary(
+  summary: CharacterAssetSummary,
+  expectedClipName = 'Ashveil_RigStress',
+): void {
   const failures: string[] = []
   if (summary.skins < 1) failures.push('at least one skin is required')
   if (summary.joints < 1) failures.push('the skin must contain joints')
 
   const clipNames = summary.clips.map((clip) => clip.name)
   if (new Set(clipNames).size !== clipNames.length) failures.push('animation clip names must be unique')
-  const stressClip = summary.clips.find((clip) => clip.name === 'Ashveil_RigStress')
-  if (!stressClip) failures.push('Ashveil_RigStress is required')
+  const stressClip = summary.clips.find((clip) => clip.name === expectedClipName)
+  if (!stressClip) failures.push(`${expectedClipName} is required`)
   else if (!Number.isFinite(stressClip.duration) || stressClip.duration <= 0) {
-    failures.push('Ashveil_RigStress must have positive duration')
+    failures.push(`${expectedClipName} must have positive duration`)
   }
 
   for (const name of REQUIRED_SEMANTIC_MESHES) {

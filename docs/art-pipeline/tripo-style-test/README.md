@@ -228,3 +228,25 @@ The three outputs will be compared for:
 - gameplay-camera readability;
 - suitability for later humanoid or quadruped rigging; and
 - generation cost, failure rate and manual cleanup required.
+
+## Auto-Rig Pro diagnostic benchmark
+
+The masculine prepared mannequin also has an isolated Auto-Rig Pro 3.78.47 / Smart
+AI 1.21 benchmark. Smart marker inference and reference-rig generation run in a live
+Blender viewport because ARP's operators require viewport/OpenGL context; matching,
+binding, pose generation, evidence, renders and export then run headlessly. Outputs
+live under `output/base-models/masculine/rigged-auto-rig-pro` and never replace the
+canonical custom-rig artifacts.
+
+The benchmark is diagnostic, not production acceptance. ARP binds all seven semantic
+meshes with negligible bind displacement and provides clavicle, arm, forearm and
+twist chains, but this run has no deforming scapula bones. The source weights exceed
+four influences and are not normalized over deform bones before glTF truncation.
+Strict shoulder and elbow deformation gates fail, while the measured wrist regions
+pass. Human review also found pronounced overhead armpit/lat wings and a cross-body
+pose that sends the forearm behind the torso. These findings keep the result at
+`diagnostic_not_production_ready` and make it a benchmark for later ARP configuration
+or mesh-topology work, not a replacement skeleton. The diagnostic GLB intentionally
+contains all 211 ARP joints, including its `c_` controls, reference bones and
+mechanism graph. Runtime skeleton reduction has not been performed and is an
+explicit blocking follow-up, not evidence of a runtime-clean export.

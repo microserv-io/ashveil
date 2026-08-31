@@ -68,15 +68,21 @@ export class ReviewUi {
     this.timeScrub.max = String(report.animation.frameEnd)
     this.meshToggles.replaceChildren(...REQUIRED_SEMANTIC_MESHES.map((name) => this.meshToggle(name)))
     this.enableRigControls(true)
-    const passingJoints = report.jointFit.joints.filter((joint) => joint.pass).length
+    if (report.pipeline === 'ashveil-auto-rig-pro-benchmark') {
+      const skeleton = report.skeleton!
+      const deformation = report.productionDeformation.pass ? 'deformation passed' : 'deformation blocked'
+      this.fitState.textContent = `Auto-Rig Pro · ${skeleton.deformBoneCount}/${skeleton.totalBones} deform · scapula ${skeleton.scapulaRequirementPass ? 'present' : 'missing'} · bind ${((report.bindGeometryMaximumDeviationMetres ?? 0) * 1000).toFixed(1)} mm · ${deformation}`
+      return
+    }
+    const passingJoints = report.jointFit!.joints.filter((joint) => joint.pass).length
     const maximumTwist = Math.max(
       0,
-      ...report.orientationEvidence.poses.flatMap((pose) =>
+      ...report.orientationEvidence!.poses.flatMap((pose) =>
         Object.values(pose.axialTwistDegrees).map(Math.abs),
       ),
     )
     const deformation = report.productionDeformation.pass ? 'deformation passed' : 'deformation blocked'
-    this.fitState.textContent = `${report.jointFit.contract} · ${passingJoints}/${report.jointFit.joints.length} · fit ${(report.jointFit.maximumErrorMetres * 1000).toFixed(1)} mm · pelvis ${(report.pelvisCogFit.pelvisToHipMidpointMetres * 1000).toFixed(1)} mm · twist ${maximumTwist.toFixed(2)}° · ${deformation}`
+    this.fitState.textContent = `${report.jointFit!.contract} · ${passingJoints}/${report.jointFit!.joints.length} · fit ${(report.jointFit!.maximumErrorMetres * 1000).toFixed(1)} mm · pelvis ${(report.pelvisCogFit!.pelvisToHipMidpointMetres * 1000).toFixed(1)} mm · twist ${maximumTwist.toFixed(2)}° · ${deformation}`
   }
 
   validated(status: AssetStatus): void {
@@ -97,7 +103,12 @@ export class ReviewUi {
   }
 
   private poseMetric(name: string): string {
-    const pose = this.report?.poseIntent.poses.find((candidate) => candidate.name === name)
+    const pose = this.report?.poseIntent?.poses.find((candidate) => candidate.name === name)
+    if (this.report?.pipeline === 'ashveil-auto-rig-pro-benchmark') {
+      const measured = this.report.productionDeformation.poses.find((candidate) => candidate.name === name)
+      if (!measured) return 'ARP diagnostic pose · human review required'
+      return measured.pass === true ? 'ARP deformation gates passed' : 'ARP deformation gates blocked'
+    }
     if (!pose) return 'Bind · fitted rest contract'
     if (pose.targetErrorMetres !== undefined) return `Reach error ${(pose.targetErrorMetres * 1000).toFixed(1)} mm`
     if (pose.actualFlexionDegrees !== undefined) return `Elbow ${pose.actualFlexionDegrees.toFixed(1)}°`

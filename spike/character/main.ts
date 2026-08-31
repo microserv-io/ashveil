@@ -13,11 +13,11 @@ import {
 } from './view-contract'
 
 const ARTIFACT_URL = new URL(
-  '../../docs/art-pipeline/tripo-style-test/output/base-models/masculine/rigged/masculine-rigged-diagnostic.glb',
+  '../../docs/art-pipeline/tripo-style-test/output/base-models/masculine/rigged-auto-rig-pro/masculine-auto-rig-pro-diagnostic.glb',
   import.meta.url,
 ).href
 const REPORT_URL = new URL(
-  '../../docs/art-pipeline/tripo-style-test/output/base-models/masculine/rigged/report.json',
+  '../../docs/art-pipeline/tripo-style-test/output/base-models/masculine/rigged-auto-rig-pro/report.json',
   import.meta.url,
 ).href
 const KNIGHT_URL = './models/player.glb'
@@ -110,7 +110,7 @@ async function loadReviewAsset(): Promise<void> {
     const [loadedReport, gltf] = await Promise.all([loadReport(), new GLTFLoader().loadAsync(ARTIFACT_URL)])
     const summary = summarizeAsset(gltf)
     assertRigReport(loadedReport)
-    assertCharacterAssetSummary(summary)
+    assertCharacterAssetSummary(summary, loadedReport.animation.name)
 
     report = loadedReport
     clips = gltf.animations
@@ -128,7 +128,7 @@ async function loadReviewAsset(): Promise<void> {
     reviewScene.scene.add(skeleton)
 
     mixer = new THREE.AnimationMixer(model)
-    const stressClip = clips.find((candidate) => candidate.name === 'Ashveil_RigStress')!
+    const stressClip = clips.find((candidate) => candidate.name === report!.animation.name)!
     stressAction = mixer.clipAction(stressClip)
     stressAction.setLoop(THREE.LoopOnce, 1)
     stressAction.clampWhenFinished = true

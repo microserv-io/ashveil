@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
 import {
   assertCharacterAssetSummary,
   CURRENT_PLAYER_RUNTIME_SCALE,
@@ -10,6 +11,7 @@ import {
   type CharacterAssetSummary,
 } from '../spike/character/review-contract'
 import { resetRootYaw, sampleTimeForFrame } from '../spike/character/view-contract'
+import { assertRigReport, type RigReport } from '../spike/character/asset-inspection'
 
 function validSummary(): CharacterAssetSummary {
   return {
@@ -80,5 +82,38 @@ describe('character review contract', () => {
 
     expect(model.rotation.y).toBe(0)
     expect(knight.rotation.y).toBe(0)
+  })
+
+  it('accepts measured ARP diagnostics without treating them as production-ready', () => {
+    const report = JSON.parse(
+      readFileSync(
+        new URL(
+          '../docs/art-pipeline/tripo-style-test/output/base-models/masculine/rigged-auto-rig-pro/report.json',
+          import.meta.url,
+        ),
+        'utf8',
+      ),
+    ) as RigReport
+
+    expect(() => assertRigReport(report)).not.toThrow()
+    expect(report.export?.runtimeRig).toMatchObject({
+      fullAuthoringRigExported: true,
+      runtimeReductionPending: true,
+      runtimeClean: false,
+      jointCount: 211,
+      deformFlaggedJointCount: 29,
+      deformOnlyJointCount: 27,
+      controlJointCount: 65,
+      referenceJointCount: 27,
+      mechanismJointCount: 92,
+    })
+    expect(report.export?.runtimeRig.controlJoints.every((name) => name.startsWith('c_'))).toBe(true)
+    expect(JSON.stringify(report)).not.toContain('authoringRigLeakage')
+    expect(JSON.stringify(report)).not.toContain('rigifyControlLeakage')
+    report.export!.runtimeRig.runtimeReductionPending = false
+    expect(() => assertRigReport(report)).toThrow(/pending runtime reduction/)
+    report.export!.runtimeRig.runtimeReductionPending = true
+    report.productionAcceptance.pass = true
+    expect(() => assertRigReport(report)).toThrow(/must remain diagnostic/)
   })
 })
