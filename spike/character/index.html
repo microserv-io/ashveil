@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d12" />
+    <title>Ashveil character rig review</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main id="stage" aria-label="Interactive character rig review"></main>
+
+    <aside id="review-panel" aria-label="Character review controls">
+      <header>
+        <p class="eyebrow">Ashveil asset spike</p>
+        <h1>Character rig review</h1>
+        <p class="warning">Diagnostic only — not production-ready</p>
+      </header>
+
+      <section class="status-grid" aria-live="polite">
+        <span>File</span><strong id="asset-file">masculine-rigged-diagnostic.glb</strong>
+        <span>Load</span><strong id="load-state">Loading…</strong>
+        <span>Pose</span><strong id="pose-state">—</strong>
+        <span>Time</span><strong id="time-state">—</strong>
+        <span>Asset</span><strong id="asset-counts">—</strong>
+        <span>Rig</span><strong id="rig-counts">—</strong>
+        <span>Renderer</span><strong id="render-counts">—</strong>
+        <span>Height</span><strong id="height-state">—</strong>
+        <span>Scale</span><strong id="scale-state">Native 1:1</strong>
+      </section>
+
+      <section>
+        <h2>Pose</h2>
+        <label class="field" for="pose-select">Stress pose</label>
+        <select id="pose-select" disabled></select>
+        <div class="button-row">
+          <button id="previous-pose" type="button" disabled>Previous</button>
+          <button id="play-pause" type="button" disabled>Play</button>
+          <button id="next-pose" type="button" disabled>Next</button>
+        </div>
+        <label class="field" for="time-scrub">Timeline</label>
+        <input id="time-scrub" type="range" min="0" max="50" value="0" step="1" disabled />
+      </section>
+
+      <section>
+        <h2>Camera</h2>
+        <div class="button-grid">
+          <button type="button" data-camera="gameplay">Gameplay <kbd>G</kbd></button>
+          <button type="button" data-camera="front">Front <kbd>F</kbd></button>
+          <button type="button" data-camera="side">Side <kbd>S</kbd></button>
+          <button type="button" data-camera="back">Back <kbd>B</kbd></button>
+          <button type="button" data-camera="reset">Reset <kbd>R</kbd></button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Inspection</h2>
+        <div class="toggle-grid">
+          <label><input id="show-skeleton" type="checkbox" /> Skeleton <kbd>K</kbd></label>
+          <label><input id="show-wireframe" type="checkbox" /> Wireframe <kbd>W</kbd></label>
+          <label><input id="turntable" type="checkbox" /> Turntable <kbd>T</kbd></label>
+          <label><input id="show-knight" type="checkbox" /> Knight comparison</label>
+        </div>
+        <fieldset>
+          <legend>Semantic meshes</legend>
+          <div id="mesh-toggles" class="toggle-grid"></div>
+        </fieldset>
+        <div class="button-row scale-buttons" aria-label="Character scale">
+          <button type="button" data-scale="native">Native 1:1</button>
+          <button type="button" data-scale="runtime">Current player runtime</button>
+        </div>
+      </section>
+
+      <details>
+        <summary>Shortcuts and navigation</summary>
+        <p><kbd>Space</kbd> play · <kbd>←</kbd>/<kbd>→</kbd> pose · drag orbit · wheel/pinch zoom</p>
+      </details>
+
+      <pre id="failure" role="alert" hidden></pre>
+    </aside>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

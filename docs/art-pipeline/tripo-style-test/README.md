@@ -116,6 +116,43 @@ so asset-to-runtime scale remains open. Rigging, deformation stress poses, UVs,
 textures, authored equipment masks, primitive consolidation and the feminine-body
 comparison also remain open.
 
+## Diagnostic rig spike
+
+The prepared masculine mannequin can be bound reproducibly to the intentionally
+minimal 20-bone diagnostic armature:
+
+```text
+npm run art:character-rig-spike -- \
+  --input docs/art-pipeline/tripo-style-test/output/base-models/masculine/prepared \
+  --output docs/art-pipeline/tripo-style-test/output/base-models/masculine/rigged
+```
+
+The command fails closed unless the prepared report, blend and bald GLB match the
+audited source contract. It preserves their hashes, replaces its output atomically,
+and emits an editable blend, one skinned diagnostic GLB, a machine-readable report
+and shaded-wire front/back/right renders for bind plus five stress poses.
+
+Current structural evidence:
+
+- all 7,966 vertices across seven semantic meshes received finite, normalized
+  automatic weights with at most four influences and the same armature modifier;
+- the armature has 20 bones, with its root as the sole non-deforming bone;
+- the editable blend stores six fully keyed poses with constant F-curves at 30 fps;
+  the exported GLB contains both STEP and LINEAR transform tracks, so review tools
+  sample just after each diagnostic marker rather than assuming identical key times;
+- the runtime GLB retains seven meshes and seven primitives, one skin with 20 joints,
+  and one named animation, with no armor proxy;
+- all fixed head, neck and wrist seam correspondences remain below 30 mm and twice
+  their own bind distance across the six poses; and
+- source bounds remain finite and above the Blender ground plane.
+
+This remains `diagnostic_not_production_ready`. The long-stride frame lifts the lead
+foot and exposes a rough knee silhouette, so it is useful negative deformation
+evidence rather than an approved motion. Passing distance checks also does not
+approve the neck and wrist seams by eye. Production bone placement, controls, IK,
+twist/finger/toe/facial bones, retargeting, root motion, feminine parity, armor
+transfer, UVs, textures and canonical runtime scale remain unresolved.
+
 ## Planned Tripo run
 
 Tripo CLI `0.3.1` is installed globally and authenticated against the international
