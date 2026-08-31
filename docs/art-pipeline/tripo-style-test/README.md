@@ -43,6 +43,12 @@ because the base geometry and under-suit are intentionally symmetrical. Before a
 body becomes canonical, its generated mesh must be normalised to the shared skeleton
 and verified against the other fit's joint landmarks.
 
+The current references include simple hair for visual continuity, but hair is not
+part of the canonical production body. If Tripo produces it as cleanly separable
+geometry, remove it before normalising the body mesh; otherwise regenerate the base
+with an exposed scalp. Production hairstyles will be separate cosmetics fitted to a
+shared scalp envelope and head socket.
+
 ## Planned Tripo run
 
 Tripo CLI `0.3.1` is installed globally and authenticated against the international
