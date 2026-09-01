@@ -12,7 +12,7 @@ import { ActorViewPool } from './actorpool'
 import { LightPool } from './lights'
 import { meshesOf, spawnModel } from './models'
 import { PALETTE } from './palette'
-import { rigStateOf } from './rig'
+import { buildRigInput } from './riginput'
 
 /** Intensities the lights had when they were parented to the things that cast them. */
 const PLAYER_LAMP = 3.2
@@ -147,10 +147,7 @@ export class WorldView {
       view.group.position.z += (actor.pos.y - view.group.position.z) * smoothing
       orientActorView(view, actor)
 
-      view.rig.apply(rigStateOf(actor))
-      // A fast weapon outruns its swing clip, which would freeze on the last frame.
-      if (actor.state === 'acting' && actor.recovery > 0) view.rig.scaleToDuration(actor.recovery + actor.windup)
-      view.rig.update(delta)
+      view.driver.update(buildRigInput(actor, sim, view), delta)
 
       if (actor.dead) {
         applyDeathFade(view, delta)

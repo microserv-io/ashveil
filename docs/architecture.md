@@ -87,6 +87,11 @@ inward.** `sim` imports nothing from the others. `session` may import `sim`. `ne
 may import `session` and `sim` types. `render` and `ui` may import `sim` types and
 read sim state, never mutate it.
 
+Animation is also a projection: each actor view converts replicated state and sim
+time into a preallocated `RigInput`, then gives it to that body's `MotionDriver`.
+The clip-backed driver owns Three.js animation state; neither the driver nor the
+pose feeds information back into the simulation.
+
 ### Zones
 
 Three kinds of place, with different rules, because they answer different questions:

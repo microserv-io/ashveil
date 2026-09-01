@@ -25,7 +25,7 @@ Small dependency set on purpose.
 | `src/sim/` | **The game. Deterministic, host-agnostic, the source of truth.** Has its own `CLAUDE.md`: read it before changing anything here. |
 | `src/session/` | Characters, persistence, the authoritative session. Owns what outlives an area. |
 | `src/net/` | Transport interface and wire protocol. Loopback today. No gameplay. |
-| `src/render/` | Three.js scene, models, effects, screen overlay, and the input layer (actions, device profiles, gamepad). Reads sim state, never mutates it. `models.ts` loads the kit, `rig.ts` maps sim state to clips, `terrain.ts` builds the dungeon, `actorview.ts` builds one body. |
+| `src/render/` | Three.js scene, models, effects, screen overlay, and the input layer (actions, device profiles, gamepad). Reads sim state, never mutates it. `models.ts` loads the kit, `rig.ts` owns pose mapping and precedence, `riginput.ts` projects sim state into the motion-driver seam, `clipdriver.ts` applies clips, `terrain.ts` builds the dungeon, and `actorview.ts` builds one body. |
 | `src/ui/` | HUD, gear panel, passive tree. |
 | `headless/run.ts` | The CLI harness: `playtest`, `sweep`, `dps`, `trace`. |
 | `perf/` | The frame-budget harness: plays the game against itself in real Chrome and reports what each frame cost. `baseline.json` is this machine. |
@@ -149,7 +149,8 @@ untested, or unmeasurable by this bot", and the third is the easiest one to miss
   mid-fight: that was an 85ms frame. Claim one from `LightPool` in
   `src/render/lights.ts` instead. `tests/frame_budget.test.ts` guards it.
 - **Every sim state needs a pose.** `tests/rig.test.ts` fails if a new skill has no
-  animation, because a missing one renders as a body frozen in its bind pose.
+  mapped animation, because a missing one renders as a body frozen in its bind pose;
+  `tests/clipdriver_golden.test.ts` pins the resulting poses.
 - **Module-first.** New logic lands as its own tested module behind an existing seam,
   never appended to a coordinator. The deciding question: does it need the
   coordinator's private mutable state? If no, it is a sibling module every time.
