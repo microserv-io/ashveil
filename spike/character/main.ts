@@ -8,7 +8,10 @@ import { GameLookOwner, GAME_LOOK_TEXTURE_URL, type LookMode } from './game-look
 import {
   activateReviewAction,
   assertReviewClipInventory,
+  BIND_POSE_CLIP,
   buildReviewClips,
+  captureBindTransforms,
+  deactivateReviewActions,
   frameForReviewTime,
   loopConfiguration,
   nearestContactPhase,
@@ -22,8 +25,11 @@ import {
   type ScaleMode,
 } from './view-contract'
 import {
+  buildMixamoAshveilReviewClips,
   buildTransferV2ReviewClips,
+  defaultReviewClip,
   initialReviewSource,
+  type MixamoAshveilReport,
   type ReviewSourceId,
   type TransferV2Report,
 } from './review-source'
@@ -77,6 +83,7 @@ let semanticMeshes = new Map<SemanticMeshName, THREE.SkinnedMesh>()
 let sourceMaterials: { material: THREE.Material; wireframe: boolean }[] = []
 let gameLook: GameLookOwner | null = null
 let gameLookActivated = false
+let bindTransforms: ReturnType<typeof captureBindTransforms> = []
 
 const ui = new ReviewUi(createUiEvents())
 ui.setReviewSource(reviewSource)
@@ -142,15 +149,19 @@ async function loadReviewAsset(): Promise<void> {
       report = loadedReport as RigReport
       assertRigReport(report)
       reviewClips = buildReviewClips(report)
-    } else {
+    } else if (reviewSource.reportKind === 'transfer-v2') {
       report = null
       reviewClips = buildTransferV2ReviewClips(loadedReport as TransferV2Report, summary.clips)
+    } else {
+      report = null
+      reviewClips = buildMixamoAshveilReviewClips(loadedReport as MixamoAshveilReport, summary.clips)
     }
     assertCharacterAssetSummary(summary, reviewClips[0]!.name)
     assertReviewClipInventory(reviewClips, clips)
     model = gltf.scene
-    model.name = reviewSource.id === 'canonical' ? 'Ashveil_Masculine_Diagnostic' : 'Ashveil_WIP_Transfer_v2'
+    model.name = reviewSource.id === 'canonical' ? 'Ashveil_Masculine_Diagnostic' : `Ashveil_${reviewSource.id}`
     const configured = configureAsset(model)
+    bindTransforms = captureBindTransforms(model)
     semanticMeshes = configured.semanticMeshes
     sourceMaterials = configured.materials
     reviewScene.scene.add(model)
@@ -168,7 +179,8 @@ async function loadReviewAsset(): Promise<void> {
     Object.assign(globalThis.characterReview!, { model, mixer, clips, report })
     if (report) ui.populateReport(report)
     else ui.populateDynamicSource(reviewSource)
-    ui.populateClips(reviewClips, reviewClips[0]!.name)
+    const defaultClip = defaultReviewClip(reviewSource, report?.animation.name ?? '')
+    ui.populateClips(reviewClips, defaultClip, !report)
     ui.validated({
       meshes: configured.meshes,
       primitives: configured.primitives,
@@ -178,7 +190,7 @@ async function loadReviewAsset(): Promise<void> {
       nativeHeight,
     })
     updateScale('native')
-    selectAnimationClip(reviewClips[0]!.name)
+    selectAnimationClip(defaultClip)
     void prepareGameLook([...semanticMeshes.values()])
   } catch (error) {
     state.failure = error instanceof Error ? error.message : String(error)
@@ -244,6 +256,18 @@ function stepPose(direction: -1 | 1): void {
 
 function selectAnimationClip(name: string): void {
   if (!mixer) return
+  if (name === BIND_POSE_CLIP) {
+    deactivateReviewActions(activeAction, mixer, bindTransforms)
+    activeAction = null
+    selectedClip = null
+    state.selectedClip = BIND_POSE_CLIP
+    state.playing = false
+    state.frame = 0
+    state.pose = 'bind'
+    ui.setPlaying(false)
+    ui.setBindSelected()
+    return
+  }
   const metadata = reviewClips.find((clip) => clip.name === name)
   const animation = clips.find((clip) => clip.name === name)
   if (!metadata || !animation) throw new Error(`Unknown review animation clip ${name}`)

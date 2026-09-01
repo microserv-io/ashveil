@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import {
+  assertGeneratedTransferV2Report,
   assertTransferV2Source,
   autoRigProTransferV2ArtifactNames,
   momaskAutoRigProTransferV2MapSha256,
@@ -82,17 +83,63 @@ describe('Auto-Rig Pro transfer v2 diagnostic', () => {
     expect(contents.match(/^None%/gm)).toHaveLength(3)
   })
 
-  it('pins the corrected import, height normalization, and full-frame rest alignment', () => {
+  it('pins current-pose source calibration without overwriting source axial frames', () => {
     const pipeline = readFileSync(resolve('scripts/art/auto-rig-pro-transfer-v2.py'), 'utf8')
     expect(pipeline).toContain('axis_forward="-Z"')
     expect(pipeline).toContain('assert_source_convention(')
     expect(pipeline).toContain('remove_constant_hips_vertical_offset(')
-    expect(pipeline).toContain('align_source_full_frames(')
-    expect(pipeline).toContain('minimumDirectionDot >= 0.999')
-    expect(pipeline).toContain('maximumResidualRollDegrees <= 2.0')
+    expect(pipeline).toContain('rest_pose="CURRENT"')
+    expect(pipeline).toContain('scene.frame_set(1)')
+    expect(pipeline).toContain('capture_expected_frame_contract(')
+    expect(pipeline).toContain('validate_expected_frames(')
+    expect(pipeline).not.toContain('align_source_full_frames(')
+    expect(pipeline).not.toContain('source_pose_full_quaternion_frame')
+    expect(pipeline).not.toContain('rot_add')
     expect(pipeline).not.toContain('copy_bone_rest')
     expect(pipeline).not.toContain('c_leg_pole')
     expect(pipeline).not.toContain('c_foot_ik.l%')
+  })
+
+  it('gates independent mapped control and deform frames at semantic source samples', () => {
+    const pipeline = readFileSync(resolve('scripts/art/auto-rig-pro-transfer-v2.py'), 'utf8')
+    expect(pipeline).toContain('expected_matrix = target_bind_matrix @ source_bind.inverted_safe() @ source_sample')
+    expect(pipeline).toContain('maximumHeadErrorMetres')
+    expect(pipeline).toContain('maximumAngularErrorDegrees')
+    expect(pipeline).toContain('maximumAxialErrorDegrees')
+    expect(pipeline).toContain('maximumYawPitchErrorDegrees')
+    expect(pipeline).toContain('maximumHingeErrorDegrees')
+    expect(pipeline).toContain('maximumPhaseSymmetryErrorDegrees')
+    expect(pipeline).toContain('validate_source_cleanup(')
+    expect(pipeline).toContain('loopVelocityMaximumMetresPerFrame')
+    expect(pipeline).toContain('kneePlaneSignFlipFractions')
+    expect(pipeline).toContain('"first"')
+    expect(pipeline).toContain('"contact"')
+    expect(pipeline).toContain('"mid"')
+    expect(pipeline).toContain('"last"')
+  })
+
+  it('keeps source knee and foot corrections position-derived before BVH conversion', () => {
+    const cleanup = readFileSync(resolve('scripts/art/momask-source-cleanup.py'), 'utf8')
+    expect(cleanup).toContain('correct_knee_sagittal_planes(')
+    expect(cleanup).toContain('stabilize_foot_toe_swing(')
+    expect(cleanup).toContain('maximumHingeOffSagittalDegrees')
+    expect(cleanup).toContain('maximumUnobservableAxialRollDegrees')
+    expect(cleanup.indexOf('correct_knee_sagittal_planes(')).toBeLessThan(
+      cleanup.indexOf('converter.convert('),
+    )
+  })
+
+  it('pins mesh, runtime parity, semantic render, and immutable-bind gates', () => {
+    const pipeline = readFileSync(resolve('scripts/art/auto-rig-pro-transfer-v2.py'), 'utf8')
+    expect(pipeline).toContain('kneePatchAreaRatioP05')
+    expect(pipeline).toContain('kneePatchFacesBelowHalf')
+    expect(pipeline).toContain('footPatchAreaRatioP05')
+    expect(pipeline).toContain('authorRuntimeHingeErrorDegrees')
+    expect(pipeline).toContain('authorRuntimeRollErrorDegrees')
+    expect(pipeline).toContain('skinnedVertexP95Metres')
+    expect(pipeline).toContain('skinnedVertexMaximumMetres')
+    expect(pipeline).toContain('render_semantic_samples(')
+    expect(pipeline).toContain('cleanBindUnchanged')
   })
 
   it('uses one retarget, FK switches, exact retiming, and isolated artifacts', () => {
@@ -122,6 +169,37 @@ describe('Auto-Rig Pro transfer v2 diagnostic', () => {
         'output',
       ]),
     ).toEqual({ source: 'source', target: 'target.blend', output: 'output' })
+  })
+
+  it('rejects generated staging unless mesh and runtime parity gates pass', () => {
+    const directory = mkdtempSync(resolve(tmpdir(), 'ashveil-transfer-v2-report-'))
+    temporaryDirectories.push(directory)
+    const path = resolve(directory, 'report.json')
+    const report = {
+      schemaVersion: 'ashveil.auto-rig-pro-transfer-v2',
+      objectiveAcceptance: { pass: true },
+      sourceConvention: { pass: true },
+      sourceVerticalNormalization: { pass: true },
+      sourceRestCalibration: { pass: true },
+      target: { unchanged: true },
+      retargetSkeletal: { pass: true },
+      meshDeformation: { pass: true },
+      exportParity: { clipTimingPass: true, runtimeInventoryPass: true, pass: true },
+      humanReview: { pass: false },
+      productionPass: false,
+      canonicalViewerPromoted: false,
+    }
+    writeFileSync(path, JSON.stringify(report))
+    expect(() => assertGeneratedTransferV2Report(path)).not.toThrow()
+
+    report.meshDeformation.pass = false
+    writeFileSync(path, JSON.stringify(report))
+    expect(() => assertGeneratedTransferV2Report(path)).toThrow(/objective diagnostic gate/)
+
+    report.meshDeformation.pass = true
+    report.exportParity.pass = false
+    writeFileSync(path, JSON.stringify(report))
+    expect(() => assertGeneratedTransferV2Report(path)).toThrow(/objective diagnostic gate/)
   })
 
   it('records only objectively accepted walk and sprint diagnostics', () => {

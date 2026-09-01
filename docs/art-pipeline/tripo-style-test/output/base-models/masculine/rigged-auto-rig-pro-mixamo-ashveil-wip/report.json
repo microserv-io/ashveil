@@ -1,0 +1,1187 @@
+{
+  "schemaVersion": "ashveil.auto-rig-pro-mixamo-ashveil.v1",
+  "status": "diagnostic_rejected",
+  "objectiveAcceptance": {
+    "pass": false,
+    "failedGates": [
+      "sagittalPosture",
+      "headBodySeam",
+      "meshDeformation"
+    ]
+  },
+  "source": {
+    "file": "1-Walking.fbx",
+    "sha256": "ecc6d600e10358d9d2230fa199f7e0b49d3b50d98775a46f39bc7dff43f1b916",
+    "bytes": 466640,
+    "bones": 65,
+    "meshes": 0,
+    "frames": 62,
+    "fps": 60,
+    "rootMotion": {
+      "sourceFrameStart": 0,
+      "sourceFrameEnd": 61,
+      "importedFrameStart": 1,
+      "importedFrameEnd": 62,
+      "fps": 60,
+      "hipsStartMetres": [
+        0.0003456747508607805,
+        -0.0152967544272542,
+        1.0161539316177368
+      ],
+      "hipsEndMetres": [
+        0.0003456866543274373,
+        -1.8605209589004517,
+        1.0161540508270264
+      ],
+      "hipsDeltaMetres": [
+        1.1903466656804085e-8,
+        -1.8452242612838745,
+        1.1920928955078125e-7
+      ],
+      "forwardDistanceMetres": 1.8452242759913728,
+      "forwardDirection": [
+        6.450959322279459e-9,
+        -1,
+        0
+      ],
+      "pass": true
+    },
+    "originalLoopSeam": {
+      "measurementSpace": "imported_source_armature_pose_rotations",
+      "hipsForwardTranslationExcluded": true,
+      "endpointRotationMaximumDegrees": 0,
+      "velocityRotationMaximumErrorDegreesPerFrame": 2.394853006982292,
+      "pass": false
+    },
+    "loopConditioning": {
+      "algorithm": "symmetric_wrapped_rotation_velocity_average",
+      "sourceOnly": true,
+      "seamWindowFramesPerEnd": 1,
+      "preservedEndpointFrames": [
+        1,
+        62
+      ],
+      "adjustedCurveCount": 160,
+      "adjustedCurves": [
+        "pose.bones[\"mixamorig:Hips\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:Hips\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:Hips\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:Hips\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:Spine\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:Spine\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:Spine\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:Spine\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:Spine1\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:Spine1\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:Spine1\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:Spine1\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:Spine2\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:Spine2\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:Spine2\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:Spine2\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:Neck\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:Neck\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:Neck\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:Neck\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:Head\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:Head\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:Head\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:Head\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightShoulder\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightShoulder\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightShoulder\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightShoulder\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightArm\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightArm\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightArm\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightArm\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightForeArm\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightForeArm\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightForeArm\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightForeArm\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightHand\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightHand\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightHand\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightHand\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightHandThumb1\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightHandThumb1\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightHandThumb1\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightHandThumb1\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightHandThumb2\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightHandThumb2\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightHandThumb2\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightHandThumb2\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightHandIndex1\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightHandIndex1\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightHandIndex1\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightHandIndex1\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightHandIndex2\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightHandIndex2\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightHandIndex2\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightHandIndex2\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightHandMiddle1\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightHandMiddle1\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightHandMiddle1\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightHandMiddle1\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightHandMiddle2\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightHandMiddle2\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightHandMiddle2\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightHandMiddle2\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightHandRing1\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightHandRing1\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightHandRing1\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightHandRing1\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightHandRing2\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightHandRing2\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightHandRing2\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightHandRing2\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightHandPinky1\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightHandPinky1\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightHandPinky1\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightHandPinky1\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightHandPinky2\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightHandPinky2\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightHandPinky2\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightHandPinky2\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:LeftShoulder\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:LeftShoulder\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:LeftShoulder\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:LeftShoulder\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:LeftArm\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:LeftArm\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:LeftArm\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:LeftArm\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:LeftForeArm\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:LeftForeArm\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:LeftForeArm\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:LeftForeArm\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:LeftHand\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:LeftHand\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:LeftHand\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:LeftHand\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:LeftHandIndex1\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:LeftHandIndex1\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:LeftHandIndex1\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:LeftHandIndex1\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:LeftHandIndex2\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:LeftHandIndex2\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:LeftHandIndex2\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:LeftHandIndex2\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:LeftHandMiddle1\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:LeftHandMiddle1\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:LeftHandMiddle1\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:LeftHandMiddle1\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:LeftHandMiddle2\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:LeftHandMiddle2\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:LeftHandMiddle2\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:LeftHandMiddle2\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:LeftHandRing1\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:LeftHandRing1\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:LeftHandRing1\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:LeftHandRing1\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:LeftHandRing2\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:LeftHandRing2\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:LeftHandRing2\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:LeftHandRing2\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:LeftHandPinky1\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:LeftHandPinky1\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:LeftHandPinky1\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:LeftHandPinky1\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:LeftHandPinky2\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:LeftHandPinky2\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:LeftHandPinky2\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:LeftHandPinky2\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightUpLeg\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightUpLeg\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightUpLeg\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightUpLeg\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightLeg\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightLeg\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightLeg\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightLeg\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightFoot\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightFoot\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightFoot\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightFoot\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:RightToeBase\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:RightToeBase\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:RightToeBase\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:RightToeBase\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:LeftUpLeg\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:LeftUpLeg\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:LeftUpLeg\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:LeftUpLeg\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:LeftLeg\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:LeftLeg\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:LeftLeg\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:LeftLeg\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:LeftFoot\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:LeftFoot\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:LeftFoot\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:LeftFoot\"].rotation_quaternion[3]",
+        "pose.bones[\"mixamorig:LeftToeBase\"].rotation_quaternion[0]",
+        "pose.bones[\"mixamorig:LeftToeBase\"].rotation_quaternion[1]",
+        "pose.bones[\"mixamorig:LeftToeBase\"].rotation_quaternion[2]",
+        "pose.bones[\"mixamorig:LeftToeBase\"].rotation_quaternion[3]"
+      ],
+      "insertedKeyCount": 0,
+      "insertedKeys": [],
+      "maximumCurveValueCorrection": 0.030582301318645477,
+      "beforeActionCurveSha256": "9ec0c72e7341a7ec58a4dfa2f4387e0f38015665f8c7c2b1b7b36b9c1c1fbaff",
+      "afterActionCurveSha256": "96ee8f85c4021e91422b980237bae3069013d87418c6df74aec8c52fdbec8cd0",
+      "pass": true
+    },
+    "conditionedLoopSeam": {
+      "measurementSpace": "imported_source_armature_pose_rotations",
+      "hipsForwardTranslationExcluded": true,
+      "endpointRotationMaximumDegrees": 0,
+      "velocityRotationMaximumErrorDegreesPerFrame": 0.09677182770803316,
+      "pass": true
+    },
+    "pass": true
+  },
+  "autoRigPro": {
+    "extensionModule": "bl_ext.user_default.auto_rig_pro",
+    "version": "3.78.47",
+    "manifestSha256": "11b63bab704bde3964d22e918ae59fbe15adeaf1d0bf0448193fc22baebbe2fd",
+    "preset": "mixamo_fbx_ik",
+    "presetSha256": "000ea4e15cd9b37ae45dfa450f85b97ce1a0622396d908008ef9f1b64967d7f7",
+    "mapSha256": "2e68bd602efad22825e98903290fdfb055f54778d0ae9f9e904747c4e9c21c05",
+    "mappedControls": [
+      "c_arm_fk.l",
+      "c_arm_fk.r",
+      "c_foot_fk.l",
+      "c_foot_fk.r",
+      "c_forearm_fk.l",
+      "c_forearm_fk.r",
+      "c_hand_fk.l",
+      "c_hand_fk.r",
+      "c_head.x",
+      "c_leg_fk.l",
+      "c_leg_fk.r",
+      "c_neck.x",
+      "c_root_master.x",
+      "c_shoulder.l",
+      "c_shoulder.r",
+      "c_spine_01.x",
+      "c_spine_02.x",
+      "c_thigh_fk.l",
+      "c_thigh_fk.r"
+    ],
+    "mappedControlCount": 19,
+    "presetLegBranchOverride": "fk_legs_and_feet_with_unmapped_toes",
+    "restCalibration": "rest_pose_preserve_then_selected_mapped_body_copy",
+    "alignedSourceBones": [
+      "mixamorig:Head",
+      "mixamorig:LeftArm",
+      "mixamorig:LeftFoot",
+      "mixamorig:LeftForeArm",
+      "mixamorig:LeftLeg",
+      "mixamorig:LeftShoulder",
+      "mixamorig:LeftUpLeg",
+      "mixamorig:Neck",
+      "mixamorig:RightArm",
+      "mixamorig:RightFoot",
+      "mixamorig:RightForeArm",
+      "mixamorig:RightLeg",
+      "mixamorig:RightShoulder",
+      "mixamorig:RightUpLeg",
+      "mixamorig:Spine1"
+    ],
+    "oneRoot": true,
+    "feetUseIk": false,
+    "toesMapped": false,
+    "toesInheritFkFoot": true,
+    "armsUseFk": true,
+    "pass": true
+  },
+  "preGroundContact": {
+    "measured": true,
+    "sole": {
+      "minimumSoleHeightMetres": {
+        "l": -0.02759222313761711,
+        "r": -0.029157597571611404
+      },
+      "contactFramesWithin20mm": {
+        "l": 32,
+        "r": 41
+      },
+      "minimumPenetrationMetres": -0.029157597571611404,
+      "pass": false
+    },
+    "heelForefoot": {
+      "measurementSpace": "evaluated_frozen_bind_sole_heel_and_forefoot_bands",
+      "sides": {
+        "l": {
+          "heelContactFramesWithin20mm": 26,
+          "forefootContactFramesWithin20mm": 31,
+          "flatSupportFramesWithin20mm": 25,
+          "minimumHeelHeightMetres": -0.004110374953597784,
+          "minimumForefootHeightMetres": -0.02759222313761711,
+          "pass": true
+        },
+        "r": {
+          "heelContactFramesWithin20mm": 27,
+          "forefootContactFramesWithin20mm": 38,
+          "flatSupportFramesWithin20mm": 24,
+          "minimumHeelHeightMetres": -0.0014235074631869793,
+          "minimumForefootHeightMetres": -0.029157597571611404,
+          "pass": true
+        }
+      },
+      "pass": true
+    }
+  },
+  "sourceRootMotion": {
+    "sourceFrameStart": 0,
+    "sourceFrameEnd": 61,
+    "importedFrameStart": 1,
+    "importedFrameEnd": 62,
+    "fps": 60,
+    "hipsStartMetres": [
+      0.0003456747508607805,
+      -0.0152967544272542,
+      1.0161539316177368
+    ],
+    "hipsEndMetres": [
+      0.0003456866543274373,
+      -1.8605209589004517,
+      1.0161540508270264
+    ],
+    "hipsDeltaMetres": [
+      1.1903466656804085e-8,
+      -1.8452242612838745,
+      1.1920928955078125e-7
+    ],
+    "forwardDistanceMetres": 1.8452242759913728,
+    "forwardDirection": [
+      6.450959322279459e-9,
+      -1,
+      0
+    ],
+    "pass": true
+  },
+  "sourceLoopSeam": {
+    "measurementSpace": "imported_source_armature_pose_rotations",
+    "hipsForwardTranslationExcluded": true,
+    "endpointRotationMaximumDegrees": 0,
+    "velocityRotationMaximumErrorDegreesPerFrame": 0.09677182770803316,
+    "pass": true
+  },
+  "mapping": {
+    "preset": "mixamo_fbx_ik",
+    "presetSha256": "000ea4e15cd9b37ae45dfa450f85b97ce1a0622396d908008ef9f1b64967d7f7",
+    "mapSha256": "2e68bd602efad22825e98903290fdfb055f54778d0ae9f9e904747c4e9c21c05",
+    "mappedControls": [
+      "c_arm_fk.l",
+      "c_arm_fk.r",
+      "c_foot_fk.l",
+      "c_foot_fk.r",
+      "c_forearm_fk.l",
+      "c_forearm_fk.r",
+      "c_hand_fk.l",
+      "c_hand_fk.r",
+      "c_head.x",
+      "c_leg_fk.l",
+      "c_leg_fk.r",
+      "c_neck.x",
+      "c_root_master.x",
+      "c_shoulder.l",
+      "c_shoulder.r",
+      "c_spine_01.x",
+      "c_spine_02.x",
+      "c_thigh_fk.l",
+      "c_thigh_fk.r"
+    ],
+    "mappedControlCount": 19,
+    "presetLegBranchOverride": "fk_legs_and_feet_with_unmapped_toes",
+    "restCalibration": "rest_pose_preserve_then_selected_mapped_body_copy",
+    "alignedSourceBones": [
+      "mixamorig:Head",
+      "mixamorig:LeftArm",
+      "mixamorig:LeftFoot",
+      "mixamorig:LeftForeArm",
+      "mixamorig:LeftLeg",
+      "mixamorig:LeftShoulder",
+      "mixamorig:LeftUpLeg",
+      "mixamorig:Neck",
+      "mixamorig:RightArm",
+      "mixamorig:RightFoot",
+      "mixamorig:RightForeArm",
+      "mixamorig:RightLeg",
+      "mixamorig:RightShoulder",
+      "mixamorig:RightUpLeg",
+      "mixamorig:Spine1"
+    ],
+    "oneRoot": true,
+    "feetUseIk": false,
+    "toesMapped": false,
+    "toesInheritFkFoot": true,
+    "armsUseFk": true,
+    "pass": true
+  },
+  "actionOwnership": {
+    "keyedControls": [
+      "c_arm_fk.l",
+      "c_arm_fk.r",
+      "c_foot_fk.l",
+      "c_foot_fk.r",
+      "c_foot_ik.l",
+      "c_foot_ik.r",
+      "c_forearm_fk.l",
+      "c_forearm_fk.r",
+      "c_hand_fk.l",
+      "c_hand_fk.r",
+      "c_hand_ik.l",
+      "c_hand_ik.r",
+      "c_head.x",
+      "c_leg_fk.l",
+      "c_leg_fk.r",
+      "c_neck.x",
+      "c_root_master.x",
+      "c_shoulder.l",
+      "c_shoulder.r",
+      "c_spine_01.x",
+      "c_spine_02.x",
+      "c_thigh_fk.l",
+      "c_thigh_fk.r"
+    ],
+    "unexpected": [],
+    "deformBonesKeyed": [],
+    "pass": true
+  },
+  "rootMotionExtraction": {
+    "implementation": "arp_source_action_in_place_conversion_before_retarget",
+    "originalAction": "Armature|mixamo.com|Layer0",
+    "inPlaceAction": "Armature|mixamo.com|Layer0_IN_PLACE",
+    "changedCurves": [
+      {
+        "dataPath": "pose.bones[\"mixamorig:Hips\"].location",
+        "arrayIndex": 0,
+        "maximumValueChange": 0.0000011920928955078125
+      },
+      {
+        "dataPath": "pose.bones[\"mixamorig:Hips\"].location",
+        "arrayIndex": 1,
+        "maximumValueChange": 2.383443593978882
+      },
+      {
+        "dataPath": "pose.bones[\"mixamorig:Hips\"].location",
+        "arrayIndex": 2,
+        "maximumValueChange": 184.50704538822174
+      }
+    ],
+    "unexpectedChangedCurves": [],
+    "sourceInPlaceHipsDeltaMetres": [
+      0,
+      0,
+      0
+    ],
+    "sourceInPlaceHorizontalNetMetres": 0,
+    "sourceInPlaceOffForwardNetMetres": 0,
+    "originalForwardDistanceMetres": 1.8452242759913728,
+    "postTargetRootCurveEdits": false,
+    "pass": true
+  },
+  "footRotationCalibration": {
+    "algorithm": "source_parent_relative_delta_on_target_parent_relative_bind",
+    "sourceControls": [
+      "mixamorig:LeftFoot",
+      "mixamorig:RightFoot"
+    ],
+    "targetControls": [
+      "c_foot_fk.l",
+      "c_foot_fk.r"
+    ],
+    "quaternionHemisphereContinuity": true,
+    "targetDeformRotationsAuthored": false,
+    "maximumSourceRelativeDeltaDegrees": {
+      "l": 20.787170182293348,
+      "r": 31.18700575030423
+    },
+    "pass": true
+  },
+  "postureCalibration": {
+    "enabled": false,
+    "reason": "disabled_to_preserve_accepted_target_spine_pose",
+    "targetControlsChanged": false,
+    "pass": true
+  },
+  "groundPlacement": {
+    "implementation": "contact_constrained_periodic_root_world_vertical_normalization",
+    "formula": "rootWorldZ'(f) = rootWorldZ(f) - min(soleWorldZ_l(f), soleWorldZ_r(f))",
+    "targetControl": "c_root_master.x",
+    "targetControlLocationOnly": true,
+    "preCorrectionMinimumSoleHeightMetres": -0.029157597571611404,
+    "verticalOffsetMetresByFrame": {
+      "0": 0.002082823310047388,
+      "1": 0.002724491059780121,
+      "2": 0.004173615947365761,
+      "3": 0.005663015879690647,
+      "4": 0.007315977476537228,
+      "5": 0.009197001345455647,
+      "6": 0.011089609935879707,
+      "7": 0.012965643778443336,
+      "8": 0.014894315972924232,
+      "9": 0.018056215718388557,
+      "10": 0.02039199322462082,
+      "11": 0.023014049977064133,
+      "12": 0.02574867010116577,
+      "13": 0.02861034870147705,
+      "14": 0.029157597571611404,
+      "15": 0.028840236365795135,
+      "16": 0.028104402124881744,
+      "17": 0.027052946388721466,
+      "18": 0.023854777216911316,
+      "19": 0.01633305847644806,
+      "20": 0.0024597644805908203,
+      "21": -0.009846853092312813,
+      "22": -0.010045837610960007,
+      "23": -0.009241437539458275,
+      "24": -0.007915906608104706,
+      "25": -0.006136547774076462,
+      "26": -0.004048964474350214,
+      "27": -0.0020326499361544847,
+      "28": -0.000014326835298561491,
+      "29": 0.0016172191826626658,
+      "30": 0.0020657044369727373,
+      "31": 0.0034924850333482027,
+      "32": 0.004586269613355398,
+      "33": 0.005890573840588331,
+      "34": 0.004374225623905659,
+      "35": 0.003588581457734108,
+      "36": 0.002443641424179077,
+      "37": 0.0014535642694681883,
+      "38": 0.0021590092219412327,
+      "39": 0.0054998453706502914,
+      "40": 0.010244259610772133,
+      "41": 0.015384793281555176,
+      "42": 0.02076573669910431,
+      "43": 0.024416878819465637,
+      "44": 0.027131356298923492,
+      "45": 0.02737428992986679,
+      "46": 0.02759222313761711,
+      "47": 0.024999897927045822,
+      "48": 0.016359038650989532,
+      "49": 0.0022425130009651184,
+      "50": -0.013791978359222412,
+      "51": -0.01112407073378563,
+      "52": -0.008968250826001167,
+      "53": -0.008105387911200523,
+      "54": -0.006881949491798878,
+      "55": -0.005876162555068731,
+      "56": -0.004338981118053198,
+      "57": -0.002799486741423607,
+      "58": -0.0014938354725018144,
+      "59": -0.00011715973232639953,
+      "60": 0.0014411555603146553,
+      "61": 0.002082823310047388
+    },
+    "postCorrectionMinimumSoleHeightMetres": -1.2665987014770508e-7,
+    "endpointOffsetDifferenceMetres": 0,
+    "velocityOffsetDifferenceMetresPerFrame": 0,
+    "maximumAbsoluteOffsetMetres": 0.029157597571611404,
+    "maximumAbsoluteOffsetLimitMetres": 0.035,
+    "maximumFrameVelocityMetres": 0.01603449136018753,
+    "maximumFrameVelocityLimitMetres": 0.02,
+    "targetRootVerticalCurveAuthored": true,
+    "targetVerticalPlacementChanged": true,
+    "targetRotationsAuthored": false,
+    "pass": true,
+    "sourceActionCurvesChanged": false
+  },
+  "targetRootNet": {
+    "deltaMetres": [
+      0,
+      0,
+      0
+    ],
+    "horizontalNetMetres": 0,
+    "pass": true
+  },
+  "bindPoseParity": {
+    "before": {
+      "restMatricesSha256": "1672b0859ea78605de0c3c7abe3ccecd9904df0267a2b64714ed031056db0209",
+      "meshGeometryWeightsSha256": "43cf597e101601a72aae8caa513565cac3fa611ddb4cbd2de99967b17708a8ff"
+    },
+    "after": {
+      "restMatricesSha256": "1672b0859ea78605de0c3c7abe3ccecd9904df0267a2b64714ed031056db0209",
+      "meshGeometryWeightsSha256": "43cf597e101601a72aae8caa513565cac3fa611ddb4cbd2de99967b17708a8ff"
+    },
+    "maximumAcceptedBindChangeMetres": 0,
+    "pass": true
+  },
+  "bindRelativeAxialTwist": {
+    "maximumDegrees": {
+      "thigh_stretch.l": 19.49753484434656,
+      "thigh_stretch.r": 16.488194477173963,
+      "leg_stretch.l": 9.931714892865719,
+      "leg_stretch.r": 11.781381346523947,
+      "foot.l": 12.418860831007809,
+      "foot.r": 11.086248235256008
+    },
+    "limitsDegrees": {
+      "thigh_stretch.l": 60,
+      "thigh_stretch.r": 60,
+      "leg_stretch.l": 20,
+      "leg_stretch.r": 20,
+      "foot.l": 45,
+      "foot.r": 45
+    },
+    "pass": true
+  },
+  "kneeHingeDirection": {
+    "sideCrossingFrames": 0,
+    "minimumForwardBendMetres": 0.029539033770561218,
+    "maximumFlexionDegrees": 72.27371612837479,
+    "pass": true
+  },
+  "footContact": {
+    "minimumSoleHeightMetres": {
+      "l": -1.2665987014770508e-7,
+      "r": -1.1920928955078125e-7
+    },
+    "contactFramesWithin20mm": {
+      "l": 32,
+      "r": 39
+    },
+    "minimumPenetrationMetres": -1.2665987014770508e-7,
+    "pass": true
+  },
+  "heelForefootContact": {
+    "measurementSpace": "evaluated_frozen_bind_sole_heel_and_forefoot_bands",
+    "sides": {
+      "l": {
+        "heelContactFramesWithin20mm": 21,
+        "forefootContactFramesWithin20mm": 31,
+        "flatSupportFramesWithin20mm": 20,
+        "minimumHeelHeightMetres": 0.000013158656656742096,
+        "minimumForefootHeightMetres": -1.2665987014770508e-7,
+        "pass": true
+      },
+      "r": {
+        "heelContactFramesWithin20mm": 21,
+        "forefootContactFramesWithin20mm": 38,
+        "flatSupportFramesWithin20mm": 20,
+        "minimumHeelHeightMetres": -8.195638656616211e-8,
+        "minimumForefootHeightMetres": -1.1920928955078125e-7,
+        "pass": true
+      }
+    },
+    "pass": true
+  },
+  "toeAlignment": {
+    "measurementSpace": "evaluated_target_armature_segments",
+    "maximumFootToeDirectionAngleDegrees": 31.466435619438624,
+    "limitDegrees": 45,
+    "samples": [
+      {
+        "name": "first",
+        "frame": 0,
+        "footToeDirectionAngleDegrees": {
+          "l": 31.466408298681944,
+          "r": 31.466401468492773
+        }
+      },
+      {
+        "name": "contact",
+        "frame": 15,
+        "footToeDirectionAngleDegrees": {
+          "l": 31.466408298681944,
+          "r": 31.466415128871112
+        }
+      },
+      {
+        "name": "mid",
+        "frame": 30,
+        "footToeDirectionAngleDegrees": {
+          "l": 31.466415128871112,
+          "r": 31.466401468492773
+        }
+      },
+      {
+        "name": "late",
+        "frame": 45,
+        "footToeDirectionAngleDegrees": {
+          "l": 31.466415128871112,
+          "r": 31.466435619438624
+        }
+      },
+      {
+        "name": "last",
+        "frame": 61,
+        "footToeDirectionAngleDegrees": {
+          "l": 31.466401468492773,
+          "r": 31.466408298681944
+        }
+      }
+    ],
+    "pass": true
+  },
+  "loopSeam": {
+    "endpointTranslationMaximumMetres": 8.351299923182758e-7,
+    "endpointRotationMaximumDegrees": 0,
+    "velocityTranslationMaximumErrorMetresPerFrame": 0.000693902249861645,
+    "velocityRotationMaximumErrorDegreesPerFrame": 0.1140393997034721,
+    "pass": true
+  },
+  "shoulderWristContinuity": {
+    "measurementSpace": "evaluated_target_deform_bones_world",
+    "maximumUpperArmBindDeviationDegrees": 75,
+    "maximumElbowFlexionDegrees": 110,
+    "maximumWristBendDegrees": 60,
+    "samples": [
+      {
+        "name": "first",
+        "frame": 0,
+        "sides": {
+          "l": {
+            "shoulderWorld": [
+              0.2399572879076004,
+              0.01507794950157404,
+              1.241803526878357
+            ],
+            "elbowWorld": [
+              0.2897604703903198,
+              0.009897946380078793,
+              1.1151617765426636
+            ],
+            "wristWorld": [
+              0.30400097370147705,
+              -0.11083213239908218,
+              0.9050789475440979
+            ],
+            "upperArmBindDeviationDegrees": 8.836423196241535,
+            "elbowFlexionDegrees": 32.29812384900898,
+            "wristBendDegrees": 5.379061266217005,
+            "pass": true
+          },
+          "r": {
+            "shoulderWorld": [
+              -0.20836642384529114,
+              0.03845064342021942,
+              1.2422137260437012
+            ],
+            "elbowWorld": [
+              -0.2503517270088196,
+              0.06494426727294922,
+              1.1154046058654785
+            ],
+            "wristWorld": [
+              -0.26581454277038574,
+              0.016678985208272934,
+              0.8780341148376465
+            ],
+            "upperArmBindDeviationDegrees": 10.594311544248656,
+            "elbowFlexionDegrees": 26.92367509491585,
+            "wristBendDegrees": 3.4522996926324927,
+            "pass": true
+          }
+        },
+        "pass": true
+      },
+      {
+        "name": "contact",
+        "frame": 15,
+        "sides": {
+          "l": {
+            "shoulderWorld": [
+              0.21470078825950623,
+              0.10299567133188248,
+              1.232887864112854
+            ],
+            "elbowWorld": [
+              0.23313602805137634,
+              0.1650286614894867,
+              1.1130657196044922
+            ],
+            "wristWorld": [
+              0.24416938424110413,
+              0.1548365205526352,
+              0.8708102107048035
+            ],
+            "upperArmBindDeviationDegrees": 28.18177032682281,
+            "elbowFlexionDegrees": 30.09297336980827,
+            "wristBendDegrees": 6.402114747745018,
+            "pass": true
+          },
+          "r": {
+            "shoulderWorld": [
+              -0.21633809804916382,
+              -0.04165130853652954,
+              1.2686352729797363
+            ],
+            "elbowWorld": [
+              -0.2698467969894409,
+              -0.08565465360879898,
+              1.1513926982879639
+            ],
+            "wristWorld": [
+              -0.27745768427848816,
+              -0.2878904938697815,
+              1.0173922777175903
+            ],
+            "upperArmBindDeviationDegrees": 23.78919883195945,
+            "elbowFlexionDegrees": 40.812859649494904,
+            "wristBendDegrees": 12.534035749660795,
+            "pass": true
+          }
+        },
+        "pass": true
+      },
+      {
+        "name": "mid",
+        "frame": 30,
+        "sides": {
+          "l": {
+            "shoulderWorld": [
+              0.24871531128883362,
+              0.027426864951848984,
+              1.2320845127105713
+            ],
+            "elbowWorld": [
+              0.2808610498905182,
+              0.04805982485413551,
+              1.1013703346252441
+            ],
+            "wristWorld": [
+              0.29480281472206116,
+              -0.0219164676964283,
+              0.8693739175796509
+            ],
+            "upperArmBindDeviationDegrees": 13.51769227316935,
+            "elbowFlexionDegrees": 27.461125605231228,
+            "wristBendDegrees": 12.861165952411262,
+            "pass": true
+          },
+          "r": {
+            "shoulderWorld": [
+              -0.17142561078071594,
+              0.037519894540309906,
+              1.251875400543213
+            ],
+            "elbowWorld": [
+              -0.20332716405391693,
+              0.057688333094120026,
+              1.1210289001464844
+            ],
+            "wristWorld": [
+              -0.24192306399345398,
+              -0.043283961713314056,
+              0.9037080407142639
+            ],
+            "upperArmBindDeviationDegrees": 13.574162569679723,
+            "elbowFlexionDegrees": 33.28822807109403,
+            "wristBendDegrees": 12.38584967297549,
+            "pass": true
+          }
+        },
+        "pass": true
+      },
+      {
+        "name": "late",
+        "frame": 45,
+        "sides": {
+          "l": {
+            "shoulderWorld": [
+              0.25979742407798767,
+              -0.021391134709119797,
+              1.2386021614074707
+            ],
+            "elbowWorld": [
+              0.3225308358669281,
+              -0.04360077157616615,
+              1.1197892427444458
+            ],
+            "wristWorld": [
+              0.2931910753250122,
+              -0.24960124492645264,
+              0.9948238134384155
+            ],
+            "upperArmBindDeviationDegrees": 14.246341122694542,
+            "elbowFlexionDegrees": 57.864597667160986,
+            "wristBendDegrees": 3.2647076933044463,
+            "pass": true
+          },
+          "r": {
+            "shoulderWorld": [
+              -0.17530213296413422,
+              0.10359694808721542,
+              1.2254003286361694
+            ],
+            "elbowWorld": [
+              -0.19513772428035736,
+              0.1742112636566162,
+              1.1106595993041992
+            ],
+            "wristWorld": [
+              -0.20494571328163147,
+              0.21970465779304504,
+              0.8724421858787537
+            ],
+            "upperArmBindDeviationDegrees": 30.88328431338669,
+            "elbowFlexionDegrees": 21.564775266468253,
+            "wristBendDegrees": 9.080344619428322,
+            "pass": true
+          }
+        },
+        "pass": true
+      },
+      {
+        "name": "last",
+        "frame": 61,
+        "sides": {
+          "l": {
+            "shoulderWorld": [
+              0.2399572879076004,
+              0.015078146010637283,
+              1.2418032884597778
+            ],
+            "elbowWorld": [
+              0.28976041078567505,
+              0.009898274205625057,
+              1.115161657333374
+            ],
+            "wristWorld": [
+              0.30400076508522034,
+              -0.11083175241947174,
+              0.905078649520874
+            ],
+            "upperArmBindDeviationDegrees": 8.836400998126733,
+            "elbowFlexionDegrees": 32.298168245238585,
+            "wristBendDegrees": 5.379061266217005,
+            "pass": true
+          },
+          "r": {
+            "shoulderWorld": [
+              -0.20836658775806427,
+              0.03845055401325226,
+              1.2422138452529907
+            ],
+            "elbowWorld": [
+              -0.25035199522972107,
+              0.06494411826133728,
+              1.1154046058654785
+            ],
+            "wristWorld": [
+              -0.2658150792121887,
+              0.016678843647241592,
+              0.878034234046936
+            ],
+            "upperArmBindDeviationDegrees": 10.59427397820822,
+            "elbowFlexionDegrees": 26.923622160949783,
+            "wristBendDegrees": 3.4522431301284286,
+            "pass": true
+          }
+        },
+        "pass": true
+      }
+    ],
+    "pass": true
+  },
+  "sagittalPosture": {
+    "measurementSpace": "evaluated_target_hip_to_bilateral_shoulder_axis",
+    "acceptedBaselineLeanDegrees": -9.798107362454774,
+    "medianAnimatedLeanDegrees": -9.272591723489404,
+    "maximumBackwardLeanDegrees": -9.798107362454774,
+    "maximumBackwardLeanLimitDegrees": -8,
+    "samples": [
+      {
+        "name": "first",
+        "frame": 0,
+        "hipShoulderSagittalLeanDegrees": -9.798107362454774
+      },
+      {
+        "name": "contact",
+        "frame": 15,
+        "hipShoulderSagittalLeanDegrees": -6.730790205014361
+      },
+      {
+        "name": "mid",
+        "frame": 30,
+        "hipShoulderSagittalLeanDegrees": -9.272591723489404
+      },
+      {
+        "name": "late",
+        "frame": 45,
+        "hipShoulderSagittalLeanDegrees": -7.472031495211201
+      },
+      {
+        "name": "last",
+        "frame": 61,
+        "hipShoulderSagittalLeanDegrees": -9.79810423241195
+      }
+    ],
+    "pass": false
+  },
+  "headBodySeam": {
+    "pairSha256": "722b5c32509f762d8282dda5898d060d4ff4478821abc36420609f2248a29598",
+    "pairCount": 28,
+    "maximumBindGapMetres": 0.014769678935408592,
+    "p95BindGapMetres": 0.014769677072763443,
+    "maximumWeightL1Difference": 1.060707077383995,
+    "p95WeightL1Difference": 1.0575733184814453,
+    "pairPolicy": "fixed_bind_body_boundary_to_nearest_head_boundary_within_30mm_above_1.20m",
+    "maximumAnimatedGapMetres": 0.03700625597826762,
+    "maximumDynamicGapGrowthMetres": 0.02552207200798849,
+    "limitsMetres": {
+      "bindGap": 0.002,
+      "animatedGap": 0.003,
+      "dynamicGrowth": 0.002
+    },
+    "maximumSharedWeightL1Difference": 0.05,
+    "samples": [
+      {
+        "name": "first",
+        "frame": 0,
+        "maximumGapMetres": 0.03700625597826762,
+        "p95GapMetres": 0.03624682701203684
+      },
+      {
+        "name": "contact",
+        "frame": 15,
+        "maximumGapMetres": 0.03485976586170887,
+        "p95GapMetres": 0.03435048484033309
+      },
+      {
+        "name": "mid",
+        "frame": 30,
+        "maximumGapMetres": 0.03634990931573328,
+        "p95GapMetres": 0.03546955186912933
+      },
+      {
+        "name": "late",
+        "frame": 45,
+        "maximumGapMetres": 0.03533723668658917,
+        "p95GapMetres": 0.034673486698816765
+      },
+      {
+        "name": "last",
+        "frame": 61,
+        "maximumGapMetres": 0.03700622569965928,
+        "p95GapMetres": 0.03624668348719832
+      }
+    ],
+    "pass": false
+  },
+  "meshDeformation": {
+    "measured": true,
+    "pass": false,
+    "failure": "Transfer v2 mesh deformation gate failed: {'measured': True, 'kneePatchAreaRatioP05': 0.539747107604857, 'kneePatchAreaRatioMinimum': 0.07270534278200211, 'kneePatchFacesBelowHalf': 18, 'footPatchAreaRatioP05': 0.9999914456211233, 'footPatchAreaRatioMinimum': 0.9710896180399575, 'samples': [{'clip': 'walk', 'sample': 'first', 'frame': 0, 'kneeAreaRatioP05': 0.17704256762886925, 'footAreaRatioP05': 0.999993629066368}, {'clip': 'walk', 'sample': 'contact', 'frame': 15, 'kneeAreaRatioP05': 0.7575951513492221, 'footAreaRatioP05': 0.9999919106860578}, {'clip': 'walk', 'sample': 'mid', 'frame': 30, 'kneeAreaRatioP05': 0.2773685778572334, 'footAreaRatioP05': 0.9943288650604766}, {'clip': 'walk', 'sample': 'late', 'frame': 45, 'kneeAreaRatioP05': 0.7944974077040935, 'footAreaRatioP05': 0.9985037657028226}, {'clip': 'walk', 'sample': 'last', 'frame': 61, 'kneeAreaRatioP05': 0.177043498921835, 'footAreaRatioP05': 0.9999955088177968}], 'pass': False}"
+  },
+  "runtimeInventory": {
+    "jointCount": 29,
+    "controlJoints": [],
+    "pass": true
+  },
+  "authorRuntimeJointParity": {
+    "maximumHingeErrorDegrees": 0,
+    "maximumRollErrorDegrees": 0,
+    "pass": true
+  },
+  "skinnedVertexParity": {
+    "p95Metres": 0.0000032829595966177294,
+    "maximumMetres": 0.000008955276825872716,
+    "pass": true
+  },
+  "runtimeRenderEvidence": {
+    "frames": [
+      0,
+      15,
+      30,
+      45,
+      61
+    ],
+    "views": [
+      "front",
+      "right",
+      "back"
+    ],
+    "renderCount": 15,
+    "distinctNonterminalFrontRenderHashes": 4,
+    "maximumVertexDisplacementFromFrame0Metres": 0.6808018422385516,
+    "frameMaximumVertexDisplacementFromFrame0Metres": {
+      "0": 0,
+      "15": 0.6808018422385516,
+      "30": 0.33667624768807386,
+      "45": 0.504982428003089,
+      "61": 9.072423123540376e-7
+    },
+    "pass": true,
+    "artifactRetention": "measured_metadata_only"
+  },
+  "export": {
+    "arpExporterOnly": true,
+    "sourceMeshesExported": false,
+    "actions": [
+      {
+        "name": "Ashveil_Mixamo_Walk_InPlace_60fps",
+        "frames": 62,
+        "fps": 60,
+        "durationSeconds": 1.0166666666666666
+      }
+    ],
+    "gltfStructure": {
+      "animations": [
+        {
+          "name": "Ashveil_Mixamo_Walk_InPlace_60fps",
+          "startSeconds": 0,
+          "endSeconds": 1.0166666666666666,
+          "maximumSamples": 62
+        }
+      ],
+      "skins": 1,
+      "joints": 29,
+      "jointNames": [
+        "head.x",
+        "neck.x",
+        "arm_twist.l",
+        "forearm_twist.l",
+        "hand.l",
+        "forearm_stretch.l",
+        "arm_stretch.l",
+        "shoulder.l",
+        "arm_twist.r",
+        "forearm_twist.r",
+        "hand.r",
+        "forearm_stretch.r",
+        "arm_stretch.r",
+        "shoulder.r",
+        "spine_02.x",
+        "spine_01.x",
+        "toes_01.l",
+        "foot.l",
+        "leg_twist.l",
+        "leg_stretch.l",
+        "thigh_twist.l",
+        "thigh_stretch.l",
+        "toes_01.r",
+        "foot.r",
+        "leg_twist.r",
+        "leg_stretch.r",
+        "thigh_twist.r",
+        "thigh_stretch.r",
+        "root.x"
+      ],
+      "controlJoints": []
+    },
+    "runtimeInventory": {
+      "jointCount": 29,
+      "controlJoints": [],
+      "pass": true
+    }
+  },
+  "humanReview": {
+    "pass": false,
+    "required": true
+  },
+  "productionPass": false,
+  "canonicalViewerPromoted": false,
+  "artifacts": [
+    {
+      "path": "masculine-auto-rig-pro-mixamo-ashveil-wip.glb",
+      "sha256": "81e988aa37fb8f4409e6e81975e53ce4e42af16d3e91b31e616e6c9001652960",
+      "bytes": 555764
+    }
+  ]
+}

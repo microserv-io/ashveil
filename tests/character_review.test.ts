@@ -28,15 +28,23 @@ import {
 import {
   activateReviewAction,
   assertReviewClipInventory,
+  BIND_POSE_CLIP,
+  BIND_POSE_LABEL,
   buildReviewClips,
+  captureBindTransforms,
+  deactivateReviewActions,
   loopConfiguration,
   nearestContactPhase,
+  restoreBindTransforms,
   type ReviewAction,
 } from '../spike/character/animation-review'
 import {
+  buildMixamoAshveilReviewClips,
   buildTransferV2ReviewClips,
+  defaultReviewClip,
   initialReviewSource,
   type TransferV2Report,
+  type MixamoAshveilReport,
 } from '../spike/character/review-source'
 
 function validSummary(): CharacterAssetSummary {
@@ -130,12 +138,120 @@ describe('character review contract', () => {
     expect(html).toMatch(/aria-label="Review asset source"/)
     expect(html).toMatch(/value="canonical">Canonical review/)
     expect(html).toMatch(/value="wip-transfer-v2">WIP transfer v2/)
+    expect(html).toMatch(/value="diagnostic-mixamo-ashveil">Ashveil model · Mixamo walk diagnostic/)
   })
 
   it('defaults to canonical and exposes the isolated transfer v2 route', () => {
-    expect(initialReviewSource('').id).toBe('canonical')
+    const canonical = initialReviewSource('')
+    expect(canonical.id).toBe('canonical')
     expect(initialReviewSource('?source=unknown').id).toBe('canonical')
-    expect(initialReviewSource('?source=wip-transfer-v2').id).toBe('wip-transfer-v2')
+    const wip = initialReviewSource('?source=wip-transfer-v2')
+    expect(wip.id).toBe('wip-transfer-v2')
+    const mixamoAshveil = initialReviewSource('?source=diagnostic-mixamo-ashveil')
+    expect(mixamoAshveil.id).toBe('diagnostic-mixamo-ashveil')
+    expect(defaultReviewClip(canonical, 'Ashveil_ARP_Benchmark')).toBe('Ashveil_ARP_Benchmark')
+    expect(defaultReviewClip(wip, 'Ashveil_ARP_Benchmark')).toBe(BIND_POSE_CLIP)
+    expect(defaultReviewClip(mixamoAshveil, 'Ashveil_ARP_Benchmark')).toBe(BIND_POSE_CLIP)
+    expect(BIND_POSE_LABEL).toBe('Bind pose')
+  })
+
+  it('loads the attached walk as motion-only on the Ashveil model', () => {
+    const report = JSON.parse(
+      readFileSync(
+        new URL(
+          '../docs/art-pipeline/tripo-style-test/output/base-models/masculine/rigged-auto-rig-pro-mixamo-ashveil-wip/report.json',
+          import.meta.url,
+        ),
+        'utf8',
+      ),
+    ) as MixamoAshveilReport
+    const exported = report.export.actions.map(({ name, durationSeconds }) => ({
+      name,
+      duration: durationSeconds,
+    }))
+    const clips = buildMixamoAshveilReviewClips(report, exported)
+
+    expect(report.source).toMatchObject({ file: '1-Walking.fbx', meshes: 0, frames: 62, fps: 60 })
+    expect(report.export.sourceMeshesExported).toBe(false)
+    expect(report.objectiveAcceptance.failedGates.sort()).toEqual([
+      'headBodySeam',
+      'meshDeformation',
+      'sagittalPosture',
+    ])
+    expect(report.humanReview.pass).toBe(false)
+    expect(report.productionPass).toBe(false)
+    expect(report.canonicalViewerPromoted).toBe(false)
+    expect(clips).toEqual([expect.objectContaining({
+      name: 'Ashveil_Mixamo_Walk_InPlace_60fps',
+      frameStart: 0,
+      frameEnd: 61,
+      framesPerSecond: 60,
+    })])
+  })
+
+  it('rejects missing or passing Ashveil Mixamo blocker objects', () => {
+    const report = JSON.parse(
+      readFileSync(
+        new URL(
+          '../docs/art-pipeline/tripo-style-test/output/base-models/masculine/rigged-auto-rig-pro-mixamo-ashveil-wip/report.json',
+          import.meta.url,
+        ),
+        'utf8',
+      ),
+    ) as MixamoAshveilReport
+    const exported = report.export.actions.map(({ name, durationSeconds }) => ({
+      name,
+      duration: durationSeconds,
+    }))
+
+    for (const blocker of ['sagittalPosture', 'headBodySeam', 'meshDeformation'] as const) {
+      const missing = structuredClone(report) as unknown as Record<string, unknown>
+      delete missing[blocker]
+      expect(() => buildMixamoAshveilReviewClips(missing as unknown as MixamoAshveilReport, exported)).toThrow(
+        /exact rejected motion-only diagnostic/,
+      )
+
+      const passing = structuredClone(report) as unknown as Record<string, unknown>
+      passing[blocker] = { pass: true }
+      expect(() => buildMixamoAshveilReviewClips(passing as unknown as MixamoAshveilReport, exported)).toThrow(
+        /exact rejected motion-only diagnostic/,
+      )
+    }
+  })
+
+  it('restores exact unanimated transforms after locomotion playback', () => {
+    const root = new THREE.Group()
+    const bone = new THREE.Bone()
+    root.add(bone)
+    root.position.set(1, 2, 3)
+    bone.position.set(0.2, 0.4, 0.6)
+    bone.quaternion.setFromEuler(new THREE.Euler(0.1, 0.2, 0.3))
+    const bind = captureBindTransforms(root)
+
+    root.position.set(9, 8, 7)
+    bone.position.set(-2, -4, -6)
+    bone.quaternion.identity()
+    restoreBindTransforms(bind)
+
+    expect(BIND_POSE_CLIP).toBe('__bind_pose__')
+    expect(root.position.toArray()).toEqual([1, 2, 3])
+    expect(bone.position.toArray()).toEqual([0.2, 0.4, 0.6])
+    expect(bone.quaternion.toArray()).not.toEqual([0, 0, 0, 1])
+  })
+
+  it('stops the active mixer action before restoring bind pose', () => {
+    const root = new THREE.Group()
+    root.position.set(1, 2, 3)
+    const bind = captureBindTransforms(root)
+    root.position.set(8, 9, 10)
+    const previous = recordedAction('walk')
+    const mixerCalls: string[] = []
+
+    deactivateReviewActions(previous.action, { stopAllAction: () => mixerCalls.push('stopAllAction') }, bind)
+
+    expect(previous.calls).toEqual(['stopFading', 'fadeOut:0.12', 'stop', 'reset'])
+    expect(mixerCalls).toEqual(['stopAllAction'])
+    expect(root.position.toArray()).toEqual([1, 2, 3])
   })
 
   it('derives the WIP clip inventory and exact timing from its report', () => {

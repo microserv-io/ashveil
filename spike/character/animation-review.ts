@@ -63,6 +63,45 @@ const REQUIRED_LOCOMOTION_CLIPS = [
 ] as const
 
 const ACTION_FADE_SECONDS = 0.12
+export const BIND_POSE_CLIP = '__bind_pose__'
+export const BIND_POSE_LABEL = 'Bind pose'
+
+interface BindTransform {
+  object: THREE.Object3D
+  position: THREE.Vector3
+  quaternion: THREE.Quaternion
+  scale: THREE.Vector3
+  morphTargetInfluences: number[] | null
+}
+
+export function captureBindTransforms(root: THREE.Object3D): BindTransform[] {
+  const bind: BindTransform[] = []
+  root.traverse((object) => {
+    const mesh = object as THREE.Mesh
+    bind.push({
+      object,
+      position: object.position.clone(),
+      quaternion: object.quaternion.clone(),
+      scale: object.scale.clone(),
+      morphTargetInfluences: mesh.morphTargetInfluences?.slice() ?? null,
+    })
+  })
+  return bind
+}
+
+export function restoreBindTransforms(bind: readonly BindTransform[]): void {
+  for (const entry of bind) {
+    entry.object.position.copy(entry.position)
+    entry.object.quaternion.copy(entry.quaternion)
+    entry.object.scale.copy(entry.scale)
+    const mesh = entry.object as THREE.Mesh
+    if (entry.morphTargetInfluences && mesh.morphTargetInfluences) {
+      mesh.morphTargetInfluences.splice(0, mesh.morphTargetInfluences.length, ...entry.morphTargetInfluences)
+    }
+    entry.object.updateMatrix()
+  }
+  bind[0]?.object.updateMatrixWorld(true)
+}
 
 export function buildReviewClips(report: ReviewAnimationReport): ReviewClip[] {
   const locomotion = report.locomotion?.clips ?? []
@@ -140,6 +179,21 @@ export function activateReviewAction(
   selected.setEffectiveWeight(1)
   selected.play()
   selected.paused = true
+}
+
+export function deactivateReviewActions(
+  previous: ReviewAction | null,
+  mixer: { stopAllAction(): unknown },
+  bind: readonly BindTransform[],
+): void {
+  if (previous) {
+    previous.stopFading()
+    previous.fadeOut(ACTION_FADE_SECONDS)
+    previous.stop()
+    previous.reset()
+  }
+  mixer.stopAllAction()
+  restoreBindTransforms(bind)
 }
 
 export function nearestContactPhase(

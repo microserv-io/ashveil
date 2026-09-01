@@ -41,13 +41,34 @@ SOURCE_TO_TARGET = {
     "RightArm": "c_arm_fk.r",
     "RightForeArm": "c_forearm_fk.r",
 }
-FRAME_ALIGNMENT = {
-    source: target
-    for source, target in SOURCE_TO_TARGET.items()
-    if source not in {"Hips"}
+SOURCE_TO_DEFORM = {
+    "Hips": "root.x",
+    "LeftUpLeg": "thigh_stretch.l",
+    "LeftLeg": "leg_stretch.l",
+    "LeftFoot": "foot.l",
+    "LeftToe": "toes_01.l",
+    "RightUpLeg": "thigh_stretch.r",
+    "RightLeg": "leg_stretch.r",
+    "RightFoot": "foot.r",
+    "RightToe": "toes_01.r",
+    "Spine1": "spine_01.x",
+    "Spine2": "spine_02.x",
+    "Neck": "neck.x",
+    "Head": "head.x",
+    "LeftShoulder": "shoulder.l",
+    "LeftArm": "arm_stretch.l",
+    "LeftForeArm": "forearm_stretch.l",
+    "RightShoulder": "shoulder.r",
+    "RightArm": "arm_stretch.r",
+    "RightForeArm": "forearm_stretch.r",
 }
 TARGET_CONTROLS = set(SOURCE_TO_TARGET.values())
 SWITCH_CONTROLS = {"c_foot_ik.l", "c_foot_ik.r", "c_hand_ik.l", "c_hand_ik.r"}
+KNEE_AREA_P05_LIMIT = 0.70
+KNEE_AREA_MINIMUM_LIMIT = 0.50
+FOOT_AREA_P05_LIMIT = 0.80
+PARITY_P95_LIMIT = 0.001
+PARITY_MAXIMUM_LIMIT = 0.002
 
 
 def parse_args():
@@ -180,64 +201,191 @@ def remove_constant_hips_vertical_offset(source, action, frames):
     return result
 
 
-def world_rotation(rig, pose_bone):
-    return (rig.matrix_world.to_quaternion() @ pose_bone.matrix.to_quaternion()).normalized()
-
-
-def residual_roll_degrees(reference, actual):
-    delta = (reference.conjugated() @ actual).normalized()
-    twist = delta.copy()
-    twist.x = 0.0
-    twist.z = 0.0
-    if twist.magnitude < 1e-12:
-        return 0.0
-    twist.normalize()
-    angle = math.degrees(twist.angle)
-    return min(angle, 360.0 - angle)
-
-
-def align_source_full_frames(source, target):
-    target_frames = {
-        source_name: world_rotation(target, target.pose.bones[target_name])
-        for source_name, target_name in FRAME_ALIGNMENT.items()
+def semantic_sample_frames(cleanup, frames):
+    contacts = []
+    for side in ("left", "right"):
+        for segment in cleanup.get("contactSchedule", {}).get(side, []):
+            contacts.append((int(segment["startFrame"]) + int(segment["endFrameInclusive"])) // 2 + 1)
+    contact = contacts[0] if contacts else max(2, frames // 4)
+    return {
+        "first": 1,
+        "contact": min(frames, max(1, contact)),
+        "mid": (frames + 1) // 2,
+        "last": frames,
     }
-    for source_name in FRAME_ALIGNMENT:
-        source_bone = source.pose.bones[source_name]
-        source_rotation = (
-            source.matrix_world.to_quaternion().conjugated() @ target_frames[source_name]
-        ).normalized()
-        matrix = source_rotation.to_matrix().to_4x4()
-        matrix.translation = source_bone.head
-        source_bone.matrix = matrix
-        bpy.context.view_layer.update()
 
-    direction_dots = {}
-    residual_rolls = {}
-    for source_name, target_name in FRAME_ALIGNMENT.items():
-        source_rotation = world_rotation(source, source.pose.bones[source_name])
-        target_rotation = world_rotation(target, target.pose.bones[target_name])
-        source_direction = source_rotation @ Vector((0.0, 1.0, 0.0))
-        target_direction = target_rotation @ Vector((0.0, 1.0, 0.0))
-        direction_dots[source_name] = source_direction.normalized().dot(target_direction.normalized())
-        residual_rolls[source_name] = residual_roll_degrees(target_rotation, source_rotation)
-    minimumDirectionDot = min(direction_dots.values())
-    maximumResidualRollDegrees = max(residual_rolls.values())
-    passed = minimumDirectionDot >= 0.999 and maximumResidualRollDegrees <= 2.0
+
+def validate_source_cleanup(cleanup, clip_id):
+    bvh = cleanup.get("bvh", {})
+    loop = bvh.get("loop", {})
+    knee = bvh.get("kneePlane", {})
+    contacts = bvh.get("contacts", {})
+    in_place_range = cleanup.get("inPlaceRootHorizontalRange", [math.inf, math.inf])
+    contact_samples = [contacts.get(side, {}).get("sampleCount", 0) for side in ("left", "right")]
+    contact_speeds = [
+        contacts.get(side, {}).get("horizontalSpeedP95")
+        for side in ("left", "right")
+    ]
     result = {
-        "method": "source_pose_full_quaternion_frame",
-        "minimumDirectionDot": minimumDirectionDot,
-        "maximumResidualRollDegrees": maximumResidualRollDegrees,
-        "directionDots": direction_dots,
-        "residualRollDegrees": residual_rolls,
-        "targetRestOrPoseChanged": False,
-        "pass": passed,
+        "inPlaceRootRangeMetres": max(abs(value) for value in in_place_range),
+        "loopValueMaximumMetres": loop.get("valueMax", math.inf),
+        "loopVelocityMaximumMetresPerFrame": loop.get("velocityMaxPerFrame", math.inf),
+        "kneePlaneSignFlipFractions": {
+            side: knee.get(side, {}).get("signFlipFraction", math.inf)
+            for side in ("left", "right")
+        },
+        "contactSamples": dict(zip(("left", "right"), contact_samples)),
+        "contactSpeedP95MetresPerSecond": dict(zip(("left", "right"), contact_speeds)),
+        "sourceFitP95Metres": bvh.get("sourceFitP95", math.inf),
+        "sourceFitMaximumMetres": bvh.get("sourceFitMax", math.inf),
+        "cleanupCorrectionP95Metres": cleanup.get("cleanupCorrectionP95", math.inf),
+        "cleanupCorrectionMaximumMetres": cleanup.get("cleanupCorrectionMax", math.inf),
+        "reciprocalArmCorrelation": bvh.get("reciprocalArmCorrelation", math.inf),
     }
-    if not passed:
-        raise RuntimeError(f"Full-frame source rest alignment failed: {result}")
+    result["pass"] = (
+        result["inPlaceRootRangeMetres"] <= 1e-6
+        and result["loopValueMaximumMetres"] <= 0.001
+        and result["loopVelocityMaximumMetresPerFrame"] <= 0.001
+        and all(value == 0.0 for value in result["kneePlaneSignFlipFractions"].values())
+        and all(value >= 1 for value in contact_samples)
+        and all(value is not None and value <= 0.3 for value in contact_speeds)
+        and min(contacts.get(side, {}).get("minimumFootOrToeHeight", -math.inf) for side in ("left", "right")) >= -0.02
+        and result["sourceFitP95Metres"] <= 0.06
+        and result["sourceFitMaximumMetres"] <= 0.18
+        and result["cleanupCorrectionP95Metres"] <= 0.15
+        and result["cleanupCorrectionMaximumMetres"] <= 0.3
+        and result["reciprocalArmCorrelation"] <= -0.65
+    )
+    if not result["pass"]:
+        raise RuntimeError(f"{clip_id} regenerated source no longer passes source-motion gates: {result}")
     return result
 
 
-def configure_remap(source, source_action, target, map_path):
+def world_pose_matrix(rig, bone_name):
+    return rig.matrix_world @ rig.pose.bones[bone_name].matrix
+
+
+def capture_expected_frame_contract(source, source_action, target, sample_frames):
+    BASE.assign_action(source, source_action)
+    target_bind = {
+        "controls": {
+            source_name: world_pose_matrix(target, target_name).copy()
+            for source_name, target_name in SOURCE_TO_TARGET.items()
+        },
+        "deforms": {
+            source_name: world_pose_matrix(target, target_name).copy()
+            for source_name, target_name in SOURCE_TO_DEFORM.items()
+        },
+    }
+    source_samples = {}
+    for label, frame in sample_frames.items():
+        bpy.context.scene.frame_set(frame)
+        bpy.context.view_layer.update()
+        source_samples[label] = {
+            source_name: world_pose_matrix(source, source_name).copy()
+            for source_name in SOURCE_TO_TARGET
+        }
+    expected = {"controls": {}, "deforms": {}}
+    for layer in ("controls", "deforms"):
+        for label in sample_frames:
+            expected[layer][label] = {}
+            for source_name in SOURCE_TO_TARGET:
+                target_bind_matrix = target_bind[layer][source_name]
+                source_bind = source_samples["first"][source_name]
+                source_sample = source_samples[label][source_name]
+                expected_matrix = target_bind_matrix @ source_bind.inverted_safe() @ source_sample
+                expected[layer][label][source_name] = expected_matrix
+    return {
+        "sampleFrames": sample_frames,
+        "expected": expected,
+        "sourceReferenceFrame": 1,
+    }
+
+
+def quaternion_angle_degrees(first, second):
+    angle = math.degrees(first.rotation_difference(second).angle)
+    return min(angle, 360.0 - angle)
+
+
+def axial_error_degrees(expected_rotation, actual_rotation):
+    delta = (expected_rotation.conjugated() @ actual_rotation).normalized()
+    twist = delta.copy()
+    twist.x = 0.0
+    twist.z = 0.0
+    if twist.magnitude <= 1e-12:
+        return 0.0
+    twist.normalize()
+    return min(math.degrees(twist.angle), 360.0 - math.degrees(twist.angle))
+
+
+def validate_expected_frames(target, target_action, contract):
+    BASE.assign_action(target, target_action)
+    target_maps = {"controls": SOURCE_TO_TARGET, "deforms": SOURCE_TO_DEFORM}
+    samples = []
+    angular_by_sample = {}
+    for label, frame in contract["sampleFrames"].items():
+        bpy.context.scene.frame_set(frame)
+        bpy.context.view_layer.update()
+        angular_by_sample[label] = {"controls": {}, "deforms": {}}
+        for layer, mapping in target_maps.items():
+            for source_name, target_name in mapping.items():
+                expected = contract["expected"][layer][label][source_name]
+                actual = world_pose_matrix(target, target_name)
+                expected_rotation = expected.to_quaternion().normalized()
+                actual_rotation = actual.to_quaternion().normalized()
+                angular = quaternion_angle_degrees(expected_rotation, actual_rotation)
+                axial = axial_error_degrees(expected_rotation, actual_rotation)
+                delta_euler = (expected_rotation.conjugated() @ actual_rotation).to_euler("XYZ")
+                yaw_pitch = max(abs(math.degrees(delta_euler.x)), abs(math.degrees(delta_euler.z)))
+                hinge = angular if source_name.endswith(("Leg", "ForeArm", "Foot", "Toe")) else 0.0
+                head = (expected.translation - actual.translation).length
+                angular_by_sample[label][layer][source_name] = angular
+                samples.append({
+                    "sample": label,
+                    "frame": frame,
+                    "layer": layer,
+                    "sourceBone": source_name,
+                    "targetBone": target_name,
+                    "headErrorMetres": head,
+                    "angularErrorDegrees": angular,
+                    "axialErrorDegrees": axial,
+                    "yawPitchErrorDegrees": yaw_pitch,
+                    "hingeErrorDegrees": hinge,
+                })
+    symmetry = []
+    for label in contract["sampleFrames"]:
+        for layer in target_maps:
+            for left_name in (name for name in SOURCE_TO_TARGET if name.startswith("Left")):
+                right_name = "Right" + left_name[4:]
+                if right_name in SOURCE_TO_TARGET:
+                    symmetry.append(abs(
+                        angular_by_sample[label][layer][left_name]
+                        - angular_by_sample[label][layer][right_name]
+                    ))
+    result = {
+        "sampleFrames": contract["sampleFrames"],
+        "maximumHeadErrorMetres": max(item["headErrorMetres"] for item in samples),
+        "maximumAngularErrorDegrees": max(item["angularErrorDegrees"] for item in samples),
+        "maximumAxialErrorDegrees": max(item["axialErrorDegrees"] for item in samples),
+        "maximumYawPitchErrorDegrees": max(item["yawPitchErrorDegrees"] for item in samples),
+        "maximumHingeErrorDegrees": max(item["hingeErrorDegrees"] for item in samples),
+        "maximumPhaseSymmetryErrorDegrees": max(symmetry, default=0.0),
+        "samples": samples,
+    }
+    result["pass"] = (
+        result["maximumHeadErrorMetres"] <= 0.0005
+        and result["maximumAngularErrorDegrees"] <= 0.1
+        and result["maximumAxialErrorDegrees"] <= 0.1
+        and result["maximumYawPitchErrorDegrees"] <= 0.25
+        and result["maximumHingeErrorDegrees"] <= 0.25
+        and result["maximumPhaseSymmetryErrorDegrees"] <= 3.0
+    )
+    if not result["pass"]:
+        raise RuntimeError(f"Independent expected-frame gate failed: {result}")
+    return result
+
+
+def configure_remap(source, source_action, target, map_path, sample_frames):
     scene = bpy.context.scene
     scene.batch_retarget = False
     scene.source_rig = source.name
@@ -262,13 +410,24 @@ def configure_remap(source, source_action, target, map_path):
     result = bpy.ops.arp.auto_scale("EXEC_DEFAULT")
     if result != {"FINISHED"} or max(source.scale) - min(source.scale) > 1e-8:
         raise RuntimeError("ARP Auto Scale did not produce uniform scale")
-    result = bpy.ops.arp.redefine_rest_pose("EXEC_DEFAULT", preserve=True, rest_pose="REST")
+    expected_contract = capture_expected_frame_contract(
+        source, source_action, target, sample_frames,
+    )
+    BASE.assign_action(source, source_action)
+    scene.frame_set(1)
+    bpy.context.view_layer.update()
+    result = bpy.ops.arp.redefine_rest_pose("EXEC_DEFAULT", preserve=True, rest_pose="CURRENT")
     if result != {"FINISHED"}:
         raise RuntimeError(f"ARP source rest preparation failed: {result}")
-    alignment = align_source_full_frames(source, target)
     if bpy.ops.arp.save_pose_rest("EXEC_DEFAULT") != {"FINISHED"}:
         raise RuntimeError("ARP source rest save failed")
-    return alignment
+    return {
+        "method": "arp_current_pose_source_sample_1",
+        "sourceReferenceFrame": 1,
+        "targetRestOrPoseChanged": False,
+        "bmapRotationOffsetsAreZero": True,
+        "pass": True,
+    }, expected_contract
 
 
 def set_limb_mode(target, legs_fk, arms_fk):
@@ -342,6 +501,266 @@ def target_root_height(target, action, frame, bind_floor):
     return (target.matrix_world @ target.pose.bones["c_root_master.x"].head).z - bind_floor
 
 
+def percentile(values, quantile):
+    if not values:
+        raise RuntimeError("Cannot measure an empty deformation sample")
+    ordered = sorted(values)
+    index = min(len(ordered) - 1, max(0, math.ceil(len(ordered) * quantile) - 1))
+    return ordered[index]
+
+
+def evaluated_positions(mesh):
+    evaluated = mesh.evaluated_get(bpy.context.evaluated_depsgraph_get())
+    return [evaluated.matrix_world @ vertex.co for vertex in evaluated.data.vertices]
+
+
+def weighted_region_vertices(mesh, groups, center_z, radius, side):
+    group_indices = {mesh.vertex_groups[name].index for name in groups}
+    selected = set()
+    for vertex in mesh.data.vertices:
+        world = mesh.matrix_world @ vertex.co
+        correct_side = world.x >= 0.0 if side == "l" else world.x <= 0.0
+        weight = sum(item.weight for item in vertex.groups if item.group in group_indices)
+        if correct_side and weight >= 0.5 and abs(world.z - center_z) <= radius:
+            selected.add(vertex.index)
+    return selected
+
+
+def frozen_deformation_patches(target, body):
+    patches = {"knees": {}, "feet": {}}
+    for side in ("l", "r"):
+        knee_z = (target.matrix_world @ target.data.bones[f"leg_stretch.{side}"].head_local).z
+        knee_vertices = weighted_region_vertices(
+            body, (f"thigh_stretch.{side}", f"leg_stretch.{side}"), knee_z, 0.09, side,
+        )
+        foot_z = (target.matrix_world @ target.data.bones[f"foot.{side}"].head_local).z
+        foot_vertices = weighted_region_vertices(
+            body, (f"foot.{side}", f"toes_01.{side}"), foot_z, 0.16, side,
+        )
+        for label, vertices in (("knees", knee_vertices), ("feet", foot_vertices)):
+            faces = [
+                tuple(polygon.vertices)
+                for polygon in body.data.polygons
+                if len(polygon.vertices) == 3 and all(index in vertices for index in polygon.vertices)
+            ]
+            if not faces:
+                raise RuntimeError(f"Frozen {label} patch is empty for {side}")
+            patches[label][side] = faces
+    bind_positions = evaluated_positions(body)
+    for regions in patches.values():
+        for faces in regions.values():
+            for face in faces:
+                a, b, c = (bind_positions[index] for index in face)
+                if (b - a).cross(c - a).length <= 1e-10:
+                    raise RuntimeError("Frozen deformation patch contains a degenerate bind triangle")
+    return patches, bind_positions
+
+
+def patch_area_ratios(positions, bind_positions, faces):
+    ratios = []
+    for face in faces:
+        bind_a, bind_b, bind_c = (bind_positions[index] for index in face)
+        pose_a, pose_b, pose_c = (positions[index] for index in face)
+        bind_area = (bind_b - bind_a).cross(bind_c - bind_a).length
+        pose_area = (pose_b - pose_a).cross(pose_c - pose_a).length
+        ratios.append(pose_area / bind_area)
+    return ratios
+
+
+def validate_mesh_deformation(target, body, actions, clip_reports, patches, bind_positions):
+    knee_ratios = []
+    foot_ratios = []
+    samples = []
+    action_by_name = {action.name: action for action in actions}
+    for clip in clip_reports:
+        action = action_by_name[clip["outputName"]]
+        for label, frame in clip["outputSemanticFrames"].items():
+            BASE.assign_action(target, action)
+            bpy.context.scene.frame_set(frame)
+            bpy.context.view_layer.update()
+            positions = evaluated_positions(body)
+            sample_knees = []
+            sample_feet = []
+            for side in ("l", "r"):
+                sample_knees.extend(patch_area_ratios(
+                    positions, bind_positions, patches["knees"][side],
+                ))
+                sample_feet.extend(patch_area_ratios(
+                    positions, bind_positions, patches["feet"][side],
+                ))
+            knee_ratios.extend(sample_knees)
+            foot_ratios.extend(sample_feet)
+            samples.append({
+                "clip": clip["id"],
+                "sample": label,
+                "frame": frame,
+                "kneeAreaRatioP05": percentile(sample_knees, 0.05),
+                "footAreaRatioP05": percentile(sample_feet, 0.05),
+            })
+    result = {
+        "measured": True,
+        "kneePatchAreaRatioP05": percentile(knee_ratios, 0.05),
+        "kneePatchAreaRatioMinimum": min(knee_ratios),
+        "kneePatchFacesBelowHalf": sum(value < KNEE_AREA_MINIMUM_LIMIT for value in knee_ratios),
+        "footPatchAreaRatioP05": percentile(foot_ratios, 0.05),
+        "footPatchAreaRatioMinimum": min(foot_ratios),
+        "samples": samples,
+    }
+    result["pass"] = (
+        result["kneePatchAreaRatioP05"] >= KNEE_AREA_P05_LIMIT
+        and result["kneePatchFacesBelowHalf"] == 0
+        and result["footPatchAreaRatioP05"] >= FOOT_AREA_P05_LIMIT
+    )
+    if not result["pass"]:
+        raise RuntimeError(f"Transfer v2 mesh deformation gate failed: {result}")
+    return result
+
+
+def output_semantic_frames(source_frames, output_end):
+    scale = OUTPUT_FPS / SOURCE_FPS
+    return {
+        label: int(round((frame - 1) * scale))
+        for label, frame in source_frames.items()
+        if 0 <= int(round((frame - 1) * scale)) <= output_end
+    }
+
+
+def validate_retimed_expected_frames(target, action, contract, output_frames):
+    retimed_contract = {
+        "sampleFrames": output_frames,
+        "expected": contract["expected"],
+    }
+    return validate_expected_frames(target, action, retimed_contract)
+
+
+def runtime_bone(runtime, source_name):
+    if source_name in runtime.pose.bones:
+        return runtime.pose.bones[source_name]
+    candidates = [bone for bone in runtime.pose.bones if bone.name.endswith(source_name)]
+    if len(candidates) != 1:
+        raise RuntimeError(f"Runtime bone correspondence missing for {source_name}")
+    return candidates[0]
+
+
+def validate_blender_glb_parity(glb_path, target, meshes, actions, clip_reports):
+    reference = {}
+    for clip in clip_reports:
+        action = next(item for item in actions if item.name == clip["outputName"])
+        BASE.assign_action(target, action)
+        reference[action.name] = {}
+        for frame in sorted(set(clip["outputSemanticFrames"].values())):
+            bpy.context.scene.frame_set(frame)
+            bpy.context.view_layer.update()
+            reference[action.name][frame] = {
+                "vertices": {mesh.name: evaluated_positions(mesh) for mesh in meshes},
+                "deforms": {
+                    name: world_pose_matrix(target, name).copy()
+                    for name in SOURCE_TO_DEFORM.values()
+                },
+            }
+    before = set(bpy.data.objects)
+    if bpy.ops.import_scene.gltf(filepath=str(glb_path)) != {"FINISHED"}:
+        raise RuntimeError("Transfer v2 GLB could not be re-imported for parity")
+    imported_objects = set(bpy.data.objects) - before
+    runtime_armatures = [obj for obj in imported_objects if obj.type == "ARMATURE"]
+    runtime_meshes = [obj for obj in imported_objects if obj.type == "MESH"]
+    if len(runtime_armatures) != 1:
+        raise RuntimeError(f"Expected one runtime armature, found {len(runtime_armatures)}")
+    runtime = runtime_armatures[0]
+    vertex_errors = []
+    hinge_errors = []
+    roll_errors = []
+    for action in actions:
+        imported_action = next(
+            (candidate for candidate in bpy.data.actions if candidate != action and candidate.name.startswith(action.name)),
+            None,
+        )
+        if imported_action is None:
+            raise RuntimeError(f"Imported GLB action missing for parity: {action.name}")
+        BASE.assign_action(runtime, imported_action)
+        for frame, sample in reference[action.name].items():
+            bpy.context.scene.frame_set(frame)
+            bpy.context.view_layer.update()
+            for name, source_positions in sample["vertices"].items():
+                runtime_mesh = next(
+                    (mesh for mesh in runtime_meshes if mesh.name.startswith(name) and len(mesh.data.vertices) == len(source_positions)),
+                    None,
+                )
+                if runtime_mesh is None:
+                    raise RuntimeError(f"Runtime mesh correspondence missing for {name}")
+                vertex_errors.extend(
+                    (source - actual).length
+                    for source, actual in zip(source_positions, evaluated_positions(runtime_mesh))
+                )
+            for bone_name, source_matrix in sample["deforms"].items():
+                actual_matrix = runtime.matrix_world @ runtime_bone(runtime, bone_name).matrix
+                source_rotation = source_matrix.to_quaternion().normalized()
+                actual_rotation = actual_matrix.to_quaternion().normalized()
+                error = quaternion_angle_degrees(source_rotation, actual_rotation)
+                if bone_name.startswith(("leg_stretch", "forearm_stretch")):
+                    hinge_errors.append(error)
+                roll_errors.append(axial_error_degrees(source_rotation, actual_rotation))
+    result = {
+        "measured": True,
+        "authorRuntimeHingeErrorDegrees": max(hinge_errors, default=0.0),
+        "authorRuntimeRollErrorDegrees": max(roll_errors, default=0.0),
+        "skinnedVertexP95Metres": percentile(vertex_errors, 0.95),
+        "skinnedVertexMaximumMetres": max(vertex_errors),
+    }
+    result["pass"] = (
+        result["authorRuntimeHingeErrorDegrees"] <= 0.1
+        and result["authorRuntimeRollErrorDegrees"] <= 0.1
+        and result["skinnedVertexP95Metres"] <= PARITY_P95_LIMIT
+        and result["skinnedVertexMaximumMetres"] <= PARITY_MAXIMUM_LIMIT
+    )
+    for obj in imported_objects:
+        bpy.data.objects.remove(obj, do_unlink=True)
+    if not result["pass"]:
+        raise RuntimeError(f"Transfer v2 Blender/GLB parity failed: {result}")
+    return result
+
+
+def render_semantic_samples(output, target, meshes, actions, clip_reports):
+    directory = output / "renders"
+    directory.mkdir(parents=True, exist_ok=True)
+    scene = bpy.context.scene
+    camera_data = bpy.data.cameras.new("TransferV2SemanticCamera")
+    camera = bpy.data.objects.new("TransferV2SemanticCamera", camera_data)
+    scene.collection.objects.link(camera)
+    scene.camera = camera
+    camera_data.type = "ORTHO"
+    camera_data.ortho_scale = 2.15
+    scene.render.engine = "BLENDER_WORKBENCH"
+    scene.render.resolution_x = scene.render.resolution_y = 512
+    scene.render.resolution_percentage = 100
+    scene.render.image_settings.file_format = "PNG"
+    target.hide_render = True
+    action_by_name = {action.name: action for action in actions}
+    paths = []
+    center = Vector((0.0, 0.0, 0.95))
+    views = {
+        "front": Vector((0.0, -4.5, 1.05)),
+        "right": Vector((4.5, 0.0, 1.05)),
+        "back": Vector((0.0, 4.5, 1.05)),
+    }
+    for clip in clip_reports:
+        BASE.assign_action(target, action_by_name[clip["outputName"]])
+        for label, frame in clip["outputSemanticFrames"].items():
+            scene.frame_set(frame)
+            bpy.context.view_layer.update()
+            for view, location in views.items():
+                camera.location = location
+                camera.rotation_mode = "QUATERNION"
+                camera.rotation_quaternion = (center - location).to_track_quat("-Z", "Y")
+                path = directory / f"{clip['id']}-{label}-{view}.png"
+                scene.render.filepath = str(path)
+                bpy.ops.render.render(write_still=True)
+                paths.append(path)
+    bpy.data.objects.remove(camera, do_unlink=True)
+    bpy.data.cameras.remove(camera_data)
+    return paths
+
+
 def main():
     args = parse_args()
     source_directory = Path(args.source).resolve()
@@ -373,25 +792,51 @@ def main():
     state_before = BASE.target_state(target, meshes)
     BASE.clear_animation(target)
     bind_floor, bind_root_height = bind_floor_and_root_height(target, meshes)
+    body = bpy.data.objects.get("Body")
+    if body not in meshes:
+        raise RuntimeError("Accepted Body mesh was not found")
+    deformation_patches, bind_body_positions = frozen_deformation_patches(target, body)
 
     actions = []
     clip_reports = []
     convention_reports = []
     vertical_reports = []
-    alignment_reports = []
+    calibration_reports = []
     for clip_id, output_name in CLIPS:
         motion = source_by_id[clip_id]["sourceMotion"]
         frames = int(motion["frames"])
+        cleanup_path = source_directory / clip_id / "game_loop_cleanup.json"
+        cleanup = json.loads(cleanup_path.read_text(encoding="utf-8"))
+        source_cleanup_acceptance = validate_source_cleanup(cleanup, clip_id)
+        knee_cleanup = cleanup.get("kneeSagittalCorrection", {})
+        foot_cleanup = cleanup.get("footToeSwingCorrection", {})
+        provenance = cleanup.get("sourceProvenance", {})
+        knee_sides = [knee_cleanup.get(side, {}) for side in ("left", "right")]
+        foot_sides = [foot_cleanup.get(side, {}) for side in ("left", "right")]
+        cleanup_pass = (
+            all(item.get("pass") is True for item in knee_sides)
+            and max(item.get("maximumHingeOffSagittalDegrees", math.inf) for item in knee_sides) <= 15.0 + 1e-6
+            and all(item.get("pass") is True for item in foot_sides)
+            and max(item.get("maximumSwingOffSagittalDegrees", math.inf) for item in foot_sides) <= 5.0
+            and max(item.get("maximumUnobservableAxialRollDegrees", math.inf) for item in foot_sides) <= 5.0
+            and provenance.get("sourceFrameOneMaximumCorrectionMetres", math.inf) <= 1e-8
+        )
+        if not cleanup_pass:
+            raise RuntimeError(f"{clip_id} source anatomical cleanup gate failed")
+        sample_frames = semantic_sample_frames(cleanup, frames)
         source, source_action = import_source(source_directory / motion["path"], clip_id, frames)
         convention = assert_source_convention(source, target)
         vertical = remove_constant_hips_vertical_offset(source, source_action, frames)
-        alignment = configure_remap(source, source_action, target, map_path)
+        calibration, expected_contract = configure_remap(
+            source, source_action, target, map_path, sample_frames,
+        )
         target.animation_data.action = None
         set_limb_mode(target, legs_fk=True, arms_fk=True)
         target_action = BASE.retarget(source, source_action, target, frames)
         target_action.name = output_name
         key_limb_mode(target, target_action, 1, frames)
         keyed = validate_control_action(target_action)
+        expected_frames = validate_expected_frames(target, target_action, expected_contract)
         snapshots = BASE.deform_snapshots(target, target_action, range(1, frames + 1))
         root_distance = BASE.root_net_distance(target, target_action, 1, frames)
         self_containment = validate_action_self_containment(
@@ -406,6 +851,7 @@ def main():
             root_distance <= 0.001
             and root_height_error <= 0.001
             and self_containment["pass"]
+            and expected_frames["pass"]
         )
         if not skeletal_pass:
             raise RuntimeError(
@@ -413,10 +859,14 @@ def main():
                 f"bind height error {root_height_error}, self-containment {self_containment}"
             )
         output_end = BASE.retime_action(target_action, 1, frames)
+        output_frames = output_semantic_frames(sample_frames, output_end)
+        retimed_expected_frames = validate_retimed_expected_frames(
+            target, target_action, expected_contract, output_frames,
+        )
         actions.append(target_action)
         convention_reports.append({"id": clip_id, **convention})
         vertical_reports.append({"id": clip_id, **vertical})
-        alignment_reports.append({"id": clip_id, **alignment})
+        calibration_reports.append({"id": clip_id, **calibration})
         clip_reports.append({
             "id": clip_id,
             "sourcePath": motion["path"],
@@ -437,6 +887,18 @@ def main():
             "targetBindRelativeRootHeightMetres": root_height,
             "targetBindRelativeRootHeightErrorMetres": root_height_error,
             "actionSelfContainment": self_containment,
+            "independentExpectedFrames": expected_frames,
+            "retimedExpectedFrames": retimed_expected_frames,
+            "outputSemanticFrames": output_frames,
+            "sourceCleanupPath": str(cleanup_path.relative_to(source_directory)),
+            "sourceCleanupSha256": BASE.sha256(cleanup_path),
+            "sourceAnatomicalCleanup": {
+                "kneeSagittalCorrection": knee_cleanup,
+                "footToeSwingCorrection": foot_cleanup,
+                "sourceFrameOneMaximumCorrectionMetres": provenance["sourceFrameOneMaximumCorrectionMetres"],
+                "pass": cleanup_pass,
+            },
+            "sourceCleanupAcceptance": source_cleanup_acceptance,
             "targetMeshContactMeasured": False,
             "pass": skeletal_pass,
         })
@@ -448,6 +910,9 @@ def main():
     target_unchanged = state_before == state_after
     if not target_unchanged:
         raise RuntimeError("Transfer v2 changed accepted target rest, geometry, weights, or modifiers")
+    mesh_deformation = validate_mesh_deformation(
+        target, body, actions, clip_reports, deformation_patches, bind_body_positions,
+    )
     BASE.configure_export(bpy.context.scene, actions)
     BASE.assign_action(target, actions[0])
     blend_path = output / "masculine-auto-rig-pro-transfer-v2.blend"
@@ -476,13 +941,17 @@ def main():
     )
     if not clip_timing_pass:
         raise RuntimeError(f"Transfer v2 GLB clip timing failed: {glb['animations']}")
+    export_parity = validate_blender_glb_parity(glb_path, target, meshes, actions, clip_reports)
+    render_paths = render_semantic_samples(output, target, meshes, actions, clip_reports)
     objective_pass = (
         all(item["pass"] for item in convention_reports)
         and all(item["pass"] for item in vertical_reports)
-        and all(item["pass"] for item in alignment_reports)
+        and all(item["pass"] for item in calibration_reports)
         and all(item["pass"] for item in clip_reports)
         and target_unchanged
         and clip_timing_pass
+        and mesh_deformation["pass"]
+        and export_parity["pass"]
     )
     if not objective_pass:
         raise RuntimeError("Transfer v2 objective acceptance failed")
@@ -507,11 +976,9 @@ def main():
         },
         "sourceConvention": {"clips": convention_reports, "pass": True},
         "sourceVerticalNormalization": {"clips": vertical_reports, "pass": True},
-        "restFrameAlignment": {
-            "method": "source_only_full_local_quaternion_frames",
-            "directionDotThreshold": 0.999,
-            "residualRollThresholdDegrees": 2.0,
-            "clips": alignment_reports,
+        "sourceRestCalibration": {
+            "method": "arp_current_pose_source_sample_1",
+            "clips": calibration_reports,
             "pass": True,
         },
         "mapping": {
@@ -531,6 +998,7 @@ def main():
             "bindRelativeRootHeightMetres": bind_root_height,
             "before": state_before,
             "after": state_after,
+            "cleanBindUnchanged": target_unchanged,
             "unchanged": target_unchanged,
         },
         "retargetSkeletal": {
@@ -539,24 +1007,23 @@ def main():
             "directTargetBoneRotationsAuthoredByAshveil": False,
             "pass": True,
         },
-        "meshDeformation": {
-            "measured": False,
-            "pass": False,
-            "reason": "Skinned contact, deformation, and silhouette gates remain pending.",
-        },
+        "meshDeformation": mesh_deformation,
         "exportParity": {
             "arpExporterOnly": True,
             "clipTimingPass": True,
             "runtimeInventoryPass": not glb["controlJoints"],
-            "blenderGlbSkinnedParityMeasured": False,
-            "pass": False,
-            "reason": "Per-frame skinned Blender/GLB parity remains pending.",
+            "blenderGlbSkinnedParityMeasured": True,
+            **export_parity,
             "gltfStructure": glb,
         },
         "humanReview": {"pass": False, "required": True},
         "productionPass": False,
         "canonicalViewerPromoted": False,
-        "artifacts": [BASE.artifact(blend_path), BASE.artifact(glb_path)],
+        "artifacts": [
+            BASE.artifact(blend_path),
+            BASE.artifact(glb_path),
+            *[BASE.artifact(path) for path in render_paths],
+        ],
     }
     (output / "report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 

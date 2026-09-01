@@ -41,12 +41,13 @@ type TransferV2Report = {
   objectiveAcceptance?: { pass?: boolean }
   sourceConvention?: { pass?: boolean }
   sourceVerticalNormalization?: { pass?: boolean }
-  restFrameAlignment?: { pass?: boolean }
+  sourceRestCalibration?: { pass?: boolean }
   target?: { unchanged?: boolean }
   retargetSkeletal?: { pass?: boolean }
-  exportParity?: { clipTimingPass?: boolean; pass?: boolean }
+  exportParity?: { clipTimingPass?: boolean; runtimeInventoryPass?: boolean; pass?: boolean }
   meshDeformation?: { pass?: boolean }
   humanReview?: { pass?: boolean }
+  productionPass?: boolean
   canonicalViewerPromoted?: boolean
 }
 
@@ -168,24 +169,26 @@ function canExecute(candidate: string): boolean {
   }
 }
 
-function assertGeneratedReport(path: string): void {
+export function assertGeneratedTransferV2Report(path: string): void {
   const report = JSON.parse(readFileSync(path, 'utf8')) as TransferV2Report
   const objectiveGates = [
     report.objectiveAcceptance?.pass,
     report.sourceConvention?.pass,
     report.sourceVerticalNormalization?.pass,
-    report.restFrameAlignment?.pass,
+    report.sourceRestCalibration?.pass,
     report.target?.unchanged,
     report.retargetSkeletal?.pass,
     report.exportParity?.clipTimingPass,
+    report.meshDeformation?.pass,
+    report.exportParity?.runtimeInventoryPass,
+    report.exportParity?.pass,
   ]
   if (report.schemaVersion !== 'ashveil.auto-rig-pro-transfer-v2' || objectiveGates.some((pass) => pass !== true)) {
     throw new Error('Transfer v2 completed without every objective diagnostic gate passing.')
   }
   if (
-    report.meshDeformation?.pass !== false ||
-    report.exportParity?.pass !== false ||
     report.humanReview?.pass !== false ||
+    report.productionPass !== false ||
     report.canonicalViewerPromoted !== false
   ) {
     throw new Error('Transfer v2 must remain fail-closed for unmeasured production gates.')
@@ -248,7 +251,7 @@ function run(): void {
     throw new Error(`Transfer v2 completed without required artifact: ${missing}`)
   }
   try {
-    assertGeneratedReport(resolve(stagingOutput, 'report.json'))
+    assertGeneratedTransferV2Report(resolve(stagingOutput, 'report.json'))
   } catch (error) {
     rmSync(stagingOutput, { recursive: true, force: true })
     throw error

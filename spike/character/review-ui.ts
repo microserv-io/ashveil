@@ -2,7 +2,7 @@ import { REQUIRED_SEMANTIC_MESHES, type SemanticMeshName } from './review-contra
 import type { RigReport } from './asset-inspection'
 import type { CameraPreset, ScaleMode } from './view-contract'
 import { nextLookMode, type LookMode } from './game-look'
-import type { ReviewClip } from './animation-review'
+import { BIND_POSE_CLIP, BIND_POSE_LABEL, type ReviewClip } from './animation-review'
 import { REVIEW_SOURCES, type ReviewSource, type ReviewSourceId } from './review-source'
 
 export interface ReviewUiEvents {
@@ -70,6 +70,7 @@ export class ReviewUi {
   private lookMode: LookMode = 'diagnostic'
   private controlsEnabled = false
   private stressSelected = true
+  private bindSelected = false
 
   constructor(private readonly events: ReviewUiEvents) {
     this.assetSourceSelect.replaceChildren(
@@ -148,8 +149,9 @@ export class ReviewUi {
     this.intentState.textContent = this.poseMetric(pose)
   }
 
-  populateClips(clips: readonly ReviewClip[], selected: string): void {
+  populateClips(clips: readonly ReviewClip[], selected: string, includeBind = false): void {
     this.animationSelect.replaceChildren(
+      ...(includeBind ? [this.bindPoseOption()] : []),
       ...clips.map((clip) => {
         const option = document.createElement('option')
         option.value = clip.name
@@ -157,7 +159,8 @@ export class ReviewUi {
         return option
       }),
     )
-    this.setSelectedClip(clips.find((clip) => clip.name === selected)!)
+    if (selected === BIND_POSE_CLIP) this.setBindSelected()
+    else this.setSelectedClip(clips.find((clip) => clip.name === selected)!)
   }
 
   setSelectedClip(clip: ReviewClip): void {
@@ -165,7 +168,19 @@ export class ReviewUi {
     this.timeScrub.min = String(clip.frameStart)
     this.timeScrub.max = String(clip.frameEnd)
     this.timeScrub.step = '1'
+    this.bindSelected = false
     this.stressSelected = clip.kind === 'stress'
+    this.updateControlAvailability()
+  }
+
+  setBindSelected(): void {
+    this.animationSelect.value = BIND_POSE_CLIP
+    this.bindSelected = true
+    this.stressSelected = false
+    this.poseState.textContent = BIND_POSE_LABEL
+    this.timeState.textContent = '—'
+    this.intentState.textContent = 'Unanimated GLB bind transforms'
+    this.timeScrub.value = '0'
     this.updateControlAvailability()
   }
 
@@ -332,6 +347,13 @@ export class ReviewUi {
     return label
   }
 
+  private bindPoseOption(): HTMLOptionElement {
+    const option = document.createElement('option')
+    option.value = BIND_POSE_CLIP
+    option.textContent = BIND_POSE_LABEL
+    return option
+  }
+
   private enableRigControls(enabled: boolean): void {
     this.controlsEnabled = enabled
     this.updateControlAvailability()
@@ -341,9 +363,9 @@ export class ReviewUi {
     this.animationSelect.disabled = !this.controlsEnabled
     this.poseSelect.disabled = !this.controlsEnabled || !this.stressSelected
     this.previousPose.disabled = !this.controlsEnabled || !this.stressSelected
-    this.playPause.disabled = !this.controlsEnabled
+    this.playPause.disabled = !this.controlsEnabled || this.bindSelected
     this.nextPose.disabled = !this.controlsEnabled || !this.stressSelected
-    this.timeScrub.disabled = !this.controlsEnabled
+    this.timeScrub.disabled = !this.controlsEnabled || this.bindSelected
   }
 }
 

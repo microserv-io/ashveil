@@ -8,12 +8,13 @@ experience and the design constraints that produce it.
 
 ## How to read and maintain this document
 
-Every statement that can constrain a feature has one of three statuses:
+Every statement that can constrain a feature has one of four statuses:
 
 | Status | Meaning | Implementation rule |
 | --- | --- | --- |
 | **Decided** | The current design. | Features must match it. Change the GDD in the same PR if the design changes. |
 | **Direction** | The leading hypothesis, still requiring a spike or validation. | Prototype against it, but do not build costly dependencies on it as if it were final. |
+| **Finding** | Evidence observed in a bounded prototype or test. | It may justify a decision, but does not imply production acceptance outside its stated scope. |
 | **Open** | A real decision that has not been made. | Do not silently turn it into a default. Resolve it before dependent implementation. |
 
 The GDD is deliberately incomplete. It should gain detail when a decision is being
@@ -194,6 +195,30 @@ When a feature changes a player-facing rule, its PR must:
   normalises and validates it, a human approves the visual evidence, and Ashveil
   freezes the accepted source/runtime identities and contract. Generated output is
   never canonical merely because automation completed.
+- **Canonical humanoid stance and topology.** A base character must have a neutral,
+  upright canonical stance plus deformation-ready knee and elbow topology. The
+  launch bodies must remain compatible with one armor-authoring reference body.
+- **Continuous neck contract.** A humanoid must use either one watertight body or a
+  standard modular neck socket. A modular socket requires identical, coincident neck
+  rings and compatible skin weights on the head and body; a merely overlapping seam
+  is not acceptable.
+- **Toe controls are optional.** Gameplay humanoids and boot cosmetics do not require
+  independently animated toe controls. Static deform toe joints remain where the
+  current skin weights require them; a flat, stable foot chain is the baseline.
+
+### Findings
+
+- **The retarget path is technically viable.** A motion-only Mixamo FBX was
+  retargeted onto the Ashveil masculine model as a 62-frame, 60 fps in-place walk.
+  The proof retained anatomical limb mapping, flat-foot contact, an exact loop and
+  micrometre-scale skinned-vertex parity in the browser GLB. This proves the bounded
+  transfer and validation path, not production animation or character acceptance.
+- **The current generated base model is a NO-GO.** Its canonical stance leans
+  backward; its separate Body and Head neck boundaries begin up to 14.77 mm apart,
+  grow to about 37 mm in motion and carry mismatched weights; and its knee patch
+  reaches a minimum triangle-area ratio of about 0.073 with 18 faces below half
+  their bind area. These are source-character failures that animation retargeting
+  cannot repair safely.
 
 ### Direction
 
@@ -276,6 +301,10 @@ The local motion spike established further animation rules:
   contractual. A `+Z`/`-Z` mismatch, direction-only rest alignment and absolute hip
   height layering caused the earlier reversed limbs, axial twist and floating body;
   mesh quality must not be blamed until those transfer gates pass.
+- Source anatomical cleanup must preserve every earlier source-motion gate. The
+  transfer-v2 knee/foot correction met its new angular caps but introduced a
+  knee-plane reversal, removed a walk contact sample and broke loop velocity. Such a
+  source cannot enter retarget evaluation even when its bind frame is exact.
 - ARP's native FK-to-IK leg snap is rejected for this rig. It preserved endpoints
   while changing evaluated twist matrices and skinned vertices by hundreds of
   millimetres. Endpoint parity cannot substitute for deform-matrix and skinned-mesh
@@ -365,7 +394,12 @@ These are unresolved decisions, not implied future features.
 - The canonical source height and how it maps to the renderer's actor-radius scaling.
 - The source/runtime coordinate contract: up and forward axes, ground origin and
   anatomical side naming.
-- Whether neck and wrist component seams are welded or intentionally retained.
+- Regenerate or repair the humanoid base against the upright stance, neck continuity
+  and joint-deformation contracts before another production acceptance run.
+- Whether the next humanoid uses one joined body or the standardized modular head
+  socket; wrist continuity remains a separate unresolved seam decision.
+- Rerun the accepted walk-transfer gates and representative armor-fit tests on that
+  replacement body.
 - Whether semantic source objects remain separate or are consolidated into fewer
   runtime meshes and primitives.
 - Tripo's real acceptance and repeatability rate across masculine and feminine
@@ -373,8 +407,9 @@ These are unresolved decisions, not implied future features.
   seams, rig deformation, animation quality and exports.
 - Feminine parity against a reviewed humanoid contract, including independently
   measured landmarks, shared hair/socket compatibility and deformation stress poses.
-- Skeleton contracts and validation methods for quadrupeds and other nonhumanoid
-  archetypes; `humanoid.v1` does not supply placeholders or evidence for them.
+- A separate rig and animation pipeline for quadrupeds and other nonhumanoid
+  creatures. Mixamo is not the solution for these archetypes, and `humanoid.v1`
+  does not supply placeholders or evidence for them.
 - The production body-mask and armor-cage fitting method. The axis-cropped proxy
   failed its boundary-quality review, so it cannot stand in for authored slot
   boundaries or representative pose and clipping tests.

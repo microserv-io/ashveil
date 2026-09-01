@@ -22,6 +22,7 @@
     "art:auto-rig-pro-transfer-v2": "tsx scripts/art/auto-rig-pro-transfer-v2.ts",
     "art:auto-rig-pro-transfer-v3": "tsx scripts/art/auto-rig-pro-transfer-v3.ts",
     "art:auto-rig-pro-procedural-v1": "tsx scripts/art/auto-rig-pro-procedural-v1.ts",
+    "art:auto-rig-pro-mixamo-ashveil": "tsx scripts/art/auto-rig-pro-mixamo-ashveil.ts",
     "art:character-review": "npm run assets && vite --config spike/character/vite.config.ts",
     "art:character-review:build": "npm run assets && vite build --config spike/character/vite.config.ts",
     "perf": "node scripts/perf.mjs",

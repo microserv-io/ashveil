@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -12,6 +13,12 @@ from visualization.joints2bvh import Joint2BVHConvertor
 
 LEFT_LEG = (1, 4, 7, 10)
 RIGHT_LEG = (2, 5, 8, 11)
+MAXIMUM_HINGE_OFF_SAGITTAL_DEGREES = 15.0
+MAXIMUM_FOOT_SWING_OFF_SAGITTAL_DEGREES = 5.0
+
+
+def array_sha256(values: np.ndarray) -> str:
+    return hashlib.sha256(np.ascontiguousarray(values).tobytes()).hexdigest()
 
 
 def rotate_to_positive_z(positions: np.ndarray) -> tuple[np.ndarray, float, np.ndarray]:
@@ -131,37 +138,136 @@ def detect_contacts(
     ]
 
 
-def knee_plane_reference(positions: np.ndarray, leg: tuple[int, int, int, int]) -> np.ndarray:
-    hip, knee, ankle, _toe = leg
-    plane = np.cross(positions[:, knee] - positions[:, hip], positions[:, ankle] - positions[:, knee])
-    plane /= np.maximum(np.linalg.norm(plane, axis=-1, keepdims=True), 1e-8)
-    reference = np.median(plane, axis=0)
-    return reference / max(np.linalg.norm(reference), 1e-8)
+def transported_lateral_axis(positions: np.ndarray, frame: int) -> np.ndarray:
+    lateral = positions[frame, LEFT_LEG[0]] - positions[frame, RIGHT_LEG[0]]
+    return lateral / max(np.linalg.norm(lateral), 1e-8)
 
 
-def enforce_knee_plane(
-    positions: np.ndarray,
-    leg: tuple[int, int, int, int],
-    reference: np.ndarray,
-) -> tuple[np.ndarray, list[int]]:
-    hip, knee, ankle, _toe = leg
+def flexion_degrees(hip: np.ndarray, knee: np.ndarray, ankle: np.ndarray) -> float:
+    upper = knee - hip
+    lower = ankle - knee
+    cosine = np.dot(upper, lower) / max(np.linalg.norm(upper) * np.linalg.norm(lower), 1e-8)
+    return float(np.degrees(np.arccos(np.clip(cosine, -1.0, 1.0))))
+
+
+def bend_off_sagittal_degrees(
+    hip: np.ndarray,
+    knee: np.ndarray,
+    ankle: np.ndarray,
+    lateral: np.ndarray,
+) -> float:
+    leg_axis = ankle - hip
+    leg_axis /= max(np.linalg.norm(leg_axis), 1e-8)
+    closest = hip + leg_axis * np.dot(knee - hip, leg_axis)
+    bend = knee - closest
+    lateral_bend = lateral - leg_axis * np.dot(lateral, leg_axis)
+    lateral_bend /= max(np.linalg.norm(lateral_bend), 1e-8)
+    sagittal = bend - lateral_bend * np.dot(bend, lateral_bend)
+    if np.linalg.norm(bend) <= 1e-8 or np.linalg.norm(sagittal) <= 1e-8:
+        return 0.0
+    cosine = np.dot(bend, sagittal) / (np.linalg.norm(bend) * np.linalg.norm(sagittal))
+    return float(np.degrees(np.arccos(np.clip(abs(cosine), -1.0, 1.0))))
+
+
+def correct_knee_sagittal_planes(positions: np.ndarray) -> tuple[np.ndarray, dict[str, object]]:
     result = positions.copy()
-    corrected = []
-    for frame in range(len(result)):
-        plane = np.cross(result[frame, knee] - result[frame, hip], result[frame, ankle] - result[frame, knee])
-        alignment = np.dot(plane, reference) / max(np.linalg.norm(plane), 1e-8)
-        if alignment >= 0.35:
-            continue
-        axis = result[frame, ankle] - result[frame, hip]
-        axis /= max(np.linalg.norm(axis), 1e-8)
-        relative = result[frame, knee] - result[frame, hip]
-        closest = result[frame, hip] + axis * np.dot(relative, axis)
-        perpendicular_length = np.linalg.norm(result[frame, knee] - closest)
-        desired = np.cross(axis, reference)
-        desired /= max(np.linalg.norm(desired), 1e-8)
-        result[frame, knee] = closest + desired * perpendicular_length
-        corrected.append(frame)
-    return result, corrected
+    evidence = {}
+    for side, leg in (("left", LEFT_LEG), ("right", RIGHT_LEG)):
+        hip_index, knee_index, ankle_index, _toe = leg
+        before = []
+        corrected_frames = []
+        for frame in range(1, len(result) - 1):
+            hip = result[frame, hip_index]
+            knee = result[frame, knee_index]
+            ankle = result[frame, ankle_index]
+            flexion = flexion_degrees(hip, knee, ankle)
+            lateral = transported_lateral_axis(result, frame)
+            off_sagittal = bend_off_sagittal_degrees(hip, knee, ankle, lateral)
+            if flexion < 15.0:
+                continue
+            before.append(off_sagittal)
+            if off_sagittal <= MAXIMUM_HINGE_OFF_SAGITTAL_DEGREES:
+                continue
+            leg_axis = ankle - hip
+            leg_axis /= max(np.linalg.norm(leg_axis), 1e-8)
+            closest = hip + leg_axis * np.dot(knee - hip, leg_axis)
+            bend = knee - closest
+            lateral_bend = lateral - leg_axis * np.dot(lateral, leg_axis)
+            lateral_bend /= max(np.linalg.norm(lateral_bend), 1e-8)
+            sagittal = bend - lateral_bend * np.dot(bend, lateral_bend)
+            sagittal /= max(np.linalg.norm(sagittal), 1e-8)
+            lateral_sign = 1.0 if np.dot(bend, lateral_bend) >= 0.0 else -1.0
+            limit = np.radians(MAXIMUM_HINGE_OFF_SAGITTAL_DEGREES)
+            direction = sagittal * np.cos(limit) + lateral_bend * lateral_sign * np.sin(limit)
+            result[frame, knee_index] = closest + direction * np.linalg.norm(bend)
+            corrected_frames.append(frame)
+        after = [
+            bend_off_sagittal_degrees(
+                result[frame, hip_index],
+                result[frame, knee_index],
+                result[frame, ankle_index],
+                transported_lateral_axis(result, frame),
+            )
+            for frame in range(1, len(result) - 1)
+            if flexion_degrees(
+                result[frame, hip_index], result[frame, knee_index], result[frame, ankle_index]
+            ) >= 15.0
+        ]
+        evidence[side] = {
+            "correctedFrames": corrected_frames,
+            "eligibleFrames": len(after),
+            "beforeMaximumHingeOffSagittalDegrees": max(before, default=0.0),
+            "maximumHingeOffSagittalDegrees": max(after, default=0.0),
+            "pass": max(after, default=0.0) <= MAXIMUM_HINGE_OFF_SAGITTAL_DEGREES + 1e-6,
+        }
+    result[0] = positions[0]
+    result[-1] = positions[-1]
+    return result, evidence
+
+
+def stabilize_foot_toe_swing(positions: np.ndarray) -> tuple[np.ndarray, dict[str, object]]:
+    result = positions.copy()
+    evidence = {}
+    limit = np.radians(MAXIMUM_FOOT_SWING_OFF_SAGITTAL_DEGREES - 1e-3)
+    for side, leg in (("left", LEFT_LEG), ("right", RIGHT_LEG)):
+        _hip, _knee, ankle_index, toe_index = leg
+        before = []
+        corrected_frames = []
+        for frame in range(1, len(result) - 1):
+            lateral = transported_lateral_axis(result, frame)
+            toe_vector = result[frame, toe_index] - result[frame, ankle_index]
+            sagittal = toe_vector - lateral * np.dot(toe_vector, lateral)
+            sagittal_length = np.linalg.norm(sagittal)
+            if sagittal_length <= 1e-8:
+                continue
+            lateral_value = np.dot(toe_vector, lateral)
+            off_sagittal = float(np.degrees(np.arctan2(abs(lateral_value), sagittal_length)))
+            before.append(off_sagittal)
+            if off_sagittal <= MAXIMUM_FOOT_SWING_OFF_SAGITTAL_DEGREES:
+                continue
+            sagittal /= sagittal_length
+            lateral_sign = 1.0 if lateral_value >= 0.0 else -1.0
+            direction = sagittal * np.cos(limit) + lateral * lateral_sign * np.sin(limit)
+            result[frame, toe_index] = result[frame, ankle_index] + direction * np.linalg.norm(toe_vector)
+            corrected_frames.append(frame)
+        after = []
+        for frame in range(1, len(result) - 1):
+            lateral = transported_lateral_axis(result, frame)
+            toe_vector = result[frame, toe_index] - result[frame, ankle_index]
+            sagittal = toe_vector - lateral * np.dot(toe_vector, lateral)
+            after.append(float(np.degrees(np.arctan2(
+                abs(np.dot(toe_vector, lateral)), max(np.linalg.norm(sagittal), 1e-8)
+            ))))
+        evidence[side] = {
+            "correctedFrames": corrected_frames,
+            "beforeMaximumSwingOffSagittalDegrees": max(before, default=0.0),
+            "maximumSwingOffSagittalDegrees": max(after, default=0.0),
+            "maximumUnobservableAxialRollDegrees": 0.0,
+            "pass": max(after, default=0.0) <= MAXIMUM_FOOT_SWING_OFF_SAGITTAL_DEGREES + 1e-6,
+        }
+    result[0] = positions[0]
+    result[-1] = positions[-1]
+    return result, evidence
 
 
 def loop_metrics(positions: np.ndarray) -> dict[str, float]:
@@ -265,10 +371,6 @@ def main() -> None:
         raise ValueError("Source loop must contain an odd number of samples")
     rotated, heading_correction, original_displacement = rotate_to_positive_z(original)
     in_place, root_path = make_in_place(rotated)
-    knee_references = {
-        "left": knee_plane_reference(in_place, LEFT_LEG),
-        "right": knee_plane_reference(in_place, RIGHT_LEG),
-    }
     blend_frames = 10 if arguments.clip == "idle" else 6
     cleaned = close_loop(in_place, blend_frames)
     contact_margin = 0.045 if arguments.clip == "idle" else 0.04
@@ -283,9 +385,14 @@ def main() -> None:
             maximum_contact_speed,
         )
     cleaned = close_loop(cleaned, blend_frames)
-    knee_corrections = {}
-    for side, leg in (("left", LEFT_LEG), ("right", RIGHT_LEG)):
-        cleaned, knee_corrections[side] = enforce_knee_plane(cleaned, leg, knee_references[side])
+    before_anatomical_correction = cleaned.copy()
+    cleaned, knee_corrections = correct_knee_sagittal_planes(cleaned)
+    cleaned, foot_swing_corrections = stabilize_foot_toe_swing(cleaned)
+    frame_one_correction = float(np.max(np.linalg.norm(
+        cleaned[0] - before_anatomical_correction[0], axis=-1,
+    )))
+    if frame_one_correction > 1e-8:
+        raise RuntimeError(f"Anatomical cleanup changed source frame 1 by {frame_one_correction}")
     foot_indices = [LEFT_LEG[2], LEFT_LEG[3], RIGHT_LEG[2], RIGHT_LEG[3]]
     minimum_foot_height = float(np.min(cleaned[:, foot_indices, 1]))
     if minimum_foot_height < 0:
@@ -331,7 +438,14 @@ def main() -> None:
         "loop": loop_metrics(cleaned),
         "stabilizationSegments": stabilization_segments,
         "contactSchedule": contact_schedule,
-        "kneePlaneCorrectedFrames": knee_corrections,
+        "sourceProvenance": {
+            "inputSourcePositionsSha256": hashlib.sha256(input_path.read_bytes()).hexdigest(),
+            "preAnatomicalCorrectionPositionsSha256": array_sha256(before_anatomical_correction),
+            "postAnatomicalCorrectionPositionsSha256": array_sha256(cleaned),
+            "sourceFrameOneMaximumCorrectionMetres": frame_one_correction,
+        },
+        "kneeSagittalCorrection": knee_corrections,
+        "footToeSwingCorrection": foot_swing_corrections,
         "verticalFloorOffset": max(0.0, -minimum_foot_height),
         "cleanupCorrectionMean": float(np.mean(correction)),
         "cleanupCorrectionP95": float(np.quantile(correction, 0.95)),

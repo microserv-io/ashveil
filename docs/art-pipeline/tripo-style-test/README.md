@@ -353,14 +353,13 @@ has not passed. The canonical viewer asset remains unchanged.
 
 ### Transfer-v2 FK benchmark
 
-Transfer-v2 isolates the two accepted locomotion sources that can exercise the
-verified correction; MoMask idle remains rejected and has no v2 action. It imports
-walk and sprint with forward `-Z` and up `Y`, verifies the source and target side/toe
+Transfer-v2 isolates the two locomotion sources that can exercise source-rest
+calibration; MoMask idle remains rejected and has no v2 action. It imports walk and
+sprint with forward `-Z` and up `Y`, verifies the source and target side/toe
 conventions, removes exactly the first-frame Hips world-height offset in the imported
-local basis, and preserves the source's frame-to-frame vertical motion. The source
-rest is then aligned from complete mapped target quaternion frames before the single
-Auto-Rig Pro bake. Direction agreement must be at least `0.999` and residual mapped
-limb roll at most 2 degrees.
+local basis, and preserves the source's frame-to-frame vertical motion. ARP now
+defines the imported source's current frame 1 as its rest pose before the single bake;
+the hash-pinned map has zero rotation offsets and the accepted target remains frozen.
 
 The v2 map benchmarks both legs entirely in FK (`thigh`, `leg`, `foot`, `toes`) and
 keeps the arms in FK. It contains no foot IK or pole targets, and terminal hands stay
@@ -368,14 +367,17 @@ unmapped at bind roll. FK switches and zero stretch are keyed at the action
 boundaries, then validated after deliberately applying the opposite ambient state.
 Native 20 fps keys are retimed exactly to 30 fps after retargeting.
 
-The retained report passes the bounded convention, vertical-normalization,
-full-frame alignment, target-immutability, self-containment, root and timing gates
-for `Ashveil_Walk_InPlace` and `Ashveil_Sprint_InPlace`. It remains diagnostic only:
-mesh deformation, skinned Blender/GLB parity and human review are not measured, and
-ARP's unweighted `c_traj` remains in the exported skin inventory. Those gates stay
-false, production acceptance stays false, and the canonical viewer is not changed.
-The isolated outputs are under
-`output/base-models/masculine/rigged-auto-rig-pro-transfer-v2`.
+The corrected staging run proved frame 1 and the duplicate terminal sample agree
+with the frozen target bind within one micrometre and effectively zero angular error.
+The new position-space knee and foot correction itself did not retain the accepted
+source contract: walk lost a left contact sample, introduced a 0.073 knee-plane sign
+flip fraction and reached 0.090 m/frame loop-velocity error. The transfer's later
+interior-frame failure is therefore diagnostic only, not valid retarget evidence.
+The pipeline now rechecks the full source-motion contract after cleanup and before
+ARP. Atomic staging discarded the run, so the previously retained diagnostic under
+`output/base-models/masculine/rigged-auto-rig-pro-transfer-v2` and the canonical
+viewer are unchanged. Transfer-v2 remains a NO-GO pending source correction that
+preserves loop, contact and knee-plane acceptance before retarget evaluation.
 
 ### Transfer-v3 ground/contact result
 
@@ -468,3 +470,69 @@ bounded-pass rule, no further trajectory or toe-off tuning was attempted. The co
 removed its staging directory before sprint, export or rendering. There is no
 procedural-v1 BLEND, GLB, report or render set, `humanReview` was never reached,
 production remains false, and the canonical viewer remains unchanged.
+
+## Mixamo FBX to Ashveil model result
+
+This bounded spike separates animation-transfer capability from source-character
+quality. The supplied `1-Walking.fbx` is motion-only: it contains 65 Mixamo bones and
+no mesh. Every visible and exported character surface is the existing Ashveil
+masculine model; no Mixamo mannequin is substituted into the result.
+
+### Decisions
+
+- Auto-Rig Pro retargeting uses selected mapped-bone rest calibration rather than
+  treating Mixamo and Ashveil rest orientations as identical.
+- Forward travel is removed from the source before retargeting. No target deform
+  bone or post-retarget horizontal root correction is used to disguise mapping
+  errors.
+- Legs and feet use the FK branch. Foot rotation is transferred as a source-parent-
+  relative delta onto the target parent-relative bind frame.
+- Toe controls are intentionally unmapped. Static deform toe joints remain because
+  the current skin weights reference them, while their pose inherits the FK foot.
+- Ground placement uses contact-constrained periodic root-world vertical
+  normalization. It authors the target root vertical trajectory per frame without
+  changing the source action or foot rotations. The correction is capped at 35 mm
+  with at most 20 mm frame-to-frame change, and its endpoint position and velocity
+  remain periodic.
+- Auto-Rig Pro exports with twist factor `1.0`. Loop endpoint and velocity, limb
+  hinge and axial rotation, foot contact, author/runtime joints and skinned vertices
+  remain independent gates.
+
+### Findings
+
+The deterministic proof produces one 62-frame, 60 fps
+`Ashveil_Mixamo_Walk_InPlace_60fps` action on the Ashveil model. The retargeted limbs
+pass the knee-direction and axial-twist gates, both feet achieve flat heel-and-
+forefoot contact, and the loop closes with zero endpoint rotation and less than one
+micrometre of endpoint translation error. The exported 29-joint browser GLB matches
+the authored animation with zero measured hinge/roll error and skinned-vertex error
+of `0.000003283 m` at p95 and `0.000008956 m` maximum.
+
+The generator stages the BLEND and 15 fixed-camera renders so their identities can
+be checked before acceptance. Packaging then removes the BLEND because it can embed
+licensed Auto-Rig Pro data and records the render review as measured metadata. Only
+the own-model runtime GLB and its report are retained; the motion FBX and Mixamo
+source character geometry are never copied into the repository. Packaging also
+removes Blender custom-property `extras`, so Auto-Rig Pro remap state and source-rig
+metadata do not leak into the retained runtime file.
+
+The current base character remains `diagnostic_rejected` and is a NO-GO for
+production. Its accepted frame-zero hip-to-shoulder baseline leans backward by
+`9.798°`. The fixed neck correspondence pairs 28 Body
+boundary vertices with 27 Head boundary vertices; their maximum bind gap is
+`0.014770 m`, their maximum animated gap is `0.037006 m`, and their maximum weight
+L1 difference is `1.0607`. The knee patch reaches a minimum area ratio of
+`0.072705`, with 18 faces below half their bind area. Retargeting, root placement and
+runtime export cannot turn those source mesh, stance and weighting defects into an
+acceptable production character.
+
+### Open items
+
+- Regenerate or repair the base model with a neutral upright stance and
+  deformation-ready knee and elbow topology.
+- Choose one watertight joined body or a standardized modular head socket with
+  identical coincident neck-ring topology and compatible weights.
+- Rerun this walk validation and representative armor-fit poses on the replacement
+  body before accepting either animation or equipment fitting.
+- Define a separate nonhumanoid creature rig and animation pipeline; Mixamo's
+  humanoid motion skeleton is not a quadruped or monster solution.
