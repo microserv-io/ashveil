@@ -60,13 +60,19 @@ input {
   z-index: 3;
 }
 
-.review-toolbar button {
+.review-toolbar button,
+.review-toolbar select {
   min-height: 2.5rem;
   padding: 0.35rem 0.75rem;
   border-color: #f26a1f;
   background: rgb(27 32 41 / 92%);
   box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 35%);
   backdrop-filter: blur(12px);
+}
+
+.review-toolbar select {
+  width: auto;
+  max-width: min(10rem, 42vw);
 }
 
 header,

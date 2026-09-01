@@ -21,18 +21,20 @@ import {
   type CameraPreset,
   type ScaleMode,
 } from './view-contract'
+import {
+  buildTransferV2ReviewClips,
+  initialReviewSource,
+  type ReviewSourceId,
+  type TransferV2Report,
+} from './review-source'
 
-const ARTIFACT_URL = new URL(
-  '../../docs/art-pipeline/tripo-style-test/output/base-models/masculine/rigged-auto-rig-pro/masculine-auto-rig-pro-diagnostic.glb',
-  import.meta.url,
-).href
-const REPORT_URL = new URL(
-  '../../docs/art-pipeline/tripo-style-test/output/base-models/masculine/rigged-auto-rig-pro/report.json',
-  import.meta.url,
-).href
+const reviewSource = initialReviewSource(globalThis.location.search)
+const ARTIFACT_URL = reviewSource.artifactUrl
+const REPORT_URL = reviewSource.reportUrl
 const KNIGHT_URL = './models/player.glb'
 
 interface ReviewState {
+  assetSource: ReviewSourceId
   loaded: boolean
   playing: boolean
   turntable: boolean
@@ -47,6 +49,7 @@ interface ReviewState {
 }
 
 const state: ReviewState = {
+  assetSource: reviewSource.id,
   loaded: false,
   playing: false,
   turntable: false,
@@ -76,6 +79,7 @@ let gameLook: GameLookOwner | null = null
 let gameLookActivated = false
 
 const ui = new ReviewUi(createUiEvents())
+ui.setReviewSource(reviewSource)
 const reviewScene = createReviewScene(ui.stage)
 const clock = new THREE.Clock()
 
@@ -125,6 +129,7 @@ function createUiEvents(): ReviewUiEvents {
     setScale: updateScale,
     setLookMode: updateLookMode,
     selectClip: selectAnimationClip,
+    selectSource: navigateToReviewSource,
   }
 }
 
@@ -132,15 +137,19 @@ async function loadReviewAsset(): Promise<void> {
   try {
     const [loadedReport, gltf] = await Promise.all([loadReport(), new GLTFLoader().loadAsync(ARTIFACT_URL)])
     const summary = summarizeAsset(gltf)
-    assertRigReport(loadedReport)
-    assertCharacterAssetSummary(summary, loadedReport.animation.name)
-
-    report = loadedReport
     clips = gltf.animations
-    reviewClips = buildReviewClips(report)
+    if (reviewSource.reportKind === 'canonical') {
+      report = loadedReport as RigReport
+      assertRigReport(report)
+      reviewClips = buildReviewClips(report)
+    } else {
+      report = null
+      reviewClips = buildTransferV2ReviewClips(loadedReport as TransferV2Report, summary.clips)
+    }
+    assertCharacterAssetSummary(summary, reviewClips[0]!.name)
     assertReviewClipInventory(reviewClips, clips)
     model = gltf.scene
-    model.name = 'Ashveil_Masculine_Diagnostic'
+    model.name = reviewSource.id === 'canonical' ? 'Ashveil_Masculine_Diagnostic' : 'Ashveil_WIP_Transfer_v2'
     const configured = configureAsset(model)
     semanticMeshes = configured.semanticMeshes
     sourceMaterials = configured.materials
@@ -157,8 +166,9 @@ async function loadReviewAsset(): Promise<void> {
 
     state.loaded = true
     Object.assign(globalThis.characterReview!, { model, mixer, clips, report })
-    ui.populateReport(report)
-    ui.populateClips(reviewClips, report.animation.name)
+    if (report) ui.populateReport(report)
+    else ui.populateDynamicSource(reviewSource)
+    ui.populateClips(reviewClips, reviewClips[0]!.name)
     ui.validated({
       meshes: configured.meshes,
       primitives: configured.primitives,
@@ -168,7 +178,7 @@ async function loadReviewAsset(): Promise<void> {
       nativeHeight,
     })
     updateScale('native')
-    selectAnimationClip(report.animation.name)
+    selectAnimationClip(reviewClips[0]!.name)
     void prepareGameLook([...semanticMeshes.values()])
   } catch (error) {
     state.failure = error instanceof Error ? error.message : String(error)
@@ -196,10 +206,10 @@ async function prepareGameLook(characterMeshes: readonly THREE.Mesh[]): Promise<
   }
 }
 
-async function loadReport(): Promise<RigReport> {
+async function loadReport(): Promise<unknown> {
   const response = await fetch(REPORT_URL)
   if (!response.ok) throw new Error(`Report failed to load: ${response.status} ${response.statusText}`)
-  return (await response.json()) as RigReport
+  return response.json()
 }
 
 function togglePlayback(): void {
@@ -214,7 +224,7 @@ function togglePlayback(): void {
 }
 
 function showReviewFrame(frame: number): void {
-  if (!report || !mixer || !activeAction || !selectedClip) return
+  if (!mixer || !activeAction || !selectedClip) return
   state.playing = false
   ui.setPlaying(false)
   state.frame = clamp(frame, selectedClip.frameStart, selectedClip.frameEnd)
@@ -233,7 +243,7 @@ function stepPose(direction: -1 | 1): void {
 }
 
 function selectAnimationClip(name: string): void {
-  if (!mixer || !report) return
+  if (!mixer) return
   const metadata = reviewClips.find((clip) => clip.name === name)
   const animation = clips.find((clip) => clip.name === name)
   if (!metadata || !animation) throw new Error(`Unknown review animation clip ${name}`)
@@ -352,15 +362,29 @@ function finishPlayback(): void {
 }
 
 function updateTimelineUi(): void {
-  if (!report || !selectedClip) return
+  if (!selectedClip) return
   if (selectedClip.kind === 'stress') {
+    if (!report) return
     state.pose = report.animation.poses.find((pose) => pose.frame === state.frame)?.name ?? 'between poses'
     ui.setTimeline(state.pose, state.frame, selectedClip.framesPerSecond)
+    return
+  }
+  if (selectedClip.contactSchedule.length === 0) {
+    state.pose = selectedClip.label
+    ui.setLocomotionTimeline(selectedClip.label, state.frame, selectedClip.framesPerSecond)
     return
   }
   const contact = nearestContactPhase(selectedClip.contactSchedule, state.frame)
   state.pose = contact.phase
   ui.setLocomotionTimeline(contact.phase, state.frame, selectedClip.framesPerSecond)
+}
+
+function navigateToReviewSource(id: ReviewSourceId): void {
+  if (id === state.assetSource) return
+  const url = new URL(globalThis.location.href)
+  if (id === 'canonical') url.searchParams.delete('source')
+  else url.searchParams.set('source', id)
+  globalThis.location.assign(url.href)
 }
 
 function clamp(value: number, minimum: number, maximum: number): number {

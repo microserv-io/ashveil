@@ -1,0 +1,102 @@
+{
+  "clip": "walk",
+  "frames": 41,
+  "fps": 20,
+  "sampleSpanSeconds": 2.0,
+  "headingCorrectionDegrees": 8.821615219116211,
+  "validatedRootDisplacementXZ": [
+    0.25806349515914917,
+    1.6628391742706299
+  ],
+  "referenceRootDistance": 1.682745099067688,
+  "referenceRootSpeed": 0.841372549533844,
+  "inPlaceRootHorizontalRange": [
+    0.0,
+    0.0
+  ],
+  "loop": {
+    "valueRms": 0.0,
+    "valueMax": 0.0,
+    "velocityRmsPerFrame": 0.0,
+    "velocityMaxPerFrame": 0.0
+  },
+  "stabilizationSegments": {
+    "left": [
+      {
+        "startFrame": 39,
+        "endFrameInclusive": 40,
+        "maximumHorizontalCorrection": 0.004205289254864572
+      }
+    ],
+    "right": [
+      {
+        "startFrame": 2,
+        "endFrameInclusive": 11,
+        "maximumHorizontalCorrection": 0.048440918487399315
+      }
+    ]
+  },
+  "contactSchedule": {
+    "left": [
+      {
+        "startFrame": 39,
+        "endFrameInclusive": 40
+      }
+    ],
+    "right": [
+      {
+        "startFrame": 2,
+        "endFrameInclusive": 10
+      }
+    ]
+  },
+  "kneePlaneCorrectedFrames": {
+    "left": [
+      36,
+      37,
+      38
+    ],
+    "right": []
+  },
+  "verticalFloorOffset": 0.0,
+  "cleanupCorrectionMean": 0.01624391349615025,
+  "cleanupCorrectionP95": 0.0976872213038032,
+  "cleanupCorrectionMax": 0.2072563202270271,
+  "bvh": {
+    "sourceFitP95": 0.031174671586030288,
+    "sourceFitMax": 0.0781002428557117,
+    "loop": {
+      "valueRms": 0.0,
+      "valueMax": 0.0,
+      "velocityRmsPerFrame": 0.0,
+      "velocityMaxPerFrame": 0.0
+    },
+    "reciprocalArmCorrelation": -0.6975891447349473,
+    "kneePlane": {
+      "left": {
+        "validFrames": 41,
+        "signFlipFraction": 0.0,
+        "normalDeviationP95Degrees": 23.511928141579286
+      },
+      "right": {
+        "validFrames": 41,
+        "signFlipFraction": 0.0,
+        "normalDeviationP95Degrees": 23.112132514527353
+      }
+    },
+    "contacts": {
+      "left": {
+        "sampleCount": 1,
+        "horizontalSpeedP95": 0.16821157019458288,
+        "horizontalSpeedMax": 0.16821157019458288,
+        "minimumFootOrToeHeight": 0.07088956885935369
+      },
+      "right": {
+        "sampleCount": 8,
+        "horizontalSpeedP95": 0.2613012217695663,
+        "horizontalSpeedMax": 0.28963747761763997,
+        "minimumFootOrToeHeight": 0.054001313036135715
+      }
+    }
+  }
+}

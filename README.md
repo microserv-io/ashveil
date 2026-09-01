@@ -170,6 +170,58 @@ npm run sim -- sweep --seeds 6 --minutes 4 --policy twinstick
 npm run sim -- sweep --seeds 6 --minutes 4 --policy brawler
 ```
 
+## Auto-Rig Pro transfer-v2 diagnostic
+
+The transfer-v2 benchmark retargets only the accepted MoMask walk and sprint loops
+onto the unchanged Auto-Rig Pro target. It imports BVH with forward `-Z` and up `Y`,
+checks left/right and toe conventions, removes the source Hips' constant world-space
+height while preserving every vertical delta, aligns complete source bone frames to
+the mapped target frames, and performs one Auto-Rig Pro bake per clip. Legs and arms
+are deliberately FK-only; hands stay unmapped at their accepted bind roll.
+
+```bash
+BLENDER_BIN=/Users/roccolangeweg/Applications/Blender.app/Contents/MacOS/Blender \
+  npm run art:auto-rig-pro-transfer-v2 -- \
+  --source docs/art-pipeline/ai-motion/momask \
+  --target docs/art-pipeline/tripo-style-test/output/base-models/masculine/rigged-auto-rig-pro/masculine-auto-rig-pro-spike.blend \
+  --output docs/art-pipeline/tripo-style-test/output/base-models/masculine/rigged-auto-rig-pro-transfer-v2
+```
+
+The retained diagnostic passes its bounded source convention, height normalization,
+rest-frame alignment, target immutability, self-contained switch, timing and root
+motion checks. Idle is explicitly rejected and produces no action. The output remains
+`diagnostic_not_production_ready`: skinned-mesh parity and human review are unmeasured,
+and the exported runtime inventory still contains ARP's unweighted `c_traj` root.
+Nothing is promoted to the canonical character viewer.
+
+Transfer-v3 records the walk's 273.46 mm pre-correction contact-sole offset as
+grounding input, not as an acceptance result. Its 20 mm sole-distance limit applies
+after the root and IK correction, alongside the stricter pose-pop checks. The
+220.31 mm pre-correction virtual-trajectory stance slide is likewise baseline input;
+only the corrected stance slide is gated against the fixed 50 mm limit. The final
+correction reached IK but failed closed: skinned Body displacement was 283.63 mm at
+p95 and 484.38 mm maximum, with 36.95 mm floor penetration, side crossing and knee
+reversal. No v3 artifacts were retained.
+
+The isolated procedural-v1 fallback authors only Auto-Rig Pro controls from the
+accepted bind rig: IK feet, toes and poles; FK arms and forearms; and root, spine,
+shoulder, neck and head controls. It does not consume MoMask, retarget a source, run
+FK-to-IK conversion or key deform bones. The corrected bounded run stopped at its
+first objective gate. The corrected bind frame preserved sagittal forward against
+both toes and reports the raw bilateral toe splay dot of `0.946539` separately. Idle
+sole contact stayed within `0.000000246 m` of the floor, with effectively zero slide,
+no side crossing or stretch, and a minimum knee-plane forward dot of `0.965138`.
+Exact keys covered frames 0-120, and evaluated root, spine and hand amplitudes proved
+the action was not static. Idle-specific bilateral hand symmetry, quiet excursion,
+no-crossing and zero-twist checks passed; gait reciprocity is reserved for walk and
+sprint. Literal frame-0 curve values are copied to the terminal keys, closing the
+evaluated idle loop. A causal dependency-graph update after every constrained control
+assignment also removes parent-state lag throughout the action. The bounded walk
+grounding pass reduced support distance and slide below `0.001 mm` and kept knee
+flexion above `11.44°`, but the sole still penetrated `26.57 mm` outside support and
+swing clearance reached only `14.11 mm`. No procedural BLEND, GLB, report or renders
+were retained, and the viewer is unchanged.
+
 ## Current state
 
 Playable end to end. A four-minute headless run typically reaches depth 2-3 and level

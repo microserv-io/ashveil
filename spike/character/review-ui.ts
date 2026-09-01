@@ -3,6 +3,7 @@ import type { RigReport } from './asset-inspection'
 import type { CameraPreset, ScaleMode } from './view-contract'
 import { nextLookMode, type LookMode } from './game-look'
 import type { ReviewClip } from './animation-review'
+import { REVIEW_SOURCES, type ReviewSource, type ReviewSourceId } from './review-source'
 
 export interface ReviewUiEvents {
   selectFrame(frame: number): void
@@ -17,6 +18,7 @@ export interface ReviewUiEvents {
   setScale(mode: ScaleMode): void
   setLookMode(mode: LookMode): void
   selectClip(name: string): void
+  selectSource(id: ReviewSourceId): void
 }
 
 export interface AssetStatus {
@@ -52,6 +54,8 @@ export class ReviewUi {
   private readonly lookState = element<HTMLElement>('look-state')
   private readonly poseSelect = element<HTMLSelectElement>('pose-select')
   private readonly animationSelect = element<HTMLSelectElement>('animation-select')
+  private readonly assetSourceSelect = element<HTMLSelectElement>('asset-source-select')
+  private readonly assetFile = element<HTMLElement>('asset-file')
   private readonly previousPose = element<HTMLButtonElement>('previous-pose')
   private readonly playPause = element<HTMLButtonElement>('play-pause')
   private readonly nextPose = element<HTMLButtonElement>('next-pose')
@@ -68,6 +72,14 @@ export class ReviewUi {
   private stressSelected = true
 
   constructor(private readonly events: ReviewUiEvents) {
+    this.assetSourceSelect.replaceChildren(
+      ...REVIEW_SOURCES.map((source) => {
+        const option = document.createElement('option')
+        option.value = source.id
+        option.textContent = source.label
+        return option
+      }),
+    )
     this.bindControls()
     this.setReviewPanelOpen(
       initialReviewPanelOpen(globalThis.matchMedia(REVIEW_PANEL_MOBILE_QUERY).matches),
@@ -104,6 +116,19 @@ export class ReviewUi {
     )
     const deformation = report.productionDeformation.pass ? 'deformation passed' : 'deformation blocked'
     this.fitState.textContent = `${report.jointFit!.contract} · ${passingJoints}/${report.jointFit!.joints.length} · fit ${(report.jointFit!.maximumErrorMetres * 1000).toFixed(1)} mm · pelvis ${(report.pelvisCogFit!.pelvisToHipMidpointMetres * 1000).toFixed(1)} mm · twist ${maximumTwist.toFixed(2)}° · ${deformation}`
+  }
+
+  populateDynamicSource(source: ReviewSource): void {
+    this.report = null
+    this.poseSelect.replaceChildren()
+    this.meshToggles.replaceChildren(...REQUIRED_SEMANTIC_MESHES.map((name) => this.meshToggle(name)))
+    this.fitState.textContent = source.label
+    this.enableRigControls(true)
+  }
+
+  setReviewSource(source: ReviewSource): void {
+    this.assetSourceSelect.value = source.id
+    this.assetFile.textContent = new URL(source.artifactUrl).pathname.split('/').at(-1) ?? source.label
   }
 
   validated(status: AssetStatus): void {
@@ -238,6 +263,9 @@ export class ReviewUi {
       this.setReviewPanelOpen(this.reviewPanel.hasAttribute('hidden'))
     })
     this.lookModeToggle.addEventListener('click', () => this.events.setLookMode(nextLookMode(this.lookMode)))
+    this.assetSourceSelect.addEventListener('change', () =>
+      this.events.selectSource(this.assetSourceSelect.value as ReviewSourceId),
+    )
     this.animationSelect.addEventListener('change', () => this.events.selectClip(this.animationSelect.value))
     this.poseSelect.addEventListener('change', () => this.events.selectFrame(Number(this.poseSelect.value)))
     this.timeScrub.addEventListener('input', () => this.events.selectFrame(Number(this.timeScrub.value)))

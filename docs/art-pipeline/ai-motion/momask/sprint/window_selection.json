@@ -1,0 +1,51 @@
+{
+  "fullFrameCount": 44,
+  "selectedFrameCount": 41,
+  "candidates": [
+    {
+      "poseLoopRms": 0.26352769136428833,
+      "velocityLoopRms": 0.6141818165779114,
+      "rootJerkP95": 197.18760528564454,
+      "horizontalDistance": 3.7545530796051025,
+      "startFrame": 0,
+      "endFrameInclusive": 40,
+      "selectionScore": 1.504580677341268
+    },
+    {
+      "poseLoopRms": 0.24532108008861542,
+      "velocityLoopRms": 0.7109398245811462,
+      "rootJerkP95": 197.18760528564454,
+      "horizontalDistance": 3.817211389541626,
+      "startFrame": 1,
+      "endFrameInclusive": 41,
+      "selectionScore": 1.514984118277122
+    },
+    {
+      "poseLoopRms": 0.228535458445549,
+      "velocityLoopRms": 1.034807562828064,
+      "rootJerkP95": 197.18760528564454,
+      "horizontalDistance": 3.8672733306884766,
+      "startFrame": 2,
+      "endFrameInclusive": 42,
+      "selectionScore": 1.7173615957389092
+    },
+    {
+      "poseLoopRms": 0.2183496654033661,
+      "velocityLoopRms": 1.2172123193740845,
+      "rootJerkP95": 197.18760528564454,
+      "horizontalDistance": 3.9117746353149414,
+      "startFrame": 3,
+      "endFrameInclusive": 43,
+      "selectionScore": 1.8285644073037082
+    }
+  ],
+  "selected": {
+    "poseLoopRms": 0.26352769136428833,
+    "velocityLoopRms": 0.6141818165779114,
+    "rootJerkP95": 197.18760528564454,
+    "horizontalDistance": 3.7545530796051025,
+    "startFrame": 0,
+    "endFrameInclusive": 40,
+    "selectionScore": 1.504580677341268
+  }
+}

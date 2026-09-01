@@ -33,6 +33,11 @@ import {
   nearestContactPhase,
   type ReviewAction,
 } from '../spike/character/animation-review'
+import {
+  buildTransferV2ReviewClips,
+  initialReviewSource,
+  type TransferV2Report,
+} from '../spike/character/review-source'
 
 function validSummary(): CharacterAssetSummary {
   return {
@@ -121,6 +126,46 @@ describe('character review contract', () => {
     expect(html).toMatch(/aria-label="Show Game look"/)
     expect(html).toMatch(/id="animation-select"/)
     expect(html).toMatch(/for="animation-select">Animation clip/)
+    expect(html).toMatch(/id="asset-source-select"/)
+    expect(html).toMatch(/aria-label="Review asset source"/)
+    expect(html).toMatch(/value="canonical">Canonical review/)
+    expect(html).toMatch(/value="wip-transfer-v2">WIP transfer v2/)
+  })
+
+  it('defaults to canonical and exposes the isolated transfer v2 route', () => {
+    expect(initialReviewSource('').id).toBe('canonical')
+    expect(initialReviewSource('?source=unknown').id).toBe('canonical')
+    expect(initialReviewSource('?source=wip-transfer-v2').id).toBe('wip-transfer-v2')
+  })
+
+  it('derives the WIP clip inventory and exact timing from its report', () => {
+    const report = JSON.parse(
+      readFileSync(
+        new URL(
+          '../docs/art-pipeline/tripo-style-test/output/base-models/masculine/rigged-auto-rig-pro-transfer-v2/report.json',
+          import.meta.url,
+        ),
+        'utf8',
+      ),
+    ) as TransferV2Report
+    const exported = report.retargetSkeletal.clips.map((clip) => ({
+      name: clip.outputName,
+      duration: clip.durationSeconds,
+    }))
+    const clips = buildTransferV2ReviewClips(report, exported)
+    expect(clips.map(({ name, frameEnd, framesPerSecond, durationSeconds }) => ({
+      name,
+      frameEnd,
+      framesPerSecond,
+      durationSeconds,
+    }))).toEqual([
+      { name: 'Ashveil_Walk_InPlace', frameEnd: 60, framesPerSecond: 30, durationSeconds: 2 },
+      { name: 'Ashveil_Sprint_InPlace', frameEnd: 60, framesPerSecond: 30, durationSeconds: 2 },
+    ])
+    expect(() => buildTransferV2ReviewClips(report, exported.slice(1))).toThrow(/inventory/)
+    expect(() =>
+      buildTransferV2ReviewClips(report, exported.map((clip) => ({ ...clip, duration: 3 }))),
+    ).toThrow(/duration/)
   })
 
   it('builds the unique stress, walk, and sprint review contract with exact durations', () => {

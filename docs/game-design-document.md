@@ -166,9 +166,14 @@ When a feature changes a player-facing rule, its PR must:
 
 ### Decided
 
-- **Intended production experiment.** Ashveil will evaluate Tripo Studio with Smart
-  Mesh/Smart Topology as the primary automation candidate for models, rigging and
-  animation preparation.
+- **Tripo is an asset-generation tool, not an animation source.** Ashveil will
+  evaluate Tripo Studio with Smart Mesh/Smart Topology for model generation and
+  topology preparation. Character animation is generated, authored or retargeted
+  separately against the accepted skeleton contract.
+- **Game animation stays local.** Idle, walk and sprint production experiments use
+  local Blender and Auto-Rig Pro tooling plus locally executed or downloaded motion
+  sources. Hosted animation services, video-mocap services and film-oriented motion
+  pipelines are out of scope for these simple game loops.
 - **Concept approval precedes production generation.** Text-to-3D is useful for
   disposable exploration. Assets intended for the game should normally begin with
   an approved image or multi-view concept so silhouette and art direction are
@@ -229,18 +234,17 @@ separate contracts and evidence.
 Attach rigid modular equipment and transfer deforming wearables only after the
 target archetype's skeleton contract passes technical and human review.
 
-Auto-Rig Pro is being evaluated as a rigging automation benchmark, not as an
-automatic production acceptance path. The first masculine ARP 3.78.47 / Smart AI
-1.21 run preserves bind geometry and accurately places the skeleton, but it does not
-provide the required deforming scapula chain and fails unchanged
-shoulder/elbow deformation gates even after weights are normalized and capped to four
-influences under runtime-equivalent linear-blend skinning. Its diagnostic animation
-uses transported chest-local arm frames and a measured 30 fps scene clock. Its
-diagnostic GLB exports the full 211-joint ARP authoring graph, including controls,
-references and mechanisms; a runtime-only deform skeleton and verified animation
-bake remain pending. This keeps the current mannequin and ARP output diagnostic while
-preserving ARP as a candidate for a better-topology retest and for authoring-tool
-comparison.
+Auto-Rig Pro is being evaluated as a rigging and animation-authoring benchmark, not
+as an automatic production acceptance path. The first masculine ARP 3.78.47 / Smart
+AI 1.21 run preserves bind geometry and accurately places the skeleton, but it does
+not provide the required deforming scapula chain and fails unchanged shoulder/elbow
+deformation gates even after weights are normalized and capped to four influences
+under runtime-equivalent linear-blend skinning. The isolated animation exporter now
+produces a 30-joint runtime skin rather than the full 211-joint authoring graph. One
+static, unweighted `c_traj` helper remains in the diagnostic skin; a 29-joint export
+without it has been proven separately but is not production acceptance. This keeps
+the current mannequin and ARP output diagnostic while preserving ARP as a candidate
+for a better-topology retest and for control-authoring comparison.
 
 Walk and sprint remain separate, loop-closed in-place diagnostic clips at one second
 and 0.6 seconds respectively, but human review rejected both clips and almost all
@@ -257,11 +261,39 @@ separate NO-SHIP archive; no experimental GLB is retained and canonical ARP revi
 artifacts are unchanged.
 
 The resulting decision separates the accepted and rejected parts: ARP's fitted
-skeleton placement is accepted as the rigging benchmark; its hand-authored motion,
-the current Tripo mesh and the current weights are rejected. The next humanoid motion
-path is retargeting from an external animation library. The next production body
-must have authored joint-loop retopology and a deforming scapular chain before
-skinning, motion or modular-armor acceptance is revisited.
+skeleton placement is accepted as the rigging benchmark; the original hand-authored
+motion, the current Tripo mesh and the current weights are rejected. The next
+production body must have authored joint-loop retopology and a deforming scapular
+chain before skinning, motion or modular-armor acceptance is revisited.
+
+The local motion spike established further animation rules:
+
+- MoMask may propose local, noncommercial diagnostic joint-position motion, but its
+  BasicIK BVH is not rotation truth. Terminal hand roll is unobservable, its bundled
+  foot locking is rejected, and model/dataset rights require separate commercial
+  clearance.
+- Retarget import bases, root offsets and complete source-to-target rest frames are
+  contractual. A `+Z`/`-Z` mismatch, direction-only rest alignment and absolute hip
+  height layering caused the earlier reversed limbs, axial twist and floating body;
+  mesh quality must not be blamed until those transfer gates pass.
+- ARP's native FK-to-IK leg snap is rejected for this rig. It preserved endpoints
+  while changing evaluated twist matrices and skinned vertices by hundreds of
+  millimetres. Endpoint parity cannot substitute for deform-matrix and skinned-mesh
+  parity.
+- Direct procedural ARP-control authoring is the leading bounded path for idle,
+  walk and sprint. Idle now passes grounding, non-static motion, knee-plane and
+  decomposed loop gates. Walk passes support grounding, virtual-trajectory slide,
+  knee direction/flexion, reciprocal arms and stretch gates, but still fails global
+  penetration and swing-clearance gates. Sprint has not entered acceptance.
+- The CMU Motion Capture Database is the leading local authoritative-rotation
+  fallback for walk/run experiments because its grant permits inclusion in a sold
+  product with attribution and without reselling the source data. Its tested idle
+  capture did not contain a clean four-second loop and is rejected as a drop-in idle.
+
+No animation reaches gameplay or the canonical viewer unless source intent,
+skeletal transfer or authored-control motion, mesh deformation, runtime export
+parity and human review pass independently. The review app may expose explicitly
+selected WIP diagnostics without promoting them to canonical assets.
 
 The masculine spike now separates diagnostic rig intent from mesh suitability. Its
 humeral-head, overhead, cross-body and deep-elbow measurements record test directions

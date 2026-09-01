@@ -1,0 +1,162 @@
+{
+  "basic_ik.bvh": {
+    "frames": 81,
+    "frameTime": 0.05,
+    "durationSeconds": 4.05,
+    "sampleSpanSeconds": 4.0,
+    "rootHorizontalDistance": 0.026292892461652062,
+    "rootHeadingXZ": [
+      0.1621350715299789,
+      0.9867685739726253
+    ],
+    "rootLateralDrift": 3.6119671485136454e-20,
+    "rootStepP95": 0.006286755297791224,
+    "rootStepMax": 0.006937506252249451,
+    "hipJerkP95": 28.696588706739806,
+    "hipJerkMax": 43.447311355250385,
+    "reciprocalArmCorrelation": -0.2896302903398662,
+    "leftArmSwingRange": 0.20699365931087477,
+    "rightArmSwingRange": 0.24037423017486004,
+    "torsoForwardLeanMedianDegrees": -24.914799057167336,
+    "torsoForwardLeanMaxDegrees": -7.399862929253497,
+    "feet": {
+      "Left": {
+        "contactFrameCount": 80,
+        "contactHorizontalSpeedP50": 0.09728732310365207,
+        "contactHorizontalSpeedP95": 0.29586675726930717,
+        "heightRange": 0.07012716851799061,
+        "minimumFootOrToeHeight": -0.017612205232954578,
+        "penetrationBelowZero": 0.017612205232954578
+      },
+      "Right": {
+        "contactFrameCount": 16,
+        "contactHorizontalSpeedP50": 0.09346665600873688,
+        "contactHorizontalSpeedP95": 0.25209544301568443,
+        "heightRange": 0.07608207057439564,
+        "minimumFootOrToeHeight": 0.010423365016971498,
+        "penetrationBelowZero": 0.0
+      }
+    },
+    "kneePlane": {
+      "Left": {
+        "validFrameCount": 81,
+        "minimumProjectionMargin": 0.08433406687448758,
+        "normalDeviationP95Degrees": 14.542601252618043,
+        "signFlipFraction": 0.0
+      },
+      "Right": {
+        "validFrameCount": 81,
+        "minimumProjectionMargin": 0.10616347689804467,
+        "normalDeviationP95Degrees": 16.191816308597794,
+        "signFlipFraction": 0.0
+      }
+    },
+    "sourcePositionFit": {
+      "mean": 0.020459447841196878,
+      "p95": 0.05421128339743209,
+      "max": 0.18321870446218633
+    },
+    "jointAnglesDegrees": {
+      "LeftKnee": {
+        "min": 111.33224683859567,
+        "median": 125.35989890182124,
+        "max": 146.03101332943228
+      },
+      "LeftElbow": {
+        "min": 81.66179080049524,
+        "median": 136.5188307980028,
+        "max": 152.7408944352753
+      },
+      "RightKnee": {
+        "min": 110.34847568596523,
+        "median": 121.84316520279563,
+        "max": 136.49169753799848
+      },
+      "RightElbow": {
+        "min": 36.27540117533735,
+        "median": 133.49851280698041,
+        "max": 167.31051736596407
+      }
+    }
+  },
+  "footlocked_basic_ik.bvh": {
+    "frames": 81,
+    "frameTime": 0.05,
+    "durationSeconds": 4.05,
+    "sampleSpanSeconds": 4.0,
+    "rootHorizontalDistance": 0.026292892461652062,
+    "rootHeadingXZ": [
+      0.1621350715299789,
+      0.9867685739726253
+    ],
+    "rootLateralDrift": 3.6119671485136454e-20,
+    "rootStepP95": 0.006286755297791224,
+    "rootStepMax": 0.006937506252249451,
+    "hipJerkP95": 28.696588706739806,
+    "hipJerkMax": 43.447311355250385,
+    "reciprocalArmCorrelation": -0.29087269098377755,
+    "leftArmSwingRange": 0.20737623405421057,
+    "rightArmSwingRange": 0.24132095094247455,
+    "torsoForwardLeanMedianDegrees": -25.121990429743487,
+    "torsoForwardLeanMaxDegrees": -7.970591752484103,
+    "feet": {
+      "Left": {
+        "contactFrameCount": 80,
+        "contactHorizontalSpeedP50": 0.0501071558092146,
+        "contactHorizontalSpeedP95": 0.1429416211209973,
+        "heightRange": 0.06557476019733521,
+        "minimumFootOrToeHeight": -0.017115151893315105,
+        "penetrationBelowZero": 0.017115151893315105
+      },
+      "Right": {
+        "contactFrameCount": 66,
+        "contactHorizontalSpeedP50": 0.0824968322155696,
+        "contactHorizontalSpeedP95": 0.42425511572125474,
+        "heightRange": 0.07120615394181223,
+        "minimumFootOrToeHeight": -0.0052025845957205386,
+        "penetrationBelowZero": 0.0052025845957205386
+      }
+    },
+    "kneePlane": {
+      "Left": {
+        "validFrameCount": 81,
+        "minimumProjectionMargin": 0.0791735878011752,
+        "normalDeviationP95Degrees": 14.943391102969546,
+        "signFlipFraction": 0.0
+      },
+      "Right": {
+        "validFrameCount": 81,
+        "minimumProjectionMargin": 0.10060221696807242,
+        "normalDeviationP95Degrees": 16.632668613499106,
+        "signFlipFraction": 0.0
+      }
+    },
+    "sourcePositionFit": {
+      "mean": 0.025384786724667114,
+      "p95": 0.055671927072673766,
+      "max": 0.18142637722754296
+    },
+    "jointAnglesDegrees": {
+      "LeftKnee": {
+        "min": 114.05010306664452,
+        "median": 128.73859893741906,
+        "max": 148.36177554880084
+      },
+      "LeftElbow": {
+        "min": 82.37389747868204,
+        "median": 136.69614476196668,
+        "max": 153.02242938397885
+      },
+      "RightKnee": {
+        "min": 113.19953359160377,
+        "median": 124.79773667755731,
+        "max": 139.27754652458927
+      },
+      "RightElbow": {
+        "min": 36.27032489986339,
+        "median": 133.61654171524756,
+        "max": 167.32481930671022
+      }
+    }
+  }
+}

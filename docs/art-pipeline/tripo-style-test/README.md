@@ -298,8 +298,9 @@ unmeasured production gates rather than production claims.
 The follow-up clean-room weighting and hand-authored motion attempt is archived under
 `output/base-models/masculine/rigged-auto-rig-pro-clean-room-no-ship`. It preserves
 only 15 non-bind Blender-authoring stress renders and a compact negative report. No
-experimental BLEND or GLB is retained: the reduced GLB failed Blender parity, and
-the attempted parity measurement was not reliable enough to diagnose that mismatch.
+BLEND or GLB from that hand-authored attempt is retained: the reduced GLB failed
+Blender parity, and the attempted parity measurement was not reliable enough to
+diagnose that mismatch.
 The canonical ARP review artifacts above remain unchanged.
 
 The fitted ARP skeleton placement is accepted as the rigging benchmark. The
@@ -308,3 +309,162 @@ humanoid-motion experiment will retarget an external animation library rather th
 author another bespoke walk or sprint here. A production body requires retopology
 for joint loops plus a deforming scapular chain before another skinning acceptance
 run.
+
+## Local MoMask to Auto-Rig Pro retarget
+
+The isolated retarget command consumes the three locally generated source loops only
+after `docs/art-pipeline/ai-motion/momask/report.json` marks `retargetReady: true` and
+each clip marks `sourceMotion.pass: true` with its exact path and SHA-256:
+
+```sh
+BLENDER_BIN=/Users/roccolangeweg/Applications/Blender.app/Contents/MacOS/Blender \
+  npm run art:auto-rig-pro-retarget -- \
+  --source docs/art-pipeline/ai-motion/momask \
+  --target docs/art-pipeline/tripo-style-test/output/base-models/masculine/rigged-auto-rig-pro/masculine-auto-rig-pro-spike.blend \
+  --output docs/art-pipeline/tripo-style-test/output/base-models/masculine/rigged-auto-rig-pro-retarget
+```
+
+The pipeline imports native 20 fps MoMask BVH with +Y up and +Z forward, applies a
+hash-pinned ARP Remap control map, validates the already-in-place target root, and
+retimes keys exactly to 30 fps. Feet and toes use ARP IK;
+arms use FK. Terminal hands remain unmapped because position-derived Basic IK cannot
+observe palm axial roll, so the accepted ARP bind/rest hand roll is preserved.
+
+Outputs are isolated as `masculine-auto-rig-pro-retarget.blend`,
+`masculine-auto-rig-pro-retarget-diagnostic.glb`, and `report.json`. The report keeps
+source motion, skeletal retarget, mesh deformation, GLB parity, and human review as
+separate pass fields. The command refuses to write into the canonical ARP viewer
+directory. A diagnostic GLB is never promoted until every production gate passes.
+
+Each cleaned game-loop BVH is retargeted exactly once. Before binding, feet are fixed
+to IK, hands to FK, and limb auto-stretch is disabled. Those properties are keyed at
+both action boundaries. Validation deliberately changes the ambient properties to
+the opposite state, reassigns the action, and requires identical evaluated deform
+matrices, proving the clip is self-contained instead of depending on Blender state.
+
+The current isolated diagnostic contains `Ashveil_Idle_InPlace` at 4 seconds and
+`Ashveil_Walk_InPlace` / `Ashveil_Sprint_InPlace` at 2 seconds each. All three use
+one retarget bake, have zero measured horizontal root drift, and reproduce their
+evaluated deform matrices with zero reported component error after the ambient limb
+switches are inverted. This is skeletal-retarget evidence only. Production remains
+false: `c_traj` is still present in the 30-joint GLB skin, per-frame skinned
+Blender/GLB parity is unmeasured, mesh deformation is unreviewed, and human review
+has not passed. The canonical viewer asset remains unchanged.
+
+### Transfer-v2 FK benchmark
+
+Transfer-v2 isolates the two accepted locomotion sources that can exercise the
+verified correction; MoMask idle remains rejected and has no v2 action. It imports
+walk and sprint with forward `-Z` and up `Y`, verifies the source and target side/toe
+conventions, removes exactly the first-frame Hips world-height offset in the imported
+local basis, and preserves the source's frame-to-frame vertical motion. The source
+rest is then aligned from complete mapped target quaternion frames before the single
+Auto-Rig Pro bake. Direction agreement must be at least `0.999` and residual mapped
+limb roll at most 2 degrees.
+
+The v2 map benchmarks both legs entirely in FK (`thigh`, `leg`, `foot`, `toes`) and
+keeps the arms in FK. It contains no foot IK or pole targets, and terminal hands stay
+unmapped at bind roll. FK switches and zero stretch are keyed at the action
+boundaries, then validated after deliberately applying the opposite ambient state.
+Native 20 fps keys are retimed exactly to 30 fps after retargeting.
+
+The retained report passes the bounded convention, vertical-normalization,
+full-frame alignment, target-immutability, self-containment, root and timing gates
+for `Ashveil_Walk_InPlace` and `Ashveil_Sprint_InPlace`. It remains diagnostic only:
+mesh deformation, skinned Blender/GLB parity and human review are not measured, and
+ARP's unweighted `c_traj` remains in the exported skin inventory. Those gates stay
+false, production acceptance stays false, and the canonical viewer is not changed.
+The isolated outputs are under
+`output/base-models/masculine/rigged-auto-rig-pro-transfer-v2`.
+
+### Transfer-v3 ground/contact result
+
+The bounded v3 pass keeps v2's `-Z` import, source-only full-frame alignment, root
+normalization and FK arms, then proposes an exact ARP FK-to-IK leg snap with measured
+hip-knee-ankle poles. It freezes each sole patch from the accepted bind mesh: the 59
+Body vertices per side with the correct X sign, at least 0.5 combined foot/toe weight,
+and bind height no more than 5 mm above the floor. A virtual forward trajectory is
+defined only for measuring stance slide; it never freezes the in-place foot X/Y
+curves.
+
+The first attempt measured the walk's pre-correction contact sole as far as
+`0.2734571993 m` from `z=0`. That is baseline evidence for the grounding stage, not
+an acceptance gate: v3 accepts only the corrected sole distance and penetration,
+together with independent full-matrix and skinned-vertex pose-pop checks. The
+pre-correction stance trace has a median stance-derived virtual forward speed of
+`0.5542058993 m/s` and a longest phase slide of `0.2203101147 m`. Those values are
+also baseline evidence rather than acceptance gates. Contact distance, slide,
+penetration, pitch and flight are gated only after root, foot IK and toe correction;
+the full deform-matrix and skinned Body pose-pop thresholds remain unchanged. The
+final corrected run reached that stage across all 41 walk frames and failed the
+post-correction conjunction. Deform endpoints moved as much as `0.4235975647 m` and
+the full-matrix component error reached `1.96635294`. Skinned Body displacement was
+`0.2836257296 m` at p95 and `0.4843788415 m` maximum, against unchanged `0.001 m` and
+`0.002 m` limits. The corrected contact sole remained `0.0369521379 m` from the
+floor and penetrated to `-0.0369521379 m`; side crossing and knee reversal were both
+detected. IK foot scale error was only `0.000000596`, so stretch was not the
+blocker. The staging directory was removed and no v3 render, BLEND, GLB or report is
+retained. The canonical viewer remains unchanged and no production claim is made.
+
+### Procedural-v1 control-authoring result
+
+The procedural-v1 fallback starts from the unchanged accepted Auto-Rig Pro bind rig
+and has no source-motion or retarget stage. It defines exact 30 fps duplicate-endpoint
+loops for idle (frames 0-120), walk (0-30) and sprint (0-18). Only whitelisted Auto-Rig
+Pro controls may own curves: root/spine/shoulder/neck/head, leg foot/toe IK and poles,
+arm/forearm FK, plus boundary-only IK/FK and zero-stretch properties. Arm swing,
+humeral twist and elbow hinge axes are transported from each control's bind frame;
+terminal hand roll remains unkeyed. The canonical viewer directory is rejected as an
+output target.
+
+```sh
+BLENDER_BIN=/Users/roccolangeweg/Applications/Blender.app/Contents/MacOS/Blender \
+  npm run art:auto-rig-pro-procedural-v1 -- \
+  --target docs/art-pipeline/tripo-style-test/output/base-models/masculine/rigged-auto-rig-pro/masculine-auto-rig-pro-spike.blend \
+  --output docs/art-pipeline/tripo-style-test/output/base-models/masculine/rigged-auto-rig-pro-procedural-v1
+```
+
+The corrected bounded run validates idle before entering walk. The accepted ground
+normal and bilateral mean toe direction define an orthonormal frame without flipping
+forward. Both sagittal toe
+checks pass; the raw ground-plane toe dot of `0.9465388` is reported separately as
+bind toe splay. The knee-plane forward dot now remains positive at a minimum of
+`0.9651379585`.
+
+The frozen 59-vertex sole patches stayed within `0.0000002456 m` of the floor, with
+`0.0000004872 m` maximum measured slide, no side crossing and zero stretch. Knee
+flexion stayed between `6.3676°` and `11.5135°`. Explicit key-time inventory covered
+every frame from 0 through 120, while evaluated root translation (`0.0030000 m`),
+spine rotation (`0.0125442 rad`) and hand travel (`0.0188115 m`) prove the idle is not
+a static false-pass. Idle does not use the locomotion reciprocal-arm correlation
+gate. Its bilateral hand excursions (`0.0144060 m` left and `0.0188115 m` right) pass
+the idle-specific 5 mm / 30 percent symmetry policy, remain inside the 5-40 mm quiet
+range, never cross, and use zero humeral axial roll.
+
+Constrained parent evaluation made a separately solved terminal pose differ from the
+first local control values despite the matching phase. The generator now updates the
+dependency graph immediately after every control pose assignment, removing stale
+parent and Child-Of state throughout the curve. It also copies every frame-0
+control/property curve value, handle and interpolation setting literally into its
+existing terminal key as a final invariant. Loop acceptance is decomposed rather
+than mixing matrix units: endpoint translation must stay within `0.1 mm`, rotation
+within `0.1°` and scale within `0.001`, with equivalent wrapped velocity gates. Raw
+matrix component errors remain diagnostic only. The corrected idle passes these
+evaluated gates.
+
+The one bounded walk grounding pass keeps planted foot/toe controls flat, reserves
+toe pitch for terminal toe-off, raises the swing trajectory, lowers the pelvis, and
+solves each frozen support patch vertically without moving its in-place horizontal
+trajectory. Support distance fell to `0.0000001446 m` against the `0.003 m` limit,
+and virtual-trajectory stance slide fell to `0.0000002200 m` against `0.005 m`. Knee
+flexion stayed between `11.4444°` and `61.8658°`, clearing the 8-degree minimum. Side
+and knee plane, evaluated chest-local reciprocal arms (`-0.832680`), bounded humeral
+twist/elbow hinge, and zero stretch also passed.
+
+The run stopped at the remaining walk conjunction: the sole reached
+`-0.0265670940 m` outside support, failing the `-0.002 m` global penetration floor,
+and minimum swing clearance reached only `0.0141137158 m` against `0.020 m`. Per the
+bounded-pass rule, no further trajectory or toe-off tuning was attempted. The command
+removed its staging directory before sprint, export or rendering. There is no
+procedural-v1 BLEND, GLB, report or render set, `humanReview` was never reached,
+production remains false, and the canonical viewer remains unchanged.

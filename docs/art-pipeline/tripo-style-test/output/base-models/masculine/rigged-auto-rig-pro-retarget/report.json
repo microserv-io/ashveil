@@ -1,0 +1,307 @@
+{
+  "schemaVersion": "ashveil.auto-rig-pro-retarget.v1",
+  "status": "diagnostic_not_production_ready",
+  "sourceMotion": {
+    "pass": true,
+    "reportSha256": "aa34111fcd854e95e6f6d29b3722227c4986f88746b3951cb7cd9daa9e007294",
+    "clips": [
+      {
+        "id": "idle",
+        "path": "idle/game_loop_basic_ik.bvh",
+        "sha256": "d1203573cfb246d5ffde7e1149c62d639766d6e792daf71562543c2f27dee2ea"
+      },
+      {
+        "id": "walk",
+        "path": "walk/game_loop_basic_ik.bvh",
+        "sha256": "f081786d4c9fcd45fe47a68a3ba433a7132158d357065ffaa3e8d3b761a05744"
+      },
+      {
+        "id": "sprint",
+        "path": "sprint/game_loop_basic_ik.bvh",
+        "sha256": "59124f22760263ec13211b03fa39a875826d4db799b6be64431f86ca21d4270f"
+      }
+    ]
+  },
+  "mapping": {
+    "path": "momask-to-auto-rig-pro.v1.bmap",
+    "sha256": "d9b4566ab7f9344505545260530ad14e56f0daacab2cea181b90e26df2bc9324",
+    "mappedTargetCount": 19,
+    "unmappedSourceBones": [
+      "Spine",
+      "LeftHand",
+      "RightHand"
+    ],
+    "terminalHandsUseAcceptedBindRoll": true,
+    "pass": true
+  },
+  "autoRigPro": {
+    "extensionModule": "bl_ext.user_default.auto_rig_pro",
+    "version": "3.78.47",
+    "manifestSha256": "11b63bab704bde3964d22e918ae59fbe15adeaf1d0bf0448193fc22baebbe2fd"
+  },
+  "target": {
+    "object": "rig",
+    "before": {
+      "restMatricesSha256": "1672b0859ea78605de0c3c7abe3ccecd9904df0267a2b64714ed031056db0209",
+      "meshGeometryWeightsSha256": "43cf597e101601a72aae8caa513565cac3fa611ddb4cbd2de99967b17708a8ff"
+    },
+    "after": {
+      "restMatricesSha256": "1672b0859ea78605de0c3c7abe3ccecd9904df0267a2b64714ed031056db0209",
+      "meshGeometryWeightsSha256": "43cf597e101601a72aae8caa513565cac3fa611ddb4cbd2de99967b17708a8ff"
+    },
+    "unchanged": true
+  },
+  "retargetSkeletal": {
+    "clips": [
+      {
+        "id": "idle",
+        "sourcePath": "idle/game_loop_basic_ik.bvh",
+        "sourceSha256": "d1203573cfb246d5ffde7e1149c62d639766d6e792daf71562543c2f27dee2ea",
+        "sourceFrames": 81,
+        "sourceFps": 20,
+        "outputName": "Ashveil_Idle_InPlace",
+        "outputFrames": 121,
+        "outputFrameStart": 0,
+        "outputFrameEnd": 120,
+        "outputFps": 30,
+        "durationSeconds": 4.0,
+        "sourceAlreadyInPlace": true,
+        "retargetBakeCount": 1,
+        "targetRootNetHorizontalDistanceMetres": 0.0,
+        "actionSelfContainment": {
+          "maximumDeformMatrixComponentError": 0.0,
+          "maximumErrorFrame": -1,
+          "maximumErrorBone": "",
+          "oppositeAmbientStateRejected": true,
+          "pass": true
+        },
+        "sourceMotionGatePass": true,
+        "targetMeshContactMeasured": false,
+        "terminalPalmRollObservable": false,
+        "keyedControls": [
+          "c_arm_fk.l",
+          "c_arm_fk.r",
+          "c_foot_ik.l",
+          "c_foot_ik.r",
+          "c_forearm_fk.l",
+          "c_forearm_fk.r",
+          "c_hand_ik.l",
+          "c_hand_ik.r",
+          "c_head.x",
+          "c_leg_fk.l",
+          "c_leg_fk.r",
+          "c_leg_pole.l",
+          "c_leg_pole.r",
+          "c_neck.x",
+          "c_root_master.x",
+          "c_shoulder.l",
+          "c_shoulder.r",
+          "c_spine_01.x",
+          "c_spine_02.x",
+          "c_thigh_fk.l",
+          "c_thigh_fk.r",
+          "c_toes_ik.l",
+          "c_toes_ik.r"
+        ],
+        "pass": true
+      },
+      {
+        "id": "walk",
+        "sourcePath": "walk/game_loop_basic_ik.bvh",
+        "sourceSha256": "f081786d4c9fcd45fe47a68a3ba433a7132158d357065ffaa3e8d3b761a05744",
+        "sourceFrames": 41,
+        "sourceFps": 20,
+        "outputName": "Ashveil_Walk_InPlace",
+        "outputFrames": 61,
+        "outputFrameStart": 0,
+        "outputFrameEnd": 60,
+        "outputFps": 30,
+        "durationSeconds": 2.0,
+        "sourceAlreadyInPlace": true,
+        "retargetBakeCount": 1,
+        "targetRootNetHorizontalDistanceMetres": 0.0,
+        "actionSelfContainment": {
+          "maximumDeformMatrixComponentError": 0.0,
+          "maximumErrorFrame": -1,
+          "maximumErrorBone": "",
+          "oppositeAmbientStateRejected": true,
+          "pass": true
+        },
+        "sourceMotionGatePass": true,
+        "targetMeshContactMeasured": false,
+        "terminalPalmRollObservable": false,
+        "keyedControls": [
+          "c_arm_fk.l",
+          "c_arm_fk.r",
+          "c_foot_ik.l",
+          "c_foot_ik.r",
+          "c_forearm_fk.l",
+          "c_forearm_fk.r",
+          "c_hand_ik.l",
+          "c_hand_ik.r",
+          "c_head.x",
+          "c_leg_fk.l",
+          "c_leg_fk.r",
+          "c_leg_pole.l",
+          "c_leg_pole.r",
+          "c_neck.x",
+          "c_root_master.x",
+          "c_shoulder.l",
+          "c_shoulder.r",
+          "c_spine_01.x",
+          "c_spine_02.x",
+          "c_thigh_fk.l",
+          "c_thigh_fk.r",
+          "c_toes_ik.l",
+          "c_toes_ik.r"
+        ],
+        "pass": true
+      },
+      {
+        "id": "sprint",
+        "sourcePath": "sprint/game_loop_basic_ik.bvh",
+        "sourceSha256": "59124f22760263ec13211b03fa39a875826d4db799b6be64431f86ca21d4270f",
+        "sourceFrames": 41,
+        "sourceFps": 20,
+        "outputName": "Ashveil_Sprint_InPlace",
+        "outputFrames": 61,
+        "outputFrameStart": 0,
+        "outputFrameEnd": 60,
+        "outputFps": 30,
+        "durationSeconds": 2.0,
+        "sourceAlreadyInPlace": true,
+        "retargetBakeCount": 1,
+        "targetRootNetHorizontalDistanceMetres": 0.0,
+        "actionSelfContainment": {
+          "maximumDeformMatrixComponentError": 0.0,
+          "maximumErrorFrame": -1,
+          "maximumErrorBone": "",
+          "oppositeAmbientStateRejected": true,
+          "pass": true
+        },
+        "sourceMotionGatePass": true,
+        "targetMeshContactMeasured": false,
+        "terminalPalmRollObservable": false,
+        "keyedControls": [
+          "c_arm_fk.l",
+          "c_arm_fk.r",
+          "c_foot_ik.l",
+          "c_foot_ik.r",
+          "c_forearm_fk.l",
+          "c_forearm_fk.r",
+          "c_hand_ik.l",
+          "c_hand_ik.r",
+          "c_head.x",
+          "c_leg_fk.l",
+          "c_leg_fk.r",
+          "c_leg_pole.l",
+          "c_leg_pole.r",
+          "c_neck.x",
+          "c_root_master.x",
+          "c_shoulder.l",
+          "c_shoulder.r",
+          "c_spine_01.x",
+          "c_spine_02.x",
+          "c_thigh_fk.l",
+          "c_thigh_fk.r",
+          "c_toes_ik.l",
+          "c_toes_ik.r"
+        ],
+        "pass": true
+      }
+    ],
+    "handsUnmapped": true,
+    "targetRotationsAuthoredByPipeline": false,
+    "pass": true
+  },
+  "meshDeformation": {
+    "measured": false,
+    "pass": false,
+    "reason": "Skinned contact, slide, penetration, deformation, and silhouette gates require review."
+  },
+  "exportParity": {
+    "arpExporterOnly": true,
+    "clipTimingPass": true,
+    "runtimeInventoryPass": false,
+    "blenderGlbSkinnedParityMeasured": false,
+    "pass": false,
+    "reason": "Per-frame skinned vertex and normal parity remains pending.",
+    "gltfStructure": {
+      "animations": [
+        {
+          "name": "Ashveil_Idle_InPlace",
+          "startSeconds": 0,
+          "endSeconds": 4,
+          "maximumSamples": 121
+        },
+        {
+          "name": "Ashveil_Sprint_InPlace",
+          "startSeconds": 0,
+          "endSeconds": 2,
+          "maximumSamples": 61
+        },
+        {
+          "name": "Ashveil_Walk_InPlace",
+          "startSeconds": 0,
+          "endSeconds": 2,
+          "maximumSamples": 61
+        }
+      ],
+      "skins": 1,
+      "joints": 30,
+      "jointNames": [
+        "head.x",
+        "neck.x",
+        "arm_twist.l",
+        "forearm_twist.l",
+        "hand.l",
+        "forearm_stretch.l",
+        "arm_stretch.l",
+        "shoulder.l",
+        "arm_twist.r",
+        "forearm_twist.r",
+        "hand.r",
+        "forearm_stretch.r",
+        "arm_stretch.r",
+        "shoulder.r",
+        "spine_02.x",
+        "spine_01.x",
+        "toes_01.l",
+        "foot.l",
+        "leg_twist.l",
+        "leg_stretch.l",
+        "thigh_twist.l",
+        "thigh_stretch.l",
+        "toes_01.r",
+        "foot.r",
+        "leg_twist.r",
+        "leg_stretch.r",
+        "thigh_twist.r",
+        "thigh_stretch.r",
+        "root.x",
+        "c_traj"
+      ],
+      "controlJoints": [
+        "c_traj"
+      ]
+    }
+  },
+  "humanReview": {
+    "pass": false,
+    "required": true
+  },
+  "productionPass": false,
+  "canonicalViewerPromoted": false,
+  "artifacts": [
+    {
+      "path": "masculine-auto-rig-pro-retarget.blend",
+      "sha256": "2379540ced9ca29f35440e17b6f3c700478b83cde199fa371e076353781d5246",
+      "bytes": 1244647
+    },
+    {
+      "path": "masculine-auto-rig-pro-retarget-diagnostic.glb",
+      "sha256": "95114ddebf0355c12be93c7c518f76f5e8e846f5900611f528b25fba356dd9b2",
+      "bytes": 830976
+    }
+  ]
+}

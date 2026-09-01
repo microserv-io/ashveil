@@ -1,0 +1,175 @@
+{
+  "clip": "idle",
+  "frames": 81,
+  "fps": 20,
+  "sampleSpanSeconds": 4.0,
+  "headingCorrectionDegrees": 0.0,
+  "validatedRootDisplacementXZ": [
+    0.004263101611286402,
+    0.025944821536540985
+  ],
+  "referenceRootDistance": 0.02629273384809494,
+  "referenceRootSpeed": 0.006573183462023735,
+  "inPlaceRootHorizontalRange": [
+    9.313225746154785e-10,
+    0.0
+  ],
+  "loop": {
+    "valueRms": 0.0,
+    "valueMax": 0.0,
+    "velocityRmsPerFrame": 0.0,
+    "velocityMaxPerFrame": 0.0
+  },
+  "stabilizationSegments": {
+    "left": [
+      {
+        "startFrame": 2,
+        "endFrameInclusive": 6,
+        "maximumHorizontalCorrection": 0.011300033889710903
+      },
+      {
+        "startFrame": 9,
+        "endFrameInclusive": 62,
+        "maximumHorizontalCorrection": 0.04943458363413811
+      },
+      {
+        "startFrame": 64,
+        "endFrameInclusive": 65,
+        "maximumHorizontalCorrection": 0.0037429756484925747
+      },
+      {
+        "startFrame": 73,
+        "endFrameInclusive": 77,
+        "maximumHorizontalCorrection": 0.011791205033659935
+      },
+      {
+        "startFrame": 79,
+        "endFrameInclusive": 80,
+        "maximumHorizontalCorrection": 0.0004691499925684184
+      }
+    ],
+    "right": [
+      {
+        "startFrame": 2,
+        "endFrameInclusive": 4,
+        "maximumHorizontalCorrection": 0.006973065435886383
+      },
+      {
+        "startFrame": 6,
+        "endFrameInclusive": 31,
+        "maximumHorizontalCorrection": 0.02622312307357788
+      },
+      {
+        "startFrame": 35,
+        "endFrameInclusive": 63,
+        "maximumHorizontalCorrection": 0.05414259061217308
+      },
+      {
+        "startFrame": 73,
+        "endFrameInclusive": 74,
+        "maximumHorizontalCorrection": 0.004879686515778303
+      },
+      {
+        "startFrame": 76,
+        "endFrameInclusive": 77,
+        "maximumHorizontalCorrection": 0.0033319282811135054
+      },
+      {
+        "startFrame": 79,
+        "endFrameInclusive": 80,
+        "maximumHorizontalCorrection": 0.0004691499925684184
+      }
+    ]
+  },
+  "contactSchedule": {
+    "left": [
+      {
+        "startFrame": 2,
+        "endFrameInclusive": 5
+      },
+      {
+        "startFrame": 9,
+        "endFrameInclusive": 61
+      },
+      {
+        "startFrame": 73,
+        "endFrameInclusive": 77
+      },
+      {
+        "startFrame": 79,
+        "endFrameInclusive": 80
+      }
+    ],
+    "right": [
+      {
+        "startFrame": 2,
+        "endFrameInclusive": 4
+      },
+      {
+        "startFrame": 6,
+        "endFrameInclusive": 31
+      },
+      {
+        "startFrame": 35,
+        "endFrameInclusive": 62
+      },
+      {
+        "startFrame": 73,
+        "endFrameInclusive": 74
+      },
+      {
+        "startFrame": 76,
+        "endFrameInclusive": 77
+      },
+      {
+        "startFrame": 79,
+        "endFrameInclusive": 80
+      }
+    ]
+  },
+  "kneePlaneCorrectedFrames": {
+    "left": [],
+    "right": []
+  },
+  "verticalFloorOffset": 0.0,
+  "cleanupCorrectionMean": 0.008902342058718204,
+  "cleanupCorrectionP95": 0.04484211951494212,
+  "cleanupCorrectionMax": 0.13779191672801971,
+  "bvh": {
+    "sourceFitP95": 0.05683506828968263,
+    "sourceFitMax": 0.17630963199376978,
+    "loop": {
+      "valueRms": 0.0,
+      "valueMax": 0.0,
+      "velocityRmsPerFrame": 0.0,
+      "velocityMaxPerFrame": 0.0
+    },
+    "reciprocalArmCorrelation": 0.4502712124233107,
+    "kneePlane": {
+      "left": {
+        "validFrames": 81,
+        "signFlipFraction": 0.0,
+        "normalDeviationP95Degrees": 13.492909261027394
+      },
+      "right": {
+        "validFrames": 81,
+        "signFlipFraction": 0.0,
+        "normalDeviationP95Degrees": 19.919322247618815
+      }
+    },
+    "contacts": {
+      "left": {
+        "sampleCount": 60,
+        "horizontalSpeedP95": 0.06814030352118788,
+        "horizontalSpeedMax": 0.16665479935655828,
+        "minimumFootOrToeHeight": -0.0144165497183492
+      },
+      "right": {
+        "sampleCount": 57,
+        "horizontalSpeedP95": 0.056119516054595385,
+        "horizontalSpeedMax": 0.06618026380887522,
+        "minimumFootOrToeHeight": 0.011716304015152335
+      }
+    }
+  }
+}
