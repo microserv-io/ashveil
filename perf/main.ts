@@ -32,6 +32,7 @@ const DECISION_INTERVAL = 3
 export interface FramePerf {
   seed: number
   policy: string
+  motion: MotionMode
   frames: number
   viewport: { width: number; height: number; pixelRatio: number }
   renderer: string
@@ -58,8 +59,10 @@ export interface FramePerf {
     depth: number
   }[]
   /** What the bot actually played. A change here invalidates the comparison. */
-  workload: { ticks: number; depth: number; monstersKilled: number; level: number; deaths: number }
+  workload: { motion: MotionMode; ticks: number; depth: number; monstersKilled: number; level: number; deaths: number }
 }
+
+export type MotionMode = 'clip' | 'procedural'
 
 export interface Percentiles {
   p50: number
@@ -72,6 +75,9 @@ const params = new URLSearchParams(globalThis.location.search)
 const seed = Number(params.get('seed') ?? 7)
 const frameTarget = Number(params.get('frames') ?? DEFAULT_FRAMES)
 const policy = POLICIES[params.get('policy') ?? 'brawler'] ?? POLICIES.brawler!
+const motionParam = params.get('motion') ?? 'clip'
+if (motionParam !== 'clip' && motionParam !== 'procedural') throw new Error(`unknown motion mode ${motionParam}`)
+const motion: MotionMode = motionParam
 
 const app = document.getElementById('app')!
 const overlayRoot = document.createElement('div')
@@ -177,6 +183,7 @@ function publish(): void {
   const report: FramePerf = {
     seed,
     policy: policy.name,
+    motion,
     frames: frameTimes.length,
     viewport: {
       width: host.renderer.domElement.clientWidth,
@@ -201,6 +208,7 @@ function publish(): void {
     },
     worstFrames: [...samples].sort((a, b) => b.ms - a.ms).slice(0, 12),
     workload: {
+      motion,
       ticks: sim.tickCount,
       depth: sim.depth,
       monstersKilled: sim.monstersKilled,

@@ -39,14 +39,24 @@ const VIEWPORT = { width: 1600, height: 900 }
 const PREVIEW_PORT = 5277
 
 const args = process.argv.slice(2)
-const record = args.includes('--record')
-const keepOpen = args.includes('--headed')
-const seed = Number(readFlag('--seed') ?? 7)
-const frames = Number(readFlag('--frames') ?? 2400)
+const { record, keepOpen, seed, frames, motion } = parsePerfOptions(args)
 
-function readFlag(name) {
-  const index = args.indexOf(name)
-  return index === -1 ? null : args[index + 1]
+export function parsePerfOptions(argv) {
+  const readFlag = (name) => {
+    const index = argv.indexOf(name)
+    return index === -1 ? null : argv[index + 1]
+  }
+  const motion = readFlag('--motion') ?? 'clip'
+  if (motion !== 'clip' && motion !== 'procedural') {
+    throw new Error(`--motion must be clip or procedural, got ${motion}`)
+  }
+  return {
+    record: argv.includes('--record'),
+    keepOpen: argv.includes('--headed'),
+    seed: Number(readFlag('--seed') ?? 7),
+    frames: Number(readFlag('--frames') ?? 2400),
+    motion,
+  }
 }
 
 const CHROME_CANDIDATES = [
@@ -186,7 +196,8 @@ async function measure() {
   let session = null
   try {
     session = await attach(port)
-    const url = `http://127.0.0.1:${PREVIEW_PORT}/?seed=${seed}&frames=${frames}`
+    const query = new URLSearchParams({ seed: String(seed), frames: String(frames), motion })
+    const url = `http://127.0.0.1:${PREVIEW_PORT}/?${query}`
     await session.send('Page.enable')
     await session.send('Page.navigate', { url })
 
@@ -216,7 +227,7 @@ function format(report) {
   const lines = [
     `renderer        ${report.renderer}`,
     `viewport        ${report.viewport.width}x${report.viewport.height} @${report.viewport.pixelRatio}x`,
-    `frames          ${report.frames} (seed ${report.seed}, ${report.policy})`,
+    `frames          ${report.frames} (seed ${report.seed}, ${report.policy}, ${report.motion})`,
     `workload        depth ${report.workload.depth}, ${report.workload.monstersKilled} kills, level ${report.workload.level}`,
     '',
     `                    p50      p95      p99      max`,
@@ -252,7 +263,7 @@ function row(label, stats) {
   return `${label.padEnd(16)}${cell(stats.p50)}${cell(stats.p95)}${cell(stats.p99)}${cell(stats.max)}`
 }
 
-function compare(report, baseline) {
+export function comparePerfReports(report, baseline) {
   const failures = []
   const notes = []
 
@@ -276,6 +287,11 @@ function compare(report, baseline) {
 
   if (!baseline) {
     notes.push('no baseline recorded yet — run `npm run perf -- --record`')
+    return { failures, notes }
+  }
+
+  if (baseline.workload.motion !== report.workload.motion) {
+    failures.push(`no baseline for motion=${report.workload.motion}, run with --record`)
     return { failures, notes }
   }
 
@@ -378,7 +394,7 @@ async function main() {
     console.log(`note: baseline was recorded on ${baseline.machine.cpu}, this is ${stamped.machine.cpu}`)
   }
 
-  const { failures, notes } = compare(report, baseline)
+  const { failures, notes } = comparePerfReports(report, baseline)
   for (const note of notes) console.log(`note: ${note}`)
 
   if (failures.length > 0) {
@@ -390,4 +406,4 @@ async function main() {
   console.log('PASS — the frame fits in the 60fps budget')
 }
 
-await main()
+if (import.meta.filename === process.argv[1]) await main()
