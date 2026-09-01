@@ -104,10 +104,12 @@ function switchRun(speed: number, frames = 600, block = 75): { worst: number; jo
 }
 
 describe('continuity across state changes', () => {
-  it('never jumps a joint more than 0.2 rad in a frame while switching', () => {
-    const run = switchRun(0.8)
-    expect(run.worst, `${JOINT_NAMES[run.joint]} jumped`).toBeLessThan(0.2)
-  })
+  for (const speed of [0.8, 1.5]) {
+    it(`never jumps a joint more than 0.2 rad in a frame switching at ${speed} m/s`, () => {
+      const run = switchRun(speed)
+      expect(run.worst, `${JOINT_NAMES[run.joint]} jumped`).toBeLessThan(0.2)
+    })
+  }
 
   /**
    * Above a walk the bound is not the generator's to keep: a planted foot moves
