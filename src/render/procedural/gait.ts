@@ -60,8 +60,13 @@ const WALK_STRIDE = [0.83, 0.48] as const
 const RUN_STRIDE = [1.05, 0.45] as const
 const WALK_DUTY = 0.58
 const RUN_DUTY = 0.22
-const RUN_BLEND_LOW = 1.8
-const RUN_BLEND_HIGH = 5
+/**
+ * Where a walk becomes a run, in leg lengths per second. People break into a run
+ * around 2.3, and reading it in leg lengths rather than metres is what lets a
+ * short-legged body run at a speed a long-legged one still walks.
+ */
+const RUN_BLEND_LOW = 1.6
+const RUN_BLEND_HIGH = 3.2
 /**
  * Peak hip height as a fraction of leg length, walking then running. Never 1: a
  * locked knee has no horizontal reach left for a step, and the bob only ever goes
@@ -71,6 +76,13 @@ const WALK_HIP = 0.88
 const RUN_HIP = 0.8
 const HIP_BOB = 0.025
 const REACH_SAFETY = 0.99
+/**
+ * How much of the reachable step the gait actually uses. A leg taken to its true
+ * limit is straight at the ends of the step, and a straight two-bone chain is where
+ * knee angle is most sensitive to the foot moving: the knee flicks. The headroom
+ * costs a slightly faster cadence and buys a knee that does not snap.
+ */
+const REACH_MARGIN = 0.86
 const WALK_LIFT = 0.09
 const RUN_LIFT = 0.2
 const STANCE_NARROW = 0.15
@@ -110,6 +122,9 @@ const GOLDEN = 0.6180339887498949
  *
  * When speed outruns the leg, the step clamps to what the leg can reach and the
  * frequency rises to compensate. The feet still do not slide; the legs just whirr.
+ * The cost is that a planted foot then moves `speed * DT` every frame however the
+ * body is posed, so above a walk the leg joints necessarily turn faster than the
+ * 0.2 rad a frame the torso keeps to.
  */
 export function gaitParams(geometry: RigGeometry, speed: number, out: GaitParams): void {
   const legLength = geometry.legLength
@@ -144,7 +159,7 @@ function reachableHalfStep(geometry: RigGeometry, hipHeight: number, runBlend: n
   const rise = hipHeight + width * Math.sin(PELVIS_ROLL)
   const sideways = width * (STANCE_NARROW * runBlend + SWAY * PELVIS_ROLL + 1 - Math.cos(PELVIS_ROLL))
   const forward = width * Math.sin(PELVIS_YAW)
-  return Math.max(0, Math.sqrt(Math.max(0, reach * reach - rise * rise - sideways * sideways)) - forward)
+  return Math.max(0, Math.sqrt(Math.max(0, reach * reach - rise * rise - sideways * sideways)) - forward) * REACH_MARGIN
 }
 
 export function strideFrequency(geometry: RigGeometry, speed: number): number {
@@ -226,19 +241,21 @@ export function writeDash(geometry: RigGeometry, _drive: GaitDrive, state: GaitS
   writeTorso(out, Joint.Head, -DASH_LEAN * 0.6, 0, 0, state)
   resolveTorso(geometry, out, state)
 
-  for (const side of SIDES) {
-    const hip = side === LEFT ? Joint.HipL : Joint.HipR
-    state.target[0] = side * geometry.hipWidth
-    state.target[1] = geometry.ankleHeight + geometry.legLength * DASH_FOOT_LIFT
-    state.target[2] = state.positions[hip * 3 + 2]! - geometry.legLength * DASH_TRAIL
-    writeLeg(geometry, state, out, side, FOOT_SWING_PITCH * 0.5)
-  }
+  trailLeg(geometry, state, out, LEFT)
+  trailLeg(geometry, state, out, RIGHT)
   hangArm(geometry, state, out, LEFT, -geometry.armLength * 0.3, 1)
   hangArm(geometry, state, out, RIGHT, -geometry.armLength * 0.3, 1)
 }
 
-const SIDES = [LEFT, RIGHT] as const
 const FREQUENCY_PROBE = createGaitParams()
+
+function trailLeg(geometry: RigGeometry, state: GaitState, out: Pose, side: number): void {
+  const hip = side === LEFT ? Joint.HipL : Joint.HipR
+  state.target[0] = side * geometry.hipWidth
+  state.target[1] = geometry.ankleHeight + geometry.legLength * DASH_FOOT_LIFT
+  state.target[2] = state.positions[hip * 3 + 2]! - geometry.legLength * DASH_TRAIL
+  writeLeg(geometry, state, out, side, FOOT_SWING_PITCH * 0.5)
+}
 
 function wrap(phase: number): number {
   return phase - Math.floor(phase)

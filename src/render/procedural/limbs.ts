@@ -1,6 +1,6 @@
 import { resolvePositions, restDirection, type RigGeometry } from './geometry'
 import { createTwoBoneChain, solveTwoBone, type TwoBoneChain } from './ik'
-import { Joint, LEFT } from './joints'
+import { Joint, LEFT, RIGHT } from './joints'
 import { copyJointFrom, setJointAxisAngle, type Pose } from './pose'
 import { quatFromAxisAngle, quatMultiply } from './quat'
 
@@ -35,7 +35,6 @@ const KNEE_POLE_SIDE = 0.15
 const ELBOW_POLE_SIDE = 0.35
 /** Hip height while a body simply stands on its feet, as a fraction of leg length. */
 const STANCE_HIP = 0.94
-const SIDES = [1, -1] as const
 
 /** Root offset that stands the skeleton on its feet with a knee it can still bend. */
 export function stanceOffset(geometry: RigGeometry): number {
@@ -45,12 +44,15 @@ export function stanceOffset(geometry: RigGeometry): number {
 /** Both feet flat under the hips: the base every rooted pose stands on. */
 export function plantFeet(geometry: RigGeometry, scratch: LimbScratch, out: Pose): void {
   resolveTorso(geometry, out, scratch)
-  for (const side of SIDES) {
-    scratch.target[0] = side * geometry.hipWidth
-    scratch.target[1] = geometry.ankleHeight
-    scratch.target[2] = 0
-    writeLeg(geometry, scratch, out, side, 0)
-  }
+  plantOne(geometry, scratch, out, LEFT)
+  plantOne(geometry, scratch, out, RIGHT)
+}
+
+function plantOne(geometry: RigGeometry, scratch: LimbScratch, out: Pose, side: number): void {
+  scratch.target[0] = side * geometry.hipWidth
+  scratch.target[1] = geometry.ankleHeight
+  scratch.target[2] = 0
+  writeLeg(geometry, scratch, out, side, 0)
 }
 
 /**

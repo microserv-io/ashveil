@@ -3,7 +3,8 @@ import { createGaitState } from '../src/render/procedural/gait'
 import { buildRigGeometry, KAYKIT_KNIGHT_JOINTS, resolvePositions } from '../src/render/procedural/geometry'
 import { Joint } from '../src/render/procedural/joints'
 import { createPose, type Pose } from '../src/render/procedural/pose'
-import { DEATH_SETTLE, POSE_CLIPS, SKILL_CLIPS, writeClipPose } from '../src/render/procedural/poses'
+import { DEATH_SETTLE, POSE_CLIPS, SKILL_CLIPS } from '../src/render/procedural/clips'
+import { writeClipPose } from '../src/render/procedural/poses'
 import { quatAngleBetween, quatLength } from '../src/render/procedural/quat'
 
 const geometry = buildRigGeometry(KAYKIT_KNIGHT_JOINTS, 1.2)
