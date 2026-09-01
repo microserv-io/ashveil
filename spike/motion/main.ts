@@ -1,0 +1,286 @@
+import '../../src/style.css'
+import * as THREE from 'three'
+import { createActorView, disposeActorView, orientActorView, type ActorView } from '../../src/render/actorview'
+import { loadModels } from '../../src/render/models'
+import type { MotionMode } from '../../src/render/motionmode'
+import { RIG_CLIPS, type RigState } from '../../src/render/rig'
+import type { RigInput } from '../../src/render/riginput'
+import { SceneHost } from '../../src/render/scene'
+import { Sim } from '../../src/sim/sim'
+import { HIT_FLASH_DURATION, type Actor, type MonsterArchetype } from '../../src/sim/types'
+
+/**
+ * One body, the gameplay camera, and every knob the animation pipeline has.
+ *
+ * Rocco's rule is that no animation merges until he has watched it, and watching
+ * it in a real fight means waiting for the state you care about to happen. This
+ * page asks for the state directly instead — but through the same `ActorView`,
+ * the same drivers and the same models the game builds, so what is on screen here
+ * is what will be on screen there. There is no second body builder.
+ */
+
+const SEED = Number(new URLSearchParams(location.search).get('seed') ?? 7)
+/** How fast the turn button sweeps the body, and for how long. */
+const TURN_RATE = 2.6
+const TURN_DURATION = 0.8
+const PANEL_KEY = 'ashveil.motion.panel'
+/** Below this the panel would cover the body, so it starts out of the way. */
+const NARROW_VIEWPORT = 640
+/** A skill loops windup then recovery so its pose animates instead of holding. */
+const WINDUP = 0.4
+const RECOVERY = 0.6
+
+const sim = new Sim({ seed: SEED })
+await loadModels('models')
+
+const host = new SceneHost(document.getElementById('stage')!)
+host.buildTerrain(sim.map)
+globalThis.addEventListener('resize', () => host.resize())
+
+const bodies = collectBodies()
+const state = element<HTMLSelectElement>('state')
+const bodySelect = element<HTMLSelectElement>('body')
+const driverSelect = element<HTMLSelectElement>('driver')
+const speed = element<HTMLInputElement>('speed')
+const scale = element<HTMLInputElement>('scale')
+const distance = element<HTMLInputElement>('distance')
+const pitch = element<HTMLInputElement>('pitch')
+const readout = element<HTMLPreElement>('readout')
+const controls = element('controls')
+const toggle = element<HTMLButtonElement>('panel-toggle')
+
+fill(bodySelect, bodies.map((entry) => entry.label))
+fill(state, Object.keys(RIG_CLIPS))
+state.value = 'moving'
+
+const input: RigInput = {
+  state: 'moving',
+  speed: 3,
+  dashing: false,
+  facingDelta: 0,
+  phase: null,
+  hitAge: null,
+  ailments: [],
+  time: 0,
+  seed: 0,
+  castLeft: 0,
+  recovering: false,
+}
+
+let view: ActorView | null = null
+let actor: Actor = bodies[0]!.actor
+let simTime = 0
+let facing = 0
+let previousFacing = 0
+let turnLeft = 0
+let hitAge: number | null = null
+let castAt = 0
+let stepQueued = false
+let previous = performance.now()
+
+rebuild()
+recentre()
+
+bodySelect.addEventListener('change', rebuild)
+driverSelect.addEventListener('change', rebuild)
+element('turn').addEventListener('click', () => (turnLeft = TURN_DURATION))
+element('hit').addEventListener('click', () => (hitAge = 0))
+element('step').addEventListener('click', () => (stepQueued = true))
+element('recenter').addEventListener('click', recentre)
+let panelOpen = readPanelPreference()
+toggle.addEventListener('click', () => showPanels(!panelOpen))
+showPanels(panelOpen)
+
+// The same convenience the game exposes: the fastest way to poke at a live body.
+Object.assign(globalThis, { motion: { host, sim, get view() { return view }, get actor() { return actor }, input } })
+
+requestAnimationFrame(frame)
+
+function frame(now: number): void {
+  const wall = Math.min(0.1, (now - previous) / 1000)
+  previous = now
+
+  const timeScale = Number(scale.value)
+  let delta = wall * timeScale
+  if (stepQueued) delta = 1 / 60
+  stepQueued = false
+  simTime += delta
+
+  if (turnLeft > 0) {
+    turnLeft = Math.max(0, turnLeft - delta)
+    facing += TURN_RATE * delta
+  }
+
+  writeInput(delta)
+  const body = view!
+  actor.facing = facing
+  travel(delta)
+  body.group.position.set(actor.pos.x, 0, actor.pos.y)
+  orientActorView(body, actor)
+  body.driver.update(input, delta)
+
+  host.followPlayer(actor.pos, wall)
+  placeCamera()
+  host.render()
+
+  element('summary').textContent = `${driverSelect.value} · ${input.state} · ${input.speed.toFixed(1)} m/s`
+  element('distance-value').textContent = Number(distance.value).toFixed(1)
+  element('pitch-value').textContent = Number(pitch.value).toFixed(0)
+  element('speed-value').textContent = Number(speed.value).toFixed(1)
+  element('scale-value').textContent = timeScale.toFixed(2)
+  readout.textContent = describe(wall)
+  requestAnimationFrame(frame)
+}
+
+/**
+ * The sliders start at the game's own camera, so the first question — does it read
+ * at the distance a player sits — is answered before anything is touched. Then they
+ * come down and in, because a knight forty pixels tall and seen from overhead
+ * cannot be judged for foot slide at all.
+ */
+function placeCamera(): void {
+  const away = Number(distance.value)
+  if (away >= GAMEPLAY_DISTANCE) return
+  const angle = (Number(pitch.value) * Math.PI) / 180
+  const target = CAMERA_TARGET.set(actor.pos.x, actor.radius * MID_BODY, actor.pos.y)
+  host.camera.position.set(target.x, target.y + Math.sin(angle) * away, target.z + Math.cos(angle) * away)
+  host.camera.lookAt(target)
+}
+
+/**
+ * Aim at the chest. A KayKit body stands about 2.17 model units tall against a
+ * collision radius of one, so this lands mid-torso whatever size the actor is —
+ * close enough to keep the feet in frame, which are the half being judged.
+ */
+const MID_BODY = 1.9
+/** The length of `scene.ts`'s own camera offset: the slider's top end is the real thing. */
+const GAMEPLAY_DISTANCE = Math.hypot(19, 14.5)
+const CAMERA_TARGET = new THREE.Vector3()
+
+/** The body walks the ground it is standing on: foot slide is invisible in place. */
+function travel(delta: number): void {
+  if (input.state !== 'moving' && !input.dashing) return
+  actor.pos.x += Math.cos(facing) * input.speed * delta
+  actor.pos.y += Math.sin(facing) * input.speed * delta
+}
+
+function writeInput(delta: number): void {
+  const chosen = state.value as RigState
+  const acting = chosen !== 'idle' && chosen !== 'moving' && chosen !== 'dead'
+
+  input.state = chosen
+  input.speed = chosen === 'moving' ? Number(speed.value) : 0
+  input.dashing = chosen === 'dash'
+  input.facingDelta = Math.atan2(Math.sin(facing - previousFacing), Math.cos(facing - previousFacing))
+  previousFacing = facing
+  input.time = simTime
+  input.seed = actor.id
+
+  if (hitAge !== null) hitAge = hitAge + delta > HIT_FLASH_DURATION ? null : hitAge + delta
+  input.hitAge = hitAge
+
+  if (!acting) {
+    input.phase = null
+    input.castLeft = 0
+    input.recovering = false
+    castAt = 0
+    return
+  }
+  castAt = (castAt + delta) % (WINDUP + RECOVERY)
+  const inWindup = castAt < WINDUP
+  input.phase = inWindup ? { windup: castAt / WINDUP } : { recovery: (castAt - WINDUP) / RECOVERY }
+  input.castLeft = inWindup ? WINDUP + RECOVERY - castAt : WINDUP + RECOVERY - castAt
+  input.recovering = !inWindup
+}
+
+function rebuild(): void {
+  const chosen = bodies.find((entry) => entry.label === bodySelect.value) ?? bodies[0]!
+  if (view) {
+    host.scene.remove(view.group)
+    disposeActorView(view)
+  }
+  actor = chosen.actor
+  view = createActorView(actor, driverSelect.value as MotionMode)
+  host.scene.add(view.group)
+}
+
+function recentre(): void {
+  actor.pos.x = sim.map.spawn.x
+  actor.pos.y = sim.map.spawn.y
+  host.followPlayer(actor.pos, 1)
+}
+
+/** Real actors from a real run, so nothing here has to invent a body the game never builds. */
+function collectBodies(): { label: string; actor: Actor }[] {
+  const found: { label: string; actor: Actor }[] = [{ label: 'knight', actor: sim.player }]
+  for (const archetype of ['swarm', 'ranged', 'brute'] as MonsterArchetype[]) {
+    const monster = sim.actors.find((candidate) => candidate.kind === 'monster' && candidate.archetype === archetype)
+    if (monster) found.push({ label: archetype, actor: monster })
+  }
+  return found
+}
+
+function describe(wall: number): string {
+  const phase = input.phase === null ? 'null' : 'windup' in input.phase
+    ? `windup ${input.phase.windup.toFixed(2)}`
+    : `recovery ${input.phase.recovery.toFixed(2)}`
+  return [
+    `driver     ${driverSelect.value}`,
+    `frame      ${(wall * 1000).toFixed(1)}ms`,
+    '',
+    `state      ${input.state}`,
+    `speed      ${input.speed.toFixed(2)} m/s`,
+    `dashing    ${input.dashing}`,
+    `facing     ${facing.toFixed(2)} rad`,
+    `facingΔ    ${input.facingDelta.toFixed(4)}`,
+    `phase      ${phase}`,
+    `hitAge     ${input.hitAge === null ? 'null' : input.hitAge.toFixed(3)}`,
+    `time       ${input.time.toFixed(2)}s`,
+    `seed       ${input.seed}`,
+    `castLeft   ${input.castLeft.toFixed(2)}`,
+    `recovering ${input.recovering}`,
+  ].join('\n')
+}
+
+/**
+ * The page is reviewed on a phone as often as on a desktop, and there the controls
+ * cover the body they exist to show. Collapsed, everything folds into the top bar
+ * and the camera keeps the body centred, so the toggle is the whole layout story.
+ */
+function showPanels(open: boolean): void {
+  panelOpen = open
+  controls.hidden = !open
+  readout.hidden = !open
+  toggle.setAttribute('aria-expanded', String(open))
+  toggle.setAttribute('aria-label', open ? 'Hide controls' : 'Show controls')
+  element('panel-toggle-icon').textContent = open ? '\u00d7' : '\u2261'
+  // A viewer with no storage at all still gets a working page.
+  try {
+    localStorage.setItem(PANEL_KEY, open ? 'open' : 'closed')
+  } catch {}
+}
+
+function readPanelPreference(): boolean {
+  try {
+    const stored = localStorage.getItem(PANEL_KEY)
+    if (stored !== null) return stored === 'open'
+  } catch {}
+  return globalThis.innerWidth >= NARROW_VIEWPORT
+}
+
+function fill(select: HTMLSelectElement, values: readonly string[]): void {
+  select.replaceChildren(
+    ...values.map((value) => {
+      const option = document.createElement('option')
+      option.value = value
+      option.textContent = value
+      return option
+    }),
+  )
+}
+
+function element<T extends HTMLElement = HTMLElement>(id: string): T {
+  const node = document.getElementById(id)
+  if (!node) throw new Error(`missing #${id}`)
+  return node as T
+}

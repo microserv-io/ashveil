@@ -163,6 +163,26 @@ describe.skipIf(!existsSync(PLAYER))('semantic skeleton binding', () => {
     expect(worldOf(body, 'hips').distanceTo(restPelvis)).toBeLessThan(1e-9)
   })
 
+  /**
+   * `GLTFLoader` strips the characters `PropertyBinding` reserves, so the rig the
+   * browser hands us calls the left shoulder `upperarml`, not `upperarm.l`. Binding
+   * against the raw glTF names works in Node and fails on the page, which is
+   * exactly what happened the first time this ran in a browser.
+   */
+  it('binds the bone names three actually produces', () => {
+    const body = knight(GAMEPLAY_SCALE)
+    const raw = bindSkeleton(body, KAYKIT_PROFILE).geometry
+
+    const sanitised = knight(GAMEPLAY_SCALE)
+    sanitised.traverse((child) => {
+      child.name = THREE.PropertyBinding.sanitizeNodeName(child.name)
+    })
+    const loaded = bindSkeleton(sanitised, KAYKIT_PROFILE).geometry
+
+    expect(THREE.PropertyBinding.sanitizeNodeName('upperarm.l')).not.toBe('upperarm.l')
+    expect([...loaded.rest]).toEqual([...raw.rest])
+  })
+
   it('names the profile and the joint when a required bone is missing', () => {
     const body = knight(1)
     const broken = { ...KAYKIT_PROFILE, bones: { ...KAYKIT_PROFILE.bones, 'knee.l': 'shin.l' } }

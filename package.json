@@ -15,6 +15,7 @@
     "spike:build": "vite build --config spike/deck/vite.config.ts",
     "assets": "node scripts/fetch-assets.mjs",
     "art:dev": "npm run assets && vite --config spike/art/vite.config.ts",
+    "motion:dev": "npm run assets && vite --config spike/motion/vite.config.ts",
     "perf": "node scripts/perf.mjs",
     "gate": "npm run typecheck && npm run test && npm run build",
     "gate:balance": "npm run gate && npm run sim -- sweep --seeds 6 --minutes 4",

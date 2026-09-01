@@ -31,12 +31,19 @@ export function bindSkeleton(body: THREE.Object3D, profile: SkeletonProfile): Se
     if (child instanceof THREE.Bone) bones.push(child)
   })
 
+  // `GLTFLoader` strips the characters `PropertyBinding` reserves, so the rig on
+  // the page calls the left shoulder `upperarml` while the glTF and the profile
+  // call it `upperarm.l`. Both sides are sanitised so a profile can be written
+  // against the names the artist chose.
+  const named = new Map<string, number>()
+  bones.forEach((bone, at) => named.set(THREE.PropertyBinding.sanitizeNodeName(bone.name), at))
+
   const jointBone = new Int32Array(Joint.Count)
   const boneJoint = new Int32Array(bones.length).fill(-1)
   for (let joint = 0; joint < Joint.Count; joint++) {
     const name = JOINT_NAMES[joint]!
     const wanted = profile.bones[name]
-    const found = bones.findIndex((bone) => bone.name === wanted)
+    const found = wanted === undefined ? -1 : named.get(THREE.PropertyBinding.sanitizeNodeName(wanted)) ?? -1
     if (found === -1) {
       throw new Error(`profile "${profile.name}" cannot bind joint "${name}": no bone named "${wanted ?? '(unmapped)'}"`)
     }
