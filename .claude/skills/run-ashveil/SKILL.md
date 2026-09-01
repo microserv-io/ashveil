@@ -74,7 +74,8 @@ node .claude/skills/run-ashveil/driver.mjs loop
 | `loop` | Area transition — depth advances, player arrives at the new spawn, cooldowns reset | `/tmp/ashveil-loop-next-area.png` |
 
 Flags: `--url http://127.0.0.1:5273`, `--seed 7`, `--steps 260` (how long `play` hunts
-before giving up).
+before giving up), `--motion procedural` (the pose generator instead of the clips;
+see `src/render/motionmode.ts`).
 
 Real output from `play`:
 

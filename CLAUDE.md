@@ -52,6 +52,10 @@ Small dependency set on purpose.
   `npm run perf -- --record` makes the current numbers the baseline.
 - `npm run spike:dev` serves the Deck shell diagnostics on :5274.
 - `npm run art:dev` fetches the CC0 kit and serves the art spike on :5275.
+- `npm run motion:dev` serves the motion review page on :5277, bound to every
+  interface: one body at the gameplay camera with the driver, state, speed and
+  time scale under your hand. `?motion=procedural` picks the pose generator over
+  the clips in the game itself.
 
 In dev the browser exposes `globalThis.ashveil` as `{ sim, host, view, controls }`,
 which is the fastest way to poke at a live game from the console.
