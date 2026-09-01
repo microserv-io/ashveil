@@ -105,6 +105,8 @@ export type MonsterRarity = 'normal' | 'magic' | 'rare'
 
 export type ActorState = 'idle' | 'moving' | 'acting' | 'dead'
 
+export const HIT_FLASH_DURATION = 0.12
+
 export type AilmentKind = 'chilled' | 'ignited'
 
 export interface Ailment {
@@ -139,8 +141,10 @@ export interface Actor {
   targetId: EntityId | null
   /** Remaining seconds of the current skill's windup. */
   windup: number
+  windupTotal: number
   /** Remaining seconds of post-hit recovery, during which no new skill starts. */
   recovery: number
+  recoveryTotal: number
   activeSkill: SkillId | null
   /** Set while a skill is winding up; resolved when `windup` hits zero. */
   pendingCast: PendingCast | null

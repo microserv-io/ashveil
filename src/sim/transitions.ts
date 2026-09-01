@@ -33,7 +33,9 @@ export function revivePlayerAt(actor: Actor, spawn: Vec2): void {
   actor.mana = actor.stats.maxMana
   actor.ailments = []
   actor.windup = 0
+  actor.windupTotal = 0
   actor.recovery = 0
+  actor.recoveryTotal = 0
   actor.pendingCast = null
   actor.dash = null
   actor.lastDamageFrom = null
