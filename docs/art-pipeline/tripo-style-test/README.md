@@ -273,9 +273,10 @@ meshes with negligible bind displacement and provides clavicle, arm, forearm and
 twist chains, but this run has no deforming scapula bones. The diagnostic build now
 normalizes and caps deform weights to four influences, disables Blender Preserve
 Volume so validation matches glTF linear-blend skinning, and authors all animation on
-the scene's measured 30 fps clock. Chest-local arm frames correct the prior backwards
-cross-body recipe and preserve the accepted stride and independent head turn. Strict
-shoulder and elbow deformation gates still fail on the current source topology.
+the scene's measured 30 fps clock. Chest-local arm frames and the stride and head-turn
+samples provide diagnostic directions and metrics only. Human visual review rejected
+the motion, so no anatomical credibility is claimed. Strict shoulder and elbow
+deformation gates still fail on the current source topology.
 These findings keep the result at
 `diagnostic_not_production_ready` and make it a benchmark for later ARP configuration
 or mesh-topology work, not a replacement skeleton. The diagnostic GLB intentionally
@@ -287,7 +288,23 @@ The GLB also carries two review-only in-place locomotion prototypes:
 `Ashveil_Walk_InPlace` is frames 0–30 at 30 fps and
 `Ashveil_Sprint_InPlace` is frames 0–18 at 30 fps. Both use keyed ARP leg IK/FK
 switches, keep the trajectory control fixed, and repeat the first pose at the final
-frame. Their report metrics cover clip timing and control-loop closure; skinned sole
-planting and slide, ground clearance, knee plane, cyclic velocity, bilateral mirror
-error and visual motion quality remain unmeasured production gates rather than
-production claims.
+frame. These clips prove only the timing and review-player contract. Human review
+rejected almost all stress poses and both locomotion clips as twisted or otherwise
+unsuitable, revoking the earlier assessment that the walk was a useful motion
+prototype. Skinned sole planting and slide, ground clearance, knee plane, cyclic
+velocity, bilateral mirror error and visual motion quality remain failed or
+unmeasured production gates rather than production claims.
+
+The follow-up clean-room weighting and hand-authored motion attempt is archived under
+`output/base-models/masculine/rigged-auto-rig-pro-clean-room-no-ship`. It preserves
+only 15 non-bind Blender-authoring stress renders and a compact negative report. No
+experimental BLEND or GLB is retained: the reduced GLB failed Blender parity, and
+the attempted parity measurement was not reliable enough to diagnose that mismatch.
+The canonical ARP review artifacts above remain unchanged.
+
+The fitted ARP skeleton placement is accepted as the rigging benchmark. The
+hand-authored motion, current Tripo mesh and current weights are rejected. The next
+humanoid-motion experiment will retarget an external animation library rather than
+author another bespoke walk or sprint here. A production body requires retopology
+for joint loops plus a deforming scapular chain before another skinning acceptance
+run.

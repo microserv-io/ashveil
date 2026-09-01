@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "kind": "auto_rig_pro_clean_room_no_ship",
+  "disposition": "no_ship",
+  "productionAcceptance": false,
+  "runtimeUsable": false,
+  "parityMeasurementValid": false,
+  "summary": "The Auto-Rig Pro skeleton placement was accepted, but the clean-room corrective weighting and hand-authored motion attempt was visually rejected and failed fixed deformation and export-parity gates.",
+  "retentionPolicy": {
+    "renderEvidenceOnly": true,
+    "measurementSpace": "Blender authoring viewport only",
+    "renderCount": 15,
+    "glbRetained": false,
+    "blendRetained": false,
+    "canonicalArtifactsReplaced": false,
+    "note": "No GLB is retained because the experimental reduced export did not match Blender. Bind and skeleton overlays were unchanged and are not duplicated."
+  },
+  "measuredImprovements": {
+    "maximumAbsoluteUpperArmAxialTwistDegrees": 7.546344842981005,
+    "maximumOffHingeRotationDegrees": 0.77556451179951,
+    "locomotion": {
+      "walk": {
+        "evaluatedArmSwingCorrelation": -0.9999805274566622,
+        "evaluatedMinimumKneeFlexionDegrees": {
+          "left": 30.78689668381947,
+          "right": 30.78686253287362
+        }
+      },
+      "sprint": {
+        "evaluatedArmSwingCorrelation": -0.9997416797903949,
+        "evaluatedMinimumKneeFlexionDegrees": {
+          "left": 36.51209101971839,
+          "right": 36.51202613292127
+        }
+      }
+    }
+  },
+  "measuredFailures": {
+    "crossBodyPalmFrameErrorDegrees": 36.25228769916403,
+    "deformationThresholds": {
+      "minimumCovarianceVolumeRatio": 0.7,
+      "minimumTriangleAreaRatioP05": 0.6,
+      "minimumTriangleAreaRatio": 0.2,
+      "maximumSignedNormalInversions": 0
+    },
+    "deformation": {
+      "overheadShoulderLeft": {
+        "covarianceVolumeRatio": 0.6873663577950483,
+        "triangleAreaRatioP05": 0.20704987437684172,
+        "minimumTriangleAreaRatio": 0.04252380888501977,
+        "signedNormalInversions": 66,
+        "pass": false
+      },
+      "overheadShoulderRight": {
+        "covarianceVolumeRatio": 0.6860738716282124,
+        "triangleAreaRatioP05": 0.22178774577373522,
+        "minimumTriangleAreaRatio": 0.039956456326580146,
+        "signedNormalInversions": 63,
+        "pass": false
+      },
+      "deepElbowLeft": {
+        "covarianceVolumeRatio": 0.3610225241136557,
+        "triangleAreaRatioP05": 0.30174582615269907,
+        "minimumTriangleAreaRatio": 0.039390625241912156,
+        "signedNormalInversions": 32,
+        "pass": false
+      }
+    },
+    "experimentalGlbParity": {
+      "pass": false,
+      "boneEndpointMaximumMetres": 1.4441815874782116,
+      "skinnedVertexP95MaximumMetres": 0.9643301367759705,
+      "skinnedVertexAbsoluteMaximumMetres": 0.9952923059463501,
+      "skinnedNormalMaximumDegrees": 178.75180159851485,
+      "note": "The experimental correspondence method was not valid enough to diagnose the mismatch, so parityMeasurementValid remains false and the GLB is excluded."
+    }
+  },
+  "decisions": {
+    "autoRigProSkeletonPlacement": "accepted_as_benchmark",
+    "handAuthoredMotion": "rejected",
+    "currentTripoMeshAndWeights": "rejected",
+    "nextHumanoidMotionPath": "external_animation_library_retarget",
+    "nextProductionMesh": "retopology_with_deforming_scapula_support"
+  },
+  "artifacts": [
+    { "name": "blender-authoring-only-cross-body-reach-back.png", "sha256": "e39a3b828ef3bb02a4d2f00ec5a5a58710121cbb329cc98b1fad35cb936e38c6" },
+    { "name": "blender-authoring-only-cross-body-reach-front.png", "sha256": "f1c52e8e5ee756c0f64e537839eb444f2fd788a10f65dc2c9118643640ba71b1" },
+    { "name": "blender-authoring-only-cross-body-reach-right.png", "sha256": "b5bb783e8df23485105211ffe1a78d5b7dbe0b4c4bc676b54fb6eb29b49cfca4" },
+    { "name": "blender-authoring-only-deep-elbow-bend-back.png", "sha256": "d40d9f1c0bfbd1980d776045ece4e1e2c50d4fba145d54e2acc7588a8a860d20" },
+    { "name": "blender-authoring-only-deep-elbow-bend-front.png", "sha256": "2475c45209cacac140796b28d19ce48060076fa4e1dee92b4cdd85d4232730f0" },
+    { "name": "blender-authoring-only-deep-elbow-bend-right.png", "sha256": "a227ee022e728329a39a2374339a757032daae926d43c22bdab33fd684ddd13e" },
+    { "name": "blender-authoring-only-head-turn-back.png", "sha256": "712c198b4bd7fa189c312f5e5d74cd9541fa7ac598c03093236db8d049035512" },
+    { "name": "blender-authoring-only-head-turn-front.png", "sha256": "579ae4cbafafa88613f3c21ed142a3976544d703a65a328b87915b1c4f81d77a" },
+    { "name": "blender-authoring-only-head-turn-right.png", "sha256": "dc9c27a96da3024ea499de091c61538ba8ffd551bfbd9baeddd9784456d8b573" },
+    { "name": "blender-authoring-only-long-stride-back.png", "sha256": "2eb330f69f268030691114a6c96dce50226197fe8e4fd359253dd18523a02fbb" },
+    { "name": "blender-authoring-only-long-stride-front.png", "sha256": "66031798c0a33acb019a4a173e6b9993d7817ca3f0203759f8ee9931527b962f" },
+    { "name": "blender-authoring-only-long-stride-right.png", "sha256": "3cda10a794f09a6631a115c2fadfa2f5be6b4da5189da6e38af0bb52b7263365" },
+    { "name": "blender-authoring-only-overhead-reach-back.png", "sha256": "8f7bbcc6cf518f6a7b799ebcdbb56e1b9d2f6c4bab721b53705301fe9b7eed7b" },
+    { "name": "blender-authoring-only-overhead-reach-front.png", "sha256": "faf1a1d289185d974f83b70ffa26988dde24d44474127769deea12cdb0faa0c5" },
+    { "name": "blender-authoring-only-overhead-reach-right.png", "sha256": "e55e59f1daf06c2ab2c844aa10361807a29b3d9a7447b75983e0481950c7ed83" }
+  ]
+}

@@ -231,8 +231,8 @@ target archetype's skeleton contract passes technical and human review.
 
 Auto-Rig Pro is being evaluated as a rigging automation benchmark, not as an
 automatic production acceptance path. The first masculine ARP 3.78.47 / Smart AI
-1.21 run preserves bind geometry and produces a usable diagnostic animation, but it
-does not provide the required deforming scapula chain and fails unchanged
+1.21 run preserves bind geometry and accurately places the skeleton, but it does not
+provide the required deforming scapula chain and fails unchanged
 shoulder/elbow deformation gates even after weights are normalized and capped to four
 influences under runtime-equivalent linear-blend skinning. Its diagnostic animation
 uses transported chest-local arm frames and a measured 30 fps scene clock. Its
@@ -242,19 +242,37 @@ bake remain pending. This keeps the current mannequin and ARP output diagnostic 
 preserving ARP as a candidate for a better-topology retest and for authoring-tool
 comparison.
 
-Walk and sprint are now represented by separate, loop-closed in-place diagnostic
-clips at one second and 0.6 seconds respectively. They establish the intended contact
-schedule and runtime clip contract, but do not become player locomotion until skinned
-foot planting, clearance, loop velocity and visual motion review all pass.
+Walk and sprint remain separate, loop-closed in-place diagnostic clips at one second
+and 0.6 seconds respectively, but human review rejected both clips and almost all
+hand-authored stress poses as twisted or otherwise unsuitable. This revokes the
+earlier conclusion that the walk was a useful motion prototype. The clips prove only
+the intended timing and browser-review contract; they do not establish production
+motion quality.
 
-The masculine spike now separates rig intent from mesh suitability. Its humeral
-head fit, overhead shoulder-girdle motion, genuine cross-body reach and isolated
-deep-elbow chain are mechanically credible, while the current Tripo mesh still
-fails fixed shoulder and elbow volume/triangle deformation thresholds. Wrist
+A bounded clean-room weighting and hand-authored-motion attempt improved measured
+upper-arm axial twist, off-hinge rotation, reciprocal arm swing and knee flexion, but
+still failed palm orientation, shoulder/elbow deformation and experimental GLB
+parity. Its 15 genuine non-bind Blender renders and negative report are retained in a
+separate NO-SHIP archive; no experimental GLB is retained and canonical ARP review
+artifacts are unchanged.
+
+The resulting decision separates the accepted and rejected parts: ARP's fitted
+skeleton placement is accepted as the rigging benchmark; its hand-authored motion,
+the current Tripo mesh and the current weights are rejected. The next humanoid motion
+path is retargeting from an external animation library. The next production body
+must have authored joint-loop retopology and a deforming scapular chain before
+skinning, motion or modular-armor acceptance is revisited.
+
+The masculine spike now separates diagnostic rig intent from mesh suitability. Its
+humeral-head, overhead, cross-body and deep-elbow measurements record test directions
+and thresholds only. Human visual review rejected the motion, so no anatomical
+credibility is claimed. The current Tripo mesh also fails fixed shoulder and elbow
+volume/triangle deformation thresholds. Wrist
 deformation is stable, but the hand remains a separate shell with a measurable gap
 and unapproved tangent continuity. Therefore this source topology is rejected for
 production animation and armor fitting; Smart Topology or an equivalent authored
-joint-loop pass is required without changing the runtime 20-bone contract. Character
+joint-loop pass and deforming scapular support are required before freezing the next
+runtime skeleton contract. Character
 acceptance requires both deformation and wrist-continuity contracts to pass; neither
 can compensate for a failure in the other.
 
