@@ -31,6 +31,11 @@ export function quatFromAxisAngle(out: Float32Array, o: number, ax: number, ay: 
   quatSet(out, o, ax * scale, ay * scale, az * scale, Math.cos(half))
 }
 
+/** The inverse of a unit quaternion. Safe to alias `out` with the input. */
+export function quatConjugate(q: Float32Array, qo: number, out: Float32Array, oo: number): void {
+  quatSet(out, oo, -q[qo]!, -q[qo + 1]!, -q[qo + 2]!, q[qo + 3]!)
+}
+
 /** out = a * b, applying b first. Safe to alias `out` with either input. */
 export function quatMultiply(a: Float32Array, ao: number, b: Float32Array, bo: number, out: Float32Array, oo: number): void {
   const ax = a[ao]!
