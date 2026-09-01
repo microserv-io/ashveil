@@ -20,6 +20,8 @@ import { HIT_FLASH_DURATION, type Actor, type MonsterArchetype } from '../../src
  */
 
 const SEED = Number(new URLSearchParams(location.search).get('seed') ?? 7)
+/** How far from the spawn the body may wander before it turns back. */
+const LEASH = 4.5
 /** How fast the turn button sweeps the body, and for how long. */
 const TURN_RATE = 2.6
 const TURN_DURATION = 0.8
@@ -45,6 +47,7 @@ const speed = element<HTMLInputElement>('speed')
 const scale = element<HTMLInputElement>('scale')
 const distance = element<HTMLInputElement>('distance')
 const pitch = element<HTMLInputElement>('pitch')
+const orbit = element<HTMLInputElement>('orbit')
 const readout = element<HTMLPreElement>('readout')
 const controls = element('controls')
 const toggle = element<HTMLButtonElement>('panel-toggle')
@@ -126,6 +129,7 @@ function frame(now: number): void {
   element('summary').textContent = `${driverSelect.value} · ${input.state} · ${input.speed.toFixed(1)} m/s`
   element('distance-value').textContent = Number(distance.value).toFixed(1)
   element('pitch-value').textContent = Number(pitch.value).toFixed(0)
+  element('orbit-value').textContent = Number(orbit.value).toFixed(0)
   element('speed-value').textContent = Number(speed.value).toFixed(1)
   element('scale-value').textContent = timeScale.toFixed(2)
   readout.textContent = describe(wall)
@@ -142,8 +146,12 @@ function placeCamera(): void {
   const away = Number(distance.value)
   if (away >= GAMEPLAY_DISTANCE) return
   const angle = (Number(pitch.value) * Math.PI) / 180
+  // Orbit is measured off the body's own facing, so the view a reviewer picked —
+  // profile, front, over the shoulder — survives the body turning around.
+  const around = facing + (Number(orbit.value) * Math.PI) / 180
   const target = CAMERA_TARGET.set(actor.pos.x, actor.radius * MID_BODY, actor.pos.y)
-  host.camera.position.set(target.x, target.y + Math.sin(angle) * away, target.z + Math.cos(angle) * away)
+  const flat = Math.cos(angle) * away
+  host.camera.position.set(target.x + Math.cos(around) * flat, target.y + Math.sin(angle) * away, target.z + Math.sin(around) * flat)
   host.camera.lookAt(target)
 }
 
@@ -162,6 +170,20 @@ function travel(delta: number): void {
   if (input.state !== 'moving' && !input.dashing) return
   actor.pos.x += Math.cos(facing) * input.speed * delta
   actor.pos.y += Math.sin(facing) * input.speed * delta
+  steerHome(delta)
+}
+
+/**
+ * A body walking in a straight line leaves the room in a couple of seconds and
+ * spends the rest of the review inside a wall. Past the leash it turns back, which
+ * paces it around the spawn and puts a real turn in front of the reviewer for free.
+ */
+function steerHome(delta: number): void {
+  const away = Math.hypot(actor.pos.x - sim.map.spawn.x, actor.pos.y - sim.map.spawn.y)
+  if (away < LEASH) return
+  const home = Math.atan2(sim.map.spawn.y - actor.pos.y, sim.map.spawn.x - actor.pos.x)
+  const arc = Math.atan2(Math.sin(home - facing), Math.cos(home - facing))
+  facing += Math.sign(arc) * Math.min(Math.abs(arc), TURN_RATE * delta)
 }
 
 function writeInput(delta: number): void {

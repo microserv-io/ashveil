@@ -23,6 +23,7 @@ await set('distance', 5)
 await set('pitch', 14)
 await set('speed', 1.6)
 await page.click('#recenter')
+await page.click('#panel-toggle')
 await page.waitForTimeout(1200)
 
 const FRAMES = Number(process.env.FRAMES ?? 84)
