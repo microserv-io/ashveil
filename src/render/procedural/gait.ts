@@ -1,9 +1,8 @@
 import { clamp, lerp, smoothstep, TAU } from './curves'
-import { resolvePositions, restDirection, type RigGeometry } from './geometry'
-import { createTwoBoneChain, solveTwoBone, type TwoBoneChain } from './ik'
+import type { RigGeometry } from './geometry'
 import { Joint, LEFT, RIGHT } from './joints'
-import { copyJointFrom, resetPose, setJointAxisAngle, type Pose } from './pose'
-import { quatFromAxisAngle, quatMultiply } from './quat'
+import { createLimbScratch, plantFeet, resolveTorso, stanceOffset, writeArm, writeLeg, writeTorso, type LimbScratch } from './limbs'
+import { resetPose, type Pose } from './pose'
 
 /** What locomotion needs from the sim, already reduced to numbers. */
 export interface GaitDrive {
@@ -43,27 +42,13 @@ export function createGaitParams(): GaitParams {
   return { frequency: 0, duty: 1, halfStep: 0, runBlend: 0, lift: 0, hipHeight: 0 }
 }
 
-/** Per-body scratch. One of these lives as long as the body; nothing else allocates. */
-export interface GaitState {
-  readonly leg: TwoBoneChain
-  readonly arm: TwoBoneChain
+/** Per-body scratch: the shared limb solvers plus the gait's own derived numbers. */
+export interface GaitState extends LimbScratch {
   readonly params: GaitParams
-  readonly positions: Float32Array
-  readonly target: Float32Array
-  readonly quat: Float32Array
-  readonly spare: Float32Array
 }
 
 export function createGaitState(): GaitState {
-  return {
-    leg: createTwoBoneChain(),
-    arm: createTwoBoneChain(),
-    params: createGaitParams(),
-    positions: new Float32Array(Joint.Count * 3),
-    target: new Float32Array(3),
-    quat: new Float32Array(4),
-    spare: new Float32Array(4),
-  }
+  return { ...createLimbScratch(), params: createGaitParams() }
 }
 
 /**
@@ -89,8 +74,6 @@ const REACH_SAFETY = 0.99
 const WALK_LIFT = 0.09
 const RUN_LIFT = 0.2
 const STANCE_NARROW = 0.15
-const KNEE_POLE_SIDE = 0.15
-const ELBOW_POLE_SIDE = 0.35
 const FOOT_SWING_PITCH = 0.45
 const PELVIS_ROLL = 0.04
 const PELVIS_YAW = 0.06
@@ -106,7 +89,6 @@ const ARM_SWING_RUN = 0.4
 const ARM_HANG = 0.84
 const ARM_OUT = 0.22
 const ARM_TUCK = 0.12
-const IDLE_HIP = 0.94
 const IDLE_BREATH_HZ = 0.23
 const IDLE_SHIFT_HZ = 0.11
 const IDLE_BOB = 0.006
@@ -197,40 +179,34 @@ export function writeLocomotion(geometry: RigGeometry, drive: GaitDrive, state: 
   writeTorso(out, Joint.Spine, lean * 0.45, -yaw * 0.3, bank * 0.45, state)
   writeTorso(out, Joint.Chest, lean * 0.55, -yaw * CHEST_COUNTER, bank * 0.35, state)
   writeTorso(out, Joint.Head, -lean * 0.6, yaw * 0.4, -bank * 0.4, state)
-  resolvePositions(geometry, out, state.positions)
+  resolveTorso(geometry, out, state)
 
   writeGaitLeg(geometry, state, out, LEFT, phase)
   writeGaitLeg(geometry, state, out, RIGHT, phase + 0.5)
   const swing = lerp(ARM_SWING_WALK, ARM_SWING_RUN, params.runBlend) * geometry.armLength
-  writeArm(geometry, state, out, LEFT, Math.sin(TAU * wrap(phase + 0.5)) * swing, params.runBlend)
-  writeArm(geometry, state, out, RIGHT, Math.sin(TAU * phase) * swing, params.runBlend)
+  hangArm(geometry, state, out, LEFT, Math.sin(TAU * wrap(phase + 0.5)) * swing, params.runBlend)
+  hangArm(geometry, state, out, RIGHT, Math.sin(TAU * phase) * swing, params.runBlend)
 }
 
 export function writeIdle(geometry: RigGeometry, drive: GaitDrive, state: GaitState, out: Pose): void {
   resetPose(out)
-  plant(state.params, geometry.legLength * IDLE_HIP)
+  plant(state.params)
   const offset = seedOffset(drive.seed)
   const breath = Math.sin(TAU * (drive.time * IDLE_BREATH_HZ + offset))
   const shift = Math.sin(TAU * (drive.time * IDLE_SHIFT_HZ + offset))
 
   out.offset[0] = shift * IDLE_SWAY * geometry.hipWidth
-  out.offset[1] = geometry.ankleHeight + state.params.hipHeight - geometry.hipHeight + breath * IDLE_BOB * geometry.legLength
+  out.offset[1] = stanceOffset(geometry) + breath * IDLE_BOB * geometry.legLength
   out.offset[2] = 0
 
   writeTorso(out, Joint.Pelvis, 0, 0, -shift * IDLE_ROLL, state)
   writeTorso(out, Joint.Spine, breath * IDLE_BREATH_PITCH, 0, shift * IDLE_ROLL * 0.4, state)
   writeTorso(out, Joint.Chest, breath * IDLE_BREATH_PITCH * 1.4, 0, shift * IDLE_ROLL * 0.3, state)
   writeTorso(out, Joint.Head, -breath * IDLE_BREATH_PITCH, shift * 0.06, 0, state)
-  resolvePositions(geometry, out, state.positions)
+  plantFeet(geometry, state, out)
 
-  for (const side of SIDES) {
-    state.target[0] = side * geometry.hipWidth
-    state.target[1] = geometry.ankleHeight
-    state.target[2] = 0
-    writeLeg(geometry, state, out, side, 0)
-  }
-  writeArm(geometry, state, out, LEFT, breath * 0.01 * geometry.armLength, 0)
-  writeArm(geometry, state, out, RIGHT, -breath * 0.01 * geometry.armLength, 0)
+  hangArm(geometry, state, out, LEFT, breath * 0.01 * geometry.armLength, 0)
+  hangArm(geometry, state, out, RIGHT, -breath * 0.01 * geometry.armLength, 0)
 }
 
 /**
@@ -239,16 +215,16 @@ export function writeIdle(geometry: RigGeometry, drive: GaitDrive, state: GaitSt
  */
 export function writeDash(geometry: RigGeometry, _drive: GaitDrive, state: GaitState, out: Pose): void {
   resetPose(out)
-  plant(state.params, geometry.legLength * DASH_HIP)
+  plant(state.params)
   out.offset[0] = 0
-  out.offset[1] = geometry.ankleHeight + state.params.hipHeight - geometry.hipHeight
+  out.offset[1] = geometry.ankleHeight + geometry.legLength * DASH_HIP - geometry.hipHeight
   out.offset[2] = geometry.legLength * DASH_LUNGE
 
   writeTorso(out, Joint.Pelvis, DASH_LEAN * 0.3, 0, 0, state)
   writeTorso(out, Joint.Spine, DASH_LEAN * 0.4, 0, 0, state)
   writeTorso(out, Joint.Chest, DASH_LEAN * 0.3, 0, 0, state)
   writeTorso(out, Joint.Head, -DASH_LEAN * 0.6, 0, 0, state)
-  resolvePositions(geometry, out, state.positions)
+  resolveTorso(geometry, out, state)
 
   for (const side of SIDES) {
     const hip = side === LEFT ? Joint.HipL : Joint.HipR
@@ -257,8 +233,8 @@ export function writeDash(geometry: RigGeometry, _drive: GaitDrive, state: GaitS
     state.target[2] = state.positions[hip * 3 + 2]! - geometry.legLength * DASH_TRAIL
     writeLeg(geometry, state, out, side, FOOT_SWING_PITCH * 0.5)
   }
-  writeArm(geometry, state, out, LEFT, -geometry.armLength * 0.3, 1)
-  writeArm(geometry, state, out, RIGHT, -geometry.armLength * 0.3, 1)
+  hangArm(geometry, state, out, LEFT, -geometry.armLength * 0.3, 1)
+  hangArm(geometry, state, out, RIGHT, -geometry.armLength * 0.3, 1)
 }
 
 const SIDES = [LEFT, RIGHT] as const
@@ -268,22 +244,14 @@ function wrap(phase: number): number {
   return phase - Math.floor(phase)
 }
 
-function plant(params: GaitParams, hipHeight: number): void {
+/** A pose that is not walking: one long stance, no step, no swing. */
+function plant(params: GaitParams): void {
   params.frequency = 0
   params.duty = 1
   params.halfStep = 0
   params.runBlend = 0
   params.lift = 0
-  params.hipHeight = hipHeight
-}
-
-/** Yaw about +Y, then pitch about +X, then roll about +Z, composed into one joint. */
-function writeTorso(out: Pose, joint: Joint, pitch: number, yaw: number, roll: number, state: GaitState): void {
-  quatFromAxisAngle(state.quat, 0, 0, 1, 0, yaw)
-  quatFromAxisAngle(state.spare, 0, 1, 0, 0, pitch)
-  quatMultiply(state.quat, 0, state.spare, 0, state.quat, 0)
-  quatFromAxisAngle(state.spare, 0, 0, 0, 1, roll)
-  quatMultiply(state.quat, 0, state.spare, 0, out.rotations, joint * 4)
+  params.hipHeight = 0
 }
 
 function writeGaitLeg(geometry: RigGeometry, state: GaitState, out: Pose, side: number, legPhase: number): void {
@@ -304,43 +272,7 @@ function writeGaitLeg(geometry: RigGeometry, state: GaitState, out: Pose, side: 
   writeLeg(geometry, state, out, side, -FOOT_SWING_PITCH * swing)
 }
 
-function writeLeg(geometry: RigGeometry, state: GaitState, out: Pose, side: number, footPitch: number): void {
-  const hip = side === LEFT ? Joint.HipL : Joint.HipR
-  const knee = side === LEFT ? Joint.KneeL : Joint.KneeR
-  const foot = side === LEFT ? Joint.FootL : Joint.FootR
-  const chain = state.leg
-  chain.upperLength = geometry.thigh
-  chain.lowerLength = geometry.shin
-  restDirection(geometry, hip, chain.restUpper)
-  restDirection(geometry, knee, chain.restLower)
-  for (let axis = 0; axis < 3; axis++) {
-    chain.root[axis] = state.positions[hip * 3 + axis]!
-    chain.target[axis] = state.target[axis]!
-  }
-  chain.pole[0] = side * KNEE_POLE_SIDE
-  chain.pole[1] = 0
-  chain.pole[2] = 1
-  solveTwoBone(chain, out.rotations, hip * 4, knee * 4)
-  setJointAxisAngle(out, foot, 1, 0, 0, footPitch)
-}
-
-function writeArm(geometry: RigGeometry, state: GaitState, out: Pose, side: number, swing: number, runBlend: number): void {
-  const shoulder = side === LEFT ? Joint.ShoulderL : Joint.ShoulderR
-  const elbow = side === LEFT ? Joint.ElbowL : Joint.ElbowR
-  const hand = side === LEFT ? Joint.HandL : Joint.HandR
-  const chain = state.arm
-  chain.upperLength = geometry.upperArm
-  chain.lowerLength = geometry.foreArm
-  restDirection(geometry, shoulder, chain.restUpper)
-  restDirection(geometry, elbow, chain.restLower)
-  for (let axis = 0; axis < 3; axis++) chain.root[axis] = state.positions[shoulder * 3 + axis]!
+function hangArm(geometry: RigGeometry, state: GaitState, out: Pose, side: number, swing: number, runBlend: number): void {
   const hang = geometry.armLength * (ARM_HANG - ARM_TUCK * runBlend)
-  chain.target[0] = chain.root[0]! + side * hang * ARM_OUT
-  chain.target[1] = chain.root[1]! - hang
-  chain.target[2] = chain.root[2]! + swing
-  chain.pole[0] = side * ELBOW_POLE_SIDE
-  chain.pole[1] = 0
-  chain.pole[2] = -1
-  solveTwoBone(chain, out.rotations, shoulder * 4, elbow * 4)
-  copyJointFrom(out, hand, elbow)
+  writeArm(geometry, state, out, side, side * hang * ARM_OUT, -hang, swing)
 }

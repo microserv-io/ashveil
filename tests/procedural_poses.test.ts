@@ -1,0 +1,137 @@
+import { describe, expect, it } from 'vitest'
+import { createGaitState } from '../src/render/procedural/gait'
+import { buildRigGeometry, KAYKIT_KNIGHT_JOINTS, resolvePositions } from '../src/render/procedural/geometry'
+import { Joint } from '../src/render/procedural/joints'
+import { createPose, type Pose } from '../src/render/procedural/pose'
+import { DEATH_SETTLE, POSE_CLIPS, SKILL_CLIPS, writeClipPose } from '../src/render/procedural/poses'
+import { quatAngleBetween, quatLength } from '../src/render/procedural/quat'
+
+const geometry = buildRigGeometry(KAYKIT_KNIGHT_JOINTS, 1.2)
+const state = createGaitState()
+const pose = createPose()
+const positions = new Float32Array(Joint.Count * 3)
+
+function write(clip: keyof typeof POSE_CLIPS, phase: number): void {
+  writeClipPose(geometry, POSE_CLIPS[clip], phase, state, pose)
+}
+
+/** How far a pose has travelled from the clip's neutral first key, summed over joints. */
+function deviation(from: Float32Array, to: Pose): number {
+  let total = 0
+  for (let joint = 0; joint < Joint.Count; joint++) total += quatAngleBetween(from, joint * 4, to.rotations, joint * 4)
+  return total
+}
+
+/** How far the leading hand reaches ahead of its own shoulder, in arm lengths. */
+function reach(): number {
+  resolvePositions(geometry, pose, positions)
+  const left = positions[Joint.HandL * 3 + 2]! - positions[Joint.ShoulderL * 3 + 2]!
+  const right = positions[Joint.HandR * 3 + 2]! - positions[Joint.ShoulderR * 3 + 2]!
+  return Math.max(left, right) / geometry.armLength
+}
+
+describe('placeholder skill poses', () => {
+  it('covers every skill the rig can be asked for', () => {
+    expect(SKILL_CLIPS).toEqual(['cleave', 'firebolt', 'frost_nova', 'monster_bite', 'monster_bolt', 'monster_slam'])
+  })
+
+  for (const skill of ['cleave', 'firebolt', 'frost_nova', 'monster_bite', 'monster_bolt', 'monster_slam'] as const) {
+    it(`${skill} stays finite and normalised across its phase`, () => {
+      for (let i = 0; i <= 60; i++) {
+        write(skill, i / 60)
+        for (let joint = 0; joint < Joint.Count; joint++) {
+          expect(quatLength(pose.rotations, joint * 4), `${skill} joint ${joint}`).toBeCloseTo(1, 4)
+        }
+        expect(Number.isFinite(pose.offset[0]! + pose.offset[1]! + pose.offset[2]!)).toBe(true)
+      }
+    })
+
+    it(`${skill} pulls back through windup and strikes at the turn`, () => {
+      let furthest = -Infinity
+      let furthestAt = 0
+      let nearest = Infinity
+      let nearestAt = 1
+      for (let i = 0; i <= 100; i++) {
+        write(skill, i / 100)
+        const ahead = reach()
+        if (ahead > furthest) {
+          furthest = ahead
+          furthestAt = i / 100
+        }
+        if (ahead < nearest) {
+          nearest = ahead
+          nearestAt = i / 100
+        }
+      }
+      expect(furthestAt, `${skill} does not strike between windup and recovery`).toBeGreaterThan(0.35)
+      expect(furthestAt).toBeLessThan(0.65)
+      expect(nearestAt, `${skill} does not anticipate before it strikes`).toBeLessThan(furthestAt)
+      expect(nearest, `${skill} never draws the hand behind the shoulder`).toBeLessThan(0)
+    })
+
+    it(`${skill} returns to where it started`, () => {
+      write(skill, 0)
+      const neutral = new Float32Array(pose.rotations)
+      let peak = 0
+      for (let i = 0; i <= 100; i++) {
+        write(skill, i / 100)
+        peak = Math.max(peak, deviation(neutral, pose))
+      }
+      write(skill, 1)
+      expect(deviation(neutral, pose), `${skill} does not return to neutral`).toBeLessThan(peak * 0.35)
+    })
+
+    it(`${skill} keeps both feet planted, because skills root you`, () => {
+      write(skill, 0)
+      resolvePositions(geometry, pose, positions)
+      const planted = [positions[Joint.FootL * 3 + 2]!, positions[Joint.FootR * 3 + 2]!]
+      for (let i = 1; i <= 20; i++) {
+        write(skill, i / 20)
+        resolvePositions(geometry, pose, positions)
+        expect(Math.abs(positions[Joint.FootL * 3 + 2]! - planted[0]!), skill).toBeLessThan(1e-3)
+        expect(Math.abs(positions[Joint.FootR * 3 + 2]! - planted[1]!), skill).toBeLessThan(1e-3)
+      }
+    })
+  }
+})
+
+describe('the death settle', () => {
+  it('settles inside the window the death fade allows', () => {
+    expect(DEATH_SETTLE).toBeLessThanOrEqual(0.7)
+  })
+
+  it('puts the body on the ground', () => {
+    write('dead', 0)
+    resolvePositions(geometry, pose, positions)
+    const standing = positions[Joint.Chest * 3 + 1]!
+    write('dead', 1)
+    resolvePositions(geometry, pose, positions)
+    expect(positions[Joint.Chest * 3 + 1]!, 'the chest never came down').toBeLessThan(standing * 0.45)
+    // Root is the skeleton origin, not anatomy: it sits at the feet in the bind
+    // pose, so a body lying down legitimately carries it below the ground plane.
+    for (let joint = Joint.Pelvis; joint < Joint.Count; joint++) {
+      expect(positions[joint * 3 + 1]!, `joint ${joint} sank through the floor`).toBeGreaterThan(-0.05)
+    }
+    expect(positions[1]!, 'the root ran away downward').toBeGreaterThan(-geometry.legLength)
+  })
+
+  it('holds once it has settled', () => {
+    write('dead', 1)
+    const settled = new Float32Array(pose.rotations)
+    const settledOffset = new Float32Array(pose.offset)
+    write('dead', 4)
+    for (let i = 0; i < settled.length; i++) expect(pose.rotations[i]).toBeCloseTo(settled[i]!, 6)
+    for (let i = 0; i < 3; i++) expect(pose.offset[i]).toBeCloseTo(settledOffset[i]!, 6)
+  })
+
+  it('falls monotonically rather than bouncing', () => {
+    let previous = Infinity
+    for (let i = 0; i <= 40; i++) {
+      write('dead', i / 40)
+      resolvePositions(geometry, pose, positions)
+      const chest = positions[Joint.Chest * 3 + 1]!
+      expect(chest).toBeLessThanOrEqual(previous + 1e-4)
+      previous = chest
+    }
+  })
+})
