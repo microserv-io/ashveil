@@ -14,6 +14,15 @@ describe('performance motion fingerprint', () => {
     expect(baseline.workload.motion).toBe('clip')
   })
 
+  it('pins procedural motion in its own baseline', () => {
+    const baseline = JSON.parse(
+      readFileSync(join(import.meta.dirname, '..', 'perf', 'baseline.procedural.json'), 'utf8'),
+    ) as { motion?: string; workload: { motion?: string } }
+
+    expect(baseline.motion).toBe('procedural')
+    expect(baseline.workload.motion).toBe('procedural')
+  })
+
   it('defaults to clip and accepts both explicit modes', () => {
     expect(parsePerfOptions([]).motion).toBe('clip')
     expect(parsePerfOptions(['--motion', 'clip']).motion).toBe('clip')
