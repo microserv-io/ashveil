@@ -21,7 +21,7 @@ import { cpus, tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const ROOT = join(import.meta.dirname, '..')
-const BASELINE = join(ROOT, 'perf', 'baseline.json')
+
 
 const FRAME_BUDGET_MS = 1000 / 60
 /** Wall-clock noise on a shared machine is real; a regression worth acting on is not this small. */
@@ -36,10 +36,17 @@ const HITCH_CEILING = 0.01
 
 /** Fixed so the fill rate is part of the baseline rather than a property of the window. */
 const VIEWPORT = { width: 1600, height: 900 }
-const PREVIEW_PORT = 5277
+/** 5273 is the game, 5274 the Deck spike, 5275 the art spike, 5277 the motion review page. */
+const PREVIEW_PORT = 5279
 
 const args = process.argv.slice(2)
 const { record, keepOpen, seed, frames, motion } = parsePerfOptions(args)
+const BASELINE = baselinePath(motion)
+
+/** One baseline per motion mode: each paces the frame differently. Clip keeps the plain name. */
+export function baselinePath(motion) {
+  return join(ROOT, 'perf', motion === 'clip' ? 'baseline.json' : `baseline.${motion}.json`)
+}
 
 export function parsePerfOptions(argv) {
   const readFlag = (name) => {
@@ -385,7 +392,7 @@ async function main() {
 
   if (record) {
     writeFileSync(BASELINE, `${JSON.stringify(stamped, null, 2)}\n`)
-    console.log(`baseline recorded at perf/baseline.json (${stamped.machine.cpu})`)
+    console.log(`baseline recorded at ${BASELINE.slice(ROOT.length + 1)} (${stamped.machine.cpu})`)
     return
   }
 
