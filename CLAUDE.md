@@ -52,6 +52,11 @@ Small dependency set on purpose.
   `npm run perf -- --record` makes the current numbers the baseline.
 - `npm run spike:dev` serves the Deck shell diagnostics on :5274.
 - `npm run art:dev` fetches the CC0 kit and serves the art spike on :5275.
+- `npm run art:fit -- --input <mesh> --family humanoid --body <name> [--helpers]` puts
+  one body through the asset path into `public/bodies/<name>/`, and fails closed with
+  a named gate. `npm run art:profile -- --body <name>` generates its fixture and
+  skeleton profile. See `docs/pipeline.md`; the frame and bone axis rules live in
+  `scripts/art/fit/frame.py` and are worth reading before touching either.
 - `npm run motion:dev` serves the motion review page on :5277, bound to every
   interface: one body at the gameplay camera with the driver, state, speed and
   time scale under your hand. `?motion=procedural` picks the pose generator over
