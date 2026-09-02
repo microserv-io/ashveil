@@ -32,12 +32,20 @@ const pose = createPose()
 const positions = new Float32Array(Joint.Count * 3)
 
 const BODIES: readonly (readonly [string, RigGeometry])[] = [['human', HUMAN], ['masculine-v1', MASCULINE]]
-const LIMBS: readonly (readonly [string, Joint])[] = [
-  ['left hand', Joint.HandL],
-  ['right hand', Joint.HandR],
-  ['left elbow', Joint.ElbowL],
-  ['right elbow', Joint.ElbowR],
+/**
+ * The arms, as segments rather than joints. Both ends of an upper arm can sit
+ * outside the ribs with the bone itself straight through them — which is exactly
+ * what a hand drawn across the far shoulder does, and what the review camera
+ * shows as a shoulder folding into the chest.
+ */
+const LIMBS: readonly (readonly [string, Joint, Joint])[] = [
+  ['left upper arm', Joint.ShoulderL, Joint.ElbowL],
+  ['left forearm', Joint.ElbowL, Joint.HandL],
+  ['right upper arm', Joint.ShoulderR, Joint.ElbowR],
+  ['right forearm', Joint.ElbowR, Joint.HandR],
 ]
+/** How many points along a limb are measured. The shoulder end is skipped: it is the torso. */
+const ALONG = 6
 
 function at(joint: Joint, lane: number): number {
   return positions[joint * 3 + lane]!
@@ -47,15 +55,34 @@ function torsoRadius(geometry: RigGeometry): number {
   return Math.abs(geometry.rest[Joint.ShoulderL * 3]!) * TORSO_RADIUS
 }
 
-/** Distance from a joint to the pelvis-to-chest axis, in the horizontal plane it sits in. */
-function distanceFromTorso(joint: Joint): number {
+/** How close a limb comes to the torso capsule anywhere along its length. */
+function clearsTorso(from: Joint, to: Joint): number {
+  let closest = Infinity
+  for (let step = 1; step <= ALONG; step++) {
+    const t = step / ALONG
+    closest = Math.min(closest, distanceFromTorso(
+      at(from, 0) + (at(to, 0) - at(from, 0)) * t,
+      at(from, 1) + (at(to, 1) - at(from, 1)) * t,
+      at(from, 2) + (at(to, 2) - at(from, 2)) * t,
+    ))
+  }
+  return closest
+}
+
+/** Distance from a point to the pelvis-to-chest axis, capped to the torso's own height. */
+function distanceFromTorso(x: number, y: number, z: number): number {
   const low = at(Joint.Pelvis, 1)
   const high = at(Joint.Chest, 1)
-  const y = Math.min(high, Math.max(low, at(joint, 1)))
-  const t = high > low ? (y - low) / (high - low) : 0
+  const on = Math.min(high, Math.max(low, y))
+  const t = high > low ? (on - low) / (high - low) : 0
   const axisX = at(Joint.Pelvis, 0) + (at(Joint.Chest, 0) - at(Joint.Pelvis, 0)) * t
   const axisZ = at(Joint.Pelvis, 2) + (at(Joint.Chest, 2) - at(Joint.Pelvis, 2)) * t
-  return Math.hypot(at(joint, 0) - axisX, at(joint, 1) - y, at(joint, 2) - axisZ)
+  return Math.hypot(x - axisX, y - on, z - axisZ)
+}
+
+/** The lowest a limb gets, measured along it rather than at its joints. */
+function lowestPoint(from: Joint, to: Joint): number {
+  return Math.min(at(from, 1), at(to, 1))
 }
 
 function write(geometry: RigGeometry, clip: PoseClipName, phase: number): void {
@@ -70,10 +97,10 @@ describe.each(BODIES)('%s poses without passing through itself', (_name, geometr
       for (let sample = 0; sample <= SAMPLES; sample++) {
         const phase = sample / SAMPLES
         write(geometry, clip, phase)
-        for (const [limb, joint] of LIMBS) {
-          expect(distanceFromTorso(joint), `${clip} put the ${limb} in the torso at ${phase}`)
+        for (const [limb, from, to] of LIMBS) {
+          expect(clearsTorso(from, to), `${clip} put the ${limb} in the torso at ${phase}`)
             .toBeGreaterThanOrEqual(radius)
-          expect(at(joint, 1), `${clip} put the ${limb} through the floor at ${phase}`)
+          expect(lowestPoint(from, to), `${clip} put the ${limb} through the floor at ${phase}`)
             .toBeGreaterThanOrEqual(-FLOOR_TOLERANCE)
         }
       }

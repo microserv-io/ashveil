@@ -97,6 +97,7 @@ export function writeLeg(geometry: RigGeometry, scratch: LimbScratch, out: Pose,
 /**
  * Solves one arm onto a hand target given relative to that shoulder, so callers
  * never have to know where the shoulder drifted to. The hand follows the forearm.
+ * `pole` is where the elbow leads; without one it trails back and out.
  */
 export function writeArm(
   geometry: RigGeometry,
@@ -106,6 +107,7 @@ export function writeArm(
   dx: number,
   dy: number,
   dz: number,
+  pole?: Float32Array,
 ): void {
   const shoulder = side === LEFT ? Joint.ShoulderL : Joint.ShoulderR
   const elbow = side === LEFT ? Joint.ElbowL : Joint.ElbowR
@@ -119,9 +121,9 @@ export function writeArm(
   chain.target[0] = chain.root[0]! + dx
   chain.target[1] = chain.root[1]! + dy
   chain.target[2] = chain.root[2]! + dz
-  chain.pole[0] = side * ELBOW_POLE_SIDE
-  chain.pole[1] = 0
-  chain.pole[2] = -1
+  chain.pole[0] = pole ? pole[0]! : side * ELBOW_POLE_SIDE
+  chain.pole[1] = pole ? pole[1]! : 0
+  chain.pole[2] = pole ? pole[2]! : -1
   solveTwoBone(chain, out.rotations, shoulder * 4, elbow * 4)
   copyJointFrom(out, hand, elbow)
 }

@@ -1,10 +1,10 @@
 import type { SkillId } from '../../sim/types'
 import { Joint } from './joints'
-import { compilePoseClip, type PoseClip, type PoseClipSource } from './poses'
+import { compilePoseClip, type PoseClip, type PoseClipSource } from './posekeys'
 
 /**
  * The pose tables. Data, not logic: a new skill is a new row here, and nothing in
- * `poses.ts` changes. See that file for what a key may state and what it inherits.
+ * `posekeys.ts` changes. See that file for what a key may state and what it inherits.
  *
  * Every skill is three keys and a return: neutral, the drawn-back anticipation at
  * the end of windup, the strike on the turn, and the way back to the carry. The
@@ -35,6 +35,7 @@ export const POSE_SOURCES: Readonly<Record<PoseClipName, PoseClipSource>> = {
         at: 0.2,
         torso: [{ joint: Joint.Chest, yaw: 0.2 }, { joint: Joint.Spine, yaw: 0.1 }],
         handR: [-0.5, -0.4, -0.05],
+        poleR: [-0.6, 0.6, -0.5],
         handL: [0.22, -0.78, 0.16],
         footL: [0, -0.94, 0],
       },
@@ -45,8 +46,11 @@ export const POSE_SOURCES: Readonly<Record<PoseClipName, PoseClipSource>> = {
           { joint: Joint.Spine, yaw: 0.22, pitch: -0.06 },
           { joint: Joint.Pelvis, yaw: 0.1 },
         ],
-        handR: [0.52, 0.34, -0.18],
+        handR: [0.34, 0.16, -0.24],
         handL: [0.28, -0.62, 0.22],
+        // Elbow up and out rather than tucked behind the ribs: it is the elbow
+        // that makes a coiled arm read as coiled from above.
+        poleR: [-0.5, 1, -0.3],
         footL: [0, -0.94, 0],
       },
       {

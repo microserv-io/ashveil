@@ -41,7 +41,9 @@ const BUDGETS: Readonly<Record<string, number>> = {
   'src/render/procedural/foot.ts': 65,
   'src/render/procedural/arms.ts': 120,
   'src/render/procedural/stances.ts': 95,
-  'src/render/procedural/poses.ts': 215,
+  // The pose-clip player. The key format and its compiler are in posekeys.ts.
+  'src/render/procedural/poses.ts': 130,
+  'src/render/procedural/posekeys.ts': 130,
   'src/render/procedural/geometry.ts': 187,
   'src/render/procedural/generator.ts': 145,
   'src/sim/pathfind.ts': 300,
