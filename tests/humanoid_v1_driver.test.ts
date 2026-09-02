@@ -2,26 +2,26 @@ import { join } from 'node:path'
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import { createGaitDrive, createGaitParams, createGaitState, gaitParams, writeLocomotion } from '../src/render/procedural/gait'
-import fixture from '../src/render/procedural/fixtures/humanoid_v1_masculine.json'
+import fixture from '../src/render/procedural/fixtures/masculine.json'
 import {buildRigGeometry } from '../src/render/procedural/geometry'
 import { Joint } from '../src/render/procedural/joints'
 import { createPose, resolvePositions } from '../src/render/procedural/pose'
 import { ProceduralDriver } from '../src/render/proceduraldriver'
-import { HUMANOID_V1_PROFILE } from '../src/render/profiles/humanoid_v1'
+import { MASCULINE_PROFILE } from '../src/render/profiles/masculine'
 import { RIG_CLIPS, type RigState } from '../src/render/rig'
 import { createRigInputOwner } from '../src/render/riginput'
 import { loadGlbSkeleton } from './fixtures/glbskeleton'
 
-const MASCULINE = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v1.glb')
+const MASCULINE = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v2', 'masculine-v2.glb')
 const WALK = 1.6
 const DT = 1 / 60
 const DEGREES = 180 / Math.PI
-const DRIVEN = Object.values(HUMANOID_V1_PROFILE.bones)
+const DRIVEN = Object.values(MASCULINE_PROFILE.bones)
 
 function masculine(): { body: THREE.Object3D; driver: ProceduralDriver } {
   const body = loadGlbSkeleton(MASCULINE)
   const driver = new ProceduralDriver()
-  driver.bind(body, HUMANOID_V1_PROFILE)
+  driver.bind(body, MASCULINE_PROFILE)
   return { body, driver }
 }
 

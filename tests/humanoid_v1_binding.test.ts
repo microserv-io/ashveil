@@ -3,12 +3,12 @@ import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import { Joint } from '../src/render/procedural/joints'
 import { createPose, setJointAxisAngle } from '../src/render/procedural/pose'
-import { HUMANOID_V1_PROFILE } from '../src/render/profiles/humanoid_v1'
+import { MASCULINE_PROFILE } from '../src/render/profiles/masculine'
 import { bindSkeleton } from '../src/render/semanticskeleton'
 import { loadGlbSkeleton } from './fixtures/glbskeleton'
 
-const MASCULINE = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v1.glb')
-const DRIVEN = Object.values(HUMANOID_V1_PROFILE.bones)
+const MASCULINE = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v2', 'masculine-v2.glb')
+const DRIVEN = Object.values(MASCULINE_PROFILE.bones)
 
 function boneOf(body: THREE.Object3D, name: string): THREE.Bone {
   const bone = body.getObjectByName(name)
@@ -27,7 +27,7 @@ describe('humanoid.v1 semantic skeleton binding', () => {
     const before = DRIVEN.map((name) => boneOf(body, name).quaternion.clone())
     const rootBefore = boneOf(body, 'root').position.clone()
 
-    bindSkeleton(body, HUMANOID_V1_PROFILE).apply(createPose())
+    bindSkeleton(body, MASCULINE_PROFILE).apply(createPose())
 
     DRIVEN.forEach((name, at) => {
       expect(boneOf(body, name).quaternion.angleTo(before[at]!), `${name} left its bind pose`).toBeLessThan(0.001)
@@ -37,11 +37,11 @@ describe('humanoid.v1 semantic skeleton binding', () => {
 
   it('puts the foot at the real rest and 90-degree knee-bend positions', () => {
     const body = loadGlbSkeleton(MASCULINE)
-    const skeleton = bindSkeleton(body, HUMANOID_V1_PROFILE)
+    const skeleton = bindSkeleton(body, MASCULINE_PROFILE)
     const pose = createPose()
 
     skeleton.apply(pose)
-    const rest = worldOf(body, 'foot.L')
+    const rest = worldOf(body, 'foot_L')
     expect(rest.toArray()).toEqual([
       expect.closeTo(0.194607, 5),
       expect.closeTo(0.112667, 5),
@@ -50,12 +50,12 @@ describe('humanoid.v1 semantic skeleton binding', () => {
 
     setJointAxisAngle(pose, Joint.KneeL, 1, 0, 0, Math.PI / 2)
     skeleton.apply(pose)
-    const bent = worldOf(body, 'foot.L')
+    const bent = worldOf(body, 'foot_L')
     expect(bent.toArray()).toEqual([
       expect.closeTo(0.194607, 5),
       expect.closeTo(0.525527, 5),
       expect.closeTo(-0.452539, 5),
     ])
-    expect(bent.distanceTo(worldOf(body, 'shin.L'))).toBeCloseTo(skeleton.geometry.shin, 5)
+    expect(bent.distanceTo(worldOf(body, 'shin_L'))).toBeCloseTo(skeleton.geometry.shin, 5)
   })
 })

@@ -24,10 +24,6 @@ export declare function offAxisJoints(
   tolerance?: number,
 ): string[]
 export declare function bodyRole(body: string): string
-export declare function footPrintFromLandmarks(
-  landmarks: JointPositions,
-  side?: string,
-): { heel: number; toe: number; lift: number; pitch: number }
 export declare function generate(
   body: string,
   options?: { root?: string },

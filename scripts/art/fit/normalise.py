@@ -279,16 +279,18 @@ def _facing(named: dict, height: float) -> dict:
             "matrix": Matrix.Rotation(yaw, 4, "Z")}
 
 
-def _upright(regions: dict, pivot: Vector, height: float, width: float) -> dict:
-    """How far the torso axis leans, and the turn about the ankles that fixes it."""
+def _upright(regions: dict, pivot: Vector, height: float, width: float, rake: float) -> dict:
+    """How far the torso axis is from where an upright body of this family holds it,
+    and the turn about the ankles that puts it there."""
     body = regions["Body"]
-    hip, torso = landmark_fitter.torso_lean(body, float(body[:, 1].min()), height, width)
-    axis = np.array(blender_from_runtime(torso - hip))
-    axis = axis / max(np.linalg.norm(axis), 1e-9)
-    lean = math.degrees(math.acos(max(-1.0, min(1.0, float(axis[2])))))
-    turn = Vector(axis).rotation_difference(Vector((0.0, 0.0, 1.0)))
-    matrix = Matrix.Translation(pivot) @ turn.to_matrix().to_4x4() @ Matrix.Translation(-pivot)
-    return {"leanDegrees": round(lean, 4), "matrix": matrix}
+    hip, shoulder = landmark_fitter.torso_lean(body, float(body[:, 1].min()), height, width)
+    axis = Vector(blender_from_runtime(shoulder - hip)).normalized()
+    target = Vector(blender_from_runtime((0.0, math.cos(rake), math.sin(rake)))).normalized()
+    off = math.degrees(axis.angle(target))
+    matrix = Matrix.Translation(pivot) @ axis.rotation_difference(target).to_matrix().to_4x4() \
+        @ Matrix.Translation(-pivot)
+    return {"offDegrees": round(off, 4), "rakeDegrees": round(math.degrees(axis.angle(Vector((0, 0, 1)))), 4),
+            "matrix": matrix}
 
 
 def run(input_path: str, contract: dict) -> dict:
@@ -342,11 +344,13 @@ def run(input_path: str, contract: dict) -> dict:
     # One rotation does not settle it: the bands the axis is measured in are
     # relative to the body's own height, so moving the body moves the reading.
     limit = contract["gates"]["uprightDegrees"]
-    leans = []
+    rake = math.radians(contract["gates"]["torsoRakeDegrees"])
+    leans, rakes = [], []
     for _ in range(UPRIGHT_PASSES):
-        upright = _upright(regions, ankle_pivot, body_height, width)
-        leans.append(upright["leanDegrees"])
-        if upright["leanDegrees"] <= limit:
+        upright = _upright(regions, ankle_pivot, body_height, width, rake)
+        leans.append(upright["offDegrees"])
+        rakes.append(upright["rakeDegrees"])
+        if upright["offDegrees"] <= limit:
             break
         _transform(kept, upright["matrix"])
         regions = {name: np.array([runtime_from_blender(point) for point in _points(item["object"])])
@@ -355,8 +359,9 @@ def run(input_path: str, contract: dict) -> dict:
         raise NormaliseError(
             f"upright gate: the torso axis did not settle under {limit} degrees in "
             f"{UPRIGHT_PASSES} passes: {leans}")
-    upright = {"leanDegrees": leans[0], "passes": len(leans) - 1, "perPassDegrees": leans,
-               "limitDegrees": limit, "pivot": [round(float(value), 6) for value in ankle_pivot]}
+    upright = {"torsoRakeDegrees": rakes[0], "offFamilyRakeDegrees": leans[0], "passes": len(leans) - 1,
+               "perPassDegrees": leans, "limitDegrees": limit,
+               "pivot": [round(float(value), 6) for value in ankle_pivot]}
 
     low, high = _bounds(kept)
     scale = contract["canonicalHeight"] / float(high[2] - low[2])
@@ -366,16 +371,12 @@ def run(input_path: str, contract: dict) -> dict:
     regions = {name: np.array([runtime_from_blender(point) for point in _points(item["object"])])
                for name, item in keep.items()}
     everything = np.concatenate(list(regions.values()))
-    residual = landmark_fitter.torso_lean(regions["Body"], float(everything[:, 1].min()),
-                                          contract["canonicalHeight"],
-                                          float(everything[:, 0].max() - everything[:, 0].min()))
-    residual_axis = residual[1] - residual[0]
-    residual_lean = math.degrees(math.acos(max(-1.0, min(1.0, float(
-        residual_axis[1] / max(np.linalg.norm(residual_axis), 1e-9))))))
-    if residual_lean > contract["gates"]["uprightDegrees"]:
+    residual = _upright(regions, ankle_pivot, contract["canonicalHeight"],
+                        float(everything[:, 0].max() - everything[:, 0].min()), rake)
+    if residual["offDegrees"] > limit:
         raise NormaliseError(
-            f"upright gate: torso axis is {residual_lean:.3f} degrees off vertical, "
-            f"limit {contract['gates']['uprightDegrees']}")
+            f"upright gate: the torso axis is {residual['offDegrees']:.3f} degrees off the family's "
+            f"{contract['gates']['torsoRakeDegrees']} degree rake, limit {limit}")
 
     health = {name: _mesh_health(item["object"]) for name, item in keep.items()}
     return {
@@ -387,7 +388,7 @@ def run(input_path: str, contract: dict) -> dict:
             "regionsKept": sorted(keep),
             "regionsExcluded": [name for name in contract["regions"]["excluded"] if name in named],
             "facing": {key: value for key, value in facing.items() if key != "matrix"},
-            "upright": {**upright, "residualDegrees": round(residual_lean, 4)},
+            "upright": {**upright, "residualDegrees": residual["offDegrees"]},
             "scaleFactor": round(scale, 9),
             "standingHeightMetres": round(float(everything[:, 1].max() - everything[:, 1].min()), 6),
             "groundOffsetMetres": round(float(everything[:, 1].min()), 6),

@@ -149,7 +149,7 @@ function contactSlide(geometry: RigGeometry, speed: number): { heel: number; toe
 }
 
 describe('a body at rest stands on its legs', () => {
-  for (const [name, geometry] of [['human', human], ['masculine-v1', masculine]] as const) {
+  for (const [name, geometry] of [['human', human], ['masculine-v2', masculine]] as const) {
     it(`stands the ${name} idle on straight knees`, () => {
       const drive = createGaitDrive()
       let worst = 0
@@ -167,9 +167,9 @@ describe('a body at rest stands on its legs', () => {
 describe('the hips stay up through the stride', () => {
   // A person's hips rise and fall about 45 to 50 mm over a walk cycle. Pinned to
   // the ankle this was 90 on the human and 98 on the Tripo body and the walk read
-  // as a lunge. What is left is the anatomy: masculine-v1's hip-to-ankle leg is
+  // as a lunge. What is left is the anatomy: masculine-v2's hip-to-ankle leg is
   // 0.43 of its height where a person's is 0.48, so the same step asks more of it.
-  for (const [name, geometry] of [['human', human], ['masculine-v1', masculine]] as const) {
+  for (const [name, geometry] of [['human', human], ['masculine-v2', masculine]] as const) {
     it(`keeps the ${name} walk bob under 50 mm`, () => {
       const measured = walk(geometry, WALK)
       expect(measured.pelvisBob).toBeLessThanOrEqual(0.055)
@@ -202,7 +202,7 @@ function clearance(geometry: RigGeometry, side: number): number {
 }
 
 describe('a walk reads as a walk', () => {
-  for (const [name, geometry] of [['human', human], ['masculine-v1', masculine]] as const) {
+  for (const [name, geometry] of [['human', human], ['masculine-v2', masculine]] as const) {
     it(`swings the ${name} knee well past the knee it stands on`, () => {
       gaitParams(geometry, WALK, params)
       const drive = createGaitDrive()
@@ -364,7 +364,7 @@ describe('gait proportions', () => {
   })
 
   for (const [name, geometry] of [
-    ['human', human], ['chibi', chibi], ['knight', knight], ['masculine-v1', masculine],
+    ['human', human], ['chibi', chibi], ['knight', knight], ['masculine-v2', masculine],
   ] as const) {
     it(`${name} keeps its planted contact still`, () => {
       const slide = contactSlide(geometry, WALK)

@@ -73,7 +73,7 @@ def finish(path: str) -> dict:
     return rest
 
 
-def manifest(body: str, contract: dict, source: str, landmarks: dict, skeleton: dict,
+def manifest(body: str, contract: dict, source: str, landmarks: dict, footprint: dict, skeleton: dict,
              helpers: bool, budget: dict, gates: dict, glb_path: str) -> dict:
     inverse = Glb(glb_path)
     skin = inverse.json["skins"][0]
@@ -89,6 +89,7 @@ def manifest(body: str, contract: dict, source: str, landmarks: dict, skeleton: 
         "helpers": helpers,
         "bones": [inverse.json["nodes"][node]["name"] for node in skin["joints"]],
         "landmarks": {name: rounded(point) for name, point in sorted(landmarks.items())},
+        "footprint": footprint,
         "restSignatureSha256": skeleton["restSignatureSha256"],
         "inverseBindSha256": sha256_array(inverse.accessor(skin["inverseBindMatrices"])),
         "budget": budget,

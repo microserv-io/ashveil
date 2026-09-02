@@ -9,7 +9,7 @@ import { createPose, resolvePositions } from '../src/render/procedural/pose'
 import { writeClipPose } from '../src/render/procedural/poses'
 import { quatRotate } from '../src/render/procedural/quat'
 import { ProceduralDriver } from '../src/render/proceduraldriver'
-import { HUMANOID_V1_PROFILE } from '../src/render/profiles/humanoid_v1'
+import { MASCULINE_PROFILE } from '../src/render/profiles/masculine'
 import { KAYKIT_PROFILE } from '../src/render/profiles/kaykit'
 import { createRigInputOwner } from '../src/render/riginput'
 import { DT } from '../src/sim/types'
@@ -81,10 +81,10 @@ describe('the shoulder girdle follows the arm', () => {
     }
   })
 
-  it('moves the real shoulder bone on masculine-v1', () => {
-    const body = loadGlbSkeleton(join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v1.glb'))
+  it('moves the real shoulder bone on masculine-v2', () => {
+    const body = loadGlbSkeleton(join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v2', 'masculine-v2.glb'))
     const driver = new ProceduralDriver()
-    driver.bind(body, HUMANOID_V1_PROFILE)
+    driver.bind(body, MASCULINE_PROFILE)
     const { rigInput: input } = createRigInputOwner()
     const seen: THREE.Vector3[] = []
     for (let frame = 1; frame <= 60; frame++) {
@@ -94,7 +94,7 @@ describe('the shoulder girdle follows the arm', () => {
       input.seed = 3
       driver.update(input, DT)
       body.updateMatrixWorld(true)
-      seen.push(body.getObjectByName('upper_arm.R')!.getWorldPosition(new THREE.Vector3()))
+      seen.push(body.getObjectByName('upper_arm_R')!.getWorldPosition(new THREE.Vector3()))
     }
     const moved = Math.max(...seen.map((point) => point.distanceTo(seen[0]!)))
     expect(moved, 'the shoulder joint never moved through a whole stride').toBeGreaterThan(0.004)

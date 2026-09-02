@@ -1,4 +1,4 @@
-import masculine from '../../src/render/procedural/fixtures/humanoid_v1_masculine.json'
+import masculine from '../../src/render/procedural/fixtures/masculine.json'
 import {
   buildRigGeometry,
   KAYKIT_KNIGHT_FOOTPRINT,

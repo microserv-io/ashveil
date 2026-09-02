@@ -142,27 +142,6 @@ ${entries(manifest.mapping.optional)}
 `
 }
 
-/**
- * Where the foot meets the ground, from the landmarks the fitter measured off the
- * sole rather than from which bone happens to own a vertex. Bone-heat gives the
- * heel to the shin on a rig whose ankle sits a sixth of the way along the foot,
- * and a footprint measured by weight dominance then reports a heel in front of
- * the ankle, which rolls the gait's foot the wrong way.
- */
-export function footPrintFromLandmarks(landmarks, side = 'L') {
-  const ankle = landmarks[`ankle_${side}`]
-  const toe = landmarks[`toe_${side}`]
-  const heel = landmarks[`heel_${side}`]
-  if (!ankle || !toe || !heel) throw new ProfileError('manifest gate: no ankle, toe and heel landmarks')
-  const round = (value) => Number(value.toFixed(6))
-  return {
-    heel: round(ankle[2] - heel[2]),
-    toe: round(toe[2] - ankle[2]),
-    lift: round(ankle[1] - Math.min(toe[1], heel[1])),
-    pitch: round(Math.atan2(toe[1] - heel[1], toe[2] - heel[2])),
-  }
-}
-
 export function generate(bodyName, { root = ROOT } = {}) {
   const bodyDirectory = join(root, 'public', 'bodies', bodyName)
   const manifest = JSON.parse(readFileSync(join(bodyDirectory, `${bodyName}.manifest.json`), 'utf8'))
@@ -191,7 +170,10 @@ export function generate(bodyName, { root = ROOT } = {}) {
     note: 'Bind-pose joint positions in the body frame (+Y up, +Z forward, +X left), in model units.',
     armCarryNote: 'No weapon carry measured: the empty-hand carry is computed from the rest pose.',
     ...extractRigGeometry(glb, mapping.required, mapping.optional, {}),
-    footprint: footPrintFromLandmarks(manifest.landmarks),
+    // The fitter measured the footprint off the sole itself; the extractor's own
+    // reading follows bone dominance, which loses the heel on a rig whose ankle
+    // sits a fifth of the way along the foot.
+    footprint: manifest.footprint,
   }
   const fixturePath = join(root, 'src', 'render', 'procedural', 'fixtures', fixtureName)
   const profilePath = join(root, 'src', 'render', 'profiles', `${role}.ts`)

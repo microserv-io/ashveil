@@ -88,6 +88,8 @@
   },
   "gates": {
     "uprightDegrees": 0.5,
+    "torsoRakeDegrees": -2.5,
+    "torsoRakeNote": "What an upright humanoid's hip-to-shoulder slice axis reads, forward positive. It is not zero: the two slices cut different anatomy, so a body standing perfectly straight measures a couple of degrees, here leaning back. Standing that to vertical rakes the legs back and pitches the feet, which is a stance defect introduced by the correction meant to remove one. The independent Blender measurement of the untouched masculine mesh in docs/pipeline.md reads 2.5 degrees and calls it upright; uprightDegrees is the tolerance around this, not around zero.",
     "heightTolerance": 0.01,
     "groundToleranceMetres": 0.005,
     "farFieldDisplacement90Cm": 1.0,

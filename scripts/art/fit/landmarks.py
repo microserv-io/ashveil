@@ -12,6 +12,8 @@ from twelve stray vertices is a bone in the wrong place three stages later.
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 
 BANDS = {
@@ -175,6 +177,23 @@ def _tip(points: np.ndarray, axis: int, sign: int, height: float) -> np.ndarray:
     raise LandmarkError("cluster has no tip with enough points to average")
 
 
+def footprint(sole: np.ndarray, ankle: np.ndarray) -> dict:
+    """Where the skinned foot meets the ground, relative to its own ankle.
+
+    Measured off the sole's real extremes rather than off the toe and heel
+    landmarks, which sit a centimetre inside the tips: this is the surface the
+    gait rolls the foot over, and a foot that rolls short of its own toe slides.
+    """
+    back, front = float(sole[:, 2].min()), float(sole[:, 2].max())
+    edge = (front - back) * 0.08
+    heel_height = float(sole[sole[:, 2] <= back + edge][:, 1].mean())
+    toe_height = float(sole[sole[:, 2] >= front - edge][:, 1].mean())
+    return {"heel": round(float(ankle[2]) - back, 6),
+            "toe": round(front - float(ankle[2]), 6),
+            "lift": round(float(ankle[1]) - float(sole[:, 1].min()), 6),
+            "pitch": round(math.atan2(toe_height - heel_height, front - back), 6)}
+
+
 def _confidence(samples: int) -> float:
     """How well sampled a landmark is. Symmetry is a separate gate, not a discount:
     a mesh that is a centimetre lopsided is a mesh to reject, not to half-trust."""
@@ -248,8 +267,10 @@ def fit(regions: dict[str, np.ndarray]) -> dict:
                                         "symmetryErrorMetres": round(error, 6),
                                         "confidence": _confidence(len(regions[region]))}
 
+    soles = {}
     for side, sign in (("L", 1), ("R", -1)):
         sole = _sole(body, sign, low[1], height)
+        soles[side] = sole
         landmarks[f"toe_{side}"] = _tip(sole, 2, 1, height)
         landmarks[f"heel_{side}"] = _tip(sole, 2, -1, height)
         for landmark in (f"toe_{side}", f"heel_{side}"):
@@ -286,7 +307,10 @@ def fit(regions: dict[str, np.ndarray]) -> dict:
     measurements["root"] = {"method": "ground_under_the_footprint", "sampleCount": int(len(everything)),
                             "confidence": 1.0}
 
-    return {"landmarks": landmarks, "measurements": measurements,
+    prints = [footprint(soles[side], landmarks[f"ankle_{side}"]) for side in ("L", "R")]
+    averaged = {key: round(sum(each[key] for each in prints) / 2, 6) for key in prints[0]}
+
+    return {"landmarks": landmarks, "measurements": measurements, "footprint": averaged,
             "bounds": {"minimum": low.tolist(), "maximum": high.tolist(), "height": height, "width": width}}
 
 

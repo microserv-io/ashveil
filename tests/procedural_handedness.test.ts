@@ -10,7 +10,7 @@ import { Joint, LEFT, RIGHT } from '../src/render/procedural/joints'
 import { plantFeet, writeTorso } from '../src/render/procedural/limbs'
 import { createPose, resetPose, resolvePositions, setJointAxisAngle, type Pose } from '../src/render/procedural/pose'
 import { quatRotate } from '../src/render/procedural/quat'
-import { HUMANOID_V1_PROFILE } from '../src/render/profiles/humanoid_v1'
+import { MASCULINE_PROFILE } from '../src/render/profiles/masculine'
 import { bindSkeleton } from '../src/render/semanticskeleton'
 import { HUMAN, MASCULINE } from './fixtures/bodies'
 import { loadGlbSkeleton } from './fixtures/glbskeleton'
@@ -62,7 +62,7 @@ function arm(geometry: RigGeometry, side: number, swing: number, pace: ArmPace):
   return place(geometry, side === LEFT ? Joint.HandL : Joint.HandR)
 }
 
-describe.each([['human', HUMAN], ['masculine-v1', MASCULINE]] as const)('%s: what a positive number does', (_body, geometry) => {
+describe.each([['human', HUMAN], ['masculine-v2', MASCULINE]] as const)('%s: what a positive number does', (_body, geometry) => {
   const pace = armPace(geometry, 0)
 
   describe.each([['left', LEFT] as const, ['right', RIGHT] as const])('the %s arm', (_side, side) => {
@@ -175,12 +175,12 @@ describe.each([['human', HUMAN], ['masculine-v1', MASCULINE]] as const)('%s: wha
  * body-frame rotations into bone-local ones, and a mirrored axis correction there
  * would flip a sign without any of the above noticing.
  */
-describe('masculine-v1 through the binding', () => {
-  const MASCULINE_GLB = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v1.glb')
+describe('masculine-v2 through the binding', () => {
+  const MASCULINE_GLB = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v2', 'masculine-v2.glb')
 
   function bound(): { body: THREE.Object3D; apply: (pose: Pose) => void } {
     const body = loadGlbSkeleton(MASCULINE_GLB)
-    const skeleton = bindSkeleton(body, HUMANOID_V1_PROFILE)
+    const skeleton = bindSkeleton(body, MASCULINE_PROFILE)
     return { body, apply: (pose: Pose) => skeleton.apply(pose) }
   }
 
@@ -195,11 +195,11 @@ describe('masculine-v1 through the binding', () => {
     stand(MASCULINE)
     writeCarriedArm(MASCULINE, state, pose, RIGHT, 0, pace)
     apply(pose)
-    const rest = world(body, 'hand.R')
+    const rest = world(body, 'hand_R')
     stand(MASCULINE)
     writeCarriedArm(MASCULINE, state, pose, RIGHT, SWING, pace)
     apply(pose)
-    expect(world(body, 'hand.R').z - rest.z, 'the binding swung the hand the other way').toBeGreaterThan(CLEAR)
+    expect(world(body, 'hand_R').z - rest.z, 'the binding swung the hand the other way').toBeGreaterThan(CLEAR)
   })
 
   it('tips the head forward in world space on a positive chest pitch', () => {

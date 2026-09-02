@@ -101,8 +101,8 @@ def run(args) -> dict:
     budget = {"triangles": measured["triangles"], "materials": measured["materials"],
               "meshes": measured["meshes"], "bones": measured["boneCount"],
               "maxInfluencesPerVertex": after["maxInfluencesPerVertex"]}
-    manifest = exporter.manifest(args.body, contract, args.input, fitted["landmarks"], built["report"],
-                                 args.helpers, budget, gates_table, glb_path)
+    manifest = exporter.manifest(args.body, contract, args.input, fitted["landmarks"], fitted["footprint"],
+                                 built["report"], args.helpers, budget, gates_table, glb_path)
     exporter.write_json(str(out / f"{args.body}.manifest.json"), manifest)
 
     scratch = tempfile.mkdtemp(prefix="ashveil-review-")

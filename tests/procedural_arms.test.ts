@@ -4,7 +4,7 @@ import {type RigGeometry } from '../src/render/procedural/geometry'
 import { Joint } from '../src/render/procedural/joints'
 import { createPose, resolvePositions } from '../src/render/procedural/pose'
 import { writeIdle } from '../src/render/procedural/stances'
-import { HUMANOID_V1_PROFILE } from '../src/render/profiles/humanoid_v1'
+import { MASCULINE_PROFILE } from '../src/render/profiles/masculine'
 import { KAYKIT_PROFILE } from '../src/render/profiles/kaykit'
 import type { ArmCarry } from '../src/render/profiles/profile'
 import { CHIBI, HUMAN, MASCULINE } from './fixtures/bodies'
@@ -15,7 +15,7 @@ const state = createGaitState()
 const pose = createPose()
 const positions = new Float32Array(Joint.Count * 3)
 
-function idle(geometry: RigGeometry, carry = HUMANOID_V1_PROFILE.armCarry): void {
+function idle(geometry: RigGeometry, carry = MASCULINE_PROFILE.armCarry): void {
   const drive = createGaitDrive()
   writeIdle(geometry, drive, state, pose, carry)
   resolvePositions(geometry, pose, positions)
@@ -43,7 +43,7 @@ function elbowBend(): number {
 }
 
 describe('a weaponless body hangs its arms at its sides', () => {
-  it('drops the masculine-v1 hand beside its own hip', () => {
+  it('drops the masculine-v2 hand beside its own hip', () => {
     idle(MASCULINE)
     const hand = axis(Joint.HandR, 1)
     const hip = axis(Joint.HipR, 1)
