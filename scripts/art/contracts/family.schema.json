@@ -65,7 +65,7 @@
         "properties": {
           "name": { "type": "string", "pattern": "^[A-Za-z0-9_]+$" },
           "parent": { "type": "string" },
-          "deform": { "const": false },
+          "deform": { "type": "boolean" },
           "chain": { "enum": ["spine", "limb"] },
           "head": { "type": "object", "additionalProperties": false,
                      "required": ["from", "towards", "along"],

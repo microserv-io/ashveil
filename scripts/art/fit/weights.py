@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .skin import Body, LATERAL
+from .skin import Body, FRONT, LATERAL
 
 PARAMS = {
     "capsule_scale": 1.20,
@@ -38,6 +38,12 @@ PARAMS = {
     "smooth_reach": 0.13,
     "smooth_iterations": 8,
     "smooth_cycles": 3,
+    "helper_capsule": 1.15,
+    "shoulder_helper_share": 0.8,
+    "shoulder_helper_core": 0.03,
+    "shoulder_helper_reach": 0.45,
+    "twist_start": 0.5,
+    "twist_share": 0.6,
 }
 
 
@@ -127,9 +133,11 @@ def _smoothstep(value: np.ndarray) -> np.ndarray:
 def _arm_radius(body: Body, weights: np.ndarray, side: str) -> float:
     along, radius = body.arm_coords(side, body.positions)
     at = body.index[body.bone[f"shoulder.{side.lower()}"]]
-    core = (weights[:, at] > 0.9) & (along > 0.5 * body.arm_axis(side)[2])
+    # The upper arm and its helpers hold the arm between them; the radius is the arm's.
+    held = weights[:, at] + sum(weights[:, body.index[name]] for name in body.helper_names(side).values())
+    core = (held > 0.9) & (along > 0.5 * body.arm_axis(side)[2])
     if core.sum() < 20:
-        core = (weights[:, at] > 0.7) & (along > 0.4 * body.arm_axis(side)[2])
+        core = (held > 0.7) & (along > 0.4 * body.arm_axis(side)[2])
     if core.sum() < 20:
         raise WeightError(f"weight gate: the {side} upper arm has no core vertices to measure")
     return float(np.percentile(radius[core], 98))
@@ -213,6 +221,46 @@ def _blend_cap(body: Body, weights: np.ndarray, side: str, region: dict, params:
     weights[cap] = weights[cap] * (1.0 - mix[:, None]) + target * mix[:, None]
 
 
+def _assign_helpers(body: Body, weights: np.ndarray, side: str, region: dict, params: dict) -> dict:
+    """Hand the deltoid cap to the shoulder helper and the lower upper arm to the twist.
+
+    Each helper takes a fixed share of the pool it shares with the upper arm, so
+    running this again after a smoothing pass lands on the same split rather than
+    compounding. The shoulder helper turns at half the arm's rate, so a cap that
+    is mostly helper follows the arm at about half rate: that is the blend across
+    the joint a single bone cannot make.
+    """
+    helpers = body.helper_names(side)
+    if not helpers:
+        return {}
+    arm = body.index[body.bone[f"shoulder.{side.lower()}"]]
+    along, distance = region["along"], region["distance"]
+    _, _, length = body.arm_axis(side)
+    inside = distance < region["capsule"] * params["helper_capsule"]
+    log = {}
+
+    if "shoulder" in helpers:
+        helper = body.index[helpers["shoulder"]]
+        reach = params["shoulder_helper_reach"] * length
+        share = params["shoulder_helper_share"] * (1.0 - _smoothstep((along - params["shoulder_helper_core"]) / reach))
+        share = np.where((along > region["top"]) & inside, share, 0.0)
+        pool = weights[:, arm] + weights[:, helper]
+        weights[:, helper] = pool * share
+        weights[:, arm] = pool * (1.0 - share)
+        log["shoulderHelperVertices"] = int((weights[:, helper] > 0.05).sum())
+
+    if "twist" in helpers:
+        twist = body.index[helpers["twist"]]
+        start = params["twist_start"] * length
+        share = params["twist_share"] * _smoothstep((along - start) / max(length - start, 1e-6))
+        share = np.where(inside, share, 0.0)
+        pool = weights[:, arm] + weights[:, twist]
+        weights[:, twist] = pool * share
+        weights[:, arm] = pool * (1.0 - share)
+        log["twistHelperVertices"] = int((weights[:, twist] > 0.05).sum())
+    return log
+
+
 def _confine_thigh(body: Body, weights: np.ndarray, side: str, params: dict) -> dict:
     lowered = side.lower()
     hip = body.head[body.bone[f"hip.{lowered}"]]
@@ -273,8 +321,24 @@ def _smooth(body: Body, weights: np.ndarray, centres: list, reach: float, iterat
     weights[:] = merged[welded]
 
 
+def _pool_helpers(body: Body, weights: np.ndarray) -> None:
+    """Fold bone heat's own helper split back into the upper arm.
+
+    Bone heat spreads the arm between the upper arm and its helpers by distance,
+    which is arbitrary; the deterministic split is made later by `_assign_helpers`
+    on top of the cleaned arm.
+    """
+    for side in ("L", "R"):
+        arm = body.index[body.bone[f"shoulder.{side.lower()}"]]
+        for name in body.helper_names(side).values():
+            helper = body.index[name]
+            weights[:, arm] += weights[:, helper]
+            weights[:, helper] = 0.0
+
+
 def clean(body: Body, params: dict = PARAMS):
     weights = body.primary["weights"].copy()
+    _pool_helpers(body, weights)
     radius = {side: _arm_radius(body, weights, side) for side in ("L", "R")}
     regions = {side: _shoulder_region(body, side, radius[side], params) for side in ("L", "R")}
     log = {"armRadiusCm": {side: round(value * 100, 2) for side, value in radius.items()},
@@ -286,11 +350,13 @@ def clean(body: Body, params: dict = PARAMS):
         before = (weights[:, arm].copy(), weights[:, clavicle].copy())
         _confine(body, weights, side, regions[side], None)
         _blend_cap(body, weights, side, regions[side], params)
+        helper_log = _assign_helpers(body, weights, side, regions[side], params)
         log["shoulder"][side] = {
             "armStrippedVertices": int(((before[0] > 0.05) & (regions[side]["arm"] < 0.5)).sum()),
             "clavicleStrippedVertices": int(((before[1] > 0.05) & (regions[side]["clavicle"] < 0.5)).sum()),
             "capVertices": int(regions[side]["cap"].sum()),
             "armRadiusCm": round(radius[side] * 100, 2),
+            **helper_log,
         }
     for side in ("L", "R"):
         log["thigh"][side] = _confine_thigh(body, weights, side, params)
@@ -307,6 +373,7 @@ def clean(body: Body, params: dict = PARAMS):
         for side in ("L", "R"):
             _confine(body, weights, side, regions[side], ceiling[side])
             _blend_cap(body, weights, side, regions[side], params)
+            _assign_helpers(body, weights, side, regions[side], params)
         weights = _normalise_top4(weights)
     return weights, log
 
@@ -348,6 +415,34 @@ def _inversions(body: Body, weights: np.ndarray, pose: dict, side: str, radius: 
     return int((np.einsum("va,va->v", geometric[ring], blended[ring]) < 0).sum())
 
 
+def _ring_ratio(body: Body, weights: np.ndarray, pose: dict, side: str, radius: float) -> float:
+    """How far the deltoid ring is from round, posed: max over min sector radius.
+
+    Measured about the arm's own posed axis, so a cap that stays a cap reads the
+    same in every pose and one that shears into a plate reads higher.
+    """
+    ring = _deltoid_ring(body, side, radius)
+    if ring.sum() < 24:
+        return float("nan")
+    posed, _ = body.skinned(weights, pose)
+    shoulder, elbow = body._arm_bones(side)[:2]
+    matrices = body.skin_matrices(pose)
+    pivot = matrices[body.index[shoulder]] @ np.append(body.head[shoulder], 1.0)
+    tip = matrices[body.index[elbow]] @ np.append(body.head[elbow], 1.0)
+    axis = (tip[:3] - pivot[:3])
+    axis /= np.linalg.norm(axis)
+    relative = posed[ring] - pivot[:3]
+    radial = relative - np.outer(relative @ axis, axis)
+    distance = np.linalg.norm(radial, axis=1)
+    reference = np.cross(axis, FRONT if abs(axis @ FRONT) < 0.9 else LATERAL)
+    reference /= np.linalg.norm(reference)
+    other = np.cross(axis, reference)
+    angle = np.arctan2(radial @ other, radial @ reference)
+    sectors = np.floor((angle + np.pi) / (2 * np.pi) * 12).astype(int).clip(0, 11)
+    means = np.array([distance[sectors == sector].mean() for sector in range(12) if (sectors == sector).any()])
+    return round(float(means.max() / max(means.min(), 1e-6)), 3)
+
+
 def _armpit_gap(body: Body, weights: np.ndarray, pose: dict, side: str, radius: float) -> float:
     shoulder, _, _ = body.arm_axis(side)
     sign = 1.0 if side == "L" else -1.0
@@ -372,7 +467,11 @@ def measure(body: Body, weights: np.ndarray, contract: dict) -> dict:
         "displacement": {name: _displacement(body, weights, pose, field)
                          for name, pose in poses.items() if name != "bind"},
         "normalInversions": {f"{name}_{side}": _inversions(body, weights, poses[name], side, radius[side])
-                             for name in ("abduct90", "abduct150", "abduct150_rhythm") for side in ("L", "R")},
+                             for name in ("abduct90", "abduct150", "abduct150_rhythm", "abduct180", "abduct180_rhythm")
+                             for side in ("L", "R")},
+        "deltoidRingRatio": {f"{name}_{side}": _ring_ratio(body, weights, poses[name], side, radius[side])
+                             for name in ("bind", "abduct90", "abduct150_rhythm", "abduct180_rhythm")
+                             for side in ("L", "R")},
         "armpitGapCm": {name: {side: round(_armpit_gap(body, weights, poses[name], side, radius[side]) * 100, 2)
                                for side in ("L", "R")} for name in ("bind", "abduct90")},
         "maxInfluencesPerVertex": int((weights > 1e-6).sum(axis=1).max()),

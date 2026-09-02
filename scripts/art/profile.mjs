@@ -39,7 +39,18 @@ export function familyMapping(contract) {
   }
   const missing = [...REQUIRED_ROLES].filter((role) => !(role in required))
   if (missing.length) throw new ProfileError(`contract gate: no bone plays ${missing.sort().join(', ')}`)
-  return { required, optional }
+  return { required, optional, helpers: helperMapping(contract) }
+}
+
+/** The runtime's four helper slots, from the contract's helper bone names. */
+export function helperMapping(contract) {
+  const helpers = {}
+  for (const spec of contract.helpers ?? []) {
+    const match = /^(shoulder_helper|twist_upper_arm)_([LR])$/.exec(spec.name)
+    if (!match) throw new ProfileError(`contract gate: helper "${spec.name}" is not a shoulder or twist helper`)
+    helpers[`${match[1] === 'shoulder_helper' ? 'shoulder' : 'twist'}.${match[2].toLowerCase()}`] = spec.name
+  }
+  return helpers
 }
 
 function documentOf(body) {
@@ -137,7 +148,10 @@ ${entries(manifest.mapping.required)}
   },
   optional: {
 ${entries(manifest.mapping.optional)}
-  },
+  },${manifest.helpers ? `
+  helpers: {
+${entries(manifest.mapping.helpers)}
+  },` : ''}
 }
 `
 }

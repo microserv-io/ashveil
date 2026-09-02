@@ -23,17 +23,26 @@ class GateError(RuntimeError):
     pass
 
 
+def _landmark_point(landmarks: dict, spec) -> np.ndarray:
+    """A bone endpoint: a landmark name, or a point part way between two."""
+    if isinstance(spec, dict):
+        start = np.array(landmarks[spec["from"]], dtype=np.float64)
+        end = np.array(landmarks[spec["towards"]], dtype=np.float64)
+        return start + (end - start) * float(spec["along"])
+    return np.array(landmarks[spec], dtype=np.float64)
+
+
 def _bone_reach(body: Body, contract: dict, landmarks: dict) -> dict:
     """How far past its own segment each bone pulls a vertex it holds."""
     reach = {}
-    for spec in contract["bones"]:
+    for spec in list(contract["bones"]) + list(contract["helpers"]):
         if not spec["deform"]:
             continue
         at = body.index.get(spec["name"])
         if at is None:
             continue
-        head = np.array(landmarks[spec["head"]], dtype=np.float64)
-        tail = np.array(landmarks[spec["tail"]], dtype=np.float64)
+        head = _landmark_point(landmarks, spec["head"])
+        tail = _landmark_point(landmarks, spec["tail"])
         segment = tail - head
         worst = 0.0
         for region in body.regions:
@@ -96,10 +105,12 @@ def measure(path: str, contract: dict, landmarks: dict, source_had: dict) -> dic
     }
 
 
-def gates(measured: dict, contract: dict) -> dict:
+def gates(measured: dict, contract: dict, helpers: bool = False) -> dict:
     limits = contract["gates"]
     budget = contract["budget"]
     expected = [spec["name"] for spec in contract["bones"]]
+    if helpers:
+        expected += [spec["name"] for spec in contract["helpers"]]
     frame = measured["landmarkFrame"]
     reach = measured["boneReachMetres"]
     # A leak reads as a bone holding geometry a body-width away; anatomy never
@@ -124,7 +135,8 @@ def gates(measured: dict, contract: dict) -> dict:
         "the_skeleton_matches_the_family_schema":
             all(name in measured["bones"] for name in expected),
         "every_deform_bone_carries_weight": not measured["starvedDeformBones"],
-        "helper_bones_carry_no_weight": not measured["weightedHelpers"],
+        "helpers_carry_weight_exactly_when_fitted":
+            set(measured["weightedHelpers"]) == ({spec["name"] for spec in contract["helpers"]} if helpers else set()),
         "no_bone_reaches_outside_its_region": not overreaching,
         "triangles_within_budget": measured["triangles"] <= budget["maxTriangles"],
         "materials_within_budget": measured["materials"] <= budget["maxMaterials"],

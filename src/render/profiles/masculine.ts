@@ -38,4 +38,10 @@ export const MASCULINE_PROFILE: SkeletonProfile = {
     'clavicle.l': 'clavicle_L',
     'clavicle.r': 'clavicle_R',
   },
+  helpers: {
+    'shoulder.l': 'shoulder_helper_L',
+    'twist.l': 'twist_upper_arm_L',
+    'shoulder.r': 'shoulder_helper_R',
+    'twist.r': 'twist_upper_arm_R',
+  },
 }

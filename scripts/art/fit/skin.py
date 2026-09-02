@@ -20,6 +20,9 @@ from .glb import Glb
 
 FRONT = np.array([0.0, 0.0, 1.0])
 LATERAL = np.array([1.0, 0.0, 0.0])
+# The fraction of the upper arm's rotation a shoulder helper takes, matched in
+# src/render/semanticskeleton.ts; the gates measure what the runtime will show.
+HELPER_SHARE = 0.5
 
 
 def rotation_about(axis: np.ndarray, angle: float, pivot: np.ndarray) -> np.ndarray:
@@ -132,14 +135,41 @@ class Body:
         lowered = side.lower()
         return [self.bone[f"{role}.{lowered}"] for role in ("shoulder", "elbow", "hand")]
 
+    def helper_names(self, side: str) -> dict[str, str]:
+        """The helpers this body carries for one arm, keyed shoulder or twist."""
+        found = {}
+        for kind, prefix in (("shoulder", "shoulder_helper_"), ("twist", "twist_upper_arm_")):
+            name = f"{prefix}{side}"
+            if name in self.index:
+                found[kind] = name
+        return found
+
+    def _arm_pose(self, pose: dict, side: str, axis: np.ndarray, angle: float, pivot: np.ndarray,
+                  frame: np.ndarray | None = None) -> None:
+        """Turn one arm about a pivot, the way the runtime drives it.
+
+        The shoulder helper turns by half the angle so the cap it carries follows
+        the arm at half rate; the twist helper is rigid with the upper arm, since
+        a turn about a pivot carries no axial twist.
+        """
+        full = rotation_about(axis, angle, pivot)
+        half = rotation_about(axis, angle * HELPER_SHARE, pivot)
+        if frame is not None:
+            full, half = frame @ full, frame @ half
+        for bone in self._arm_bones(side):
+            pose[bone] = full
+        helpers = self.helper_names(side)
+        if "twist" in helpers:
+            pose[helpers["twist"]] = full
+        if "shoulder" in helpers:
+            pose[helpers["shoulder"]] = half
+
     def abduct(self, degrees: float) -> dict:
         pose = {}
         for side in ("L", "R"):
             shoulder, _, _ = self.arm_axis(side)
-            world = rotation_about(FRONT * (1.0 if side == "L" else -1.0),
-                                   self._abduction_delta(side, degrees), shoulder)
-            for bone in self._arm_bones(side):
-                pose[bone] = world
+            self._arm_pose(pose, side, FRONT * (1.0 if side == "L" else -1.0),
+                           self._abduction_delta(side, degrees), shoulder)
         return pose
 
     def abduct_with_clavicle(self, degrees: float, share: float) -> dict:
@@ -150,18 +180,18 @@ class Body:
             delta = self._abduction_delta(side, degrees)
             clavicle_bone = self.bone[f"clavicle.{side.lower()}"]
             clavicle = rotation_about(axis, delta * share, self.head[clavicle_bone])
-            arm = rotation_about(axis, delta * (1.0 - share), shoulder)
             pose[clavicle_bone] = clavicle
-            for bone in self._arm_bones(side):
-                pose[bone] = clavicle @ arm
+            self._arm_pose(pose, side, axis, delta * (1.0 - share), shoulder, frame=clavicle)
         return pose
 
     def flex(self, degrees: float, side: str = "L") -> dict:
         shoulder, _, _ = self.arm_axis(side)
-        world = rotation_about(LATERAL * (-1.0 if side == "L" else 1.0), math.radians(degrees), shoulder)
-        return {bone: world for bone in self._arm_bones(side)}
+        pose = {}
+        self._arm_pose(pose, side, LATERAL * (-1.0 if side == "L" else 1.0), math.radians(degrees), shoulder)
+        return pose
 
     def poses(self, share: float) -> dict:
         return {"bind": {}, "abduct90": self.abduct(90.0), "abduct150": self.abduct(150.0),
-                "flex60": self.flex(60.0, "L"),
-                "abduct150_rhythm": self.abduct_with_clavicle(150.0, share)}
+                "abduct180": self.abduct(180.0), "flex60": self.flex(60.0, "L"),
+                "abduct150_rhythm": self.abduct_with_clavicle(150.0, share),
+                "abduct180_rhythm": self.abduct_with_clavicle(180.0, share)}

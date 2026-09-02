@@ -1010,7 +1010,7 @@
         "lengthMetres": 0.122123
       }
     },
-    "restSignatureSha256": "854ef7fa21e913682fbac9536b85af9e7a6327092f0157a86952f3b722c5e286",
+    "restSignatureSha256": "19bdd1b28e1c3bc20cda9fad75b26bbf646aa1e5b82a0d2a04ff0c5ca93aff83",
     "rule": {
       "primary": "local +Y from head to tail, so a bone points at its child",
       "limbSecondary": "local +X along the body's lateral axis, so knee and elbow hinge about one local axis",
@@ -1033,10 +1033,14 @@
           "upper_arm_L",
           "forearm_L",
           "hand_L",
+          "twist_upper_arm_L",
+          "shoulder_helper_L",
           "clavicle_R",
           "upper_arm_R",
           "forearm_R",
           "hand_R",
+          "twist_upper_arm_R",
+          "shoulder_helper_R",
           "thigh_L",
           "shin_L",
           "foot_L",
@@ -1053,10 +1057,14 @@
           "upper_arm_L",
           "forearm_L",
           "hand_L",
+          "twist_upper_arm_L",
+          "shoulder_helper_L",
           "clavicle_R",
           "upper_arm_R",
           "forearm_R",
           "hand_R",
+          "twist_upper_arm_R",
+          "shoulder_helper_R",
           "thigh_L",
           "shin_L",
           "foot_L",
@@ -1074,8 +1082,12 @@
           "upper_arm_L",
           "forearm_L",
           "hand_L",
+          "twist_upper_arm_L",
+          "shoulder_helper_L",
           "clavicle_R",
           "upper_arm_R",
+          "twist_upper_arm_R",
+          "shoulder_helper_R",
           "thigh_L",
           "shin_L",
           "foot_L",
@@ -1091,10 +1103,14 @@
           "head",
           "clavicle_L",
           "upper_arm_L",
+          "twist_upper_arm_L",
+          "shoulder_helper_L",
           "clavicle_R",
           "upper_arm_R",
           "forearm_R",
           "hand_R",
+          "twist_upper_arm_R",
+          "shoulder_helper_R",
           "thigh_L",
           "shin_L",
           "foot_L",
@@ -1111,10 +1127,14 @@
           "upper_arm_L",
           "forearm_L",
           "hand_L",
+          "twist_upper_arm_L",
+          "shoulder_helper_L",
           "clavicle_R",
           "upper_arm_R",
           "forearm_R",
           "hand_R",
+          "twist_upper_arm_R",
+          "shoulder_helper_R",
           "thigh_L",
           "shin_L",
           "foot_L",
@@ -1131,10 +1151,14 @@
           "upper_arm_L",
           "forearm_L",
           "hand_L",
+          "twist_upper_arm_L",
+          "shoulder_helper_L",
           "clavicle_R",
           "upper_arm_R",
           "forearm_R",
           "hand_R",
+          "twist_upper_arm_R",
+          "shoulder_helper_R",
           "thigh_L",
           "shin_L",
           "foot_L",
@@ -1147,17 +1171,17 @@
       "maxInfluencesPerVertexBeforeExport": 6,
       "verticesPerBone": {
         "pelvis": 749,
-        "spine": 1235,
-        "chest": 1230,
-        "neck": 1049,
+        "spine": 1225,
+        "chest": 1205,
+        "neck": 1040,
         "head": 1581,
-        "clavicle_L": 1036,
-        "upper_arm_L": 691,
-        "forearm_L": 434,
+        "clavicle_L": 1003,
+        "upper_arm_L": 628,
+        "forearm_L": 409,
         "hand_L": 825,
-        "clavicle_R": 1027,
-        "upper_arm_R": 690,
-        "forearm_R": 428,
+        "clavicle_R": 998,
+        "upper_arm_R": 628,
+        "forearm_R": 403,
         "hand_R": 827,
         "thigh_L": 761,
         "shin_L": 520,
@@ -1169,21 +1193,25 @@
     },
     "clean": {
       "armRadiusCm": {
-        "L": 6.79,
-        "R": 6.8
+        "L": 6.73,
+        "R": 6.73
       },
       "shoulder": {
         "L": {
-          "armStrippedVertices": 219,
-          "clavicleStrippedVertices": 228,
-          "capVertices": 164,
-          "armRadiusCm": 6.79
+          "armStrippedVertices": 161,
+          "clavicleStrippedVertices": 215,
+          "capVertices": 162,
+          "armRadiusCm": 6.73,
+          "shoulderHelperVertices": 212,
+          "twistHelperVertices": 138
         },
         "R": {
-          "armStrippedVertices": 218,
-          "clavicleStrippedVertices": 218,
-          "capVertices": 164,
-          "armRadiusCm": 6.8
+          "armStrippedVertices": 158,
+          "clavicleStrippedVertices": 207,
+          "capVertices": 162,
+          "armRadiusCm": 6.73,
+          "shoulderHelperVertices": 211,
+          "twistHelperVertices": 138
         }
       },
       "thigh": {
@@ -1202,32 +1230,56 @@
       "displacement": {
         "abduct90": {
           "vertices": 3580,
-          "maxCm": 1.997,
-          "p95Cm": 0.786
+          "maxCm": 1.967,
+          "p95Cm": 0.407
         },
         "abduct150": {
           "vertices": 3580,
-          "maxCm": 3.412,
-          "p95Cm": 1.343
+          "maxCm": 3.409,
+          "p95Cm": 0.699
+        },
+        "abduct180": {
+          "vertices": 3580,
+          "maxCm": 3.841,
+          "p95Cm": 0.784
         },
         "flex60": {
           "vertices": 3580,
-          "maxCm": 1.905,
-          "p95Cm": 0.285
+          "maxCm": 1.971,
+          "p95Cm": 0.0
         },
         "abduct150_rhythm": {
           "vertices": 3580,
-          "maxCm": 16.361,
-          "p95Cm": 8.726
+          "maxCm": 16.459,
+          "p95Cm": 8.783
+        },
+        "abduct180_rhythm": {
+          "vertices": 3580,
+          "maxCm": 19.575,
+          "p95Cm": 10.721
         }
       },
       "normalInversions": {
         "abduct90_L": 0,
         "abduct90_R": 0,
-        "abduct150_L": 10,
-        "abduct150_R": 9,
+        "abduct150_L": 0,
+        "abduct150_R": 0,
         "abduct150_rhythm_L": 0,
-        "abduct150_rhythm_R": 0
+        "abduct150_rhythm_R": 0,
+        "abduct180_L": 6,
+        "abduct180_R": 5,
+        "abduct180_rhythm_L": 0,
+        "abduct180_rhythm_R": 0
+      },
+      "deltoidRingRatio": {
+        "bind_L": 1.767,
+        "bind_R": 1.764,
+        "abduct90_L": 1.502,
+        "abduct90_R": 1.504,
+        "abduct150_rhythm_L": 1.524,
+        "abduct150_rhythm_R": 1.531,
+        "abduct180_rhythm_L": 1.833,
+        "abduct180_rhythm_R": 1.838
       },
       "armpitGapCm": {
         "bind": {
@@ -1235,8 +1287,8 @@
           "R": 3.73
         },
         "abduct90": {
-          "L": 4.47,
-          "R": 4.47
+          "L": 4.43,
+          "R": 4.42
         }
       },
       "maxInfluencesPerVertex": 4,
@@ -1247,32 +1299,56 @@
       "displacement": {
         "abduct90": {
           "vertices": 3580,
-          "maxCm": 0.142,
+          "maxCm": 0.159,
           "p95Cm": 0.0
         },
         "abduct150": {
           "vertices": 3580,
-          "maxCm": 0.242,
+          "maxCm": 0.271,
+          "p95Cm": 0.0
+        },
+        "abduct180": {
+          "vertices": 3580,
+          "maxCm": 0.301,
           "p95Cm": 0.0
         },
         "flex60": {
           "vertices": 3580,
-          "maxCm": 0.389,
+          "maxCm": 0.449,
           "p95Cm": 0.0
         },
         "abduct150_rhythm": {
           "vertices": 3580,
-          "maxCm": 14.735,
-          "p95Cm": 8.139
+          "maxCm": 13.669,
+          "p95Cm": 8.278
+        },
+        "abduct180_rhythm": {
+          "vertices": 3580,
+          "maxCm": 16.599,
+          "p95Cm": 10.053
         }
       },
       "normalInversions": {
         "abduct90_L": 0,
         "abduct90_R": 0,
-        "abduct150_L": 19,
-        "abduct150_R": 18,
-        "abduct150_rhythm_L": 1,
-        "abduct150_rhythm_R": 1
+        "abduct150_L": 0,
+        "abduct150_R": 0,
+        "abduct150_rhythm_L": 0,
+        "abduct150_rhythm_R": 0,
+        "abduct180_L": 12,
+        "abduct180_R": 10,
+        "abduct180_rhythm_L": 0,
+        "abduct180_rhythm_R": 1
+      },
+      "deltoidRingRatio": {
+        "bind_L": 1.767,
+        "bind_R": 1.764,
+        "abduct90_L": 1.679,
+        "abduct90_R": 1.702,
+        "abduct150_rhythm_L": 2.478,
+        "abduct150_rhythm_R": 2.52,
+        "abduct180_rhythm_L": 2.719,
+        "abduct180_rhythm_R": 2.824
       },
       "armpitGapCm": {
         "bind": {
@@ -1280,8 +1356,8 @@
           "R": 3.73
         },
         "abduct90": {
-          "L": 5.4,
-          "R": 5.58
+          "L": 4.6,
+          "R": 4.77
         }
       },
       "maxInfluencesPerVertex": 4,
@@ -1344,22 +1420,22 @@
     },
     "verticesPerBone": {
       "root": 0,
-      "pelvis": 840,
-      "spine": 1409,
-      "chest": 1813,
-      "clavicle_L": 791,
-      "shoulder_helper_L": 0,
-      "upper_arm_L": 444,
-      "forearm_L": 434,
+      "pelvis": 843,
+      "spine": 1236,
+      "chest": 1780,
+      "clavicle_L": 782,
+      "shoulder_helper_L": 241,
+      "upper_arm_L": 478,
+      "forearm_L": 409,
       "hand_L": 825,
-      "twist_upper_arm_L": 0,
-      "clavicle_R": 796,
-      "shoulder_helper_R": 0,
-      "upper_arm_R": 444,
-      "forearm_R": 426,
+      "twist_upper_arm_L": 169,
+      "clavicle_R": 790,
+      "shoulder_helper_R": 241,
+      "upper_arm_R": 475,
+      "forearm_R": 401,
       "hand_R": 827,
-      "twist_upper_arm_R": 0,
-      "neck": 1273,
+      "twist_upper_arm_R": 169,
+      "neck": 1027,
       "head": 1588,
       "thigh_L": 418,
       "shin_L": 520,
@@ -1369,27 +1445,36 @@
       "foot_R": 417
     },
     "starvedDeformBones": [],
-    "weightedHelpers": [],
+    "weightedHelpers": [
+      "shoulder_helper_L",
+      "shoulder_helper_R",
+      "twist_upper_arm_L",
+      "twist_upper_arm_R"
+    ],
     "boneReachMetres": {
       "pelvis": 0.2094,
-      "spine": 0.2457,
+      "spine": 0.2313,
       "chest": 0.2642,
-      "neck": 0.2178,
+      "neck": 0.2068,
       "head": 0.1319,
       "clavicle_L": 0.1884,
       "upper_arm_L": 0.1162,
-      "forearm_L": 0.0758,
+      "forearm_L": 0.0693,
       "hand_L": 0.0986,
       "clavicle_R": 0.1883,
-      "upper_arm_R": 0.1162,
-      "forearm_R": 0.0758,
+      "upper_arm_R": 0.1177,
+      "forearm_R": 0.0694,
       "hand_R": 0.0986,
       "thigh_L": 0.1314,
       "shin_L": 0.1245,
       "foot_L": 0.1245,
       "thigh_R": 0.1314,
       "shin_R": 0.1297,
-      "foot_R": 0.1245
+      "foot_R": 0.1245,
+      "shoulder_helper_L": 0.1093,
+      "twist_upper_arm_L": 0.0674,
+      "shoulder_helper_R": 0.1093,
+      "twist_upper_arm_R": 0.0674
     },
     "maxRestRotation": 0.0,
     "sourceHad": {
@@ -1414,7 +1499,7 @@
     "the_body_is_the_canonical_height": true,
     "the_skeleton_matches_the_family_schema": true,
     "every_deform_bone_carries_weight": true,
-    "helper_bones_carry_no_weight": true,
+    "helpers_carry_weight_exactly_when_fitted": true,
     "no_bone_reaches_outside_its_region": true,
     "triangles_within_budget": true,
     "materials_within_budget": true,
@@ -1428,6 +1513,6 @@
     "glb": "masculine-v2.glb",
     "manifest": "masculine-v2.manifest.json",
     "review": "masculine-v2.review.png",
-    "sha256": "df452cdfd09d46361cdf3ff5af1207fb6e6482293a234518fb4c5753331b6bce"
+    "sha256": "f08b9c9151e15d98799b9fa973bb6151b5ed14c4e1b011739525ef6ed465f823"
   }
 }

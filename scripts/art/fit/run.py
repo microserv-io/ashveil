@@ -71,7 +71,7 @@ def run(args) -> dict:
     source_had = {"uvs": any(normalised["report"]["input"]["uvLayers"].values()),
                   "textures": bool(normalised["report"]["input"]["images"])}
     measured = gate.measure(glb_path, contract, table, source_had)
-    frame_gates = gate.gates(measured, contract)
+    frame_gates = gate.gates(measured, contract, args.helpers)
     gates_table = {**weight_gates, **frame_gates}
 
     report = {

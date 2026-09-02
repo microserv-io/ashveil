@@ -17,7 +17,7 @@ VIEWS = {
     "back": ((0.0, 1.0, -3.4), (0.0, 0.95, 0.0)),
     "side": ((3.4, 1.0, 0.0), (0.0, 0.95, 0.0)),
 }
-POSES = ("bind", "abduct90", "abduct150_rhythm", "flex60")
+POSES = ("bind", "abduct90", "abduct150_rhythm", "abduct180_rhythm", "flex60")
 TILE = 384
 
 

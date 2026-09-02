@@ -4,6 +4,7 @@ import { Joint, JOINT_NAMES } from './procedural/joints'
 import { resolveBones } from './skeletonbones'
 import type { Pose } from './procedural/pose'
 import { quatConjugate, quatMultiply, quatRotate } from './procedural/quat'
+import { driveHelpers, resolveHelpers } from './helperbones'
 import type { SkeletonProfile } from './profiles/profile'
 
 /**
@@ -81,6 +82,7 @@ export function bindSkeleton(body: THREE.Object3D, profile: SkeletonProfile): Se
   const geometry = buildRigGeometry(table as JointTable, scale, profile.standingHeight, profile.footprint)
   const world = new Float32Array(bones.length * 4)
   const rootBone = jointBone[Joint.Root]!
+  const helpers = resolveHelpers(bones, profile, jointBone, restLocalQuat, table)
 
   function apply(pose: Pose): void {
     for (let at = 0; at < bones.length; at++) {
@@ -100,6 +102,7 @@ export function bindSkeleton(body: THREE.Object3D, profile: SkeletonProfile): Se
       quatMultiply(SCRATCH, 0, world, at * 4, SCRATCH, 4)
       bones[at]!.quaternion.set(SCRATCH[4]!, SCRATCH[5]!, SCRATCH[6]!, SCRATCH[7]!)
     }
+    driveHelpers(helpers, bones, world)
 
     // The offset is a body-frame displacement in sim metres; a bone's position is in
     // model units, in whatever frame holds it.
@@ -116,7 +119,7 @@ export function bindSkeleton(body: THREE.Object3D, profile: SkeletonProfile): Se
 
   function restore(): void {
     for (let at = 0; at < bones.length; at++) {
-      if (boneJoint[at]! < 0 && boneExtra[at]! < 0) continue
+      if (boneJoint[at]! < 0 && boneExtra[at]! < 0 && !helpers.driven[at]) continue
       const bone = bones[at]!
       bone.quaternion.set(
         restLocalQuat[at * 4]!,
