@@ -15,7 +15,6 @@ import { seedOffset, type GaitDrive, type GaitParams, type GaitState } from './g
 
 const IDLE_BREATH_HZ = 0.23
 const IDLE_SHIFT_HZ = 0.11
-const IDLE_BOB = 0.006
 const IDLE_SWAY = 0.06
 const IDLE_ROLL = 0.045
 const IDLE_BREATH_PITCH = 0.03
@@ -27,7 +26,6 @@ const DASH_FOOT_LIFT = 0.18
 const FOOT_SWING_PITCH = 0.45
 /** Elbows in and hands back: a dash throws the body forward past its own arms. */
 const DASH_ARM_TUCK = 0.42
-
 export function writeIdle(geometry: RigGeometry, drive: GaitDrive, state: GaitState, out: Pose, armCarry?: ArmCarry): void {
   resetPose(out)
   plant(state.params)
@@ -36,15 +34,18 @@ export function writeIdle(geometry: RigGeometry, drive: GaitDrive, state: GaitSt
   const shift = Math.sin(TAU * (drive.time * IDLE_SHIFT_HZ + offset))
 
   out.offset[0] = shift * IDLE_SWAY * geometry.hipWidth
-  out.offset[1] = stanceOffset(geometry) + breath * IDLE_BOB * geometry.legLength
+  // Breath rides on the chest: a leg at full extension turns a millimetre of hip
+  // drop into ten degrees of knee, and idle would flex with it.
+  out.offset[1] = stanceOffset(geometry)
   out.offset[2] = 0
 
-  writeTorso(out, Joint.Pelvis, 0, 0, -shift * IDLE_ROLL, state)
+  // Level: with both feet planted, tilting the pelvis makes one leg longer than
+  // it is, and the knee under the low hip buckles to answer.
+  writeTorso(out, Joint.Pelvis, 0, 0, 0, state)
   writeTorso(out, Joint.Spine, breath * IDLE_BREATH_PITCH, 0, shift * IDLE_ROLL * 0.4, state)
-  writeTorso(out, Joint.Chest, breath * IDLE_BREATH_PITCH * 1.4, 0, shift * IDLE_ROLL * 0.3, state)
+  writeTorso(out, Joint.Chest, breath * IDLE_BREATH_PITCH * 1.8, 0, shift * IDLE_ROLL * 0.3, state)
   writeTorso(out, Joint.Head, -breath * IDLE_BREATH_PITCH, shift * 0.06, 0, state)
   plantFeet(geometry, state, out)
-
   writeCarriedArm(geometry, state, out, LEFT, breath * 0.01, 0, armCarry?.left)
   writeCarriedArm(geometry, state, out, RIGHT, -breath * 0.01, 0, armCarry?.right)
 }
@@ -74,14 +75,14 @@ export function writeDash(geometry: RigGeometry, _drive: GaitDrive, state: GaitS
 
 
 function trailLeg(geometry: RigGeometry, state: GaitState, out: Pose, side: number): void {
-  const hip = side === LEFT ? Joint.HipL : Joint.HipR
+  const hip = (side === LEFT ? Joint.HipL : Joint.HipR) * 3
   state.target[0] = side * geometry.hipWidth
   state.target[1] = geometry.ankleHeight + geometry.legLength * DASH_FOOT_LIFT
-  state.target[2] = state.positions[hip * 3 + 2]! - geometry.legLength * DASH_TRAIL
+  state.target[2] = state.positions[hip + 2]! - geometry.legLength * DASH_TRAIL
   writeLeg(geometry, state, out, side, FOOT_SWING_PITCH * 0.5)
 }
 
-/** A pose that is not walking: one long stance, no step, no swing. */
+/** Not walking: one long stance, no step, no swing. */
 function plant(params: GaitParams): void {
   params.frequency = 0
   params.duty = 1

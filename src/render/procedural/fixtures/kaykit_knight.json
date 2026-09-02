@@ -4,6 +4,12 @@
   "armCarryNote": "Right arm absolute body-frame rotations averaged over Running_A.",
   "carryClip": "Running_A",
   "standingHeight": 2.314534,
+  "footprint": {
+    "heel": 0.10158,
+    "toe": 0.056644,
+    "lift": 0.145264,
+    "pitch": 0
+  },
   "armCarry": {
     "right": {
       "shoulder": [

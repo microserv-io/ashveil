@@ -1,5 +1,6 @@
-import { Joint } from './joints'
-import { quatFromAxisAngle, quatIdentity, quatMultiply, quatNlerp, quatSet } from './quat'
+import type { RigGeometry } from './geometry'
+import { Joint, JOINT_PARENT } from './joints'
+import { quatFromAxisAngle, quatIdentity, quatMultiply, quatNlerp, quatRotate, quatSet } from './quat'
 
 /**
  * A full-body pose: one body-frame quaternion per semantic joint (see the frame
@@ -87,3 +88,32 @@ export function blendPose(from: Pose, to: Pose, t: number, out: Pose): void {
 
 /** Module-level because `multiplyJoint` is on the frame path and must not allocate. */
 const ADDITIVE = new Float32Array(4)
+
+/**
+ * Body-frame position of every joint under a pose, into `out` (`Joint.Count * 3`).
+ * Rotations are absolute, so one forward pass suffices: a joint sits at its parent's
+ * posed position plus the parent's rotation applied to their rest offset. `pose.yaw`
+ * is deliberately not applied — the host owns the body's world facing.
+ */
+export function resolvePositions(geometry: RigGeometry, pose: Pose, out: Float32Array): void {
+  const rest = geometry.rest
+  out[0] = rest[0]! + pose.offset[0]!
+  out[1] = rest[1]! + pose.offset[1]!
+  out[2] = rest[2]! + pose.offset[2]!
+  for (let joint = 1; joint < Joint.Count; joint++) {
+    const parent = JOINT_PARENT[joint]!
+    quatRotate(
+      pose.rotations,
+      parent * 4,
+      rest[joint * 3]! - rest[parent * 3]!,
+      rest[joint * 3 + 1]! - rest[parent * 3 + 1]!,
+      rest[joint * 3 + 2]! - rest[parent * 3 + 2]!,
+      ROTATED,
+    )
+    out[joint * 3] = out[parent * 3]! + ROTATED[0]!
+    out[joint * 3 + 1] = out[parent * 3 + 1]! + ROTATED[1]!
+    out[joint * 3 + 2] = out[parent * 3 + 2]! + ROTATED[2]!
+  }
+}
+
+const ROTATED = new Float32Array(3)

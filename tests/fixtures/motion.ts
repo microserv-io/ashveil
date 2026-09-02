@@ -1,5 +1,6 @@
-import { ballOffset, heelOffset } from '../../src/render/procedural/foot'
-import { resolvePositions, type RigGeometry } from '../../src/render/procedural/geometry'
+import { heelOffset, toeOffset } from '../../src/render/procedural/foot'
+import {type RigGeometry } from '../../src/render/procedural/geometry'
+import { resolvePositions } from '../../src/render/procedural/pose'
 import { Joint, LEFT } from '../../src/render/procedural/joints'
 import type { Pose } from '../../src/render/procedural/pose'
 import { quatRotate } from '../../src/render/procedural/quat'
@@ -13,7 +14,7 @@ export interface Contact {
   /** Where the heel is, in the body frame. */
   readonly heel: Float32Array
   /** Where the foot breaks over at toe-off. */
-  readonly ball: Float32Array
+  readonly toe: Float32Array
   /** How far the foot is tipped: negative up onto the heel, positive over the ball. */
   readonly pitch: number
 }
@@ -28,7 +29,7 @@ export function footContact(geometry: RigGeometry, pose: Pose, side: number): Co
   quatRotate(pose.rotations, foot * 4, 0, 1, 0, UP)
   return {
     heel: contact(geometry, pose, positions, foot, -heelOffset(geometry)),
-    ball: contact(geometry, pose, positions, foot, ballOffset(geometry)),
+    toe: contact(geometry, pose, positions, foot, toeOffset(geometry)),
     pitch: Math.atan2(UP[2]!, UP[1]!),
   }
 }

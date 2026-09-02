@@ -15,28 +15,18 @@ import type { RigGeometry } from './geometry'
  * which are the parts of the foot that are ever really planted.
  */
 
-/** A foot is about this much of a body's height, heel to toe, and no more than this much of its leg. */
-const FOOT_LENGTH = 0.152
-const FOOT_PER_LEG = 0.36
-/** Where the ankle stands along the foot, and where it breaks over at the toe. */
-const HEEL_BEHIND = 0.25
-const BALL_AHEAD = 0.45
-/** How far the foot tips up onto its heel at footfall, and over its ball at toe-off. */
-const HEEL_STRIKE = 30 * Math.PI / 180
-const TOE_OFF = 30 * Math.PI / 180
+/** How far the foot tips up onto its heel at footfall, and over its toe at push-off. */
+const HEEL_STRIKE = 28 * Math.PI / 180
+const TOE_OFF = 22 * Math.PI / 180
 
-function footLength(geometry: RigGeometry): number {
-  return Math.min(FOOT_LENGTH * geometry.standingHeight, FOOT_PER_LEG * geometry.legLength)
-}
-
-/** How far behind the ankle the heel touches down. */
+/** How far behind the ankle the heel touches down. Zero on a rig with no measured foot. */
 export function heelOffset(geometry: RigGeometry): number {
-  return footLength(geometry) * HEEL_BEHIND
+  return geometry.heelOffset
 }
 
-/** How far ahead of the ankle the foot breaks over at toe-off. */
-export function ballOffset(geometry: RigGeometry): number {
-  return footLength(geometry) * BALL_AHEAD
+/** How far ahead of the ankle the toe touches down. */
+export function toeOffset(geometry: RigGeometry): number {
+  return geometry.toeOffset
 }
 
 /**
@@ -45,12 +35,17 @@ export function ballOffset(geometry: RigGeometry): number {
  * pitched to put it there. Writes the ankle's rise into `out[0]` and its shift
  * along the stride into `out[1]`, both relative to a foot lying flat.
  *
+ * The pivots are the parts of the foot that are really on the ground: the heel
+ * while the foot is ahead of the hip, the toe once it is behind. Pivoting on the
+ * ball instead would drive the toe through the floor, since nothing here has a
+ * toe joint to bend.
+ *
  * Squared rather than linear so the foot spends the middle of stance flat, which
  * is where a foot actually is.
  */
 export function footRoll(geometry: RigGeometry, forward: number, out: Float32Array): number {
   const pitch = forward > 0 ? -HEEL_STRIKE * forward * forward : TOE_OFF * forward * forward
-  const lever = forward > 0 ? heelOffset(geometry) : -ballOffset(geometry)
+  const lever = forward > 0 ? geometry.heelOffset : -geometry.toeOffset
   const rise = Math.cos(pitch) - 1
   const turn = Math.sin(pitch)
   out[0] = geometry.ankleHeight * rise - lever * turn

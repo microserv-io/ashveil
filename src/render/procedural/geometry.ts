@@ -1,7 +1,5 @@
 import fixture from './fixtures/kaykit_knight.json'
 import { Joint, JOINT_NAMES, JOINT_PARENT } from './joints'
-import type { Pose } from './pose'
-import { quatRotate } from './quat'
 
 /** Rest positions keyed by the names in `JOINT_NAMES`. */
 export type JointTable = Readonly<Record<string, readonly number[]>>
@@ -32,6 +30,11 @@ export interface RigGeometry {
   readonly hipHeight: number
   /** Rest height of the ankle, which is where a planted foot sits. */
   readonly ankleHeight: number
+  /** How far behind the ankle the heel touches down, and how far ahead the toe does. */
+  readonly heelOffset: number
+  readonly toeOffset: number
+  /** How far the rig's own bind-pose foot is tilted from flat on the ground. */
+  readonly footPitch: number
   /** Lateral distance from the centre line to a hip. */
   readonly hipWidth: number
   /** Rest height of the topmost required joint. */
@@ -61,7 +64,19 @@ const PRIMARY_CHILD: Partial<Record<Joint, Joint>> = {
   [Joint.HipR]: Joint.KneeR, [Joint.KneeR]: Joint.FootR,
 }
 
-export function buildRigGeometry(table: JointTable, scale = 1, measuredStandingHeight?: number): RigGeometry {
+/** A foot's measured contacts, in model units. See `scripts/extract-rig-geometry.mjs`. */
+export interface FootPrint {
+  readonly heel: number
+  readonly toe: number
+  readonly pitch: number
+}
+
+export function buildRigGeometry(
+  table: JointTable,
+  scale = 1,
+  measuredStandingHeight?: number,
+  footprint?: FootPrint,
+): RigGeometry {
   const rest = new Float32Array(Joint.Count * 3)
   for (let joint = 0; joint < Joint.Count; joint++) {
     const name = JOINT_NAMES[joint]!
@@ -116,6 +131,10 @@ export function buildRigGeometry(table: JointTable, scale = 1, measuredStandingH
     armLength: upperArm + foreArm,
     hipHeight: rest[Joint.HipL * 3 + 1]!,
     ankleHeight: rest[Joint.FootL * 3 + 1]!,
+    // Without a measured footprint the foot is a point: no roll, no toe to clip.
+    heelOffset: (footprint?.heel ?? 0) * scale,
+    toeOffset: (footprint?.toe ?? 0) * scale,
+    footPitch: footprint?.pitch ?? 0,
     hipWidth: Math.abs(rest[Joint.HipL * 3]!),
     height: rest[Joint.Head * 3 + 1]!,
     standingHeight,
@@ -134,33 +153,6 @@ export function restDirection(geometry: RigGeometry, joint: Joint, out: Float32A
   out[2] = geometry.direction[joint * 3 + 2]!
 }
 
-/**
- * Body-frame position of every joint under a pose, into `out` (`Joint.Count * 3`).
- * Rotations are absolute, so one forward pass suffices: a joint sits at its parent's
- * posed position plus the parent's rotation applied to their rest offset. `pose.yaw`
- * is deliberately not applied — the host owns the body's world facing.
- */
-export function resolvePositions(geometry: RigGeometry, pose: Pose, out: Float32Array): void {
-  const rest = geometry.rest
-  out[0] = rest[0]! + pose.offset[0]!
-  out[1] = rest[1]! + pose.offset[1]!
-  out[2] = rest[2]! + pose.offset[2]!
-  for (let joint = 1; joint < Joint.Count; joint++) {
-    const parent = JOINT_PARENT[joint]!
-    quatRotate(
-      pose.rotations,
-      parent * 4,
-      rest[joint * 3]! - rest[parent * 3]!,
-      rest[joint * 3 + 1]! - rest[parent * 3 + 1]!,
-      rest[joint * 3 + 2]! - rest[parent * 3 + 2]!,
-      ROTATED,
-    )
-    out[joint * 3] = out[parent * 3]! + ROTATED[0]!
-    out[joint * 3 + 1] = out[parent * 3 + 1]! + ROTATED[1]!
-    out[joint * 3 + 2] = out[parent * 3 + 2]! + ROTATED[2]!
-  }
-}
-
 function boneLength(rest: Float32Array, from: Joint, to: Joint): number {
   return Math.hypot(
     rest[to * 3]! - rest[from * 3]!,
@@ -174,13 +166,13 @@ function unitParentDirection(direction: Float32Array, joint: Joint): readonly nu
   return [direction[parent * 3]!, direction[parent * 3 + 1]!, direction[parent * 3 + 2]!]
 }
 
-const ROTATED = new Float32Array(3)
-
 /** The KayKit knight's bind pose, in model units. See `scripts/extract-rig-geometry.mjs`. */
 export const KAYKIT_KNIGHT_JOINTS: JointTable = fixture.joints
 export const KAYKIT_KNIGHT_STANDING_HEIGHT = fixture.standingHeight
+export const KAYKIT_KNIGHT_FOOTPRINT: FootPrint = fixture.footprint
 export const KAYKIT_KNIGHT_GEOMETRY: RigGeometry = buildRigGeometry(
   KAYKIT_KNIGHT_JOINTS,
   1,
   KAYKIT_KNIGHT_STANDING_HEIGHT,
+  KAYKIT_KNIGHT_FOOTPRINT,
 )

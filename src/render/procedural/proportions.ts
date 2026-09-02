@@ -37,6 +37,8 @@ const SWING_REACH = 0.9
  * geometric forces a bob here and this is the one number that is chosen.
  */
 const RUN_BOB = 0.05
+/** How far the pelvis turns about the vertical each half stride, leading the swing leg. */
+export const PELVIS_YAW = 8 * Math.PI / 180
 
 /**
  * The longest span the stance leg may use, and so the one place the whole
@@ -108,13 +110,26 @@ export function hipBobAmplitude(
  */
 function stanceClearance(geometry: RigGeometry, halfStep: number, excursion: number): number {
   const reach = stanceReach(geometry)
+  // The pelvis turns with the stride, so the hip over the leading foot is already
+  // part of the way towards it. That is a determinant of gait, not a decoration:
+  // it buys step length that the hips would otherwise have to drop to find.
+  const lead = pelvisLead(geometry)
   let clear = Infinity
   for (const forward of [excursion, -excursion]) {
     footRoll(geometry, forward, ROLL)
-    const along = halfStep * forward + ROLL[1]!
+    const along = Math.max(0, Math.abs(halfStep * forward + ROLL[1]!) - lead * Math.abs(forward))
     clear = Math.min(clear, ROLL[0]! + Math.sqrt(Math.max(0, reach * reach - along * along)))
   }
   return clear
+}
+
+/**
+ * How far the turning pelvis carries a hip along the stride. Only most of it is
+ * spent: the pelvis also rolls and sways, and the step budget has to leave the
+ * chain enough room for those before it runs into full extension.
+ */
+export function pelvisLead(geometry: RigGeometry): number {
+  return geometry.hipWidth * Math.sin(PELVIS_YAW) * 0.6
 }
 
 const ROLL = new Float32Array(2)

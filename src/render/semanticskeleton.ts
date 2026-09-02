@@ -95,7 +95,7 @@ export function bindSkeleton(body: THREE.Object3D, profile: SkeletonProfile): Se
     table[JOINT_NAMES[joint]!] = [position.x, position.y, position.z]
   })
 
-  const geometry = buildRigGeometry(table as JointTable, scale, profile.standingHeight)
+  const geometry = buildRigGeometry(table as JointTable, scale, profile.standingHeight, profile.footprint)
   const world = new Float32Array(bones.length * 4)
   const rootBone = jointBone[Joint.Root]!
 

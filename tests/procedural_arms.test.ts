@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createGaitDrive, createGaitState, writeLocomotion } from '../src/render/procedural/gait'
-import { resolvePositions, type RigGeometry } from '../src/render/procedural/geometry'
+import {type RigGeometry } from '../src/render/procedural/geometry'
 import { Joint } from '../src/render/procedural/joints'
-import { createPose } from '../src/render/procedural/pose'
+import { createPose, resolvePositions } from '../src/render/procedural/pose'
 import { writeIdle } from '../src/render/procedural/stances'
 import { HUMANOID_V1_PROFILE } from '../src/render/profiles/humanoid_v1'
 import { KAYKIT_PROFILE } from '../src/render/profiles/kaykit'
@@ -131,7 +131,7 @@ describe('a running body pumps its arms', () => {
   it('swings each arm against the leg on its own side', () => {
     const drive = createGaitDrive()
     drive.speed = RUN
-    drive.phase = 0.1
+    drive.phase = 0.02
     writeLocomotion(HUMAN, drive, state, pose)
     resolvePositions(HUMAN, pose, positions)
     const rightFoot = axis(Joint.FootR, 2) - axis(Joint.HipR, 2)

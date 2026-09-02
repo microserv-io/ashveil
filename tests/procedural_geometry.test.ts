@@ -1,17 +1,9 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import {
-  buildRigGeometry,
-  KAYKIT_KNIGHT_GEOMETRY,
-  KAYKIT_KNIGHT_JOINTS,
-  KAYKIT_KNIGHT_STANDING_HEIGHT,
-  resolvePositions,
-  restDirection,
-  restPosition,
-} from '../src/render/procedural/geometry'
+import {buildRigGeometry, KAYKIT_KNIGHT_GEOMETRY, KAYKIT_KNIGHT_JOINTS, KAYKIT_KNIGHT_STANDING_HEIGHT, restDirection, restPosition,  } from '../src/render/procedural/geometry'
 import { Joint, JOINT_NAMES } from '../src/render/procedural/joints'
-import { createPose, setJointAxisAngle } from '../src/render/procedural/pose'
+import { createPose, setJointAxisAngle, resolvePositions } from '../src/render/procedural/pose'
 import { extractRigGeometry } from '../scripts/extract-rig-geometry.mjs'
 
 const PLAYER = join(import.meta.dirname, '..', 'public', 'models', 'player.glb')

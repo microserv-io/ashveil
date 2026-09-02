@@ -1,13 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createGaitState } from '../src/render/procedural/gait'
-import {
-  buildRigGeometry,
-  KAYKIT_KNIGHT_JOINTS,
-  KAYKIT_KNIGHT_STANDING_HEIGHT,
-  resolvePositions,
-} from '../src/render/procedural/geometry'
+import {buildRigGeometry, KAYKIT_KNIGHT_JOINTS, KAYKIT_KNIGHT_STANDING_HEIGHT,  } from '../src/render/procedural/geometry'
 import { Joint } from '../src/render/procedural/joints'
-import { createPose, type Pose } from '../src/render/procedural/pose'
+import { createPose, type Pose, resolvePositions } from '../src/render/procedural/pose'
 import { DEATH_SETTLE, POSE_CLIPS, SKILL_CLIPS } from '../src/render/procedural/clips'
 import { CARRY_HAND } from '../src/render/procedural/arms'
 import { writeClipPose } from '../src/render/procedural/poses'

@@ -15,6 +15,7 @@ export const KAYKIT_PROFILE: SkeletonProfile = {
   name: 'kaykit',
   // Both measured off the GLB by the extractor, never typed here: see the fixture.
   standingHeight: fixture.standingHeight,
+  footprint: fixture.footprint,
   armCarry: {
     right: {
       shoulder: quaternion(fixture.armCarry.right.shoulder),

@@ -228,6 +228,73 @@ export function bindPosePositions(body) {
   return positions
 }
 
+/**
+ * Where a foot actually touches the ground, measured off the mesh rather than
+ * guessed from the body's height: the heel and the toe of the skinned foot, and
+ * how far the whole footprint is tilted in the bind pose.
+ *
+ * A rig's foot bone points down and forward — the ankle stands above the floor
+ * and the toe lies on it — so "identity" is only flat if the flat reference comes
+ * from the rig itself. And a foot that rolls has to roll about the parts that are
+ * really planted, which is these two.
+ */
+export function footPrint(body, footBones, ankle) {
+  const { json, bin } = readGlb(body)
+  const skin = json.skins?.[0]
+  if (!skin) throw new Error('glb has no skin')
+  const wanted = new Set()
+  skin.joints.forEach((node, index) => {
+    if (footBones.includes(json.nodes[node].name)) wanted.add(index)
+  })
+  if (wanted.size === 0) throw new Error(`glb has no foot bone among ${footBones.join(', ')}`)
+
+  const points = []
+  for (const node of json.nodes) {
+    if (node.skin === undefined || node.mesh === undefined) continue
+    for (const primitive of json.meshes[node.mesh].primitives) {
+      const position = readAccessor(body, json.accessors[primitive.attributes.POSITION], 3)
+      const weights = readAccessor(body, json.accessors[primitive.attributes.WEIGHTS_0], 4)
+      const joints = readIndices(body, json.accessors[primitive.attributes.JOINTS_0])
+      for (let vertex = 0; vertex < position.length / 3; vertex++) {
+        let best = 0
+        let bestAt = 0
+        for (let lane = 0; lane < 4; lane++) {
+          const weight = weights[vertex * 4 + lane]
+          if (weight > best) {
+            best = weight
+            bestAt = joints[vertex * 4 + lane]
+          }
+        }
+        if (best > 0.5 && wanted.has(bestAt)) {
+          points.push([position[vertex * 3], position[vertex * 3 + 1], position[vertex * 3 + 2]])
+        }
+      }
+    }
+  }
+  if (points.length === 0) throw new Error('no vertices are skinned to the foot')
+
+  // The sole: everything within a centimetre of the lowest point the foot reaches.
+  const floor = Math.min(...points.map((point) => point[1]))
+  const sole = points.filter((point) => point[1] < floor + 0.01)
+  const heel = sole.reduce((low, point) => (point[2] < low[2] ? point : low))
+  const toe = sole.reduce((high, point) => (point[2] > high[2] ? point : high))
+  return {
+    heel: Number((ankle[2] - heel[2]).toFixed(6)),
+    toe: Number((toe[2] - ankle[2]).toFixed(6)),
+    lift: Number((ankle[1] - floor).toFixed(6)),
+    pitch: Number(Math.atan2(toe[1] - heel[1], toe[2] - heel[2]).toFixed(6)),
+  }
+}
+
+function readIndices(body, accessor) {
+  const { json, bin } = readGlb(body)
+  const view = json.bufferViews[accessor.bufferView]
+  const start = bin.byteOffset + (view.byteOffset ?? 0) + (accessor.byteOffset ?? 0)
+  if (accessor.componentType === 5121) return new Uint8Array(bin.buffer, start, accessor.count * 4)
+  if (accessor.componentType === 5123) return new Uint16Array(bin.buffer, start, accessor.count * 4)
+  throw new Error(`joint indices are not bytes or shorts: ${accessor.componentType}`)
+}
+
 /** The translation of a column-major affine matrix's inverse. */
 function inverseTranslation(m) {
   const det =
@@ -277,8 +344,10 @@ export function extractRigGeometry(
         swingScale,
       }]))
     : carry?.pose
+  const footBones = [mapping['foot.l'], mapping['foot.r']]
   return {
     standingHeight: bindPoseHeight(body),
+    footprint: footPrint(body, footBones, positions[mapping['foot.l']]),
     ...(armCarry ? { armCarry } : {}),
     joints: mapJoints(positions, mapping, 'required'),
     optional: mapJoints(positions, optional, 'optional'),

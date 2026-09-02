@@ -1,3 +1,5 @@
+import type { FootPrint } from '../procedural/geometry'
+
 export interface ArmCarryPose {
   readonly shoulder: readonly [number, number, number, number]
   readonly elbow: readonly [number, number, number, number]
@@ -25,6 +27,8 @@ export interface SkeletonProfile {
   readonly optional: Readonly<Record<string, string>>
   /** Measured bind-pose height of the skinned body, in model units. */
   readonly standingHeight: number
+  /** Where the skinned foot touches down, measured off the mesh, in model units. */
+  readonly footprint?: FootPrint
   /** Absolute body-frame arm rotations; an omitted side uses the relaxed hang. */
   readonly armCarry?: ArmCarry
 }

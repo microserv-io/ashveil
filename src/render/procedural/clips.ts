@@ -1,6 +1,7 @@
 import type { SkillId } from '../../sim/types'
 import { CARRY_HAND } from './arms'
 import { Joint, LEFT, RIGHT } from './joints'
+import { STANCE_HIP } from './limbs'
 import { compilePoseClip, type PoseClip, type PoseClipSource, type Vec3 } from './posekeys'
 
 /**
@@ -37,6 +38,8 @@ export type PoseClipName = Exclude<SkillId, 'dash'> | 'dead'
  * fails if any joint moves more than a quarter radian in a frame.
  */
 const STRIKE = 0.5
+/** A stated foot is measured from its own hip, so the ground is one stance leg below it. */
+const GROUND = -STANCE_HIP
 /**
  * A skill whose recovery is long enough to travel in lands its strike just past
  * the hit rather than on it: the wind-up alone cannot carry both arms from
@@ -83,7 +86,7 @@ export const POSE_SOURCES: Readonly<Record<PoseClipName, PoseClipSource>> = {
   cleave: {
     planted: true,
     keys: [
-      { at: 0, footL: [0, -0.94, 0] },
+      { at: 0, footL: [0, GROUND, 0] },
       {
         // One pose in the wind-up, not two: thirteen frames is not enough to hold
         // a lift and a coil and still swing.
@@ -96,7 +99,7 @@ export const POSE_SOURCES: Readonly<Record<PoseClipName, PoseClipSource>> = {
         handR: [-0.48, -0.5, -0.22],
         handL: [0.28, -0.64, 0.22],
         poleR: [-0.5, -0.45, -0.75],
-        footL: [0, -0.94, 0],
+        footL: [0, GROUND, 0],
       },
       {
         // The hit lands here, and the recovery runs 1.6 times faster than the
@@ -110,7 +113,7 @@ export const POSE_SOURCES: Readonly<Record<PoseClipName, PoseClipSource>> = {
         handR: [-0.47, -0.42, 0.2],
         handL: [0.3, -0.6, 0.24],
         poleR: [-0.6, -0.35, -0.72],
-        footL: [0.013, -0.914, 0.13],
+        footL: [0.013, GROUND + 0.026, 0.13],
         offset: [0, -0.026, 0.013],
       },
       {
@@ -125,10 +128,10 @@ export const POSE_SOURCES: Readonly<Record<PoseClipName, PoseClipSource>> = {
         handL: CLEAVE_L,
         poleR: [-0.6, -0.3, -0.75],
         // The left foot steps into the swing and comes back with it.
-        footL: [0.02, -0.9, 0.2],
+        footL: [0.02, GROUND + 0.04, 0.2],
         offset: [0, -0.04, 0.02],
       },
-      { at: 1, ease: 1.2, footL: [0, -0.94, 0], handR: relax(CLEAVE_R, RIGHT), handL: relax(CLEAVE_L, LEFT) },
+      { at: 1, ease: 1.2, footL: [0, GROUND, 0], handR: relax(CLEAVE_R, RIGHT), handL: relax(CLEAVE_L, LEFT) },
     ],
   },
   /** A thrust: the hand is cocked at the hip, then driven out at chest height. */
@@ -329,7 +332,7 @@ export const POSE_SOURCES: Readonly<Record<PoseClipName, PoseClipSource>> = {
           { joint: Joint.Chest, roll: 0.46, pitch: 0.3 },
           { joint: Joint.Head, roll: 0.3, pitch: 0.34 },
         ],
-        offset: [0, -0.3, 0.04],
+        offset: [0, -0.358, 0.04],
         footL: [-0.16, -0.6, 0.34],
         footR: [-0.16, -0.6, 0.34],
         handL: [0.3, -0.6, 0.34],
@@ -344,7 +347,7 @@ export const POSE_SOURCES: Readonly<Record<PoseClipName, PoseClipSource>> = {
           { joint: Joint.Chest, roll: 1.3, pitch: 0.24 },
           { joint: Joint.Head, roll: 1.1, pitch: 0.3 },
         ],
-        offset: [0, -0.62, 0.1],
+        offset: [0, -0.678, 0.1],
         footL: [-0.46, 0.02, 0.44],
         footR: [-0.46, 0.02, 0.44],
         handL: [0.2, -0.2, 0.62],

@@ -1,5 +1,6 @@
 import { CARRY_HAND } from './arms'
 import { Joint } from './joints'
+import { STANCE_HIP } from './limbs'
 import { quatFromAxisAngle, quatIdentity, quatMultiply } from './quat'
 
 /**
@@ -48,8 +49,8 @@ const ZERO: Vec3 = [0, 0, 0]
 const ELBOW_REST: Vec3 = [0.35, 0, -1]
 /** The hand's resting place beside the body: the carry locomotion holds it in. */
 const HAND_REST: Vec3 = CARRY_HAND
-/** The foot's resting place under the hip, in leg lengths. Only used unplanted. */
-const FOOT_REST: Vec3 = [0, -0.94, 0]
+/** The foot's resting place under the hip, in leg lengths: on the ground it stands on. */
+const FOOT_REST: Vec3 = [0, -STANCE_HIP, 0]
 /** The clip is stored compiled: quaternions and targets, ready to interpolate. */
 export interface PoseClip {
   readonly planted: boolean

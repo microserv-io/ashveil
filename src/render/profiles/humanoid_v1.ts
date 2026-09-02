@@ -9,6 +9,7 @@ import type { SkeletonProfile } from './profile'
 export const HUMANOID_V1_PROFILE: SkeletonProfile = {
   name: 'humanoid.v1',
   standingHeight: fixture.standingHeight,
+  footprint: fixture.footprint,
   bones: {
     root: 'root',
     pelvis: 'pelvis',

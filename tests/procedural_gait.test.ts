@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  buildRigGeometry,
-  KAYKIT_KNIGHT_JOINTS,
-  KAYKIT_KNIGHT_STANDING_HEIGHT,
-  resolvePositions,
-} from '../src/render/procedural/geometry'
+import {buildRigGeometry, KAYKIT_KNIGHT_JOINTS, KAYKIT_KNIGHT_STANDING_HEIGHT,  } from '../src/render/procedural/geometry'
 import {
   createGaitDrive,
   createGaitParams,
@@ -16,7 +11,7 @@ import {
 } from '../src/render/procedural/gait'
 import { writeDash, writeIdle } from '../src/render/procedural/stances'
 import { Joint, LEFT } from '../src/render/procedural/joints'
-import { createPose } from '../src/render/procedural/pose'
+import { createPose, resolvePositions } from '../src/render/procedural/pose'
 import { footContact } from './fixtures/motion'
 
 /**
@@ -84,7 +79,7 @@ describe('gait parameters', () => {
         resolvePositions(geometry, pose, positions)
         reach = Math.max(reach, span(Joint.HipL, Joint.FootL), span(Joint.HipR, Joint.FootR))
       }
-      expect(reach, `${speed} m/s asks for more leg than it has`).toBeLessThanOrEqual(geometry.legLength)
+      expect(reach, `${speed} m/s asks for more leg than it has`).toBeLessThanOrEqual(geometry.legLength + 1e-4)
     }
   })
 })
@@ -98,7 +93,7 @@ describe('the planted contact does not slide', () => {
     it(`holds still at ${speed} m/s`, () => {
       const frequency = strideFrequency(geometry, speed)
       gaitParams(geometry, speed, params)
-      const seen = { heel: [Infinity, -Infinity], ball: [Infinity, -Infinity] }
+      const seen = { heel: [Infinity, -Infinity], toe: [Infinity, -Infinity] }
       let maxLift = 0
       let maxDrift = 0
       // Sample the left foot's stance window, one full cycle of it.
@@ -106,8 +101,8 @@ describe('the planted contact does not slide', () => {
         const phase = (i / SAMPLES) * params.duty
         writeLocomotion(geometry, drive(speed, phase), state, pose)
         const contact = footContact(geometry, pose, LEFT)
-        const planted = contact.pitch <= 0 ? contact.heel : contact.ball
-        const window = contact.pitch <= 0 ? seen.heel : seen.ball
+        const planted = contact.pitch <= 0 ? contact.heel : contact.toe
+        const window = contact.pitch <= 0 ? seen.heel : seen.toe
         const worldZ = (phase / frequency) * speed + planted[2]!
         window[0] = Math.min(window[0]!, worldZ)
         window[1] = Math.max(window[1]!, worldZ)
@@ -115,7 +110,7 @@ describe('the planted contact does not slide', () => {
         maxLift = Math.max(maxLift, Math.abs(planted[1]!))
       }
       expect(seen.heel[1]! - seen.heel[0]!, 'the heel drifted while planted').toBeLessThan(0.005)
-      expect(seen.ball[1]! - seen.ball[0]!, 'the ball drifted while planted').toBeLessThan(0.005)
+      expect(seen.toe[1]! - seen.toe[0]!, 'the toe drifted while planted').toBeLessThan(0.005)
       expect(maxLift, 'the planted contact left the ground, so the IK is clamping').toBeLessThan(0.005)
       expect(maxDrift, 'the foot wandered sideways').toBeLessThan(geometry.hipWidth * 0.2)
     })

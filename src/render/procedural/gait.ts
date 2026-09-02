@@ -6,7 +6,14 @@ import { Joint, LEFT, RIGHT } from './joints'
 import { createLimbScratch, resolveTorso, writeTorso, type LimbScratch } from './limbs'
 import { resetPose, type Pose } from './pose'
 import { writeStrideLeg } from './stride'
-import { hipBob, hipBobAmplitude, reachableHalfStep, stanceHipHeight, torsoBobPitch } from './proportions'
+import {
+  hipBob,
+  hipBobAmplitude,
+  PELVIS_YAW,
+  reachableHalfStep,
+  stanceHipHeight,
+  torsoBobPitch,
+} from './proportions'
 
 /** What locomotion needs from the sim, already reduced to numbers. */
 export interface GaitDrive {
@@ -83,8 +90,8 @@ const RUN_BLEND_HIGH = 3.2
 const WALK_LIFT = 0.09
 const RUN_LIFT = 0.2
 const PELVIS_ROLL = 0.04
-const PELVIS_YAW = 0.06
-const CHEST_COUNTER = 0.8
+/** The chest turns back against the pelvis, about half as far. */
+const CHEST_COUNTER = 0.5
 /** How much the torso may pitch over a cycle: a nodding chest reads long before a bobbing head. */
 const TORSO_PITCH = 4 * Math.PI / 180
 /** How far a body at full speed leans into it. A run is a fall the legs keep up with. */
@@ -171,7 +178,10 @@ export function writeLocomotion(
   // feet much further sideways than a person's would.
   const proportion = legProportion(geometry)
   const roll = PELVIS_ROLL * proportion * proportion * Math.sin(TAU * phase)
-  const yaw = PELVIS_YAW * proportion * Math.sin(TAU * phase)
+  // Leading, not trailing: the hip over the foot that is reaching forward turns
+  // forward with it, which is where the extra step length comes from. A sine here
+  // put the turn a quarter cycle out of step with the legs.
+  const yaw = -PELVIS_YAW * proportion * proportion * Math.cos(TAU * phase)
 
   out.offset[0] = SWAY * roll * geometry.hipWidth
   out.offset[1] = geometry.ankleHeight + params.hipHeight - geometry.hipHeight + bob

@@ -1,12 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import { POSE_CLIPS, SKILL_CLIPS, type PoseClipName } from '../src/render/procedural/clips'
 import { createGaitState } from '../src/render/procedural/gait'
-import { resolvePositions, type RigGeometry } from '../src/render/procedural/geometry'
+import {type RigGeometry } from '../src/render/procedural/geometry'
 import { Joint } from '../src/render/procedural/joints'
-import { createPose } from '../src/render/procedural/pose'
+import { createPose, resolvePositions } from '../src/render/procedural/pose'
 import { writeClipPose } from '../src/render/procedural/poses'
 import { quatLength } from '../src/render/procedural/quat'
+import { createGaitDrive, gaitParams, writeLocomotion } from '../src/render/procedural/gait'
+import { createGaitParams } from '../src/render/procedural/gait'
+import { writeIdle } from '../src/render/procedural/stances'
+import { LEFT, RIGHT } from '../src/render/procedural/joints'
 import { HUMAN, MASCULINE } from './fixtures/bodies'
+import { footContact } from './fixtures/motion'
 
 /**
  * The guard that stops an authored pose reading as a hand inside a chest.
@@ -25,7 +30,7 @@ const SAMPLES = 32
  */
 const TORSO_RADIUS = 0.6
 /** A body standing on a fixture whose ankle is the ground floats within float error of it. */
-const FLOOR_TOLERANCE = 1e-4
+const FLOOR_TOLERANCE = 2e-3
 
 const state = createGaitState()
 const pose = createPose()
@@ -127,6 +132,58 @@ describe.each(BODIES)('%s poses without passing through itself', (_name, geometr
           expect(at(foot, 1), `${clip} put a foot through the floor at ${phase}`)
             .toBeGreaterThanOrEqual(-FLOOR_TOLERANCE)
         }
+      }
+    })
+  }
+})
+
+/**
+ * The toe is where a rig's foot ends, and it is measured off the mesh rather than
+ * guessed (`scripts/extract-rig-geometry.mjs`). Nothing here has a toe joint to
+ * bend, so any foot pitch swings the whole sole: tip it too far and the toe goes
+ * through the floor, which is what the review page was showing in every state.
+ */
+describe.each(BODIES)('%s keeps its feet out of the floor', (_name, geometry) => {
+  const params = createGaitParams()
+
+  function lowest(): number {
+    let low = Infinity
+    for (const side of [LEFT, RIGHT]) {
+      const contact = footContact(geometry, pose, side)
+      low = Math.min(low, contact.heel[1]!, contact.toe[1]!)
+    }
+    return low
+  }
+
+  it('stands with both feet flat', () => {
+    const drive = createGaitDrive()
+    for (let sample = 0; sample <= SAMPLES; sample++) {
+      drive.time = sample * 0.1
+      writeIdle(geometry, drive, state, pose)
+      expect(lowest(), `idle drove a foot through the floor at ${drive.time.toFixed(1)}s`)
+        .toBeGreaterThanOrEqual(-FLOOR_TOLERANCE)
+    }
+  })
+
+  for (const speed of [0.8, 1.6, 5.5]) {
+    it(`keeps the toe above the ground at ${speed} m/s`, () => {
+      gaitParams(geometry, speed, params)
+      const drive = createGaitDrive()
+      drive.speed = speed
+      for (let sample = 0; sample <= 120; sample++) {
+        drive.phase = sample / 120
+        writeLocomotion(geometry, drive, state, pose)
+        expect(lowest(), `${speed} m/s drove a foot through the floor at phase ${drive.phase.toFixed(2)}`)
+          .toBeGreaterThanOrEqual(-FLOOR_TOLERANCE)
+      }
+    })
+  }
+
+  for (const clip of [...SKILL_CLIPS] as PoseClipName[]) {
+    it(`${clip} keeps the toe above the ground`, () => {
+      for (let sample = 0; sample <= SAMPLES; sample++) {
+        writeClipPose(geometry, POSE_CLIPS[clip], sample / SAMPLES, state, pose)
+        expect(lowest(), `${clip} drove a foot through the floor`).toBeGreaterThanOrEqual(-FLOOR_TOLERANCE)
       }
     })
   }

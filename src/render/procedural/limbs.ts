@@ -1,7 +1,7 @@
-import { resolvePositions, restDirection, type RigGeometry } from './geometry'
+import {restDirection, type RigGeometry } from './geometry'
 import { createTwoBoneChain, solveTwoBone, type TwoBoneChain } from './ik'
 import { Joint, LEFT, RIGHT } from './joints'
-import { copyJointFrom, setJointAxisAngle, type Pose } from './pose'
+import { copyJointFrom, setJointAxisAngle, type Pose, resolvePositions } from './pose'
 import { quatFromAxisAngle, quatMultiply } from './quat'
 
 /**
@@ -33,8 +33,12 @@ export function createLimbScratch(): LimbScratch {
 /** The knee leads forward and the elbow trails back, which is what makes a body read as a body. */
 const KNEE_POLE_SIDE = 0.15
 const ELBOW_POLE_SIDE = 0.35
-/** Hip height while a body simply stands on its feet, as a fraction of leg length. */
-const STANCE_HIP = 0.94
+/**
+ * Hip height while a body simply stands on its feet, as a fraction of leg length.
+ * A body at rest stands on straight legs: anything much under full extension is a
+ * held squat, and a held squat is what the review page kept showing.
+ */
+export const STANCE_HIP = 0.9998
 
 /** Root offset that stands the skeleton on its feet with a knee it can still bend. */
 export function stanceOffset(geometry: RigGeometry): number {
@@ -73,7 +77,13 @@ export function writeTorso(out: Pose, joint: Joint, pitch: number, yaw: number, 
   quatMultiply(scratch.quat, 0, scratch.spare, 0, out.rotations, joint * 4)
 }
 
-/** Solves one leg onto `scratch.target` and pitches the foot. */
+/**
+ * Solves one leg onto `scratch.target` and pitches the foot. The pitch is measured
+ * from the rig's own flat: a foot bone points down and forward — the ankle stands
+ * above the floor and the toe lies on it — so identity is only level if the rig
+ * happened to be authored that way, and a fraction of a degree of tilt is a toe
+ * through the ground once the body stands on it.
+ */
 export function writeLeg(geometry: RigGeometry, scratch: LimbScratch, out: Pose, side: number, footPitch: number): void {
   const hip = side === LEFT ? Joint.HipL : Joint.HipR
   const knee = side === LEFT ? Joint.KneeL : Joint.KneeR
@@ -91,7 +101,7 @@ export function writeLeg(geometry: RigGeometry, scratch: LimbScratch, out: Pose,
   chain.pole[1] = 0
   chain.pole[2] = 1
   solveTwoBone(chain, out.rotations, hip * 4, knee * 4)
-  setJointAxisAngle(out, foot, 1, 0, 0, footPitch)
+  setJointAxisAngle(out, foot, 1, 0, 0, geometry.footPitch + footPitch)
 }
 
 /**
