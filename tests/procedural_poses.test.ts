@@ -1,13 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import { createGaitState } from '../src/render/procedural/gait'
-import { buildRigGeometry, KAYKIT_KNIGHT_JOINTS, resolvePositions } from '../src/render/procedural/geometry'
+import {
+  buildRigGeometry,
+  KAYKIT_KNIGHT_JOINTS,
+  KAYKIT_KNIGHT_STANDING_HEIGHT,
+  resolvePositions,
+} from '../src/render/procedural/geometry'
 import { Joint } from '../src/render/procedural/joints'
 import { createPose, type Pose } from '../src/render/procedural/pose'
 import { DEATH_SETTLE, POSE_CLIPS, SKILL_CLIPS } from '../src/render/procedural/clips'
 import { writeClipPose } from '../src/render/procedural/poses'
 import { quatAngleBetween, quatLength } from '../src/render/procedural/quat'
 
-const geometry = buildRigGeometry(KAYKIT_KNIGHT_JOINTS, 1.2)
+const geometry = buildRigGeometry(KAYKIT_KNIGHT_JOINTS, 1.2, KAYKIT_KNIGHT_STANDING_HEIGHT)
 const state = createGaitState()
 const pose = createPose()
 const positions = new Float32Array(Joint.Count * 3)

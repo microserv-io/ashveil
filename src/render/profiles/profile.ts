@@ -1,3 +1,14 @@
+export interface ArmCarryPose {
+  readonly shoulder: readonly [number, number, number, number]
+  readonly elbow: readonly [number, number, number, number]
+  readonly swingScale?: number
+}
+
+export interface ArmCarry {
+  readonly left?: ArmCarryPose
+  readonly right?: ArmCarryPose
+}
+
 /**
  * A skeleton family's answer to "which bone is the left knee".
  *
@@ -12,4 +23,8 @@ export interface SkeletonProfile {
   readonly bones: Readonly<Record<string, string>>
   /** Names from `OPTIONAL_JOINT_NAMES` the family happens to have. Never required. */
   readonly optional: Readonly<Record<string, string>>
+  /** Visible bind-pose height in model units. */
+  readonly standingHeight: number
+  /** Absolute body-frame arm rotations; an omitted side uses the relaxed hang. */
+  readonly armCarry?: ArmCarry
 }

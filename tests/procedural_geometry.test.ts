@@ -5,6 +5,7 @@ import {
   buildRigGeometry,
   KAYKIT_KNIGHT_GEOMETRY,
   KAYKIT_KNIGHT_JOINTS,
+  KAYKIT_KNIGHT_STANDING_HEIGHT,
   resolvePositions,
   restDirection,
   restPosition,
@@ -37,9 +38,16 @@ describe('rig geometry', () => {
     expect(g.hipWidth).toBeCloseTo(0.1709, 3)
   })
 
+  it('derives its nominal leg from measured standing height', () => {
+    const g = KAYKIT_KNIGHT_GEOMETRY
+    expect(g.standingHeight).toBeCloseTo(2.17, 3)
+    expect(g.nominalLegLength).toBeCloseTo(g.standingHeight * 0.48, 6)
+  })
+
   it('scales every length by the same factor', () => {
-    const doubled = buildRigGeometry(KAYKIT_KNIGHT_JOINTS, 2)
+    const doubled = buildRigGeometry(KAYKIT_KNIGHT_JOINTS, 2, KAYKIT_KNIGHT_STANDING_HEIGHT)
     expect(doubled.legLength).toBeCloseTo(KAYKIT_KNIGHT_GEOMETRY.legLength * 2, 6)
+    expect(doubled.nominalLegLength).toBeCloseTo(KAYKIT_KNIGHT_GEOMETRY.nominalLegLength * 2, 6)
     expect(doubled.hipHeight).toBeCloseTo(KAYKIT_KNIGHT_GEOMETRY.hipHeight * 2, 6)
     restPosition(doubled, Joint.Head, scratch)
     expect(scratch[1]).toBeCloseTo(KAYKIT_KNIGHT_GEOMETRY.height * 2, 5)

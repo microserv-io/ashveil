@@ -89,7 +89,10 @@ function pitch(joint: Joint): number {
 }
 
 interface Walked {
+  /** Knee bend through the middle half of stance, where the body rides over the foot. */
   readonly stanceKnee: number
+  /** Knee bend anywhere in stance, including the footfall the other leg forces. */
+  readonly peakKnee: number
   readonly pelvisBob: number
   readonly headBob: number
   readonly chestPitch: number
@@ -101,6 +104,7 @@ function walk(geometry: RigGeometry, speed: number): Walked {
   const drive = createGaitDrive()
   drive.speed = speed
   let stanceKnee = 0
+  let peakKnee = 0
   let pelvisLow = Infinity
   let pelvisHigh = -Infinity
   let headLow = Infinity
@@ -112,7 +116,11 @@ function walk(geometry: RigGeometry, speed: number): Walked {
     drive.phase = sample / SAMPLES
     writeLocomotion(geometry, drive, state, pose)
     resolvePositions(geometry, pose, positions)
-    if (drive.phase < params.duty) stanceKnee = Math.max(stanceKnee, kneeBend())
+    if (drive.phase < params.duty) {
+      peakKnee = Math.max(peakKnee, kneeBend())
+      const midStance = drive.phase > params.duty * 0.25 && drive.phase < params.duty * 0.75
+      if (midStance) stanceKnee = Math.max(stanceKnee, kneeBend())
+    }
     pelvisLow = Math.min(pelvisLow, positions[Joint.Pelvis * 3 + 1]!)
     pelvisHigh = Math.max(pelvisHigh, positions[Joint.Pelvis * 3 + 1]!)
     headLow = Math.min(headLow, positions[Joint.Head * 3 + 1]!)
@@ -123,6 +131,7 @@ function walk(geometry: RigGeometry, speed: number): Walked {
   }
   return {
     stanceKnee: stanceKnee * DEGREES,
+    peakKnee: peakKnee * DEGREES,
     pelvisBob: pelvisHigh - pelvisLow,
     headBob: headHigh - headLow,
     chestPitch: (chestHigh - chestLow) * DEGREES,
@@ -138,7 +147,11 @@ describe('a human body walks and runs at human numbers', () => {
     expect(params.halfStep, 'half the distance a planted foot travels').toBeGreaterThan(0.33)
     expect(params.halfStep).toBeLessThan(0.42)
     expect(params.duty, 'a walk keeps both feet down for part of the cycle').toBeGreaterThanOrEqual(0.52)
-    expect(walk(human, WALK).stanceKnee, 'a standing walk, not a squat').toBeLessThanOrEqual(20)
+    const measured = walk(human, WALK)
+    expect(measured.stanceKnee, 'a standing walk, not a squat').toBeLessThanOrEqual(20)
+    // The other leg is still down at footfall and holds the hip low, so this knee
+    // takes the landing. Without a rolling foot there is nowhere else for it to go.
+    expect(measured.peakKnee, 'a knee that catches the step, not a squat').toBeLessThan(30)
   })
 
   it('runs at 5.5 m/s with the cadence of a person', () => {
@@ -154,6 +167,7 @@ describe('a short-legged placeholder keeps up without sliding', () => {
     expect(params.frequency, 'the legs may whirr, but not blur').toBeLessThan(6)
     expect(params.duty).toBeGreaterThanOrEqual(0.52)
     expect(walk(knight, WALK).stanceKnee).toBeLessThan(25)
+    expect(walk(knight, WALK).peakKnee).toBeLessThan(35)
   })
 })
 

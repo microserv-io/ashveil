@@ -46,6 +46,15 @@ export const KAYKIT_OPTIONAL_JOINTS = {
   'wrist.r': 'wrist.r',
 }
 
+export const KAYKIT_STANDING_HEIGHT = 2.17
+export const KAYKIT_ARM_CARRY = {
+  right: {
+    shoulder: [0, -0.379653, 0.254475, 0.889441],
+    elbow: [0, 0.208753, 0.331613, 0.92003],
+    swingScale: 0.5,
+  },
+}
+
 export function readGlb(body) {
   let offset = 12
   let json = null
@@ -129,6 +138,9 @@ if (process.argv[1] === import.meta.filename) {
   const fixture = {
     source: 'public/models/player.glb',
     note: 'Bind-pose joint positions in the body frame (+Y up, +Z forward, +X left), in model units.',
+    armCarryNote: 'Right arm absolute body-frame rotations averaged from Running_A.',
+    standingHeight: KAYKIT_STANDING_HEIGHT,
+    armCarry: KAYKIT_ARM_CARRY,
     ...extractRigGeometry(readFileSync(source)),
   }
   writeFileSync(FIXTURE, `${JSON.stringify(fixture, null, 2)}\n`)

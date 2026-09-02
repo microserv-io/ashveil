@@ -35,9 +35,10 @@ const BUDGETS: Readonly<Record<string, number>> = {
   'src/render/riginput.ts': 100,
   // The procedural pose generator. `clips.ts` is the pose table and so exempt;
   // these are the maths around it, and the limb solvers already moved to limbs.ts.
-  'src/render/procedural/gait.ts': 300,
+  'src/render/procedural/gait.ts': 250,
+  'src/render/procedural/stances.ts': 95,
   'src/render/procedural/poses.ts': 215,
-  'src/render/procedural/geometry.ts': 180,
+  'src/render/procedural/geometry.ts': 187,
   'src/render/procedural/generator.ts': 145,
   'src/sim/pathfind.ts': 300,
   'headless/run.ts': 280,

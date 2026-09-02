@@ -1,16 +1,20 @@
 import { describe, expect, it } from 'vitest'
-import { buildRigGeometry, KAYKIT_KNIGHT_JOINTS, resolvePositions } from '../src/render/procedural/geometry'
+import {
+  buildRigGeometry,
+  KAYKIT_KNIGHT_JOINTS,
+  KAYKIT_KNIGHT_STANDING_HEIGHT,
+  resolvePositions,
+} from '../src/render/procedural/geometry'
 import {
   createGaitDrive,
   createGaitParams,
   createGaitState,
   gaitParams,
   strideFrequency,
-  writeDash,
-  writeIdle,
   writeLocomotion,
   type GaitDrive,
 } from '../src/render/procedural/gait'
+import { writeDash, writeIdle } from '../src/render/procedural/stances'
 import { Joint } from '../src/render/procedural/joints'
 import { createPose } from '../src/render/procedural/pose'
 
@@ -19,7 +23,7 @@ import { createPose } from '../src/render/procedural/pose'
  * mean what they say. Slice 2b scales each body's rest pose the same way.
  */
 const HUMAN_SCALE = 1.2
-const geometry = buildRigGeometry(KAYKIT_KNIGHT_JOINTS, HUMAN_SCALE)
+const geometry = buildRigGeometry(KAYKIT_KNIGHT_JOINTS, HUMAN_SCALE, KAYKIT_KNIGHT_STANDING_HEIGHT)
 
 const SPEEDS = [0.5, 1.5, 3, 6]
 const SAMPLES = 720

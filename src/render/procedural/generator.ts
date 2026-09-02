@@ -1,15 +1,9 @@
 import type { RigState } from '../rig'
 import type { RigInput } from '../riginput'
+import type { ArmCarry } from '../profiles/profile'
 import { applyFlinch } from './flinch'
-import {
-  createGaitDrive,
-  createGaitState,
-  seedOffset,
-  strideFrequency,
-  writeDash,
-  writeIdle,
-  writeLocomotion,
-} from './gait'
+import { createGaitDrive, createGaitState, seedOffset, strideFrequency, writeLocomotion } from './gait'
+import { writeDash, writeIdle } from './stances'
 import type { RigGeometry } from './geometry'
 import { blendPose, copyPose, createPose, type Pose } from './pose'
 import { DEATH_SETTLE, POSE_CLIPS, type PoseClipName } from './clips'
@@ -38,7 +32,7 @@ type Mode = 'idle' | 'moving' | 'dash' | 'dead' | PoseClipName
  * replicated state — sim time, velocity, the death it saw — so two clients
  * driving the same input sequence produce the same run.
  */
-export function createPoseGenerator(geometry: RigGeometry): PoseGenerator {
+export function createPoseGenerator(geometry: RigGeometry, armCarry?: ArmCarry): PoseGenerator {
   const scratch = createGaitState()
   const drive = createGaitDrive()
   const target = createPose()
@@ -101,8 +95,8 @@ export function createPoseGenerator(geometry: RigGeometry): PoseGenerator {
   }
 
   function write(current: Mode, input: RigInput, out: Pose): void {
-    if (current === 'idle') return writeIdle(geometry, drive, scratch, out)
-    if (current === 'moving') return writeLocomotion(geometry, drive, scratch, out)
+    if (current === 'idle') return writeIdle(geometry, drive, scratch, out, armCarry)
+    if (current === 'moving') return writeLocomotion(geometry, drive, scratch, out, armCarry)
     if (current === 'dash') return writeDash(geometry, drive, scratch, out)
     const at = current === 'dead' ? fallProgress(input.time) : castPhase(input)
     writeClipPose(geometry, POSE_CLIPS[current], at, scratch, out)

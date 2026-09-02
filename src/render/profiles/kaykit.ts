@@ -1,3 +1,4 @@
+import fixture from '../procedural/fixtures/kaykit_knight.json'
 import type { SkeletonProfile } from './profile'
 
 /**
@@ -12,6 +13,14 @@ import type { SkeletonProfile } from './profile'
  */
 export const KAYKIT_PROFILE: SkeletonProfile = {
   name: 'kaykit',
+  standingHeight: fixture.standingHeight,
+  armCarry: {
+    right: {
+      shoulder: quaternion(fixture.armCarry.right.shoulder),
+      elbow: quaternion(fixture.armCarry.right.elbow),
+      swingScale: fixture.armCarry.right.swingScale,
+    },
+  },
   bones: {
     root: 'root',
     pelvis: 'hips',
@@ -37,4 +46,9 @@ export const KAYKIT_PROFILE: SkeletonProfile = {
     'wrist.l': 'wrist.l',
     'wrist.r': 'wrist.r',
   },
+}
+
+function quaternion(values: readonly number[]): readonly [number, number, number, number] {
+  if (values.length !== 4) throw new Error('arm carry rotation must be a quaternion')
+  return [values[0]!, values[1]!, values[2]!, values[3]!]
 }

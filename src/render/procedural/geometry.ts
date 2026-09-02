@@ -10,9 +10,9 @@ export type JointTable = Readonly<Record<string, readonly number[]>>
  * A skeleton's rest shape in the body frame, plus the lengths the gait and the IK
  * derive from it. Built once at bind time; never mutated on the frame path.
  *
- * Lengths are in the same unit as `RigInput.speed`, so slice 2b must scale a
- * skeleton's model-space rest pose into sim units before building one. Get that
- * wrong and the feet slide by exactly the scale error.
+ * Lengths are in the same unit as `RigInput.speed`, so a skeleton's model-space
+ * rest pose is scaled into sim units before one is built. Get that wrong and the
+ * feet slide by exactly the scale error.
  */
 export interface RigGeometry {
   /** `Joint.Count * 3`, body frame, ground at y = 0. */
@@ -23,23 +23,27 @@ export interface RigGeometry {
   readonly shin: number
   /** Thigh plus shin: the leg's reach with the knee locked. */
   readonly legLength: number
+  /** The leg a person this tall would have: what `gait.ts` fits its scales against. */
+  readonly nominalLegLength: number
   readonly upperArm: number
   readonly foreArm: number
   readonly armLength: number
   /** Rest height of the hip joint above the ground. */
   readonly hipHeight: number
-  /** Rest height of the ankle above the ground, which is where a planted foot sits. */
+  /** Rest height of the ankle, which is where a planted foot sits. */
   readonly ankleHeight: number
   /** Lateral distance from the centre line to a hip. */
   readonly hipWidth: number
   /** Rest height of the topmost required joint. */
   readonly height: number
+  /** Measured height from the ground to the top of the body's mesh. */
+  readonly standingHeight: number
 }
 
 /**
- * Leaf joints have no child to point at, so their canonical direction is stated
- * rather than derived: the head continues up the spine, a hand continues along its
- * forearm, and a foot points forward so that identity is a foot flat on the ground.
+ * Leaf joints have no child to point at, so their canonical direction is stated:
+ * the head continues up the spine, a hand along its forearm, and a foot points
+ * forward so that identity is a foot flat on the ground.
  */
 const LEAF_DIRECTION: Partial<Record<Joint, readonly [number, number, number]>> = {
   [Joint.Head]: [0, 1, 0],
@@ -49,21 +53,15 @@ const LEAF_DIRECTION: Partial<Record<Joint, readonly [number, number, number]>> 
 
 /** The child each joint's canonical direction points at, where it has one. */
 const PRIMARY_CHILD: Partial<Record<Joint, Joint>> = {
-  [Joint.Root]: Joint.Pelvis,
-  [Joint.Pelvis]: Joint.Spine,
-  [Joint.Spine]: Joint.Chest,
+  [Joint.Root]: Joint.Pelvis, [Joint.Pelvis]: Joint.Spine, [Joint.Spine]: Joint.Chest,
   [Joint.Chest]: Joint.Head,
-  [Joint.ShoulderL]: Joint.ElbowL,
-  [Joint.ElbowL]: Joint.HandL,
-  [Joint.ShoulderR]: Joint.ElbowR,
-  [Joint.ElbowR]: Joint.HandR,
-  [Joint.HipL]: Joint.KneeL,
-  [Joint.KneeL]: Joint.FootL,
-  [Joint.HipR]: Joint.KneeR,
-  [Joint.KneeR]: Joint.FootR,
+  [Joint.ShoulderL]: Joint.ElbowL, [Joint.ElbowL]: Joint.HandL,
+  [Joint.ShoulderR]: Joint.ElbowR, [Joint.ElbowR]: Joint.HandR,
+  [Joint.HipL]: Joint.KneeL, [Joint.KneeL]: Joint.FootL,
+  [Joint.HipR]: Joint.KneeR, [Joint.KneeR]: Joint.FootR,
 }
 
-export function buildRigGeometry(table: JointTable, scale = 1): RigGeometry {
+export function buildRigGeometry(table: JointTable, scale = 1, measuredStandingHeight?: number): RigGeometry {
   const rest = new Float32Array(Joint.Count * 3)
   for (let joint = 0; joint < Joint.Count; joint++) {
     const name = JOINT_NAMES[joint]!
@@ -97,12 +95,22 @@ export function buildRigGeometry(table: JointTable, scale = 1): RigGeometry {
   const shin = boneLength(rest, Joint.KneeL, Joint.FootL)
   const upperArm = boneLength(rest, Joint.ShoulderL, Joint.ElbowL)
   const foreArm = boneLength(rest, Joint.ElbowL, Joint.HandL)
+  const standingHeight = measuredStandingHeight === undefined
+    ? rest[Joint.Head * 3 + 1]!
+    : measuredStandingHeight * scale
+  // A person's leg is 48% of their height, but standing height is measured off the
+  // mesh, so a helmet or a chibi's head counts towards it. Capping at the body's own
+  // legs plus torso stops an oversized head claiming a leg longer than its frame.
+  const torso = rest[Joint.Head * 3 + 1]! - rest[Joint.HipL * 3 + 1]!
+  const legLength = thigh + shin
+  const nominalLegLength = Math.min(0.48 * standingHeight, legLength + torso)
   return {
     rest,
     direction,
     thigh,
     shin,
-    legLength: thigh + shin,
+    legLength,
+    nominalLegLength,
     upperArm,
     foreArm,
     armLength: upperArm + foreArm,
@@ -110,6 +118,7 @@ export function buildRigGeometry(table: JointTable, scale = 1): RigGeometry {
     ankleHeight: rest[Joint.FootL * 3 + 1]!,
     hipWidth: Math.abs(rest[Joint.HipL * 3]!),
     height: rest[Joint.Head * 3 + 1]!,
+    standingHeight,
   }
 }
 
@@ -127,9 +136,9 @@ export function restDirection(geometry: RigGeometry, joint: Joint, out: Float32A
 
 /**
  * Body-frame position of every joint under a pose, into `out` (`Joint.Count * 3`).
- * Rotations are absolute, so one forward pass suffices: a joint sits at its
- * parent's posed position plus the parent's rotation applied to their rest offset.
- * `pose.yaw` is deliberately not applied — the host owns the body's world facing.
+ * Rotations are absolute, so one forward pass suffices: a joint sits at its parent's
+ * posed position plus the parent's rotation applied to their rest offset. `pose.yaw`
+ * is deliberately not applied — the host owns the body's world facing.
  */
 export function resolvePositions(geometry: RigGeometry, pose: Pose, out: Float32Array): void {
   const rest = geometry.rest
@@ -169,4 +178,9 @@ const ROTATED = new Float32Array(3)
 
 /** The KayKit knight's bind pose, in model units. See `scripts/extract-rig-geometry.mjs`. */
 export const KAYKIT_KNIGHT_JOINTS: JointTable = fixture.joints
-export const KAYKIT_KNIGHT_GEOMETRY: RigGeometry = buildRigGeometry(KAYKIT_KNIGHT_JOINTS)
+export const KAYKIT_KNIGHT_STANDING_HEIGHT = fixture.standingHeight
+export const KAYKIT_KNIGHT_GEOMETRY: RigGeometry = buildRigGeometry(
+  KAYKIT_KNIGHT_JOINTS,
+  1,
+  KAYKIT_KNIGHT_STANDING_HEIGHT,
+)

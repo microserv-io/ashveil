@@ -3,7 +3,12 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { JOINT_NAMES, OPTIONAL_JOINT_NAMES } from '../src/render/procedural/joints'
 import { KAYKIT_PROFILE } from '../src/render/profiles/kaykit'
-import { KAYKIT_JOINTS, KAYKIT_OPTIONAL_JOINTS } from '../scripts/extract-rig-geometry.mjs'
+import {
+  KAYKIT_ARM_CARRY,
+  KAYKIT_JOINTS,
+  KAYKIT_OPTIONAL_JOINTS,
+  KAYKIT_STANDING_HEIGHT,
+} from '../scripts/extract-rig-geometry.mjs'
 
 const RIG: string[] = JSON.parse(
   readFileSync(join(import.meta.dirname, '..', 'src', 'render', 'profiles', 'kaykit.json'), 'utf8'),
@@ -37,6 +42,14 @@ describe('KayKit skeleton profile', () => {
   it('binds one bone per joint', () => {
     const bones = Object.values(KAYKIT_PROFILE.bones)
     expect(new Set(bones).size).toBe(bones.length)
+  })
+
+  it('carries the sword arm from measured clip rotations', () => {
+    expect(KAYKIT_PROFILE.armCarry?.right?.swingScale).toBe(0.5)
+    expect(KAYKIT_PROFILE.armCarry?.right?.shoulder).toEqual([0, -0.379653, 0.254475, 0.889441])
+    expect(KAYKIT_PROFILE.armCarry?.right?.elbow).toEqual([0, 0.208753, 0.331613, 0.92003])
+    expect(KAYKIT_PROFILE.armCarry).toEqual(KAYKIT_ARM_CARRY)
+    expect(KAYKIT_PROFILE.standingHeight).toBe(KAYKIT_STANDING_HEIGHT)
   })
 
   /**

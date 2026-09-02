@@ -1,7 +1,12 @@
 import { setFlagsFromString } from 'node:v8'
 import { runInNewContext } from 'node:vm'
 import { describe, expect, it } from 'vitest'
-import { buildRigGeometry, KAYKIT_KNIGHT_JOINTS, resolvePositions } from '../src/render/procedural/geometry'
+import {
+  buildRigGeometry,
+  KAYKIT_KNIGHT_JOINTS,
+  KAYKIT_KNIGHT_STANDING_HEIGHT,
+  resolvePositions,
+} from '../src/render/procedural/geometry'
 import { createPoseGenerator } from '../src/render/procedural/generator'
 import { Joint, JOINT_NAMES } from '../src/render/procedural/joints'
 import { createPose } from '../src/render/procedural/pose'
@@ -11,7 +16,33 @@ import { RIG_CLIPS, type RigState } from '../src/render/rig'
 import type { RigInput } from '../src/render/riginput'
 import { DT } from '../src/sim/types'
 
-const geometry = buildRigGeometry(KAYKIT_KNIGHT_JOINTS, 1.2)
+const SHOULDER = 1.368
+const LEG = 0.864
+const FOREARM = 0.396
+/** A 1.8 m person: the proportions every locomotion scale in `gait.ts` is fitted to. */
+const HUMAN_JOINTS = {
+  root: [0, 0, 0],
+  pelvis: [0, LEG + 0.08, 0],
+  spine: [0, SHOULDER - 0.34, 0],
+  chest: [0, SHOULDER, 0],
+  head: [0, 1.62, 0],
+  'shoulder.l': [0.16, SHOULDER, 0],
+  'elbow.l': [0.16 + FOREARM, SHOULDER, 0],
+  'hand.l': [0.16 + FOREARM * 2, SHOULDER, 0],
+  'shoulder.r': [-0.16, SHOULDER, 0],
+  'elbow.r': [-0.16 - FOREARM, SHOULDER, 0],
+  'hand.r': [-0.16 - FOREARM * 2, SHOULDER, 0],
+  'hip.l': [0.1, LEG, 0],
+  'knee.l': [0.1, LEG * 0.5, 0],
+  'foot.l': [0.1, 0, 0],
+  'hip.r': [-0.1, LEG, 0],
+  'knee.r': [-0.1, LEG * 0.5, 0],
+  'foot.r': [-0.1, 0, 0],
+}
+
+const geometry = buildRigGeometry(KAYKIT_KNIGHT_JOINTS, 1.2, KAYKIT_KNIGHT_STANDING_HEIGHT)
+/** The same rig with a person's proportions, where the leg can reach its own step. */
+const humanoid = buildRigGeometry(HUMAN_JOINTS, 1, 1.8)
 const STATES = Object.keys(RIG_CLIPS) as RigState[]
 
 function input(overrides: Partial<RigInput> = {}): RigInput {
@@ -78,8 +109,8 @@ describe('every rig state poses', () => {
 })
 
 /** Runs `frames` of idle and moving in alternating blocks, reporting joint jumps. */
-function switchRun(speed: number, frames = 600, block = 75): { worst: number; joint: Joint; crossing: number; inside: number } {
-  const generator = createPoseGenerator(geometry)
+function switchRun(speed: number, body = geometry, frames = 600, block = 75): { worst: number; joint: Joint; crossing: number; inside: number } {
+  const generator = createPoseGenerator(body)
   const pose = createPose()
   let previous: Float32Array | null = null
   let worst = 0
@@ -106,8 +137,21 @@ function switchRun(speed: number, frames = 600, block = 75): { worst: number; jo
 describe('continuity across state changes', () => {
   for (const speed of [0.8, 1.5]) {
     it(`never jumps a joint more than 0.2 rad in a frame switching at ${speed} m/s`, () => {
-      const run = switchRun(speed)
+      const run = switchRun(speed, humanoid)
       expect(run.worst, `${JOINT_NAMES[run.joint]} jumped`).toBeLessThan(0.2)
+    })
+  }
+
+  /**
+   * The knight's legs reach a third of the step its cadence asks for, so it walks
+   * with a quarter of its cycle in double support and its knees carry the footfall
+   * the way a person's ankles would. That is the placeholder's proportions rather
+   * than the gait, and it goes away with the body.
+   */
+  for (const speed of [0.8, 1.5]) {
+    it(`keeps the short-legged knight's joints within a quarter radian at ${speed} m/s`, () => {
+      const run = switchRun(speed)
+      expect(run.worst, `${JOINT_NAMES[run.joint]} jumped`).toBeLessThan(0.25)
     })
   }
 

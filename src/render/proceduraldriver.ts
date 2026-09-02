@@ -21,7 +21,7 @@ export class ProceduralDriver implements MotionDriver<SkeletonProfile> {
 
   bind(body: THREE.Object3D, profile: SkeletonProfile): void {
     this.skeleton = bindSkeleton(body, profile)
-    this.generator = createPoseGenerator(this.skeleton.geometry)
+    this.generator = createPoseGenerator(this.skeleton.geometry, profile.armCarry)
   }
 
   /** A pooled body keeps its bones: the bind pose has to be put back by hand. */
