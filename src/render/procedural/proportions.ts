@@ -20,7 +20,7 @@ import { Joint } from './joints'
  */
 const STANCE_KNEE = 20 * Math.PI / 180
 /** Hip height while running, as a fraction of the leg. A run is a crouch. */
-const RUN_HIP_HEIGHT = 0.8
+const RUN_HIP_HEIGHT = 0.96
 /** How far the stance leg swings from vertical at either end of stance. */
 const MAX_STANCE_SWING = 30 * Math.PI / 180
 /**

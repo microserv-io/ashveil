@@ -86,9 +86,9 @@ const PELVIS_ROLL = 0.04
 const PELVIS_YAW = 0.06
 const CHEST_COUNTER = 0.8
 /** How much the torso may pitch over a cycle: a nodding chest reads long before a bobbing head. */
-const TORSO_PITCH_WALK = 4 * Math.PI / 180
-const TORSO_PITCH_RUN = 8 * Math.PI / 180
-const LEAN_RUN = 0.22
+const TORSO_PITCH = 4 * Math.PI / 180
+/** How far a body at full speed leans into it. A run is a fall the legs keep up with. */
+const LEAN_RUN = 0.28
 const LEAN_ACCEL = 0.05
 const LEAN_LIMIT = 0.45
 const TURN_LEAN = 6
@@ -164,10 +164,7 @@ export function writeLocomotion(
   const bob = -hipBob(geometry, params.hipHeight, params.halfStep, params.duty, params.runBlend, phase)
   // Pitching forward while the hips ride high takes some of the bob off the head,
   // but only some: buying height costs the square of the angle.
-  const bobPitch = Math.min(
-    torsoBobPitch(geometry, (bob + params.bob) * 0.5),
-    lerp(TORSO_PITCH_WALK, TORSO_PITCH_RUN, params.runBlend),
-  )
+  const bobPitch = Math.min(torsoBobPitch(geometry, (bob + params.bob) * 0.5), TORSO_PITCH)
   const lean = clamp(LEAN_RUN * params.runBlend + drive.acceleration * LEAN_ACCEL, -LEAN_LIMIT, LEAN_LIMIT)
   const bank = clamp(-drive.facingDelta * TURN_LEAN, -BANK_LIMIT, BANK_LIMIT)
   // A chibi's hips are a large fraction of its legs, so the same tilt swings its

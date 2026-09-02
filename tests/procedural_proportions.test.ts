@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createGaitDrive, createGaitParams, createGaitState, gaitParams, writeLocomotion } from '../src/render/procedural/gait'
 import { resolvePositions, type RigGeometry } from '../src/render/procedural/geometry'
-import { Joint, LEFT } from '../src/render/procedural/joints'
+import { Joint, LEFT, RIGHT } from '../src/render/procedural/joints'
 import { createPose } from '../src/render/procedural/pose'
 import { quatRotate } from '../src/render/procedural/quat'
 import { footContact } from './fixtures/motion'
@@ -158,6 +158,84 @@ describe('the hips stay up through the stride', () => {
       expect(measured.stanceKnee, 'a walk, not a squat').toBeLessThanOrEqual(25)
     })
   }
+})
+
+/**
+ * How far forward the chest is pitched, averaged over a stride. Read off the pose
+ * rather than off the shoulders, so a rig whose chest is authored leaning does not
+ * count its own rest shape as a lean.
+ */
+function torsoLean(geometry: RigGeometry, speed: number): number {
+  const drive = createGaitDrive()
+  drive.speed = speed
+  let total = 0
+  for (let sample = 0; sample < SAMPLES; sample++) {
+    drive.phase = sample / SAMPLES
+    writeLocomotion(geometry, drive, state, pose)
+    total += pitch(Joint.Chest)
+  }
+  return (total / SAMPLES) * DEGREES
+}
+
+/** How far the lower of a foot's two contacts is off the ground. */
+function clearance(geometry: RigGeometry, side: number): number {
+  const contact = footContact(geometry, pose, side)
+  return Math.min(contact.heel[1]!, contact.ball[1]!)
+}
+
+describe('a human body runs like a person', () => {
+  it('rides on a stance knee between 25 and 35 degrees', () => {
+    const measured = walk(human, RUN)
+    expect(measured.stanceKnee).toBeGreaterThanOrEqual(25)
+    expect(measured.stanceKnee).toBeLessThanOrEqual(35)
+  })
+
+  it('leans the torso forward, further than a walk does', () => {
+    const lean = torsoLean(human, RUN)
+    expect(lean).toBeGreaterThanOrEqual(8)
+    expect(lean).toBeLessThanOrEqual(15)
+    expect(lean).toBeGreaterThan(torsoLean(human, WALK) + 5)
+  })
+
+  it('leaves the ground', () => {
+    gaitParams(human, RUN, params)
+    expect(params.duty, 'both feet are down for part of the cycle').toBeLessThan(0.5)
+    let flight = 0
+    const drive = createGaitDrive()
+    drive.speed = RUN
+    for (let sample = 0; sample < SAMPLES; sample++) {
+      drive.phase = sample / SAMPLES
+      writeLocomotion(human, drive, state, pose)
+      resolvePositions(human, pose, positions)
+      // The ankle rises with the roll, so the ground clearance is the contact's.
+      if (Math.min(clearance(human, LEFT), clearance(human, RIGHT)) > 0.02) flight++
+    }
+    expect(flight / SAMPLES, 'fraction of the cycle with both feet in the air').toBeGreaterThan(0.15)
+  })
+
+  it('lifts the swing thigh and tucks the heel under it', () => {
+    gaitParams(human, RUN, params)
+    const drive = createGaitDrive()
+    drive.speed = RUN
+    let thigh = 0
+    let tucked = false
+    for (let sample = 0; sample <= SAMPLES; sample++) {
+      drive.phase = sample / SAMPLES
+      const legPhase = drive.phase
+      if (legPhase < params.duty) continue
+      writeLocomotion(human, drive, state, pose)
+      resolvePositions(human, pose, positions)
+      const forward = positions[Joint.KneeL * 3 + 2]! - positions[Joint.HipL * 3 + 2]!
+      const down = positions[Joint.HipL * 3 + 1]! - positions[Joint.KneeL * 3 + 1]!
+      const lifted = Math.atan2(forward, down) * DEGREES
+      if (lifted > thigh) {
+        thigh = lifted
+        tucked = positions[Joint.FootL * 3 + 2]! < positions[Joint.KneeL * 3 + 2]!
+      }
+    }
+    expect(thigh, 'the swing thigh never came up').toBeGreaterThanOrEqual(45)
+    expect(tucked, 'the heel trails the knee at the top of the swing').toBe(true)
+  })
 })
 
 describe('a short-legged placeholder keeps up without sliding', () => {
