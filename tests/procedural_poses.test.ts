@@ -70,13 +70,15 @@ describe('placeholder skill poses', () => {
           nearestAt = i / 100
         }
       }
-      expect(furthestAt, `${skill} does not strike between windup and recovery`).toBeGreaterThan(0.35)
-      expect(furthestAt).toBeLessThan(0.65)
+      // The strike lands on the turn or just past it: a skill whose recovery is
+      // long enough to travel in uses some of it. See `clips.ts`.
+      expect(furthestAt, `${skill} does not strike on the turn`).toBeGreaterThan(0.45)
+      expect(furthestAt).toBeLessThan(0.8)
       expect(nearestAt, `${skill} does not anticipate before it strikes`).toBeLessThan(furthestAt)
       expect(nearest, `${skill} never draws the hand back from its carry`).toBeLessThan(0)
     })
 
-    it(`${skill} returns to where it started`, () => {
+    it(`${skill} comes back towards the carry it started from`, () => {
       write(skill, 0)
       const neutral = new Float32Array(pose.rotations)
       let peak = 0
@@ -85,7 +87,10 @@ describe('placeholder skill poses', () => {
         peak = Math.max(peak, deviation(neutral, pose))
       }
       write(skill, 1)
-      expect(deviation(neutral, pose), `${skill} does not return to neutral`).toBeLessThan(peak * 0.35)
+      // Not all the way to the carry: a 0.12 s recovery cannot travel out and
+      // back, so the clip ends on a guard and the generator's state blend relaxes
+      // it. See the recovery note in `clips.ts`.
+      expect(deviation(neutral, pose), `${skill} does not come back at all`).toBeLessThan(peak * 0.6)
     })
 
     it(`${skill} keeps both feet on the ground, because skills root you`, () => {

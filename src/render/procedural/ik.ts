@@ -1,4 +1,4 @@
-import { quatIdentity, rotationBetween } from './quat'
+import { quatIdentity, quatMultiply, quatRotate, rotationBetween } from './quat'
 
 /**
  * One two-bone chain to solve: a leg, an arm, or a quadruped's foreleg. The caller
@@ -35,6 +35,8 @@ export function createTwoBoneChain(): TwoBoneChain {
 }
 
 const EPSILON = 1e-6
+/** Below this much perpendicular leverage a pole stops naming a stable bend plane. */
+const STABLE = 0.35
 
 /**
  * Analytic two-bone IK. Writes the upper bone's rotation at `upperOffset` and the
@@ -78,15 +80,31 @@ export function solveTwoBone(chain: TwoBoneChain, out: Float32Array, upperOffset
   let vy = chain.pole[1]! - uy * alongPole
   let vz = chain.pole[2]! - uz * alongPole
   let vl = Math.hypot(vx, vy, vz)
-  if (vl < EPSILON) {
-    // A pole parallel to the chain names no plane, so any perpendicular will do.
+  if (vl < STABLE) {
+    // A pole along the chain names no plane, and one nearly along it names a very
+    // sensitive one: a hand crossing the body swings the elbow through half a turn
+    // between two frames. Blending in a perpendicular the chain alone determines
+    // makes the answer continuous as the pole runs out of leverage.
     const sideways = Math.abs(ux) < 0.9
     const px = sideways ? 1 : 0
     const py = sideways ? 0 : 1
-    vx = uy * 0 - uz * py
-    vy = uz * px - ux * 0
-    vz = ux * py - uy * px
-    vl = Math.hypot(vx, vy, vz)
+    const sx = uy * py * 0 - uz * py
+    const sy = uz * px - ux * 0
+    const sz = ux * py - uy * px
+    const sl = Math.hypot(sx, sy, sz)
+    if (sl > EPSILON) {
+      const keep = vl / STABLE
+      vx += (sx / sl) * (1 - keep)
+      vy += (sy / sl) * (1 - keep)
+      vz += (sz / sl) * (1 - keep)
+      vl = Math.hypot(vx, vy, vz)
+    }
+  }
+  if (vl < EPSILON) {
+    vx = 1
+    vy = 0
+    vz = 0
+    vl = 1
   }
   vx /= vl
   vy /= vl
@@ -103,5 +121,15 @@ export function solveTwoBone(chain: TwoBoneChain, out: Float32Array, upperOffset
   dz = uz * distance - upperZ * upper
 
   rotationBetween(chain.restUpper[0]!, chain.restUpper[1]!, chain.restUpper[2]!, upperX, upperY, upperZ, out, upperOffset)
-  rotationBetween(chain.restLower[0]!, chain.restLower[1]!, chain.restLower[2]!, dx, dy, dz, out, lowerOffset)
+  // The lower bone hinges off the upper one rather than being aimed on its own.
+  // An elbow and a knee have one axis; solving each bone from its own rest lets
+  // the forearm take a roll nobody asked for, and a hand can spin half a turn
+  // between two frames while the elbow itself barely moves.
+  quatRotate(out, upperOffset, chain.restLower[0]!, chain.restLower[1]!, chain.restLower[2]!, CARRIED)
+  rotationBetween(CARRIED[0]!, CARRIED[1]!, CARRIED[2]!, dx, dy, dz, HINGE, 0)
+  quatMultiply(HINGE, 0, out, upperOffset, out, lowerOffset)
 }
+
+/** Module-level because solving a chain is on the frame path and must not allocate. */
+const CARRIED = new Float32Array(3)
+const HINGE = new Float32Array(4)
