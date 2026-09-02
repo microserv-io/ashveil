@@ -1,5 +1,6 @@
 import type { ArmCarryPose } from '../profiles/profile'
-import { clamp, lerp } from './curves'
+import type { ArmPace } from './armpace'
+import { clamp } from './curves'
 import { restDirection, type RigGeometry } from './geometry'
 import { Joint, LEFT } from './joints'
 import type { LimbScratch } from './limbs'
@@ -7,40 +8,26 @@ import { copyJointFrom, setJointQuat, type Pose } from './pose'
 import { quatFromAxisAngle, quatMultiply, rotationBetween } from './quat'
 
 /**
- * Where an empty hand is carried, and how it swings from there. A rig is authored
- * in an A- or T-pose, so identity leaves the arms out to the sides: the carry is
- * computed from the rest directions rather than read off them, and a profile only
- * states one when it has a weapon carry measured off a clip.
+ * Where an empty hand is carried, and how it swings from there. One arm, one
+ * swing generator, all the way from a stroll to a sprint: what changes with speed
+ * is the numbers in `armpace.ts`, never which pose is being blended into which.
+ *
+ * A rig is authored in an A- or T-pose, so identity leaves the arms out to the
+ * sides. The carry is computed from the rest directions rather than read off
+ * them, and a profile only states one when it has a weapon carry measured off a
+ * clip.
  */
 
-/** How far a hanging arm clears the torso, what the elbow keeps, and what a run keeps. */
-const CARRY_OUT = 10 * Math.PI / 180
-const CARRY_BEND = 15 * Math.PI / 180
-const RUN_BEND = 88 * Math.PI / 180
-
-/** Stride fractions the swing is fitted to: a longer arm swings less of an angle. */
-const SWING_WALK = 0.22
-const SWING_RUN = 0.4
-const SWING_CAP_WALK = 29 * Math.PI / 180
-const SWING_CAP_RUN = 44 * Math.PI / 180
-/** Below these a stride reads as a body being dragged along by its legs. */
-const SWING_FLOOR_WALK = 22 * Math.PI / 180
-const SWING_FLOOR_RUN = 33 * Math.PI / 180
-/** An empty arm goes further forward than back, and crosses in front of the body. */
+/** An empty arm goes this much further forward than it goes back. */
 const SWING_ASYMMETRY = 0.1
-const SWING_INWARD = 0.18
-
+/** The hang the resting hand target is taken from. See `armpace.ts`. */
+const REST_OUT = 10 * Math.PI / 180
+const REST_BEND = 15 * Math.PI / 180
 
 /** Module-level because writing an arm is on the frame path and must not allocate. */
 const REST = new Float32Array(3)
 const UPPER = new Float32Array(3)
 const LOWER = new Float32Array(3)
-export function armSwingAmplitude(geometry: RigGeometry, runBlend: number): number {
-  if (geometry.armLength <= 0) return 0
-  const fitted = lerp(SWING_WALK, SWING_RUN, runBlend) * geometry.nominalLegLength / geometry.armLength
-  const floor = lerp(SWING_FLOOR_WALK, SWING_FLOOR_RUN, runBlend)
-  return clamp(fitted, floor, lerp(SWING_CAP_WALK, SWING_CAP_RUN, runBlend))
-}
 
 /**
  * The hand's resting place relative to its own shoulder, in arm lengths: the carry
@@ -48,14 +35,19 @@ export function armSwingAmplitude(geometry: RigGeometry, runBlend: number): numb
  */
 export const CARRY_HAND: readonly [number, number, number] = carryHand()
 
-/** One arm: the carry, then the swing on it. `carry` is a profile's measured pose. */
+/**
+ * One arm at one instant. `drive` is where the foot on this side is along its own
+ * stride, from -1 with the arm fully forward to +1 with it fully back, so the arm
+ * answers the stride rather than a wave fitted alongside it. `carry` is a
+ * profile's measured weapon pose, which swings as it was measured.
+ */
 export function writeCarriedArm(
   geometry: RigGeometry,
   scratch: LimbScratch,
   out: Pose,
   side: number,
-  swing: number,
-  runBlend: number,
+  drive: number,
+  pace: ArmPace,
   carry?: ArmCarryPose,
 ): void {
   const shoulder = side === LEFT ? Joint.ShoulderL : Joint.ShoulderR
@@ -66,15 +58,21 @@ export function writeCarriedArm(
     setJointQuat(out, shoulder, carry.shoulder[0], carry.shoulder[1], carry.shoulder[2], carry.shoulder[3])
     setJointQuat(out, elbow, carry.elbow[0], carry.elbow[1], carry.elbow[2], carry.elbow[3])
   } else {
-    writeHangingArm(geometry, out, side, runBlend)
+    writeHangingArm(geometry, out, side, pace)
   }
 
-  // A measured weapon carry swings as it was measured; an empty hand goes further
-  // forward than back and crosses in front of the body on the way.
-  const shaped = carry ? swing * carry.swingScale! : swing * (swing < 0 ? 1 + SWING_ASYMMETRY : 1 - SWING_ASYMMETRY)
-  quatFromAxisAngle(scratch.quat, 0, 1, 0, 0, shaped)
+  const reach = clamp(drive, -1, 1)
+  // Smooth in the drive rather than a forward branch and a back one: a swing that
+  // changes its rule as it passes through the middle has a corner there, twice a
+  // stride, and a corner is what the eye reads as the path breaking.
+  const swept = carry
+    ? pace.swing * reach * carry.swingScale!
+    : pace.swing * reach * (1 - SWING_ASYMMETRY * reach)
+  quatFromAxisAngle(scratch.quat, 0, 1, 0, 0, swept)
   if (!carry) {
-    quatFromAxisAngle(scratch.spare, 0, 0, 1, 0, side * SWING_INWARD * Math.max(0, -shaped))
+    // In across the body as the hand comes forward, out to the side as it goes
+    // back — never past the shoulder either way.
+    quatFromAxisAngle(scratch.spare, 0, 0, 1, 0, -side * pace.cross * (1 - reach) * 0.5)
     quatMultiply(scratch.spare, 0, scratch.quat, 0, scratch.quat, 0)
   }
   quatMultiply(scratch.quat, 0, out.rotations, shoulder * 4, out.rotations, shoulder * 4)
@@ -87,10 +85,10 @@ export function writeCarriedArm(
  * than solved onto a hand target: a chain this near full extension is where IK is
  * least stable.
  */
-export function writeHangingArm(geometry: RigGeometry, out: Pose, side: number, runBlend: number): void {
+export function writeHangingArm(geometry: RigGeometry, out: Pose, side: number, pace: ArmPace): void {
   const shoulder = side === LEFT ? Joint.ShoulderL : Joint.ShoulderR
   const elbow = side === LEFT ? Joint.ElbowL : Joint.ElbowR
-  hangDirections(side, lerp(CARRY_BEND, RUN_BEND, runBlend))
+  hangDirections(side, pace.out, pace.bend)
   restDirection(geometry, shoulder, REST)
   rotationBetween(REST[0]!, REST[1]!, REST[2]!, UPPER[0]!, UPPER[1]!, UPPER[2]!, out.rotations, shoulder * 4)
   restDirection(geometry, elbow, REST)
@@ -98,9 +96,9 @@ export function writeHangingArm(geometry: RigGeometry, out: Pose, side: number, 
 }
 
 /** Upper arm down and out, forearm bent forward from there. */
-function hangDirections(side: number, bend: number): void {
-  UPPER[0] = side * Math.sin(CARRY_OUT)
-  UPPER[1] = -Math.cos(CARRY_OUT)
+function hangDirections(side: number, out: number, bend: number): void {
+  UPPER[0] = side * Math.sin(out)
+  UPPER[1] = -Math.cos(out)
   UPPER[2] = 0
   // Negative pitch about +X carries the hand forward, which is the way an elbow bends.
   LOWER[0] = UPPER[0]!
@@ -110,7 +108,7 @@ function hangDirections(side: number, bend: number): void {
 
 /** Where the hang leaves the hand, in arm lengths, for equal bones. */
 function carryHand(): readonly [number, number, number] {
-  hangDirections(LEFT, CARRY_BEND)
+  hangDirections(LEFT, REST_OUT, REST_BEND)
   return [
     (UPPER[0]! + LOWER[0]!) * 0.5,
     (UPPER[1]! + LOWER[1]!) * 0.5,

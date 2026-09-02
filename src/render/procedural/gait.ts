@@ -1,5 +1,6 @@
 import type { ArmCarry } from '../profiles/profile'
-import { armSwingAmplitude, writeCarriedArm } from './arms'
+import { armPace } from './armpace'
+import { writeCarriedArm } from './arms'
 import { clamp, lerp, smoothstep, softMin, TAU } from './curves'
 import type { RigGeometry } from './geometry'
 import { Joint, LEFT, RIGHT } from './joints'
@@ -87,7 +88,6 @@ const PELVIS_ROLL = 0.04
 const CHEST_COUNTER = 0.5
 /** How much the torso may pitch over a cycle: a nodding chest reads long before a bobbing head. */
 const TORSO_PITCH = 4 * Math.PI / 180
-/** How far a body at full speed leans into it. A run is a fall the legs keep up with. */
 const LEAN_RUN = 0.28
 const LEAN_ACCEL = 0.05
 /** How much of the chest's pitch the head takes, and the most it takes. */
@@ -199,12 +199,12 @@ export function writeLocomotion(
   // Each arm swings against the foot on its own side, driven by where that foot
   // actually is rather than by a wave fitted alongside it: a sine of the cycle is
   // a quarter-turn out of step with a stride whose stance is not half of it.
-  // Clamped to the step: a swing foot reaches past its own footfall and comes
-  // back, and the arm answers the stride rather than the overshoot.
-  const swing = armSwingAmplitude(geometry, params.runBlend)
+  // Where each foot is along its own stride: a swing foot reaches past its own
+  // footfall and comes back, and the arm answers the stride, not the overshoot.
+  const pace = armPace(geometry, params.runBlend)
   const step = Math.max(1e-6, params.halfStep)
-  writeCarriedArm(geometry, state, out, LEFT, clamp(left / step, -1, 1) * swing, params.runBlend, armCarry?.left)
-  writeCarriedArm(geometry, state, out, RIGHT, clamp(right / step, -1, 1) * swing, params.runBlend, armCarry?.right)
+  writeCarriedArm(geometry, state, out, LEFT, left / step, pace, armCarry?.left)
+  writeCarriedArm(geometry, state, out, RIGHT, right / step, pace, armCarry?.right)
 }
 
 const FREQUENCY_PROBE = createGaitParams()
