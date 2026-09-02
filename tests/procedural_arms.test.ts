@@ -113,12 +113,49 @@ describe('a running body pumps its arms', () => {
   })
 
   it('keeps the walk swing readable', () => {
-    expect(armSwing(HUMAN, 1.6)).toBeGreaterThan(8)
-    expect(armSwing(HUMAN, 1.6)).toBeLessThan(21)
+    expect(armSwing(HUMAN, 1.6)).toBeGreaterThanOrEqual(20)
+    expect(armSwing(HUMAN, 1.6)).toBeLessThanOrEqual(30)
+    expect(armSwing(MASCULINE, 1.6)).toBeGreaterThanOrEqual(20)
+    expect(armSwing(MASCULINE, 1.6)).toBeLessThanOrEqual(30)
+  })
+
+  it('swings an empty arm further forward than back', () => {
+    const drive = createGaitDrive()
+    drive.speed = 1.6
+    let forward = 0
+    let back = 0
+    for (let sample = 0; sample <= 360; sample++) {
+      drive.phase = sample / 360
+      writeLocomotion(MASCULINE, drive, state, pose)
+      resolvePositions(MASCULINE, pose, positions)
+      const reach = axis(Joint.ElbowR, 2) - axis(Joint.ShoulderR, 2)
+      forward = Math.max(forward, reach)
+      back = Math.max(back, -reach)
+    }
+    // Ten percent, which is what stops the swing reading as a pendulum.
+    expect(forward / back).toBeGreaterThan(1.05)
+    expect(forward / back).toBeLessThan(1.3)
+  })
+
+  it('carries an empty hand across the body as it comes forward', () => {
+    const drive = createGaitDrive()
+    drive.speed = 1.6
+    let widest = 0
+    let crossed = 0
+    for (let sample = 0; sample <= 360; sample++) {
+      drive.phase = sample / 360
+      writeLocomotion(MASCULINE, drive, state, pose)
+      resolvePositions(MASCULINE, pose, positions)
+      const out = Math.abs(axis(Joint.HandR, 0)) - Math.abs(axis(Joint.ShoulderR, 0))
+      const ahead = axis(Joint.HandR, 2) - axis(Joint.ShoulderR, 2)
+      if (ahead > 0.05) crossed = Math.min(crossed, out)
+      widest = Math.max(widest, out)
+    }
+    expect(crossed, 'the hand swings beside the body rather than across it').toBeLessThan(widest)
   })
 
   it('caps the long-armed chibi so its hands do not windmill', () => {
-    expect(armSwing(CHIBI, 1.6)).toBeLessThanOrEqual(21)
+    expect(armSwing(CHIBI, 1.6)).toBeLessThanOrEqual(30)
     expect(armSwing(CHIBI, RUN)).toBeLessThanOrEqual(44.001)
   })
 

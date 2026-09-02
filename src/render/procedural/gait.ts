@@ -90,12 +90,15 @@ const TORSO_PITCH = 4 * Math.PI / 180
 /** How far a body at full speed leans into it. A run is a fall the legs keep up with. */
 const LEAN_RUN = 0.28
 const LEAN_ACCEL = 0.05
+/** How much of the chest's pitch the head takes, and the most it takes. */
+const HEAD_FOLLOW = 0.25
+const HEAD_PITCH = 2 * Math.PI / 180
 const LEAN_LIMIT = 0.45
 const TURN_LEAN = 6
 const BANK_LIMIT = 0.25
-const SWAY = 0.35
+/** How far the hips shift over the leg that is carrying, as a fraction of hip width. */
+const SWAY = 0.22
 const GOLDEN = 0.6180339887498949
-
 /**
  * Frequency is derived from the step, never chosen: a planted foot must travel
  * backward at exactly the actor's speed, so `2 * halfStep = speed * stanceTime`
@@ -176,7 +179,7 @@ export function writeLocomotion(
   // put the turn a quarter cycle out of step with the legs.
   const yaw = -pelvisTurn(geometry) * Math.cos(TAU * phase)
 
-  out.offset[0] = SWAY * roll * geometry.hipWidth
+  out.offset[0] = SWAY * geometry.hipWidth * Math.sin(TAU * phase)
   out.offset[1] = geometry.ankleHeight + params.hipHeight - geometry.hipHeight + bob
   out.offset[2] = 0
 
@@ -185,8 +188,10 @@ export function writeLocomotion(
   writeTorso(out, Joint.Pelvis, 0, yaw, roll, state)
   writeTorso(out, Joint.Spine, lean * 0.45 + bobPitch, -yaw * 0.3, bank * 0.45, state)
   writeTorso(out, Joint.Chest, lean * 0.55 + bobPitch, -yaw * CHEST_COUNTER, bank * 0.35, state)
-  // Rotations are absolute, so a level head in the world is simply no pitch at all.
-  writeTorso(out, Joint.Head, 0, yaw * 0.4, -bank * 0.4, state)
+  // Rotations are absolute, so a level head is no pitch at all — but held exactly
+  // level over a leaning body it reads as a doll's. It follows a little way.
+  const nod = clamp((lean * 0.55 + bobPitch) * HEAD_FOLLOW, -HEAD_PITCH, HEAD_PITCH)
+  writeTorso(out, Joint.Head, nod, yaw * 0.4, -bank * 0.4, state)
   resolveTorso(geometry, out, state)
 
   const left = writeStrideLeg(geometry, params, state, out, LEFT, phase)

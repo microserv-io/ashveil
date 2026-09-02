@@ -201,6 +201,74 @@ function clearance(geometry: RigGeometry, side: number): number {
   return Math.min(contact.heel[1]!, contact.toe[1]!)
 }
 
+describe('a walk reads as a walk', () => {
+  for (const [name, geometry] of [['human', human], ['masculine-v1', masculine]] as const) {
+    it(`swings the ${name} knee well past the knee it stands on`, () => {
+      gaitParams(geometry, WALK, params)
+      const drive = createGaitDrive()
+      drive.speed = WALK
+      let stance = 0
+      let swing = 0
+      for (let sample = 0; sample <= SAMPLES; sample++) {
+        drive.phase = sample / SAMPLES
+        writeLocomotion(geometry, drive, state, pose)
+        resolvePositions(geometry, pose, positions)
+        const bend = kneeBend() * DEGREES
+        if (drive.phase > params.duty * 0.25 && drive.phase < params.duty * 0.75) stance = Math.max(stance, bend)
+        if (drive.phase > params.duty) swing = Math.max(swing, bend)
+      }
+      expect(swing, 'the swing knee barely bends').toBeGreaterThan(stance * 2)
+    })
+
+    it(`shifts the ${name} hips over the leg that is carrying`, () => {
+      const drive = createGaitDrive()
+      drive.speed = WALK
+      let low = Infinity
+      let high = -Infinity
+      for (let sample = 0; sample <= SAMPLES; sample++) {
+        drive.phase = sample / SAMPLES
+        writeLocomotion(geometry, drive, state, pose)
+        low = Math.min(low, pose.offset[0]!)
+        high = Math.max(high, pose.offset[0]!)
+      }
+      expect(high, 'the hips do not shift onto the stance leg').toBeGreaterThanOrEqual(0.02)
+      expect(high).toBeLessThanOrEqual(0.04)
+      expect(high + low, 'the sway is one-sided').toBeCloseTo(0, 3)
+    })
+
+    it(`turns the ${name} pelvis with the stride and counters it with the chest`, () => {
+      const drive = createGaitDrive()
+      drive.speed = WALK
+      let pelvis = 0
+      let chest = 0
+      for (let sample = 0; sample <= SAMPLES; sample++) {
+        drive.phase = sample / SAMPLES
+        writeLocomotion(geometry, drive, state, pose)
+        quatRotate(pose.rotations, Joint.Pelvis * 4, 0, 0, 1, axis)
+        pelvis = Math.max(pelvis, Math.abs(Math.asin(Math.max(-1, Math.min(1, axis[0]!)))))
+        quatRotate(pose.rotations, Joint.Chest * 4, 0, 0, 1, axis)
+        chest = Math.max(chest, Math.abs(Math.asin(Math.max(-1, Math.min(1, axis[0]!)))))
+      }
+      expect(pelvis * DEGREES).toBeGreaterThanOrEqual(6)
+      expect(pelvis * DEGREES).toBeLessThanOrEqual(10)
+      expect(chest, 'the chest turns with the hips instead of against them').toBeLessThan(pelvis * 0.8)
+    })
+
+    it(`lets the ${name} head follow the chest a little`, () => {
+      const drive = createGaitDrive()
+      drive.speed = WALK
+      let nod = 0
+      for (let sample = 0; sample <= SAMPLES; sample++) {
+        drive.phase = sample / SAMPLES
+        writeLocomotion(geometry, drive, state, pose)
+        nod = Math.max(nod, Math.abs(pitch(Joint.Head)))
+      }
+      expect(nod * DEGREES, 'the head is locked level like a doll').toBeGreaterThan(0.2)
+      expect(nod * DEGREES, 'the head nods with every step').toBeLessThanOrEqual(2.001)
+    })
+  }
+})
+
 describe('a human body runs like a person', () => {
   it('rides on a stance knee between 25 and 35 degrees', () => {
     const measured = walk(human, RUN)
