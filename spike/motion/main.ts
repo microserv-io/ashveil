@@ -11,9 +11,9 @@ import { DT, HIT_FLASH_DURATION, type Actor, type MonsterArchetype } from '../..
 import { CAST_LENGTH, castLeft, castPhase, describePhase, recovering } from './cast'
 import {
   createReviewBodyView,
-  loadReviewBody,
-  MASCULINE_V1_BODY,
+  loadReviewBodies,
   motionModeForBody,
+  REVIEW_BODIES,
   reviewBodyScale,
   supportsMotionMode,
   type ReviewBodyDefinition,
@@ -41,7 +41,7 @@ const NARROW_VIEWPORT = 640
 
 const sim = new Sim({ seed: SEED })
 await loadModels('models')
-const masculineSource = await loadReviewBody(MASCULINE_V1_BODY)
+const bodySources = await loadReviewBodies()
 
 const host = new SceneHost(document.getElementById('stage')!)
 host.buildTerrain(sim.map)
@@ -249,7 +249,7 @@ function rebuild(): void {
     view = createActorView(actor, mode)
     bodyScale = actor.radius * HEIGHT_PER_RADIUS
   } else {
-    view = createReviewBodyView(actor, masculineSource, chosen.definition)
+    view = createReviewBodyView(actor, bodySources.get(chosen.definition.id)!, chosen.definition)
     bodyScale = reviewBodyScale(actor.radius, chosen.definition)
   }
   host.scene.add(view.group)
@@ -274,7 +274,7 @@ function collectBodies(): ReviewBody[] {
     const monster = sim.actors.find((candidate) => candidate.kind === 'monster' && candidate.archetype === archetype)
     if (monster) found.push({ id: archetype, actor: monster, definition: null })
   }
-  found.push({ id: MASCULINE_V1_BODY.id, actor: sim.player, definition: MASCULINE_V1_BODY })
+  for (const body of REVIEW_BODIES) found.push({ id: body.id, actor: sim.player, definition: body })
   return found
 }
 

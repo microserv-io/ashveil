@@ -6,25 +6,41 @@ import { meshesOf } from '../../src/render/models'
 import type { MotionMode } from '../../src/render/motionmode'
 import { ProceduralDriver } from '../../src/render/proceduraldriver'
 import { HUMANOID_V1_PROFILE } from '../../src/render/profiles/humanoid_v1'
+import { MASCULINE_PROFILE } from '../../src/render/profiles/masculine'
+import type { SkeletonProfile } from '../../src/render/profiles/profile'
 import { createRigInputOwner } from '../../src/render/riginput'
 import type { Actor } from '../../src/sim/types'
 
 export interface ReviewBodyDefinition {
   readonly id: string
   readonly path: string
-  readonly standingHeight: number
+  readonly profile: SkeletonProfile
   readonly clipDriver: boolean
 }
 
-export const MASCULINE_V1_BODY: ReviewBodyDefinition = {
-  id: 'masculine-v1',
-  path: '/bodies/masculine-v1.glb',
-  standingHeight: HUMANOID_V1_PROFILE.standingHeight,
+/** The body the pipeline builds today: one `npm run art:fit` from the raw Tripo mesh. */
+export const MASCULINE_V2_BODY: ReviewBodyDefinition = {
+  id: 'masculine-v2',
+  path: '/bodies/masculine-v2/masculine-v2.glb',
+  profile: MASCULINE_PROFILE,
   clipDriver: false,
 }
 
+/**
+ * The body the diagnostic fitter built. It is here to be compared against v2 and
+ * retires with that comparison; nothing outside this page reads it.
+ */
+export const MASCULINE_V1_BODY: ReviewBodyDefinition = {
+  id: 'masculine-v1',
+  path: '/bodies/masculine-v1.glb',
+  profile: HUMANOID_V1_PROFILE,
+  clipDriver: false,
+}
+
+export const REVIEW_BODIES: readonly ReviewBodyDefinition[] = [MASCULINE_V2_BODY, MASCULINE_V1_BODY]
+
 export function reviewBodyScale(radius: number, body: ReviewBodyDefinition): number {
-  return radius * HEIGHT_PER_RADIUS / body.standingHeight
+  return radius * HEIGHT_PER_RADIUS / body.profile.standingHeight
 }
 
 export function supportsMotionMode(body: ReviewBodyDefinition, mode: MotionMode): boolean {
@@ -37,6 +53,13 @@ export function motionModeForBody(body: ReviewBodyDefinition, requested: MotionM
 
 export async function loadReviewBody(body: ReviewBodyDefinition): Promise<THREE.Object3D> {
   return (await new GLTFLoader().loadAsync(body.path)).scene
+}
+
+export async function loadReviewBodies(
+  bodies: readonly ReviewBodyDefinition[] = REVIEW_BODIES,
+): Promise<Map<string, THREE.Object3D>> {
+  const loaded = await Promise.all(bodies.map(async (body) => [body.id, await loadReviewBody(body)] as const))
+  return new Map(loaded)
 }
 
 export function createReviewBodyView(
@@ -57,7 +80,7 @@ export function createReviewBodyView(
 
   const materials = meshesOf(model).map((mesh) => mesh.material as THREE.MeshStandardMaterial)
   const driver = new ProceduralDriver()
-  driver.bind(model, HUMANOID_V1_PROFILE)
+  driver.bind(model, body.profile)
   return {
     group,
     materials,
