@@ -2,7 +2,7 @@ import type { SkillId } from '../../sim/types'
 import { CARRY_HAND } from './arms'
 import { Joint, LEFT, RIGHT } from './joints'
 import { STANCE_HIP } from './limbs'
-import { compilePoseClip, type PoseClip, type PoseClipSource, type Vec3 } from './posekeys'
+import { compilePoseClip, type PoseClip, type PoseClipSource, type PoseKey, type Vec3 } from './posekeys'
 
 /**
  * The pose tables. Data, not logic: a new skill is a new row here, and nothing in
@@ -23,7 +23,36 @@ import { compilePoseClip, type PoseClip, type PoseClipSource, type Vec3 } from '
  * Every other skill needs a row, and the type says so: add a `SkillId` and this
  * table stops compiling until it has a pose.
  */
-export type PoseClipName = Exclude<SkillId, 'dash'> | 'dead'
+/** Motions no sim skill drives yet. Each states the timings its gates walk it at. */
+export type MotionName =
+  | 'cast'
+  | 'channel'
+  | 'execute_overhead'
+  | 'execute_thrust'
+  | 'swing_one_hand'
+  | 'swing_two_hand'
+  | 'bow_draw'
+  | 'stagger'
+
+export type PoseClipName = Exclude<SkillId, 'dash'> | 'dead' | MotionName
+
+export interface MotionTimings {
+  readonly windup: number
+  readonly recovery: number
+}
+
+export const MOTION_TIMINGS: Readonly<Record<MotionName, MotionTimings>> = {
+  cast: { windup: 0.3, recovery: 0.18 },
+  channel: { windup: 0.25, recovery: 0.25 },
+  execute_overhead: { windup: 0.52, recovery: 0.4 },
+  execute_thrust: { windup: 0.36, recovery: 0.34 },
+  swing_one_hand: { windup: 0.36, recovery: 0.24 },
+  swing_two_hand: { windup: 0.54, recovery: 0.32 },
+  bow_draw: { windup: 0.5, recovery: 0.26 },
+  stagger: { windup: 0.2, recovery: 0.36 },
+}
+
+export const MOTION_CLIPS: readonly MotionName[] = Object.keys(MOTION_TIMINGS) as MotionName[]
 
 /**
  * The strike lands on the turn: phase 0.5 is the last frame of the wind-up, which
@@ -78,6 +107,33 @@ const BOLT_R: Vec3 = [-0.2, 0.08, 0.78]
 const BOLT_L: Vec3 = [0.2, 0.08, 0.78]
 const SLAM_R: Vec3 = [-0.48, -0.8, 0.34]
 const SLAM_L: Vec3 = [0.48, -0.8, 0.34]
+const CAST_R: Vec3 = [-0.12, -0.3, 0.7]
+const CAST_L: Vec3 = [0.26, -0.58, 0.26]
+const CHANNEL_L: Vec3 = [-0.06, -0.42, 0.62]
+const CHANNEL_R: Vec3 = [0.06, -0.42, 0.62]
+const CHANNEL_REST: PoseKey = {
+  at: 0,
+  torso: [{ joint: Joint.Chest, pitch: 0.08 }, { joint: Joint.Spine, pitch: 0.03 }],
+  handL: CHANNEL_L,
+  handR: CHANNEL_R,
+  poleL: [0.5, -0.5, -0.7],
+  poleR: [-0.5, -0.5, -0.7],
+  offset: [0, -0.02, 0.02],
+}
+const EXECUTE_OVERHEAD_L: Vec3 = [-0.08, -0.5, 0.62]
+const EXECUTE_OVERHEAD_R: Vec3 = [0.08, -0.5, 0.62]
+const EXECUTE_THRUST_R: Vec3 = [0.02, -0.3, 0.8]
+const EXECUTE_THRUST_L: Vec3 = [0.34, -0.62, 0.06]
+const SWING_ONE_R: Vec3 = [0.06, -0.34, 0.66]
+const SWING_ONE_L: Vec3 = [0.3, -0.62, 0.1]
+const SWING_ONE_THROUGH_R: Vec3 = [0.3, -0.42, 0.5]
+const SWING_TWO_L: Vec3 = [0.02, -0.66, 0.42]
+const SWING_TWO_R: Vec3 = [0.14, -0.62, 0.5]
+const BOW_L: Vec3 = [-0.06, -0.02, 0.9]
+const BOW_R: Vec3 = [-0.24, -0.07, 0.1]
+const BOW_RELEASE_R: Vec3 = [-0.26, -0.04, 0]
+const STAGGER_GUARD_L: Vec3 = [0.17, -0.58, 0.34]
+const STAGGER_GUARD_R: Vec3 = [-0.17, -0.58, 0.34]
 
 export const POSE_SOURCES: Readonly<Record<PoseClipName, PoseClipSource>> = {
   /**
@@ -320,6 +376,416 @@ export const POSE_SOURCES: Readonly<Record<PoseClipName, PoseClipSource>> = {
       { at: 1, ease: 1.2, handR: relax(SLAM_R, RIGHT), handL: relax(SLAM_L, LEFT) },
     ],
   },
+  /** A one-hand conjure gathered beside the head, unlike firebolt's hip-level thrust. */
+  cast: {
+    planted: true,
+    keys: [
+      { at: 0, handL: DRAW_BACK_L, handR: DRAW_BACK_R },
+      {
+        at: 0.22,
+        torso: [
+          { joint: Joint.Chest, pitch: -0.08, yaw: -0.12 },
+          { joint: Joint.Spine, pitch: -0.04, yaw: -0.06 },
+        ],
+        handR: [-0.3, -0.28, 0.16],
+        poleR: [-0.7, -0.2, -0.6],
+        handL: [0.22, -0.55, 0.3],
+        offset: [0, -0.015, -0.03],
+      },
+      {
+        at: STRIKE,
+        ease: STRIKE_EASE,
+        torso: [
+          { joint: Joint.Chest, pitch: 0.14, yaw: 0.18 },
+          { joint: Joint.Spine, pitch: 0.07, yaw: 0.08 },
+        ],
+        handR: CAST_R,
+        poleR: [-0.6, -0.3, -0.7],
+        handL: CAST_L,
+        offset: [0, -0.02, 0.04],
+      },
+      { at: 1, ease: 1.2, handR: relax(CAST_R, RIGHT), handL: relax(CAST_L, LEFT) },
+    ],
+  },
+  /** A held two-hand beam whose breathing pulse loops without a seam. */
+  channel: {
+    planted: true,
+    loop: true,
+    keys: [
+      CHANNEL_REST,
+      {
+        at: 0.5,
+        torso: [
+          { joint: Joint.Chest, pitch: 0.14 },
+          { joint: Joint.Spine, pitch: 0.06 },
+          { joint: Joint.Head, pitch: 0.06 },
+        ],
+        handL: [-0.04, -0.38, 0.7],
+        handR: [0.04, -0.38, 0.7],
+        poleL: [0.5, -0.5, -0.7],
+        poleR: [-0.5, -0.5, -0.7],
+        offset: [0, -0.035, 0.05],
+      },
+      { ...CHANNEL_REST, at: 1 },
+    ],
+  },
+  /** A cast follow-up that lifts both hands overhead before slamming down. */
+  execute_overhead: {
+    planted: true,
+    keys: [
+      {
+        at: 0,
+        handR: relax(CAST_R, RIGHT),
+        handL: relax(CAST_L, LEFT),
+        poleL: [0.8, 0, 0.5],
+        poleR: [-0.8, 0, 0.5],
+      },
+      {
+        at: 0.14,
+        torso: [{ joint: Joint.Chest, pitch: -0.06 }],
+        handL: [-0.06, -0.4, 0.36],
+        handR: [0.06, -0.4, 0.36],
+        poleL: [0.8, 0, 0.5],
+        poleR: [-0.8, 0, 0.5],
+        offset: [0, -0.01, -0.01],
+      },
+      {
+        at: 0.26,
+        torso: [
+          { joint: Joint.Chest, pitch: -0.14 },
+          { joint: Joint.Spine, pitch: -0.05 },
+          { joint: Joint.Head, pitch: -0.075 },
+        ],
+        handL: [-0.15, 0.09, 0.19],
+        handR: [0.15, 0.09, 0.19],
+        poleL: [0.8, 0, 0.5],
+        poleR: [-0.8, 0, 0.5],
+        offset: [0, -0.02, -0.025],
+      },
+      {
+        at: 0.38,
+        torso: [
+          { joint: Joint.Chest, pitch: -0.22 },
+          { joint: Joint.Spine, pitch: -0.1 },
+          { joint: Joint.Head, pitch: -0.15 },
+        ],
+        handL: [-0.16, 0.42, -0.06],
+        handR: [0.16, 0.42, -0.06],
+        poleL: [0.8, 0, 0.5],
+        poleR: [-0.8, 0, 0.5],
+        offset: [0, -0.03, -0.04],
+      },
+      {
+        at: 0.5,
+        torso: [{ joint: Joint.Chest, pitch: 0.1 }, { joint: Joint.Head, pitch: 0.08 }],
+        handL: [-0.08, 0.26, 0.42],
+        handR: [0.08, 0.26, 0.42],
+        poleL: [0.8, 0, 0.5],
+        poleR: [-0.8, 0, 0.5],
+        offset: [0, -0.06, 0],
+      },
+      {
+        at: 0.7,
+        ease: STRIKE_EASE,
+        torso: [
+          { joint: Joint.Chest, pitch: 0.42 },
+          { joint: Joint.Spine, pitch: 0.22 },
+          { joint: Joint.Head, pitch: 0.26 },
+        ],
+        handL: EXECUTE_OVERHEAD_L,
+        handR: EXECUTE_OVERHEAD_R,
+        poleL: [0.8, 0, 0.5],
+        poleR: [-0.8, 0, 0.5],
+        offset: [0, -0.14, 0.06],
+      },
+      {
+        at: 1,
+        ease: 1.2,
+        handR: relax(EXECUTE_OVERHEAD_R, RIGHT),
+        handL: relax(EXECUTE_OVERHEAD_L, LEFT),
+      },
+    ],
+  },
+  /** A cast follow-up that coils at the hip and lunges through the centre line. */
+  execute_thrust: {
+    planted: true,
+    keys: [
+      { at: 0, footL: [0, GROUND, 0], handR: relax(CAST_R, RIGHT), handL: relax(CAST_L, LEFT) },
+      {
+        at: 0.28,
+        torso: [
+          { joint: Joint.Chest, yaw: -0.35, pitch: -0.06 },
+          { joint: Joint.Spine, yaw: -0.18, pitch: -0.03 },
+          { joint: Joint.Pelvis, yaw: -0.1 },
+        ],
+        handR: [-0.36, -0.62, -0.28],
+        poleR: [-0.6, -0.3, -0.75],
+        handL: [0.3, -0.6, 0],
+        footL: [0, GROUND + 0.03, 0],
+        offset: [0, -0.03, -0.06],
+      },
+      {
+        at: STRIKE,
+        torso: [
+          { joint: Joint.Chest, yaw: 0.1, pitch: 0.12 },
+          { joint: Joint.Spine, yaw: 0.05, pitch: 0.06 },
+        ],
+        handR: [-0.18, -0.4, 0.42],
+        poleR: [-0.55, -0.35, -0.7],
+        handL: [0.28, -0.6, 0.14],
+        footL: [0.01, GROUND + 0.04, 0.14],
+        offset: [0, -0.04, 0.03],
+      },
+      {
+        at: LATE_STRIKE,
+        ease: STRIKE_EASE,
+        torso: [
+          { joint: Joint.Chest, yaw: 0.42, pitch: 0.24 },
+          { joint: Joint.Spine, yaw: 0.2, pitch: 0.12 },
+          { joint: Joint.Pelvis, yaw: 0.12 },
+          { joint: Joint.Head, pitch: 0.1 },
+        ],
+        handR: EXECUTE_THRUST_R,
+        poleR: [-0.5, -0.4, -0.7],
+        handL: EXECUTE_THRUST_L,
+        footL: [0.02, GROUND + 0.07, 0.2],
+        offset: [0, -0.07, 0.05],
+      },
+      {
+        at: 1,
+        ease: 1.2,
+        footL: [0, GROUND, 0],
+        handR: relax(EXECUTE_THRUST_R, RIGHT),
+        handL: relax(EXECUTE_THRUST_L, LEFT),
+      },
+    ],
+  },
+  /** A flat one-hand slash, unlike cleave's stepped diagonal chop. */
+  swing_one_hand: {
+    planted: true,
+    keys: [
+      { at: 0, handL: DRAW_BACK_L, handR: DRAW_BACK_R },
+      {
+        at: 0.2,
+        torso: [
+          { joint: Joint.Chest, yaw: -0.42, pitch: -0.04 },
+          { joint: Joint.Spine, yaw: -0.2 },
+          { joint: Joint.Pelvis, yaw: -0.1 },
+        ],
+        handR: [-0.58, -0.5, -0.15],
+        poleR: [-0.5, -0.5, -0.7],
+        handL: [0.2, -0.55, 0.3],
+        offset: [0, -0.02, -0.03],
+      },
+      {
+        at: STRIKE,
+        ease: STRIKE_EASE,
+        torso: [
+          { joint: Joint.Chest, yaw: 0.3, pitch: 0.1 },
+          { joint: Joint.Spine, yaw: 0.15, pitch: 0.05 },
+          { joint: Joint.Pelvis, yaw: 0.08 },
+        ],
+        handR: SWING_ONE_R,
+        poleR: [-0.6, -0.4, -0.6],
+        handL: SWING_ONE_L,
+        offset: [0, -0.03, 0.04],
+      },
+      {
+        at: 0.68,
+        torso: [
+          { joint: Joint.Chest, yaw: 0.5, pitch: 0.08 },
+          { joint: Joint.Spine, yaw: 0.25, pitch: 0.04 },
+          { joint: Joint.Pelvis, yaw: 0.12 },
+        ],
+        handR: SWING_ONE_THROUGH_R,
+        poleR: [-0.6, -0.4, -0.6],
+        handL: SWING_ONE_L,
+        offset: [0, -0.03, 0.03],
+      },
+      {
+        at: 1,
+        ease: 1.2,
+        handR: relax(SWING_ONE_THROUGH_R, RIGHT),
+        handL: relax(SWING_ONE_L, LEFT),
+      },
+    ],
+  },
+  /**
+   * A heavy two-hand chop: gathered at the right hip, raised over the right
+   * shoulder, through on the turn, down low on the left. The grip stays ahead of
+   * the body all the way up: a hand passing through its own shoulder flips the arm.
+   */
+  swing_two_hand: {
+    planted: true,
+    keys: [
+      {
+        at: 0,
+        handL: DRAW_BACK_L,
+        handR: DRAW_BACK_R,
+        poleL: [0.8, 0.1, -0.6],
+        poleR: [-0.8, 0.1, -0.6],
+      },
+      {
+        at: 0.12,
+        torso: [
+          { joint: Joint.Chest, yaw: -0.2, pitch: 0.06 },
+          { joint: Joint.Spine, yaw: -0.1, pitch: 0.02 },
+        ],
+        handR: [0.14, -0.52, 0.42],
+        handL: [-0.26, -0.52, 0.48],
+        poleR: [-1, 0.1, -0.2],
+        poleL: [1, 0.1, -0.2],
+        offset: [0, -0.02, -0.02],
+      },
+      {
+        at: 0.34,
+        torso: [
+          { joint: Joint.Chest, yaw: -0.36, pitch: -0.16 },
+          { joint: Joint.Spine, yaw: -0.18, pitch: -0.06 },
+          { joint: Joint.Pelvis, yaw: -0.1 },
+          { joint: Joint.Head, pitch: -0.1 },
+        ],
+        handR: [0.18, 0.42, 0.38],
+        handL: [-0.28, 0.34, 0.42],
+        poleR: [-0.7, 0.2, 0.7],
+        poleL: [0.7, 0.2, 0.7],
+        offset: [0, -0.04, -0.04],
+      },
+      {
+        at: STRIKE,
+        torso: [
+          { joint: Joint.Chest, yaw: 0.06, pitch: 0.14 },
+          { joint: Joint.Spine, yaw: 0.02, pitch: 0.06 },
+          { joint: Joint.Head, pitch: 0.1 },
+        ],
+        handR: [0.16, 0.1, 0.62],
+        handL: [-0.16, 0.06, 0.58],
+        poleR: [-0.6, -0.4, 0.6],
+        poleL: [0.6, -0.4, 0.6],
+        offset: [0, -0.07, 0],
+      },
+      {
+        at: LATE_STRIKE,
+        ease: STRIKE_EASE,
+        torso: [
+          { joint: Joint.Chest, yaw: 0.4, pitch: 0.36 },
+          { joint: Joint.Spine, yaw: 0.2, pitch: 0.18 },
+          { joint: Joint.Pelvis, yaw: 0.12 },
+          { joint: Joint.Head, pitch: 0.2 },
+        ],
+        handR: SWING_TWO_R,
+        handL: SWING_TWO_L,
+        poleR: [-0.8, -0.6, 0.1],
+        poleL: [0.8, -0.6, 0.1],
+        offset: [0, -0.14, 0.05],
+      },
+      { at: 1, ease: 1.2, handR: relax(SWING_TWO_R, RIGHT), handL: relax(SWING_TWO_L, LEFT) },
+    ],
+  },
+  /** A side-on bow draw that anchors at the cheek, releases, then relaxes. */
+  bow_draw: {
+    planted: true,
+    keys: [
+      { at: 0, handL: DRAW_BACK_L, handR: DRAW_BACK_R },
+      {
+        at: 0.14,
+        torso: [{ joint: Joint.Chest, yaw: -0.2 }, { joint: Joint.Spine, yaw: -0.1 }],
+        handL: [0.02, -0.45, 0.42],
+        handR: [-0.1, -0.45, 0.3],
+        poleL: [0.3, -0.8, -0.4],
+        poleR: [-0.7, -0.3, -0.6],
+        offset: [0, -0.01, -0.01],
+      },
+      {
+        at: STRIKE,
+        torso: [
+          { joint: Joint.Chest, yaw: -0.5, pitch: 0.02 },
+          { joint: Joint.Spine, yaw: -0.25 },
+          { joint: Joint.Pelvis, yaw: -0.15 },
+        ],
+        handL: BOW_L,
+        handR: BOW_R,
+        poleL: [0.3, -0.8, -0.4],
+        poleR: [0, 1, -0.5],
+        offset: [0, -0.02, 0],
+      },
+      {
+        at: 0.64,
+        ease: STRIKE_EASE,
+        torso: [
+          { joint: Joint.Chest, yaw: -0.52, pitch: 0.02 },
+          { joint: Joint.Spine, yaw: -0.26 },
+          { joint: Joint.Pelvis, yaw: -0.15 },
+        ],
+        handL: BOW_L,
+        handR: BOW_RELEASE_R,
+        poleL: [0.3, -0.8, -0.4],
+        poleR: [0, 1, -0.5],
+        offset: [0, -0.02, 0],
+      },
+      {
+        // A settle between release and guard: one long swing home skips frames.
+        at: 0.8,
+        ease: 1.2,
+        torso: [
+          { joint: Joint.Chest, yaw: -0.26, pitch: 0.01 },
+          { joint: Joint.Spine, yaw: -0.13 },
+          { joint: Joint.Pelvis, yaw: -0.08 },
+        ],
+        handL: [-0.02, -0.24, 0.72],
+        handR: [-0.28, -0.18, 0.04],
+        poleL: [0.3, -0.6, -0.6],
+        poleR: [-0.2, 0.5, -0.7],
+        offset: [0, -0.01, 0],
+      },
+      { at: 1, ease: 1.2, handR: relax(BOW_RELEASE_R, RIGHT), handL: relax(BOW_L, LEFT) },
+    ],
+  },
+  /** A full-body knockback that recoils harder than the additive flinch layer. */
+  stagger: {
+    planted: true,
+    keys: [
+      { at: 0, footR: [0, GROUND, 0], handL: DRAW_BACK_L, handR: DRAW_BACK_R },
+      {
+        at: STRIKE,
+        ease: 0.85,
+        torso: [
+          { joint: Joint.Pelvis, pitch: -0.12 },
+          { joint: Joint.Spine, pitch: -0.22 },
+          { joint: Joint.Chest, pitch: -0.42 },
+          { joint: Joint.Head, pitch: -0.4 },
+        ],
+        handL: [0.3, -0.45, 0.36],
+        handR: [-0.3, -0.45, 0.36],
+        poleL: [0.6, -0.4, -0.6],
+        poleR: [-0.6, -0.4, -0.6],
+        footR: [-0.02, GROUND + 0.06, -0.14],
+        offset: [0, -0.06, -0.12],
+      },
+      {
+        at: 0.72,
+        torso: [
+          { joint: Joint.Pelvis, pitch: -0.04 },
+          { joint: Joint.Spine, pitch: -0.06 },
+          { joint: Joint.Chest, pitch: -0.1 },
+          { joint: Joint.Head, pitch: -0.06 },
+        ],
+        handL: [0.26, -0.45, 0.36],
+        handR: [-0.26, -0.45, 0.36],
+        poleL: [0.6, -0.4, -0.6],
+        poleR: [-0.6, -0.4, -0.6],
+        footR: [-0.01, GROUND + 0.04, -0.1],
+        offset: [0, -0.04, -0.08],
+      },
+      {
+        at: 1,
+        ease: 1.2,
+        footR: [0, GROUND, 0],
+        handL: STAGGER_GUARD_L,
+        handR: STAGGER_GUARD_R,
+      },
+    ],
+  },
   /** Buckles at the knees, then rolls onto its right side and stays there. */
   dead: {
     planted: false,
@@ -390,7 +856,7 @@ export const POSE_CLIPS = Object.fromEntries(
 ) as Readonly<Record<PoseClipName, PoseClip>>
 
 export const SKILL_CLIPS: readonly PoseClipName[] = (Object.keys(POSE_SOURCES) as PoseClipName[]).filter(
-  (name) => name !== 'dead',
+  (name) => name !== 'dead' && !(name in MOTION_TIMINGS),
 )
 
 /**

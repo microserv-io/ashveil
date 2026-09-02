@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { POSE_CLIPS, SKILL_CLIPS, type PoseClipName } from '../src/render/procedural/clips'
+import { MOTION_CLIPS, POSE_CLIPS, SKILL_CLIPS, type PoseClipName } from '../src/render/procedural/clips'
 import { createGaitState } from '../src/render/procedural/gait'
 import type { RigGeometry } from '../src/render/procedural/geometry'
 import { Joint, JOINT_NAMES } from '../src/render/procedural/joints'
 import { createPose } from '../src/render/procedural/pose'
 import { writeClipPose } from '../src/render/procedural/poses'
 import { quatAngleBetween } from '../src/render/procedural/quat'
-import { skill } from '../src/sim/skills'
-import { DT, type SkillId } from '../src/sim/types'
+import { DT } from '../src/sim/types'
 import { HUMAN, MASCULINE } from './fixtures/bodies'
+import { clipTimings } from './fixtures/motion'
 
 /**
  * A skill is played at the speed the sim casts it, not at the speed it was
@@ -85,9 +85,9 @@ function play(geometry: RigGeometry, name: PoseClipName, windup: number, recover
 describe.each([['human', HUMAN], ['masculine-v3', MASCULINE]] as const)(
   '%s plays a skill at the speed the sim casts it',
   (_body, geometry) => {
-    for (const name of SKILL_CLIPS) {
+    for (const name of [...SKILL_CLIPS, ...MOTION_CLIPS]) {
       it(`${name} never jumps a joint in one frame`, () => {
-        const timings = skill(name as SkillId)
+        const timings = clipTimings(name)
         const jump = play(geometry, name, timings.windup, timings.recovery)
         expect(
           jump.worst,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { POSE_CLIPS, SKILL_CLIPS, type PoseClipName } from '../src/render/procedural/clips'
+import { MOTION_CLIPS, POSE_CLIPS, SKILL_CLIPS, type PoseClipName } from '../src/render/procedural/clips'
 import { createGaitState } from '../src/render/procedural/gait'
 import {type RigGeometry } from '../src/render/procedural/geometry'
 import { Joint } from '../src/render/procedural/joints'
@@ -96,7 +96,7 @@ function write(geometry: RigGeometry, clip: PoseClipName, phase: number): void {
 }
 
 describe.each(BODIES)('%s poses without passing through itself', (_name, geometry) => {
-  for (const clip of [...SKILL_CLIPS, 'dead'] as PoseClipName[]) {
+  for (const clip of [...SKILL_CLIPS, ...MOTION_CLIPS, 'dead'] as PoseClipName[]) {
     it(`${clip} keeps its arms outside the torso and off the floor`, () => {
       const radius = torsoRadius(geometry)
       for (let sample = 0; sample <= SAMPLES; sample++) {
@@ -122,7 +122,7 @@ describe.each(BODIES)('%s poses without passing through itself', (_name, geometr
     })
   }
 
-  for (const clip of SKILL_CLIPS) {
+  for (const clip of [...SKILL_CLIPS, ...MOTION_CLIPS]) {
     it(`${clip} keeps its feet on the ground`, () => {
       for (let sample = 0; sample <= SAMPLES; sample++) {
         const phase = sample / SAMPLES
@@ -179,7 +179,7 @@ describe.each(BODIES)('%s keeps its feet out of the floor', (_name, geometry) =>
     })
   }
 
-  for (const clip of [...SKILL_CLIPS] as PoseClipName[]) {
+  for (const clip of [...SKILL_CLIPS, ...MOTION_CLIPS] as PoseClipName[]) {
     it(`${clip} keeps the toe above the ground`, () => {
       for (let sample = 0; sample <= SAMPLES; sample++) {
         writeClipPose(geometry, POSE_CLIPS[clip], sample / SAMPLES, state, pose)

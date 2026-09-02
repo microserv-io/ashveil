@@ -1,4 +1,8 @@
+import { MOTION_TIMINGS, type MotionTimings } from '../../src/render/procedural/clips'
+import type { RigState } from '../../src/render/rig'
 import type { RigPhase } from '../../src/render/riginput'
+import { SKILLS } from '../../src/sim/skills'
+import type { SkillId } from '../../src/sim/types'
 
 /**
  * The cast clock the review page drives a skill with.
@@ -12,20 +16,44 @@ import type { RigPhase } from '../../src/render/riginput'
 export const WINDUP = 0.4
 export const RECOVERY = 0.6
 export const CAST_LENGTH = WINDUP + RECOVERY
+export const REVIEW_TIMINGS: MotionTimings = { windup: WINDUP, recovery: RECOVERY }
+
+/** A state is reviewed at the rate it really plays at, not one stand-in cast. */
+export function castTimings(state: RigState): MotionTimings {
+  if (state in SKILLS) {
+    const skill = SKILLS[state as SkillId]
+    return { windup: skill.windup, recovery: skill.recovery }
+  }
+  if (state in MOTION_TIMINGS) return MOTION_TIMINGS[state as keyof typeof MOTION_TIMINGS]
+  return REVIEW_TIMINGS
+}
 
 /** Where in its wind-up or recovery a cast is, `seconds` into it. */
-export function castPhase(seconds: number): RigPhase {
-  const at = Math.min(CAST_LENGTH, Math.max(0, seconds))
-  return at < WINDUP ? { windup: at / WINDUP } : { recovery: (at - WINDUP) / RECOVERY }
+export function castPhase(seconds: number, timings: MotionTimings = REVIEW_TIMINGS): RigPhase {
+  const at = Math.min(castLength(timings), Math.max(0, seconds))
+  return at < timings.windup
+    ? { windup: at / timings.windup }
+    : { recovery: (at - timings.windup) / timings.recovery }
 }
 
 /** How much of the cast is left, which is what the sim would report. */
-export function castLeft(seconds: number): number {
-  return Math.max(0, CAST_LENGTH - Math.max(0, seconds))
+export function castLeft(seconds: number, timings: MotionTimings = REVIEW_TIMINGS): number {
+  return Math.max(0, castLength(timings) - Math.max(0, seconds))
 }
 
-export function recovering(seconds: number): boolean {
-  return seconds >= WINDUP
+export function recovering(seconds: number, timings: MotionTimings = REVIEW_TIMINGS): boolean {
+  return seconds >= timings.windup
+}
+
+export function castLength(timings: MotionTimings = REVIEW_TIMINGS): number {
+  return timings.windup + timings.recovery
+}
+
+/** Where the clock is after `delta`: a looping clip wraps, every other one holds at the end. */
+export function advanceCast(seconds: number, delta: number, timings: MotionTimings, loop: boolean): number {
+  const next = Math.max(0, seconds + delta)
+  const length = castLength(timings)
+  return loop ? next % length : Math.min(length, next)
 }
 
 export function describePhase(phase: RigPhase): string {

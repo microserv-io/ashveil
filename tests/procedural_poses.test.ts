@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createGaitState } from '../src/render/procedural/gait'
 import { Joint } from '../src/render/procedural/joints'
 import { createPose, type Pose, resolvePositions } from '../src/render/procedural/pose'
-import { DEATH_SETTLE, POSE_CLIPS, SKILL_CLIPS } from '../src/render/procedural/clips'
+import { DEATH_SETTLE, MOTION_CLIPS, POSE_CLIPS, SKILL_CLIPS } from '../src/render/procedural/clips'
 import { CARRY_HAND } from '../src/render/procedural/arms'
 import { writeClipPose } from '../src/render/procedural/poses'
 import { quatAngleBetween, quatLength } from '../src/render/procedural/quat'
@@ -11,6 +11,16 @@ import { MASCULINE as geometry } from './fixtures/bodies'
 const state = createGaitState()
 const pose = createPose()
 const positions = new Float32Array(Joint.Count * 3)
+const ALL_CLIPS = [...SKILL_CLIPS, ...MOTION_CLIPS]
+const STRIKE_CLIPS = [
+  ...SKILL_CLIPS,
+  'cast',
+  'execute_overhead',
+  'execute_thrust',
+  'swing_one_hand',
+  'swing_two_hand',
+  'bow_draw',
+] as const
 
 function write(clip: keyof typeof POSE_CLIPS, phase: number): void {
   writeClipPose(geometry, POSE_CLIPS[clip], phase, state, pose)
@@ -36,24 +46,71 @@ describe('placeholder skill poses', () => {
     expect(SKILL_CLIPS).toEqual(['cleave', 'firebolt', 'frost_nova', 'monster_bite', 'monster_bolt', 'monster_slam'])
   })
 
-  for (const skill of ['cleave', 'firebolt', 'frost_nova', 'monster_bite', 'monster_bolt', 'monster_slam'] as const) {
-    it(`${skill} stays finite and normalised across its phase`, () => {
+  it('pins the motion library order', () => {
+    expect(MOTION_CLIPS).toEqual([
+      'cast',
+      'channel',
+      'execute_overhead',
+      'execute_thrust',
+      'swing_one_hand',
+      'swing_two_hand',
+      'bow_draw',
+      'stagger',
+    ])
+  })
+
+  for (const clip of ALL_CLIPS) {
+    it(`${clip} stays finite and normalised across its phase`, () => {
       for (let i = 0; i <= 60; i++) {
-        write(skill, i / 60)
+        write(clip, i / 60)
         for (let joint = 0; joint < Joint.Count; joint++) {
-          expect(quatLength(pose.rotations, joint * 4), `${skill} joint ${joint}`).toBeCloseTo(1, 4)
+          expect(quatLength(pose.rotations, joint * 4), `${clip} joint ${joint}`).toBeCloseTo(1, 4)
         }
         expect(Number.isFinite(pose.offset[0]! + pose.offset[1]! + pose.offset[2]!)).toBe(true)
       }
     })
 
-    it(`${skill} pulls back through windup and strikes at the turn`, () => {
+    it(`${clip} comes back towards the carry it started from`, () => {
+      write(clip, 0)
+      const neutral = new Float32Array(pose.rotations)
+      let peak = 0
+      for (let i = 0; i <= 100; i++) {
+        write(clip, i / 100)
+        peak = Math.max(peak, deviation(neutral, pose))
+      }
+      write(clip, 1)
+      // Not all the way to the carry: a 0.12 s recovery cannot travel out and
+      // back, so the clip ends on a guard and the generator's state blend relaxes
+      // it. See the recovery note in `clips.ts`.
+      expect(deviation(neutral, pose), `${clip} does not come back at all`).toBeLessThan(peak * 0.6)
+    })
+
+    it(`${clip} keeps both feet on the ground, because skills root you`, () => {
+      write(clip, 0)
+      resolvePositions(geometry, pose, positions)
+      const planted = [positions[Joint.FootL * 3 + 2]!, positions[Joint.FootR * 3 + 2]!]
+      const ground = positions[Joint.FootL * 3 + 1]!
+      for (let i = 1; i <= 20; i++) {
+        write(clip, i / 20)
+        resolvePositions(geometry, pose, positions)
+        // A step into a swing is a step, not a walk: it stays on the ground and
+        // inside a third of a leg of where the body is standing.
+        expect(Math.abs(positions[Joint.FootL * 3 + 2]! - planted[0]!), clip).toBeLessThan(geometry.legLength * 0.3)
+        expect(Math.abs(positions[Joint.FootR * 3 + 2]! - planted[1]!), clip).toBeLessThan(geometry.legLength * 0.3)
+        expect(positions[Joint.FootL * 3 + 1]! - ground, clip).toBeLessThan(1e-3)
+        expect(positions[Joint.FootR * 3 + 1]! - ground, clip).toBeLessThan(1e-3)
+      }
+    })
+  }
+
+  for (const clip of STRIKE_CLIPS) {
+    it(`${clip} pulls back through windup and strikes at the turn`, () => {
       let furthest = -Infinity
       let furthestAt = 0
       let nearest = Infinity
       let nearestAt = 1
       for (let i = 0; i <= 100; i++) {
-        write(skill, i / 100)
+        write(clip, i / 100)
         const ahead = reach()
         if (ahead > furthest) {
           furthest = ahead
@@ -66,45 +123,66 @@ describe('placeholder skill poses', () => {
       }
       // The strike lands on the turn or just past it: a skill whose recovery is
       // long enough to travel in uses some of it. See `clips.ts`.
-      expect(furthestAt, `${skill} does not strike on the turn`).toBeGreaterThan(0.45)
+      expect(furthestAt, `${clip} does not strike on the turn`).toBeGreaterThan(0.45)
       expect(furthestAt).toBeLessThan(0.8)
-      expect(nearestAt, `${skill} does not anticipate before it strikes`).toBeLessThan(furthestAt)
+      expect(nearestAt, `${clip} does not anticipate before it strikes`).toBeLessThan(furthestAt)
       // A neutral first key hides an unreadable strike until the hand is already moving forward.
-      expect(nearest, `${skill} never draws the hand back from its carry`).toBeLessThan(0)
-    })
-
-    it(`${skill} comes back towards the carry it started from`, () => {
-      write(skill, 0)
-      const neutral = new Float32Array(pose.rotations)
-      let peak = 0
-      for (let i = 0; i <= 100; i++) {
-        write(skill, i / 100)
-        peak = Math.max(peak, deviation(neutral, pose))
-      }
-      write(skill, 1)
-      // Not all the way to the carry: a 0.12 s recovery cannot travel out and
-      // back, so the clip ends on a guard and the generator's state blend relaxes
-      // it. See the recovery note in `clips.ts`.
-      expect(deviation(neutral, pose), `${skill} does not come back at all`).toBeLessThan(peak * 0.6)
-    })
-
-    it(`${skill} keeps both feet on the ground, because skills root you`, () => {
-      write(skill, 0)
-      resolvePositions(geometry, pose, positions)
-      const planted = [positions[Joint.FootL * 3 + 2]!, positions[Joint.FootR * 3 + 2]!]
-      const ground = positions[Joint.FootL * 3 + 1]!
-      for (let i = 1; i <= 20; i++) {
-        write(skill, i / 20)
-        resolvePositions(geometry, pose, positions)
-        // A step into a swing is a step, not a walk: it stays on the ground and
-        // inside a third of a leg of where the body is standing.
-        expect(Math.abs(positions[Joint.FootL * 3 + 2]! - planted[0]!), skill).toBeLessThan(geometry.legLength * 0.3)
-        expect(Math.abs(positions[Joint.FootR * 3 + 2]! - planted[1]!), skill).toBeLessThan(geometry.legLength * 0.3)
-        expect(positions[Joint.FootL * 3 + 1]! - ground, skill).toBeLessThan(1e-3)
-        expect(positions[Joint.FootR * 3 + 1]! - ground, skill).toBeLessThan(1e-3)
-      }
+      expect(nearest, `${clip} never draws the hand back from its carry`).toBeLessThan(0)
     })
   }
+
+  it('channel closes its loop while keeping its leading hand forward', () => {
+    write('channel', 0)
+    const startRotations = new Float32Array(pose.rotations)
+    const startOffset = new Float32Array(pose.offset)
+    write('channel', 1)
+    for (let i = 0; i < pose.rotations.length; i++) {
+      expect(Math.abs(pose.rotations[i]! - startRotations[i]!)).toBeLessThanOrEqual(1e-6)
+    }
+    for (let axis = 0; axis < 3; axis++) {
+      expect(Math.abs(pose.offset[axis]! - startOffset[axis]!)).toBeLessThanOrEqual(1e-6)
+    }
+    for (let sample = 0; sample < 40; sample++) {
+      write('channel', sample / 39)
+      expect(reach()).toBeGreaterThan(0)
+    }
+  })
+
+  it('stagger recoils harder than the flinch and gives ground before recovering', () => {
+    const identity = createPose()
+    write('stagger', 0)
+    const standing = new Float32Array(pose.offset)
+    write('stagger', 0.5)
+    expect(quatAngleBetween(identity.rotations, Joint.Chest * 4, pose.rotations, Joint.Chest * 4)).toBeGreaterThan(0.3)
+    // Measured on the written pose, not the compiled key: `writeClipPose` adds the
+    // stance offset to y, so the ground it gives back is the phase 0 root.
+    expect(pose.offset[2]!).toBeLessThan(standing[2]!)
+    write('stagger', 1)
+    for (let axis = 0; axis < 3; axis++) {
+      expect(Math.abs(pose.offset[axis]! - standing[axis]!)).toBeLessThanOrEqual(1e-6)
+    }
+  })
+
+  it('the executes start where the cast leaves both hands', () => {
+    write('cast', 1)
+    resolvePositions(geometry, pose, positions)
+    const castHands = new Float32Array([
+      ...positions.slice(Joint.HandL * 3, Joint.HandL * 3 + 3),
+      ...positions.slice(Joint.HandR * 3, Joint.HandR * 3 + 3),
+    ])
+    for (const clip of ['execute_overhead', 'execute_thrust'] as const) {
+      write(clip, 0)
+      resolvePositions(geometry, pose, positions)
+      for (const [hand, lane] of [[Joint.HandL, 0], [Joint.HandR, 3]] as const) {
+        const distance = Math.hypot(
+          positions[hand * 3]! - castHands[lane]!,
+          positions[hand * 3 + 1]! - castHands[lane + 1]!,
+          positions[hand * 3 + 2]! - castHands[lane + 2]!,
+        )
+        expect(distance / geometry.armLength, `${clip} hand ${hand}`).toBeLessThan(0.05)
+      }
+    }
+  })
 })
 
 describe('the death settle', () => {
