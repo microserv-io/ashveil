@@ -7,7 +7,8 @@ import { RIG_CLIPS, type RigState } from '../../src/render/rig'
 import type { RigInput } from '../../src/render/riginput'
 import { SceneHost } from '../../src/render/scene'
 import { Sim } from '../../src/sim/sim'
-import { HIT_FLASH_DURATION, type Actor, type MonsterArchetype } from '../../src/sim/types'
+import { DT, HIT_FLASH_DURATION, type Actor, type MonsterArchetype } from '../../src/sim/types'
+import { CAST_LENGTH, castLeft, castPhase, describePhase, recovering } from './cast'
 import {
   createReviewBodyView,
   loadReviewBody,
@@ -37,9 +38,6 @@ const TURN_DURATION = 0.8
 const PANEL_KEY = 'ashveil.motion.panel'
 /** Below this the panel would cover the body, so it starts out of the way. */
 const NARROW_VIEWPORT = 640
-/** A skill loops windup then recovery so its pose animates instead of holding. */
-const WINDUP = 0.4
-const RECOVERY = 0.6
 
 const sim = new Sim({ seed: SEED })
 await loadModels('models')
@@ -98,6 +96,8 @@ recentre()
 bodySelect.addEventListener('change', rebuild)
 driverSelect.addEventListener('change', rebuild)
 element('turn').addEventListener('click', () => (turnLeft = TURN_DURATION))
+element('cycle').addEventListener('click', cycle)
+state.addEventListener('change', cycle)
 element('hit').addEventListener('click', () => (hitAge = 0))
 element('step').addEventListener('click', () => (stepQueued = true))
 element('recenter').addEventListener('click', recentre)
@@ -116,7 +116,9 @@ function frame(now: number): void {
 
   const timeScale = Number(scale.value)
   let delta = wall * timeScale
-  if (stepQueued) delta = 1 / 60
+  // One click of Step is one sim tick, so a pose can be walked frame by frame
+  // with the time scale at zero.
+  if (stepQueued) delta = DT
   stepQueued = false
   simTime += delta
 
@@ -137,7 +139,8 @@ function frame(now: number): void {
   placeCamera()
   host.render()
 
-  element('summary').textContent = `${driverSelect.value} · ${input.state} · ${input.speed.toFixed(1)} m/s · scale ${bodyScale.toFixed(3)}`
+  element('summary').textContent =
+    `${driverSelect.value} · ${input.state} · ${input.speed.toFixed(1)} m/s · ${describePhase(input.phase)}`
   element('distance-value').textContent = Number(distance.value).toFixed(1)
   element('pitch-value').textContent = Number(pitch.value).toFixed(0)
   element('orbit-value').textContent = Number(orbit.value).toFixed(0)
@@ -216,14 +219,18 @@ function writeInput(delta: number): void {
     input.phase = null
     input.castLeft = 0
     input.recovering = false
-    castAt = 0
+    castAt = CAST_LENGTH
     return
   }
-  castAt = (castAt + delta) % (WINDUP + RECOVERY)
-  const inWindup = castAt < WINDUP
-  input.phase = inWindup ? { windup: castAt / WINDUP } : { recovery: (castAt - WINDUP) / RECOVERY }
-  input.castLeft = inWindup ? WINDUP + RECOVERY - castAt : WINDUP + RECOVERY - castAt
-  input.recovering = !inWindup
+  // The cast plays once and holds, so a struck pose can be looked at. Cycle runs it again.
+  castAt = Math.min(CAST_LENGTH, castAt + delta)
+  input.phase = castPhase(castAt)
+  input.castLeft = castLeft(castAt)
+  input.recovering = recovering(castAt)
+}
+
+function cycle(): void {
+  castAt = 0
 }
 
 function rebuild(): void {
@@ -272,13 +279,11 @@ function collectBodies(): ReviewBody[] {
 }
 
 function describe(wall: number): string {
-  const phase = input.phase === null ? 'null' : 'windup' in input.phase
-    ? `windup ${input.phase.windup.toFixed(2)}`
-    : `recovery ${input.phase.recovery.toFixed(2)}`
   return [
     `driver     ${driverSelect.value}`,
     `body       ${bodySelect.value}`,
     `bodyScale  ${bodyScale.toFixed(6)}`,
+    `cast       ${castAt.toFixed(2)}s of ${CAST_LENGTH.toFixed(2)}`,
     `frame      ${(wall * 1000).toFixed(1)}ms`,
     '',
     `state      ${input.state}`,
@@ -286,7 +291,7 @@ function describe(wall: number): string {
     `dashing    ${input.dashing}`,
     `facing     ${facing.toFixed(2)} rad`,
     `facingΔ    ${input.facingDelta.toFixed(4)}`,
-    `phase      ${phase}`,
+    `phase      ${describePhase(input.phase)}`,
     `hitAge     ${input.hitAge === null ? 'null' : input.hitAge.toFixed(3)}`,
     `time       ${input.time.toFixed(2)}s`,
     `seed       ${input.seed}`,
