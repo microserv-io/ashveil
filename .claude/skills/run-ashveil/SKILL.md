@@ -73,9 +73,8 @@ node .claude/skills/run-ashveil/driver.mjs loop
 | `play` | The whole product: walks into a pack, kills, loot drops, picks it up with `E`, wears it from the gear panel | `/tmp/ashveil-play-fought.png`, `-play-gear.png`, `-play-equipped.png` |
 | `loop` | Area transition — depth advances, player arrives at the new spawn, cooldowns reset | `/tmp/ashveil-loop-next-area.png` |
 
-Flags: `--url http://127.0.0.1:5273`, `--seed 7`, `--steps 260` (how long `play` hunts
-before giving up), `--motion procedural` (the pose generator instead of the clips;
-see `src/render/motionmode.ts`).
+Flags: `--url http://127.0.0.1:5273`, `--seed 7`, and `--steps 260` (how long `play`
+hunts before giving up).
 
 Real output from `play`:
 

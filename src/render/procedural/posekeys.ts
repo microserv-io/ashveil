@@ -1,6 +1,6 @@
 import { CARRY_HAND } from './arms'
 import { Joint } from './joints'
-import { STANCE_HIP } from './limbs'
+import { KNEE_POLE_SIDE, STANCE_HIP } from './limbs'
 import { quatFromAxisAngle, quatIdentity, quatMultiply } from './quat'
 
 /**
@@ -35,6 +35,9 @@ export interface PoseKey {
   readonly poleR?: Vec3
   readonly footL?: Vec3
   readonly footR?: Vec3
+  /** Where the knee leads. Without one it bends forward, the way a standing leg does. */
+  readonly kneeL?: Vec3
+  readonly kneeR?: Vec3
   readonly offset?: Vec3
 }
 
@@ -51,6 +54,8 @@ const ELBOW_REST: Vec3 = [0.35, 0, -1]
 const HAND_REST: Vec3 = CARRY_HAND
 /** The foot's resting place under the hip, in leg lengths: on the ground it stands on. */
 const FOOT_REST: Vec3 = [0, -STANCE_HIP, 0]
+/** The knee's resting lead: forward, a little outward. */
+const KNEE_REST: Vec3 = [KNEE_POLE_SIDE, 0, 1]
 /** The clip is stored compiled: quaternions and targets, ready to interpolate. */
 export interface PoseClip {
   readonly planted: boolean
@@ -64,6 +69,7 @@ export interface PoseClip {
   readonly hands: Float32Array
   readonly poles: Float32Array
   readonly feet: Float32Array
+  readonly kneePoles: Float32Array
   readonly offsets: Float32Array
 }
 
@@ -78,6 +84,7 @@ export function compilePoseClip(source: PoseClipSource): PoseClip {
     hands: new Float32Array(count * 6),
     poles: new Float32Array(count * 6),
     feet: new Float32Array(count * 6),
+    kneePoles: new Float32Array(count * 6),
     offsets: new Float32Array(count * 3),
   }
   const turn = new Float32Array(4)
@@ -99,6 +106,7 @@ export function compilePoseClip(source: PoseClipSource): PoseClip {
     writeSided(clip.hands, index, key.handL, key.handR, HAND_REST)
     writeSided(clip.poles, index, key.poleL, key.poleR, ELBOW_REST)
     writeSided(clip.feet, index, key.footL, key.footR, FOOT_REST)
+    writeSided(clip.kneePoles, index, key.kneeL, key.kneeR, KNEE_REST)
     const offset = key.offset ?? ZERO
     for (let axis = 0; axis < 3; axis++) clip.offsets[index * 3 + axis] = offset[axis]!
   })

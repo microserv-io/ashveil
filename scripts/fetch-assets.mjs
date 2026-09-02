@@ -1,5 +1,5 @@
 /**
- * Pulls the CC0 art the game renders, into `public/models/`.
+ * Pulls the CC0 dungeon art the game renders, into `public/models/`.
  *
  * The models are not committed: they are ~20MB of binaries that git would carry
  * forever, and they come from an upstream that is already a stable public archive.
@@ -16,16 +16,10 @@ const OUT = join(import.meta.dirname, '..', 'public', 'models')
 
 const RAW = 'https://raw.githubusercontent.com/KayKit-Game-Assets'
 export const KAYKIT_REVISIONS = {
-  characters: '672074b73ba276876a19e8816ecdc5241817ab47',
-  skeletons: '15b62b9bad122f72926c10fb14d622c73819fa54',
   dungeon: 'b0ca9bd96a8072ab36a3a5464f00ed1e06a16d07',
 }
 
 export const ASSET_SHA256 = {
-  'player.glb': '60428e3abc09ba83e595d256e3af8c5c976b46cdae599f0802fc82b4a3445168',
-  'swarm.glb': '6ffc003f895bed0b074791e0e490846210a2e2f8fc7da300aba53cc185f95968',
-  'ranged.glb': '4003f2b77891bb56f7e0de7d555abcb497aebbcaee35b614211f16275f9ccae3',
-  'brute.glb': '178b6fda810b814c250d8a2010c24dfd9b458b9006dd323353e620b7ff118bbe',
   'floor.glb': '5b6bbbc683f6729d094732056f157a928435de97ec3cf94c341c7465907fe17b',
   'floor_rocks.glb': 'fb06b1e9ca7a5d14f6757119490c4b3c077a30e31ef580da6925b6657f14c14d',
   'wall.glb': 'f2f343a7bdf2d45947e3f354494e16095a923485e05637e3804e3b81ce11d921',
@@ -36,17 +30,10 @@ export const ASSET_SHA256 = {
   'orb.glb': '32759c64c6e8fe5634753134748f4b759b698aafb1245b8ed9fe62afe390faa5',
 }
 
-const CHARACTERS = `${RAW}/KayKit-Character-Pack-Adventures-1.0/${KAYKIT_REVISIONS.characters}/addons/kaykit_character_pack_adventures/Characters/gltf`
-const SKELETONS = `${RAW}/KayKit-Character-Pack-Skeletons-1.0/${KAYKIT_REVISIONS.skeletons}/addons/kaykit_character_pack_skeletons/Characters/gltf`
 const DUNGEON = `${RAW}/KayKit-Dungeon-Remastered-1.0/${KAYKIT_REVISIONS.dungeon}/addons/kaykit_dungeon_remastered/Assets/gltf`
 
 /** Named for the role each fills in the sim, not for the file it came from. */
 export const ASSETS = {
-  'player.glb': { url: `${CHARACTERS}/Knight.glb`, sha256: ASSET_SHA256['player.glb'] },
-  'swarm.glb': { url: `${SKELETONS}/Skeleton_Minion.glb`, sha256: ASSET_SHA256['swarm.glb'] },
-  'ranged.glb': { url: `${SKELETONS}/Skeleton_Rogue.glb`, sha256: ASSET_SHA256['ranged.glb'] },
-  'brute.glb': { url: `${SKELETONS}/Skeleton_Warrior.glb`, sha256: ASSET_SHA256['brute.glb'] },
-
   'floor.glb': { url: `${DUNGEON}/floor_tile_large.gltf.glb`, sha256: ASSET_SHA256['floor.glb'] },
   'floor_rocks.glb': { url: `${DUNGEON}/floor_tile_large_rocks.gltf.glb`, sha256: ASSET_SHA256['floor_rocks.glb'] },
   'wall.glb': { url: `${DUNGEON}/wall.gltf.glb`, sha256: ASSET_SHA256['wall.glb'] },

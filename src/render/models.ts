@@ -2,12 +2,7 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js'
 
-/**
- * The CC0 model set, fetched by `npm run assets` into `public/models`.
- *
- * Names are the role each fills in the sim, never the file it came from, so
- * swapping the underlying kit is a change to `scripts/fetch-assets.mjs` alone.
- */
+/** Names are the role each model fills in the sim, never the source filename. */
 export const MODEL_NAMES = [
   'player',
   'swarm',
@@ -25,9 +20,11 @@ export const MODEL_NAMES = [
 
 export type ModelName = (typeof MODEL_NAMES)[number]
 
+export const BODY_MODEL_NAMES = ['player', 'swarm', 'ranged', 'brute'] as const satisfies readonly ModelName[]
+const BODY_MODEL_PATH = '/bodies/masculine-v3/masculine-v3.glb'
+
 interface Model {
   scene: THREE.Object3D
-  animations: THREE.AnimationClip[]
 }
 
 let registry: Map<ModelName, Model> | null = null
@@ -39,11 +36,14 @@ let registry: Map<ModelName, Model> | null = null
 export async function loadModels(base = 'models', onProgress?: (done: number, total: number) => void): Promise<void> {
   const loader = new GLTFLoader()
   let done = 0
+  const body = loader.loadAsync(BODY_MODEL_PATH).then((gltf) => ({ scene: gltf.scene }))
   const loaded = await Promise.all(
     MODEL_NAMES.map(async (name) => {
-      const gltf = await loader.loadAsync(`${base}/${name}.glb`)
+      const loadedModel = BODY_MODEL_NAMES.includes(name as (typeof BODY_MODEL_NAMES)[number])
+        ? await body
+        : { scene: (await loader.loadAsync(`${base}/${name}.glb`)).scene }
       onProgress?.(++done, MODEL_NAMES.length)
-      return [name, { scene: gltf.scene, animations: gltf.animations }] as const
+      return [name, loadedModel] as const
     }),
   )
   registry = new Map(loaded)
@@ -55,8 +55,9 @@ function model(name: ModelName): Model {
   return found
 }
 
-export function clipsOf(name: ModelName): THREE.AnimationClip[] {
-  return model(name).animations
+/** The model's bounds in its own units, so a floor can be laid with its top at ground level. */
+export function boundsOf(name: ModelName): THREE.Box3 {
+  return new THREE.Box3().setFromObject(model(name).scene)
 }
 
 /**

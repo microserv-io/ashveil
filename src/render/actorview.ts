@@ -1,12 +1,10 @@
 import * as THREE from 'three'
 import type { Actor } from '../sim/types'
-import { ClipDriver } from './clipdriver'
-import { clipsOf, meshesOf, spawnModel, type ModelName } from './models'
+import { meshesOf, spawnModel, type ModelName } from './models'
 import type { BoundMotionDriver } from './motion'
-import { motionMode, type MotionMode } from './motionmode'
 import { PALETTE } from './palette'
 import { ProceduralDriver } from './proceduraldriver'
-import { KAYKIT_PROFILE } from './profiles/kaykit'
+import { MASCULINE_PROFILE } from './profiles/masculine'
 import { createRigInputOwner, resetRigInput, type RigInputOwner } from './riginput'
 
 /** One actor's body: the model, the handles needed to tint it, and its animation. */
@@ -14,7 +12,7 @@ export interface ActorView extends RigInputOwner {
   group: THREE.Group
   materials: THREE.MeshStandardMaterial[]
   baseColours: THREE.Color[]
-  /** What the kit shipped, so a faded corpse can be handed back looking new. */
+  /** The body's original transparency, so a faded corpse can be handed back looking new. */
   baseTransparent: boolean[]
   driver: BoundMotionDriver
   fadeLeft: number
@@ -24,11 +22,9 @@ export interface ActorView extends RigInputOwner {
 
 export const DEATH_FADE = 1.6
 
-/**
- * The kit's characters stand ~2.17 model units tall. Scaling by the collision radius
- * keeps the body the size the sim thinks it is, so a brute looks as wide as it walks.
- */
-export const HEIGHT_PER_RADIUS = 1.93
+const SIM_HEIGHT_PER_RADIUS = 4.46705062
+/** Converts an actor radius into the sim height its body should render at. */
+export const HEIGHT_PER_RADIUS = SIM_HEIGHT_PER_RADIUS / MASCULINE_PROFILE.standingHeight
 /** The models face +Z; the sim's zero facing is +X. */
 const MODEL_FACING = Math.PI / 2
 
@@ -54,15 +50,17 @@ function modelFor(actor: Actor): ModelName {
   }
 }
 
-export function createActorView(actor: Actor, mode: MotionMode = motionMode()): ActorView {
+export function createActorView(actor: Actor): ActorView {
   const group = new THREE.Group()
   const model = spawnModel(modelFor(actor))
   model.scale.setScalar(actor.radius * HEIGHT_PER_RADIUS)
   group.add(model)
 
   const materials = meshesOf(model).map((mesh) => mesh.material as THREE.MeshStandardMaterial)
+  const tint = bodyTint(actor)
+  if (tint !== null) materials.forEach((material) => material.color.setHex(tint))
   const baseColours = materials.map((material) => material.color.clone())
-  const driver = bindDriver(model, modelFor(actor), mode)
+  const driver = bindDriver(model)
   const inputOwner = createRigInputOwner()
 
   if (actor.kind === 'player') {
@@ -80,20 +78,23 @@ export function createActorView(actor: Actor, mode: MotionMode = motionMode()): 
   return { group, materials, baseColours, baseTransparent, driver, fadeLeft: 0, key: viewKey(actor), ...inputOwner }
 }
 
-/**
- * Every body in the kit wears the same 41-bone rig, so one profile drives the
- * knight and every monster. Bound here rather than in the pool: the scale is on
- * the model by now, and the binding measures the rest pose in sim metres.
- */
-function bindDriver(model: THREE.Object3D, name: ModelName, mode: MotionMode): BoundMotionDriver {
-  if (mode === 'procedural') {
-    const driver = new ProceduralDriver()
-    driver.bind(model, KAYKIT_PROFILE)
-    return driver
-  }
-  const driver = new ClipDriver()
-  driver.bind(model, { clips: clipsOf(name) })
+/** The scale is applied before binding so the driver measures the rest pose in sim metres. */
+function bindDriver(model: THREE.Object3D): BoundMotionDriver {
+  const driver = new ProceduralDriver()
+  driver.bind(model, MASCULINE_PROFILE)
   return driver
+}
+
+export function bodyTint(actor: Pick<Actor, 'kind' | 'archetype'>): number | null {
+  if (actor.kind === 'player') return null
+  switch (actor.archetype) {
+    case 'ranged':
+      return PALETTE.ranged
+    case 'brute':
+      return PALETTE.brute
+    default:
+      return PALETTE.swarm
+  }
 }
 
 function rarityColour(actor: Actor): number {
@@ -151,7 +152,7 @@ export function applyWindupTell(view: ActorView, actor: Actor): void {
   view.group.scale.setScalar(1 + Math.min(0.22, actor.windup * 0.35))
 }
 
-/** Corpses play their death clip, then dissolve so the floor does not fill up. */
+/** Corpses settle, then dissolve so the floor does not fill up. */
 export function applyDeathFade(view: ActorView, delta: number): void {
   view.fadeLeft = view.fadeLeft === 0 ? DEATH_FADE : Math.max(0, view.fadeLeft - delta)
   const remaining = view.fadeLeft / DEATH_FADE

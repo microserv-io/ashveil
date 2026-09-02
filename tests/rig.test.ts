@@ -1,8 +1,13 @@
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { RIG_CLIPS, rigStateOf, type RigState } from '../src/render/rig'
+import { ProceduralDriver } from '../src/render/proceduraldriver'
+import { MASCULINE_PROFILE } from '../src/render/profiles/masculine'
+import { rigStateOf, type RigState } from '../src/render/rig'
+import { createRigInputOwner } from '../src/render/riginput'
 import { SKILLS } from '../src/sim/skills'
 import { Sim } from '../src/sim/sim'
-import type { Actor, SkillId } from '../src/sim/types'
+import type { Actor } from '../src/sim/types'
+import { loadGlbSkeleton } from './fixtures/glbskeleton'
 
 /**
  * The renderer has to have a pose for everything the sim can be doing. A missing
@@ -10,27 +15,29 @@ import type { Actor, SkillId } from '../src/sim/types'
  */
 
 describe('animation coverage', () => {
-  it('maps every skill in the game', () => {
-    const unmapped = (Object.keys(SKILLS) as SkillId[]).filter((id) => !RIG_CLIPS[id]?.length)
-    expect(unmapped, 'add a clip for these in RIG_CLIPS').toEqual([])
-  })
+  const bodyPath = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v3', 'masculine-v3.glb')
+  const states: RigState[] = ['idle', 'moving', 'dead', ...(Object.keys(SKILLS) as RigState[])]
 
-  it('maps every state an actor can be in outside a skill', () => {
-    for (const state of ['idle', 'moving', 'dead'] as const) {
-      expect(RIG_CLIPS[state].length, `${state} has no clip`).toBeGreaterThan(0)
-    }
-  })
-
-  it('names a fallback for each pose, since the packs do not share every clip', () => {
-    for (const [state, clips] of Object.entries(RIG_CLIPS)) {
-      expect(clips.length, `${state} has no fallback clip`).toBeGreaterThan(1)
-    }
-  })
-
-  it('has no mapping for a state the sim cannot produce', () => {
-    const known = new Set<RigState>(['idle', 'moving', 'dead', ...(Object.keys(SKILLS) as SkillId[])])
-    for (const state of Object.keys(RIG_CLIPS) as RigState[]) {
-      expect(known.has(state), `${state} is mapped but unreachable`).toBe(true)
+  it('procedurally poses every RigState on masculine-v3', () => {
+    for (const state of states) {
+      const body = loadGlbSkeleton(bodyPath)
+      const driver = new ProceduralDriver()
+      const input = createRigInputOwner().rigInput
+      const bones = Object.values(MASCULINE_PROFILE.bones).map((name) => body.getObjectByName(name)!)
+      const bindPose = bones.map((bone) => bone.quaternion.clone())
+      driver.bind(body, MASCULINE_PROFILE)
+      input.state = state
+      input.speed = state === 'moving' ? 3 : 0
+      input.dashing = state === 'dash'
+      input.phase = state in SKILLS ? { windup: 0.5 } : null
+      input.time = 1
+      driver.update(input, 1 / 60)
+      for (const bone of bones) {
+        expect(Number.isFinite(bone.quaternion.length()), `${state}: ${bone.name}`).toBe(true)
+      }
+      const moved = Math.max(...bones.map((bone, index) => bone.quaternion.angleTo(bindPose[index]!)))
+      expect(moved, `${state} stayed in the bind pose`).toBeGreaterThan(1e-3)
+      driver.dispose()
     }
   })
 })

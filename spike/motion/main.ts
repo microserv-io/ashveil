@@ -1,21 +1,19 @@
 import '../../src/style.css'
 import * as THREE from 'three'
-import { createActorView, disposeActorView, HEIGHT_PER_RADIUS, orientActorView, type ActorView } from '../../src/render/actorview'
+import { disposeActorView, orientActorView, type ActorView } from '../../src/render/actorview'
 import { loadModels } from '../../src/render/models'
-import type { MotionMode } from '../../src/render/motionmode'
-import { RIG_CLIPS, type RigState } from '../../src/render/rig'
+import type { RigState } from '../../src/render/rig'
 import type { RigInput } from '../../src/render/riginput'
 import { SceneHost } from '../../src/render/scene'
+import { SKILLS } from '../../src/sim/skills'
 import { Sim } from '../../src/sim/sim'
-import { DT, HIT_FLASH_DURATION, type Actor, type MonsterArchetype } from '../../src/sim/types'
+import { DT, HIT_FLASH_DURATION, type Actor } from '../../src/sim/types'
 import { CAST_LENGTH, castLeft, castPhase, describePhase, recovering } from './cast'
 import {
   createReviewBodyView,
-  loadReviewBody,
-  MASCULINE_V1_BODY,
-  motionModeForBody,
+  loadReviewBodies,
+  REVIEW_BODIES,
   reviewBodyScale,
-  supportsMotionMode,
   type ReviewBodyDefinition,
 } from './body'
 
@@ -41,7 +39,7 @@ const NARROW_VIEWPORT = 640
 
 const sim = new Sim({ seed: SEED })
 await loadModels('models')
-const masculineSource = await loadReviewBody(MASCULINE_V1_BODY)
+const bodySources = await loadReviewBodies()
 
 const host = new SceneHost(document.getElementById('stage')!)
 host.buildTerrain(sim.map)
@@ -50,7 +48,6 @@ globalThis.addEventListener('resize', () => host.resize())
 const bodies = collectBodies()
 const state = element<HTMLSelectElement>('state')
 const bodySelect = element<HTMLSelectElement>('body')
-const driverSelect = element<HTMLSelectElement>('driver')
 const speed = element<HTMLInputElement>('speed')
 const scale = element<HTMLInputElement>('scale')
 const distance = element<HTMLInputElement>('distance')
@@ -61,7 +58,7 @@ const controls = element('controls')
 const toggle = element<HTMLButtonElement>('panel-toggle')
 
 fill(bodySelect, bodies.map((entry) => entry.id))
-fill(state, Object.keys(RIG_CLIPS))
+fill(state, ['idle', 'moving', 'dead', ...Object.keys(SKILLS)])
 state.value = 'moving'
 
 const input: RigInput = {
@@ -80,7 +77,7 @@ const input: RigInput = {
 
 let view: ActorView | null = null
 let actor: Actor = bodies[0]!.actor
-let bodyScale = actor.radius * HEIGHT_PER_RADIUS
+let bodyScale = reviewBodyScale(actor.radius)
 let simTime = 0
 let facing = 0
 let previousFacing = 0
@@ -94,7 +91,6 @@ rebuild()
 recentre()
 
 bodySelect.addEventListener('change', rebuild)
-driverSelect.addEventListener('change', rebuild)
 element('turn').addEventListener('click', () => (turnLeft = TURN_DURATION))
 element('cycle').addEventListener('click', cycle)
 state.addEventListener('change', cycle)
@@ -140,7 +136,7 @@ function frame(now: number): void {
   host.render()
 
   element('summary').textContent =
-    `${driverSelect.value} · ${input.state} · ${input.speed.toFixed(1)} m/s · ${describePhase(input.phase)}`
+    `procedural · ${input.state} · ${input.speed.toFixed(1)} m/s · ${describePhase(input.phase)}`
   element('distance-value').textContent = Number(distance.value).toFixed(1)
   element('pitch-value').textContent = Number(pitch.value).toFixed(0)
   element('orbit-value').textContent = Number(orbit.value).toFixed(0)
@@ -153,7 +149,7 @@ function frame(now: number): void {
 /**
  * The sliders start at the game's own camera, so the first question — does it read
  * at the distance a player sits — is answered before anything is touched. Then they
- * come down and in, because a knight forty pixels tall and seen from overhead
+ * come down and in, because a body forty pixels tall and seen from overhead
  * cannot be judged for foot slide at all.
  */
 function placeCamera(): void {
@@ -169,11 +165,7 @@ function placeCamera(): void {
   host.camera.lookAt(target)
 }
 
-/**
- * Aim at the chest. A KayKit body stands about 2.17 model units tall against a
- * collision radius of one, so this lands mid-torso whatever size the actor is —
- * close enough to keep the feet in frame, which are the half being judged.
- */
+/** Aim at the chest while keeping the feet in frame. */
 const MID_BODY = 1.9
 /** The length of `scene.ts`'s own camera offset: the slider's top end is the real thing. */
 const GAMEPLAY_DISTANCE = Math.hypot(19, 14.5)
@@ -240,18 +232,8 @@ function rebuild(): void {
     disposeActorView(view)
   }
   actor = chosen.actor
-  const requested = driverSelect.value as MotionMode
-  const clipOption = driverSelect.querySelector<HTMLOptionElement>('option[value="clip"]')!
-  clipOption.disabled = chosen.definition !== null && !supportsMotionMode(chosen.definition, 'clip')
-  const mode = chosen.definition === null ? requested : motionModeForBody(chosen.definition, requested)
-  driverSelect.value = mode
-  if (chosen.definition === null) {
-    view = createActorView(actor, mode)
-    bodyScale = actor.radius * HEIGHT_PER_RADIUS
-  } else {
-    view = createReviewBodyView(actor, masculineSource, chosen.definition)
-    bodyScale = reviewBodyScale(actor.radius, chosen.definition)
-  }
+  view = createReviewBodyView(actor, bodySources.get(chosen.definition.id)!, chosen.definition)
+  bodyScale = reviewBodyScale(actor.radius)
   host.scene.add(view.group)
 }
 
@@ -264,23 +246,17 @@ function recentre(): void {
 interface ReviewBody {
   readonly id: string
   readonly actor: Actor
-  readonly definition: ReviewBodyDefinition | null
+  readonly definition: ReviewBodyDefinition
 }
 
 /** Real actors from a real run, so nothing here has to invent a body the game never builds. */
 function collectBodies(): ReviewBody[] {
-  const found: ReviewBody[] = [{ id: 'knight', actor: sim.player, definition: null }]
-  for (const archetype of ['swarm', 'ranged', 'brute'] as MonsterArchetype[]) {
-    const monster = sim.actors.find((candidate) => candidate.kind === 'monster' && candidate.archetype === archetype)
-    if (monster) found.push({ id: archetype, actor: monster, definition: null })
-  }
-  found.push({ id: MASCULINE_V1_BODY.id, actor: sim.player, definition: MASCULINE_V1_BODY })
-  return found
+  return REVIEW_BODIES.map((body) => ({ id: body.id, actor: sim.player, definition: body }))
 }
 
 function describe(wall: number): string {
   return [
-    `driver     ${driverSelect.value}`,
+    'driver     procedural',
     `body       ${bodySelect.value}`,
     `bodyScale  ${bodyScale.toFixed(6)}`,
     `cast       ${castAt.toFixed(2)}s of ${CAST_LENGTH.toFixed(2)}`,

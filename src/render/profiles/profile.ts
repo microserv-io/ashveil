@@ -31,4 +31,10 @@ export interface SkeletonProfile {
   readonly footprint?: FootPrint
   /** Absolute body-frame arm rotations; an omitted side uses the relaxed hang. */
   readonly armCarry?: ArmCarry
+  /**
+   * Bones the runtime derives rather than poses: `shoulder.l`, `shoulder.r`,
+   * `twist.l`, `twist.r`. A shoulder helper turns by half its upper arm's turn
+   * relative to the clavicle; a twist helper by half the forearm's axial twist.
+   */
+  readonly helpers?: Readonly<Record<string, string>>
 }

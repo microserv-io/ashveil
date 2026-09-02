@@ -6,7 +6,7 @@
  * room. The driver plays the game: walks the player into a pack, swings, picks the
  * drops up and wears one.
  *
- *   node .claude/skills/run-ashveil/driver.mjs smoke [--url U] [--seed N] [--motion clip|procedural]
+ *   node .claude/skills/run-ashveil/driver.mjs smoke [--url U] [--seed N]
  *   node .claude/skills/run-ashveil/driver.mjs play  [--url U] [--seed N] [--steps N]
  *   node .claude/skills/run-ashveil/driver.mjs loop  [--url U] [--seed N]
  *
@@ -22,8 +22,7 @@ const flag = (name, fallback) => {
 }
 
 const SEED = flag('seed', '7')
-const MOTION = flag('motion', '')
-const URL = `${flag('url', 'http://127.0.0.1:5273')}/?seed=${SEED}${MOTION ? `&motion=${MOTION}` : ''}`
+const URL = `${flag('url', 'http://127.0.0.1:5273')}/?seed=${SEED}`
 const STEPS = Number(flag('steps', '260'))
 const VIEWPORT = { width: 1280, height: 800 }
 

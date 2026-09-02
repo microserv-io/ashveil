@@ -28,10 +28,10 @@ const BUDGETS: Readonly<Record<string, number>> = {
   'src/ui/hud.ts': 520,
   // Actor bodies moved to actorview.ts and terrain to terrain.ts when art landed.
   'src/render/views.ts': 290,
-  'src/render/clipdriver.ts': 110,
   // Binding a pose onto a real skeleton: the resolve, the units and the axis
   // correction. All of it is bind-time work around one small per-frame loop.
   'src/render/semanticskeleton.ts': 155,
+  'src/render/helperbones.ts': 130,
   'src/render/skeletonbones.ts': 60,
   'src/render/riginput.ts': 100,
   // The procedural pose generator. `clips.ts` is the pose table and so exempt;

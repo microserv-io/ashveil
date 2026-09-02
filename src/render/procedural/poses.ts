@@ -82,8 +82,9 @@ function writeClipLeg(
   for (let axis = 0; axis < 3; axis++) {
     const offset = mix(clip.feet, index * 6 + lane + axis, (index + 1) * 6 + lane + axis, t)
     scratch.target[axis] = scratch.positions[hip * 3 + axis]! + offset * geometry.legLength
+    KNEE_POLE[axis] = mix(clip.kneePoles, index * 6 + lane + axis, (index + 1) * 6 + lane + axis, t)
   }
-  writeLeg(geometry, scratch, out, side, 0)
+  writeLeg(geometry, scratch, out, side, 0, KNEE_POLE)
 }
 
 function writeClipArm(
@@ -114,3 +115,4 @@ function writeClipArm(
 
 /** Module-level because writing a clip pose is on the frame path and must not allocate. */
 const POLE = new Float32Array(3)
+const KNEE_POLE = new Float32Array(3)

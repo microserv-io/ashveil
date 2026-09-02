@@ -3,10 +3,8 @@ export interface PerfOptions {
   keepOpen: boolean
   seed: number
   frames: number
-  motion: 'clip' | 'procedural'
 }
 
-export declare function baselinePath(motion: PerfOptions['motion']): string
 export declare function parsePerfOptions(argv: readonly string[]): PerfOptions
 export declare function comparePerfReports(
   report: unknown,
