@@ -1,6 +1,7 @@
 {
   "seed": 7,
   "policy": "brawler",
+  "motion": "clip",
   "frames": 2400,
   "viewport": {
     "width": 1600,
@@ -249,6 +250,7 @@
     }
   ],
   "workload": {
+    "motion": "clip",
     "ticks": 2580,
     "depth": 1,
     "monstersKilled": 11,

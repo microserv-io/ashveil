@@ -20,7 +20,7 @@ export class ActorViewPool {
   acquire(actor: Actor): ActorView {
     const reused = this.idle.get(viewKey(actor))?.pop()
     if (!reused) return createActorView(actor)
-    resetActorView(reused, actor)
+    resetActorView(reused)
     return reused
   }
 

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { ASSETS } from '../scripts/fetch-assets.mjs'
+import {
+  ASSETS,
+  ASSET_SHA256,
+  KAYKIT_REVISIONS,
+  validateAssetMetadata,
+  verifyAssetBody,
+} from '../scripts/fetch-assets.mjs'
 import { MODEL_NAMES } from '../src/render/models'
 
 /**
@@ -16,5 +22,20 @@ describe('every model the renderer needs is one the fetch script pulls', () => {
   it('fetches nothing the renderer never asks for', () => {
     const fetched = Object.keys(ASSETS).map((file) => file.replace(/\.glb$/, ''))
     expect(fetched.filter((name) => !MODEL_NAMES.includes(name as never))).toEqual([])
+  })
+
+  it('describes an immutable source and checksum for every asset', () => {
+    const sources = Object.values(ASSETS)
+
+    expect(sources.every((source) => !source.url.includes('/main/'))).toBe(true)
+    expect(Object.values(KAYKIT_REVISIONS).every((revision) => /^[0-9a-f]{40}$/.test(revision))).toBe(true)
+    expect(Object.values(ASSET_SHA256).every((sha256) => /^[0-9a-f]{64}$/.test(sha256))).toBe(true)
+    expect(() => validateAssetMetadata('player.glb', ASSETS['player.glb']!)).not.toThrow()
+  })
+
+  it('rejects a GLB whose checksum does not match', () => {
+    expect(() => verifyAssetBody('model.glb', Buffer.from('glTF payload'), '0'.repeat(64))).toThrow(
+      /SHA-256 mismatch/,
+    )
   })
 })

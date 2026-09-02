@@ -8,54 +8,95 @@
  *
  * Source: KayKit by Kay Lousberg (kaylousberg.com), CC0 1.0 Universal.
  */
-import { mkdir, writeFile, stat } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 const OUT = join(import.meta.dirname, '..', 'public', 'models')
 
 const RAW = 'https://raw.githubusercontent.com/KayKit-Game-Assets'
-const CHARACTERS = `${RAW}/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf`
-const SKELETONS = `${RAW}/KayKit-Character-Pack-Skeletons-1.0/main/addons/kaykit_character_pack_skeletons/Characters/gltf`
-const DUNGEON = `${RAW}/KayKit-Dungeon-Remastered-1.0/main/addons/kaykit_dungeon_remastered/Assets/gltf`
+export const KAYKIT_REVISIONS = {
+  characters: '672074b73ba276876a19e8816ecdc5241817ab47',
+  skeletons: '15b62b9bad122f72926c10fb14d622c73819fa54',
+  dungeon: 'b0ca9bd96a8072ab36a3a5464f00ed1e06a16d07',
+}
+
+export const ASSET_SHA256 = {
+  'player.glb': '60428e3abc09ba83e595d256e3af8c5c976b46cdae599f0802fc82b4a3445168',
+  'swarm.glb': '6ffc003f895bed0b074791e0e490846210a2e2f8fc7da300aba53cc185f95968',
+  'ranged.glb': '4003f2b77891bb56f7e0de7d555abcb497aebbcaee35b614211f16275f9ccae3',
+  'brute.glb': '178b6fda810b814c250d8a2010c24dfd9b458b9006dd323353e620b7ff118bbe',
+  'floor.glb': '5b6bbbc683f6729d094732056f157a928435de97ec3cf94c341c7465907fe17b',
+  'floor_rocks.glb': 'fb06b1e9ca7a5d14f6757119490c4b3c077a30e31ef580da6925b6657f14c14d',
+  'wall.glb': 'f2f343a7bdf2d45947e3f354494e16095a923485e05637e3804e3b81ce11d921',
+  'portal.glb': '5ba16e5d919aaa8958435c4b73c1f8a94c98febeacf716faa1359f24e6b27d70',
+  'loot_normal.glb': '3052015d7cd670c170742317fd9c728e5643221450857abbae9eefe6dbc66092',
+  'loot_magic.glb': 'f72fd2201cd42ad399928a0b7bcc34d5b0e6d0624aeaf824fef81852109955f8',
+  'loot_rare.glb': '04708d5f88ed59d361c8a6cec1efe8b7028dbc641dfae0a1467f272e14a94b6e',
+  'orb.glb': '32759c64c6e8fe5634753134748f4b759b698aafb1245b8ed9fe62afe390faa5',
+}
+
+const CHARACTERS = `${RAW}/KayKit-Character-Pack-Adventures-1.0/${KAYKIT_REVISIONS.characters}/addons/kaykit_character_pack_adventures/Characters/gltf`
+const SKELETONS = `${RAW}/KayKit-Character-Pack-Skeletons-1.0/${KAYKIT_REVISIONS.skeletons}/addons/kaykit_character_pack_skeletons/Characters/gltf`
+const DUNGEON = `${RAW}/KayKit-Dungeon-Remastered-1.0/${KAYKIT_REVISIONS.dungeon}/addons/kaykit_dungeon_remastered/Assets/gltf`
 
 /** Named for the role each fills in the sim, not for the file it came from. */
 export const ASSETS = {
-  'player.glb': `${CHARACTERS}/Knight.glb`,
-  'swarm.glb': `${SKELETONS}/Skeleton_Minion.glb`,
-  'ranged.glb': `${SKELETONS}/Skeleton_Rogue.glb`,
-  'brute.glb': `${SKELETONS}/Skeleton_Warrior.glb`,
+  'player.glb': { url: `${CHARACTERS}/Knight.glb`, sha256: ASSET_SHA256['player.glb'] },
+  'swarm.glb': { url: `${SKELETONS}/Skeleton_Minion.glb`, sha256: ASSET_SHA256['swarm.glb'] },
+  'ranged.glb': { url: `${SKELETONS}/Skeleton_Rogue.glb`, sha256: ASSET_SHA256['ranged.glb'] },
+  'brute.glb': { url: `${SKELETONS}/Skeleton_Warrior.glb`, sha256: ASSET_SHA256['brute.glb'] },
 
-  'floor.glb': `${DUNGEON}/floor_tile_large.gltf.glb`,
-  'floor_rocks.glb': `${DUNGEON}/floor_tile_large_rocks.gltf.glb`,
-  'wall.glb': `${DUNGEON}/wall.gltf.glb`,
-  'portal.glb': `${DUNGEON}/stairs.gltf.glb`,
+  'floor.glb': { url: `${DUNGEON}/floor_tile_large.gltf.glb`, sha256: ASSET_SHA256['floor.glb'] },
+  'floor_rocks.glb': { url: `${DUNGEON}/floor_tile_large_rocks.gltf.glb`, sha256: ASSET_SHA256['floor_rocks.glb'] },
+  'wall.glb': { url: `${DUNGEON}/wall.gltf.glb`, sha256: ASSET_SHA256['wall.glb'] },
+  'portal.glb': { url: `${DUNGEON}/stairs.gltf.glb`, sha256: ASSET_SHA256['portal.glb'] },
 
   // Ground items read their rarity from the container they land in.
-  'loot_normal.glb': `${DUNGEON}/box_small.gltf.glb`,
-  'loot_magic.glb': `${DUNGEON}/chest.glb`,
-  'loot_rare.glb': `${DUNGEON}/chest_gold.glb`,
-  'orb.glb': `${DUNGEON}/bottle_A_green.gltf.glb`,
+  'loot_normal.glb': { url: `${DUNGEON}/box_small.gltf.glb`, sha256: ASSET_SHA256['loot_normal.glb'] },
+  'loot_magic.glb': { url: `${DUNGEON}/chest.glb`, sha256: ASSET_SHA256['loot_magic.glb'] },
+  'loot_rare.glb': { url: `${DUNGEON}/chest_gold.glb`, sha256: ASSET_SHA256['loot_rare.glb'] },
+  'orb.glb': { url: `${DUNGEON}/bottle_A_green.gltf.glb`, sha256: ASSET_SHA256['orb.glb'] },
 }
 
-async function fetchOne(name, url) {
-  const target = join(OUT, name)
-  const already = await stat(target).catch(() => null)
-  if (already?.size > 0) return { name, bytes: already.size, cached: true }
+export function validateAssetMetadata(name, source) {
+  if (source.url.includes('/TODO_') || source.sha256.startsWith('TODO_')) {
+    throw new Error(`${name}: fill the TODO commit SHA and SHA-256 before fetching assets`)
+  }
+  if (!/\/[0-9a-f]{40}\//.test(source.url)) throw new Error(`${name}: URL is not pinned to a 40-character commit SHA`)
+  if (!/^[0-9a-f]{64}$/.test(source.sha256)) throw new Error(`${name}: SHA-256 must be 64 lowercase hex characters`)
+}
 
-  const response = await fetch(url)
-  if (!response.ok) throw new Error(`${name}: ${response.status} ${response.statusText}\n  ${url}`)
-  const body = Buffer.from(await response.arrayBuffer())
-  // A 404 page or an LFS pointer would sail through as a "successful" download.
+export function verifyAssetBody(name, body, expectedSha256) {
   if (body.subarray(0, 4).toString('ascii') !== 'glTF') {
     throw new Error(`${name}: not a GLB (starts with ${JSON.stringify(body.subarray(0, 16).toString('ascii'))})`)
   }
+  const actualSha256 = createHash('sha256').update(body).digest('hex')
+  if (actualSha256 !== expectedSha256) {
+    throw new Error(`${name}: SHA-256 mismatch, expected ${expectedSha256}, got ${actualSha256}`)
+  }
+}
+
+async function fetchOne(name, source) {
+  validateAssetMetadata(name, source)
+  const target = join(OUT, name)
+  const cachedBody = await readFile(target).catch(() => null)
+  if (cachedBody?.length) {
+    verifyAssetBody(name, cachedBody, source.sha256)
+    return { name, bytes: cachedBody.length, cached: true }
+  }
+
+  const response = await fetch(source.url)
+  if (!response.ok) throw new Error(`${name}: ${response.status} ${response.statusText}\n  ${source.url}`)
+  const body = Buffer.from(await response.arrayBuffer())
+  verifyAssetBody(name, body, source.sha256)
   await writeFile(target, body)
   return { name, bytes: body.length, cached: false }
 }
 
 async function fetchAll() {
   await mkdir(OUT, { recursive: true })
-  const results = await Promise.all(Object.entries(ASSETS).map(([name, url]) => fetchOne(name, url)))
+  const results = await Promise.all(Object.entries(ASSETS).map(([name, source]) => fetchOne(name, source)))
 
   let total = 0
   for (const { name, bytes, cached } of results.sort((a, b) => b.bytes - a.bytes)) {

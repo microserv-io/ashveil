@@ -28,6 +28,8 @@ const BUDGETS: Readonly<Record<string, number>> = {
   'src/ui/hud.ts': 520,
   // Actor bodies moved to actorview.ts and terrain to terrain.ts when art landed.
   'src/render/views.ts': 290,
+  'src/render/clipdriver.ts': 110,
+  'src/render/riginput.ts': 100,
   'src/sim/pathfind.ts': 300,
   'headless/run.ts': 280,
   'src/render/scene.ts': 200,

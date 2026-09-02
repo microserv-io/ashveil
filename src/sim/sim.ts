@@ -26,6 +26,7 @@ import { aimPoint, assistCone, softTarget } from './targeting'
 import { enterArea, resetPlayerForArea, revivePlayerAt } from './transitions'
 import {
   DT,
+  HIT_FLASH_DURATION,
   type Actor,
   type AilmentKind,
   type AreaMap,
@@ -416,6 +417,7 @@ export class Sim {
       actor.pendingCast = null
       const def = skillDef(cast.skill)
       actor.recovery = def.recovery / speedMultiplier(def, actor.stats.attackSpeed, actor.stats.castSpeed)
+      actor.recoveryTotal = actor.recovery
 
       switch (def.shape) {
         case 'melee_arc':
@@ -637,6 +639,7 @@ export class Sim {
     actor.mana -= def.manaCost
     const speed = speedMultiplier(def, actor.stats.attackSpeed, actor.stats.castSpeed)
     actor.windup = def.windup / speed
+    actor.windupTotal = actor.windup
     actor.activeSkill = id
     actor.pendingCast = { skill: id, aim: clone(aim), targetId: actor.targetId }
     actor.state = 'acting'
@@ -694,7 +697,7 @@ export class Sim {
   private applyHit(source: Actor, target: Actor, def: SkillDef, effectiveness = 1): void {
     const breakdown = computeHit(source, target, def, this.weaponOf(source), this.rng, effectiveness)
     target.life -= breakdown.total
-    target.hitFlash = 0.12
+    target.hitFlash = HIT_FLASH_DURATION
     if (source.kind === 'player') target.lastDamageFrom = this.playerIdOfActor(source.id)
     this.events.push({
       kind: 'hit',
@@ -1023,7 +1026,9 @@ export class Sim {
       state: 'idle',
       targetId: null,
       windup: 0,
+      windupTotal: 0,
       recovery: 0,
+      recoveryTotal: 0,
       activeSkill: null,
       pendingCast: null,
       cooldowns: {},
@@ -1089,7 +1094,9 @@ export class Sim {
       state: 'idle',
       targetId: null,
       windup: 0,
+      windupTotal: 0,
       recovery: 0,
+      recoveryTotal: 0,
       activeSkill: null,
       pendingCast: null,
       cooldowns: {},

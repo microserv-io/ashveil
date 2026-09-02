@@ -73,6 +73,8 @@ bug waiting for the second one to arrive.
   the authoritative half of the tick and nowhere else.
 - Replicated state must survive `JSON.stringify`. No `Map`, no `Set`, no class
   instances in `Actor`, `Character`, projectiles, ground items or orbs.
+- `Actor.windupTotal` and `Actor.recoveryTotal` preserve each cast timer's starting
+  duration so animation phase can be reconstructed after snapshots and prediction.
 - Area geometry is a pure function of `(seed, depth)` via `areaRng`. Never send a
   map; send the seed. Never draw map generation from the main stream, or a restored
   snapshot regenerates different geometry.

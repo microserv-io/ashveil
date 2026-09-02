@@ -1,17 +1,19 @@
 import * as THREE from 'three'
 import type { Actor } from '../sim/types'
+import { ClipDriver, type ClipProfile } from './clipdriver'
 import { clipsOf, meshesOf, spawnModel, type ModelName } from './models'
+import type { MotionDriver } from './motion'
 import { PALETTE } from './palette'
-import { Rig, rigStateOf } from './rig'
+import { createRigInputOwner, resetRigInput, type RigInputOwner } from './riginput'
 
 /** One actor's body: the model, the handles needed to tint it, and its animation. */
-export interface ActorView {
+export interface ActorView extends RigInputOwner {
   group: THREE.Group
   materials: THREE.MeshStandardMaterial[]
   baseColours: THREE.Color[]
   /** What the kit shipped, so a faded corpse can be handed back looking new. */
   baseTransparent: boolean[]
-  rig: Rig
+  driver: MotionDriver<ClipProfile>
   fadeLeft: number
   /** Which pool this body came from; see `actorpool.ts`. */
   key: string
@@ -57,8 +59,9 @@ export function createActorView(actor: Actor): ActorView {
 
   const materials = meshesOf(model).map((mesh) => mesh.material as THREE.MeshStandardMaterial)
   const baseColours = materials.map((material) => material.color.clone())
-  const rig = new Rig(model, clipsOf(modelFor(actor)))
-  rig.apply(rigStateOf(actor))
+  const driver = new ClipDriver()
+  driver.bind(model, { clips: clipsOf(modelFor(actor)) })
+  const inputOwner = createRigInputOwner()
 
   if (actor.kind === 'player') {
     // The lamp itself comes from the pool in views.ts; a light parented here would
@@ -72,7 +75,7 @@ export function createActorView(actor: Actor): ActorView {
   }
 
   const baseTransparent = materials.map((material) => material.transparent)
-  return { group, materials, baseColours, baseTransparent, rig, fadeLeft: 0, key: viewKey(actor) }
+  return { group, materials, baseColours, baseTransparent, driver, fadeLeft: 0, key: viewKey(actor), ...inputOwner }
 }
 
 function rarityColour(actor: Actor): number {
@@ -143,7 +146,7 @@ export function applyDeathFade(view: ActorView, delta: number): void {
 }
 
 /** Returns a used body to the state a fresh one would have been in. */
-export function resetActorView(view: ActorView, actor: Actor): void {
+export function resetActorView(view: ActorView): void {
   view.fadeLeft = 0
   view.group.scale.setScalar(1)
   view.group.visible = true
@@ -153,10 +156,11 @@ export function resetActorView(view: ActorView, actor: Actor): void {
     material.emissiveIntensity = 0
     material.color.copy(view.baseColours[index]!)
   })
-  view.rig.apply(rigStateOf(actor))
+  view.driver.reset()
+  resetRigInput(view)
 }
 
 export function disposeActorView(view: ActorView): void {
-  view.rig.dispose()
+  view.driver.dispose()
   for (const material of view.materials) material.dispose()
 }
