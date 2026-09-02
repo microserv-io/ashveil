@@ -28,7 +28,7 @@ export const DEATH_FADE = 1.6
  * The kit's characters stand ~2.17 model units tall. Scaling by the collision radius
  * keeps the body the size the sim thinks it is, so a brute looks as wide as it walks.
  */
-const HEIGHT_PER_RADIUS = 1.93
+export const HEIGHT_PER_RADIUS = 1.93
 /** The models face +Z; the sim's zero facing is +X. */
 const MODEL_FACING = Math.PI / 2
 

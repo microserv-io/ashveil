@@ -2,7 +2,7 @@
  * Reads a rigged GLB's bind pose and writes the semantic joint table the
  * procedural pose generator uses as its rest geometry.
  *
- *   node scripts/extract-rig-geometry.mjs
+ *   node scripts/extract-rig-geometry.mjs <glb> <profile> [carry-clip] <output>
  *
  * The bind pose comes from the skin's inverse bind matrices: glTF defines them as
  * the transform from mesh space into each joint's space, so inverting one gives
@@ -13,7 +13,7 @@
  * `src/render/procedural/fixtures/` and pinned by `tests/procedural_geometry.test.ts`.
  */
 import { readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { isAbsolute, join, relative, resolve } from 'node:path'
 
 const ROOT = join(import.meta.dirname, '..')
 const JSON_CHUNK = 0x4e4f534a
@@ -44,6 +44,37 @@ export const KAYKIT_OPTIONAL_JOINTS = {
   'toes.r': 'toes.r',
   'wrist.l': 'wrist.l',
   'wrist.r': 'wrist.r',
+}
+
+export const HUMANOID_V1_JOINTS = {
+  root: 'root',
+  pelvis: 'pelvis',
+  spine: 'spine',
+  chest: 'chest',
+  head: 'head',
+  'shoulder.l': 'upper_arm.L',
+  'elbow.l': 'forearm.L',
+  'hand.l': 'hand.L',
+  'shoulder.r': 'upper_arm.R',
+  'elbow.r': 'forearm.R',
+  'hand.r': 'hand.R',
+  'hip.l': 'thigh.L',
+  'knee.l': 'shin.L',
+  'foot.l': 'foot.L',
+  'hip.r': 'thigh.R',
+  'knee.r': 'shin.R',
+  'foot.r': 'foot.R',
+}
+
+export const HUMANOID_V1_OPTIONAL_JOINTS = {
+  neck: 'neck',
+  'clavicle.l': 'clavicle.L',
+  'clavicle.r': 'clavicle.R',
+}
+
+const IDENTITY_ARM_CARRY = {
+  left: { shoulder: [0, 0, 0, 1], elbow: [0, 0, 0, 1] },
+  right: { shoulder: [0, 0, 0, 1], elbow: [0, 0, 0, 1] },
 }
 
 /**
@@ -237,17 +268,23 @@ function mapJoints(positions, mapping, label) {
   return table
 }
 
-export function extractRigGeometry(body, mapping = KAYKIT_JOINTS, optional = KAYKIT_OPTIONAL_JOINTS) {
+export function extractRigGeometry(
+  body,
+  mapping = KAYKIT_JOINTS,
+  optional = KAYKIT_OPTIONAL_JOINTS,
+  carry = { clip: KAYKIT_CARRY_CLIP, sides: { right: KAYKIT_CARRY_SWING_SCALE } },
+) {
   const positions = bindPosePositions(body)
+  const armCarry = carry?.clip
+    ? Object.fromEntries(Object.entries(carry.sides).map(([side, swingScale]) => [side, {
+        shoulder: averageBoneRotation(body, carry.clip, mapping[`shoulder.${side[0]}`]),
+        elbow: averageBoneRotation(body, carry.clip, mapping[`elbow.${side[0]}`]),
+        swingScale,
+      }]))
+    : carry?.pose
   return {
     standingHeight: bindPoseHeight(body),
-    armCarry: {
-      right: {
-        shoulder: averageBoneRotation(body, KAYKIT_CARRY_CLIP, mapping['shoulder.r']),
-        elbow: averageBoneRotation(body, KAYKIT_CARRY_CLIP, mapping['elbow.r']),
-        swingScale: KAYKIT_CARRY_SWING_SCALE,
-      },
-    },
+    ...(armCarry ? { armCarry } : {}),
     joints: mapJoints(positions, mapping, 'required'),
     optional: mapJoints(positions, optional, 'optional'),
   }
@@ -255,15 +292,54 @@ export function extractRigGeometry(body, mapping = KAYKIT_JOINTS, optional = KAY
 
 const FIXTURE = join(ROOT, 'src', 'render', 'procedural', 'fixtures', 'kaykit_knight.json')
 
-if (process.argv[1] === import.meta.filename) {
-  const source = join(ROOT, 'public', 'models', 'player.glb')
+const PROFILES = {
+  kaykit: {
+    joints: KAYKIT_JOINTS,
+    optional: KAYKIT_OPTIONAL_JOINTS,
+    identityCarry: undefined,
+    carrySides: { right: KAYKIT_CARRY_SWING_SCALE },
+  },
+  'humanoid-v1': {
+    joints: HUMANOID_V1_JOINTS,
+    optional: HUMANOID_V1_OPTIONAL_JOINTS,
+    identityCarry: IDENTITY_ARM_CARRY,
+    carrySides: { left: 1, right: 1 },
+  },
+}
+PROFILES.humanoid_v1 = PROFILES['humanoid-v1']
+PROFILES['humanoid.v1'] = PROFILES['humanoid-v1']
+
+export function createRigFixture(body, source, profileName, carryClip) {
+  const profile = PROFILES[profileName]
+  if (!profile) throw new Error(`unknown rig profile "${profileName}"`)
+  const carry = carryClip
+    ? { clip: carryClip, sides: profile.carrySides }
+    : profile.identityCarry ? { pose: profile.identityCarry } : undefined
+  const sourcePath = isAbsolute(source) ? source : resolve(ROOT, source)
+  const sourceLabel = relative(ROOT, sourcePath)
   const fixture = {
-    source: 'public/models/player.glb',
+    source: sourceLabel,
     note: 'Bind-pose joint positions in the body frame (+Y up, +Z forward, +X left), in model units.',
-    armCarryNote: `Right arm absolute body-frame rotations averaged over ${KAYKIT_CARRY_CLIP}.`,
-    carryClip: KAYKIT_CARRY_CLIP,
-    ...extractRigGeometry(readFileSync(source)),
+    ...(carryClip ? {
+      armCarryNote: `${profileName === 'kaykit' ? 'Right arm' : 'Arm'} absolute body-frame rotations averaged over ${carryClip}.`,
+      carryClip,
+    } : profile.identityCarry ? {
+      armCarryNote: 'Identity absolute body-frame rotations keep both arms in their authored rest carry.',
+    } : {}),
+    ...extractRigGeometry(body, profile.joints, profile.optional, carry),
   }
-  writeFileSync(FIXTURE, `${JSON.stringify(fixture, null, 2)}\n`)
-  console.log(`wrote ${FIXTURE}`)
+  return fixture
+}
+
+if (process.argv[1] === import.meta.filename) {
+  const args = process.argv.slice(2)
+  const [source = join(ROOT, 'public', 'models', 'player.glb'), profile = 'kaykit'] = args
+  const carryClip = args.length === 0 ? KAYKIT_CARRY_CLIP : args.length === 4 ? args[2] : undefined
+  const output = args.length === 0 ? FIXTURE : args.at(-1)
+  if ((args.length !== 0 && args.length !== 3 && args.length !== 4) || !output) {
+    throw new Error('usage: node scripts/extract-rig-geometry.mjs <glb> <profile> [carry-clip] <output>')
+  }
+  const fixture = createRigFixture(readFileSync(source), source, profile, carryClip)
+  writeFileSync(output, `${JSON.stringify(fixture, null, 2)}\n`)
+  console.log(`wrote ${output}`)
 }

@@ -1,6 +1,6 @@
 import '../../src/style.css'
 import * as THREE from 'three'
-import { createActorView, disposeActorView, orientActorView, type ActorView } from '../../src/render/actorview'
+import { createActorView, disposeActorView, HEIGHT_PER_RADIUS, orientActorView, type ActorView } from '../../src/render/actorview'
 import { loadModels } from '../../src/render/models'
 import type { MotionMode } from '../../src/render/motionmode'
 import { RIG_CLIPS, type RigState } from '../../src/render/rig'
@@ -8,15 +8,24 @@ import type { RigInput } from '../../src/render/riginput'
 import { SceneHost } from '../../src/render/scene'
 import { Sim } from '../../src/sim/sim'
 import { HIT_FLASH_DURATION, type Actor, type MonsterArchetype } from '../../src/sim/types'
+import {
+  createReviewBodyView,
+  loadReviewBody,
+  MASCULINE_V1_BODY,
+  motionModeForBody,
+  reviewBodyScale,
+  supportsMotionMode,
+  type ReviewBodyDefinition,
+} from './body'
 
 /**
  * One body, the gameplay camera, and every knob the animation pipeline has.
  *
  * Rocco's rule is that no animation merges until he has watched it, and watching
  * it in a real fight means waiting for the state you care about to happen. This
- * page asks for the state directly instead — but through the same `ActorView`,
- * the same drivers and the same models the game builds, so what is on screen here
- * is what will be on screen there. There is no second body builder.
+ * page asks for the state directly instead — through the same `ActorView` and
+ * motion-driver contracts the game uses, so the review still exercises the real
+ * runtime seams.
  */
 
 const SEED = Number(new URLSearchParams(location.search).get('seed') ?? 7)
@@ -34,6 +43,7 @@ const RECOVERY = 0.6
 
 const sim = new Sim({ seed: SEED })
 await loadModels('models')
+const masculineSource = await loadReviewBody(MASCULINE_V1_BODY)
 
 const host = new SceneHost(document.getElementById('stage')!)
 host.buildTerrain(sim.map)
@@ -52,7 +62,7 @@ const readout = element<HTMLPreElement>('readout')
 const controls = element('controls')
 const toggle = element<HTMLButtonElement>('panel-toggle')
 
-fill(bodySelect, bodies.map((entry) => entry.label))
+fill(bodySelect, bodies.map((entry) => entry.id))
 fill(state, Object.keys(RIG_CLIPS))
 state.value = 'moving'
 
@@ -72,6 +82,7 @@ const input: RigInput = {
 
 let view: ActorView | null = null
 let actor: Actor = bodies[0]!.actor
+let bodyScale = actor.radius * HEIGHT_PER_RADIUS
 let simTime = 0
 let facing = 0
 let previousFacing = 0
@@ -126,7 +137,7 @@ function frame(now: number): void {
   placeCamera()
   host.render()
 
-  element('summary').textContent = `${driverSelect.value} · ${input.state} · ${input.speed.toFixed(1)} m/s`
+  element('summary').textContent = `${driverSelect.value} · ${input.state} · ${input.speed.toFixed(1)} m/s · scale ${bodyScale.toFixed(3)}`
   element('distance-value').textContent = Number(distance.value).toFixed(1)
   element('pitch-value').textContent = Number(pitch.value).toFixed(0)
   element('orbit-value').textContent = Number(orbit.value).toFixed(0)
@@ -216,13 +227,24 @@ function writeInput(delta: number): void {
 }
 
 function rebuild(): void {
-  const chosen = bodies.find((entry) => entry.label === bodySelect.value) ?? bodies[0]!
+  const chosen = bodies.find((entry) => entry.id === bodySelect.value) ?? bodies[0]!
   if (view) {
     host.scene.remove(view.group)
     disposeActorView(view)
   }
   actor = chosen.actor
-  view = createActorView(actor, driverSelect.value as MotionMode)
+  const requested = driverSelect.value as MotionMode
+  const clipOption = driverSelect.querySelector<HTMLOptionElement>('option[value="clip"]')!
+  clipOption.disabled = chosen.definition !== null && !supportsMotionMode(chosen.definition, 'clip')
+  const mode = chosen.definition === null ? requested : motionModeForBody(chosen.definition, requested)
+  driverSelect.value = mode
+  if (chosen.definition === null) {
+    view = createActorView(actor, mode)
+    bodyScale = actor.radius * HEIGHT_PER_RADIUS
+  } else {
+    view = createReviewBodyView(actor, masculineSource, chosen.definition)
+    bodyScale = reviewBodyScale(actor.radius, chosen.definition)
+  }
   host.scene.add(view.group)
 }
 
@@ -232,13 +254,20 @@ function recentre(): void {
   host.followPlayer(actor.pos, 1)
 }
 
+interface ReviewBody {
+  readonly id: string
+  readonly actor: Actor
+  readonly definition: ReviewBodyDefinition | null
+}
+
 /** Real actors from a real run, so nothing here has to invent a body the game never builds. */
-function collectBodies(): { label: string; actor: Actor }[] {
-  const found: { label: string; actor: Actor }[] = [{ label: 'knight', actor: sim.player }]
+function collectBodies(): ReviewBody[] {
+  const found: ReviewBody[] = [{ id: 'knight', actor: sim.player, definition: null }]
   for (const archetype of ['swarm', 'ranged', 'brute'] as MonsterArchetype[]) {
     const monster = sim.actors.find((candidate) => candidate.kind === 'monster' && candidate.archetype === archetype)
-    if (monster) found.push({ label: archetype, actor: monster })
+    if (monster) found.push({ id: archetype, actor: monster, definition: null })
   }
+  found.push({ id: MASCULINE_V1_BODY.id, actor: sim.player, definition: MASCULINE_V1_BODY })
   return found
 }
 
@@ -248,6 +277,8 @@ function describe(wall: number): string {
     : `recovery ${input.phase.recovery.toFixed(2)}`
   return [
     `driver     ${driverSelect.value}`,
+    `body       ${bodySelect.value}`,
+    `bodyScale  ${bodyScale.toFixed(6)}`,
     `frame      ${(wall * 1000).toFixed(1)}ms`,
     '',
     `state      ${input.state}`,
