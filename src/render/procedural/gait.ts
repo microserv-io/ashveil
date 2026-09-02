@@ -1,19 +1,12 @@
 import type { ArmCarry } from '../profiles/profile'
 import { armSwingAmplitude, writeCarriedArm } from './arms'
-import { clamp, lerp, smoothstep, TAU } from './curves'
+import { clamp, lerp, smoothstep, softMin, TAU } from './curves'
 import type { RigGeometry } from './geometry'
 import { Joint, LEFT, RIGHT } from './joints'
 import { createLimbScratch, resolveTorso, writeTorso, type LimbScratch } from './limbs'
 import { resetPose, type Pose } from './pose'
 import { writeStrideLeg } from './stride'
-import {
-  hipBob,
-  hipBobAmplitude,
-  PELVIS_YAW,
-  reachableHalfStep,
-  stanceHipHeight,
-  torsoBobPitch,
-} from './proportions'
+import { hipBob, hipBobAmplitude, pelvisTurn, reachableHalfStep, stanceHipHeight, torsoBobPitch } from './proportions'
 
 /** What locomotion needs from the sim, already reduced to numbers. */
 export interface GaitDrive {
@@ -74,10 +67,10 @@ const RUN_STRIDE = [1.05, 0.45] as const
 const WALK_DUTY = 0.53
 const RUN_DUTY = 0.22
 /**
- * The longest a leg spends in the air, in seconds, for a leg as long as the
- * nominal one. A real swing is close to speed-invariant, so this is what stops a
- * body whose step has hit its reach limit from answering more speed with more
- * flight: it has to put the foot down and take another step instead.
+ * The longest a leg spends in the air, for a leg as long as the nominal one. A
+ * real swing is close to speed-invariant, so this stops a body whose step has hit
+ * its reach limit answering more speed with more flight: it puts the foot down
+ * and takes another step instead.
  */
 const MAX_SWING_TIME = 0.5
 /**
@@ -171,7 +164,7 @@ export function writeLocomotion(
   const bob = -hipBob(geometry, params.hipHeight, params.halfStep, params.duty, params.runBlend, phase)
   // Pitching forward while the hips ride high takes some of the bob off the head,
   // but only some: buying height costs the square of the angle.
-  const bobPitch = Math.min(torsoBobPitch(geometry, (bob + params.bob) * 0.5), TORSO_PITCH)
+  const bobPitch = softMin(torsoBobPitch(geometry, (bob + params.bob) * 0.5), TORSO_PITCH, TORSO_PITCH * 0.5)
   const lean = clamp(LEAN_RUN * params.runBlend + drive.acceleration * LEAN_ACCEL, -LEAN_LIMIT, LEAN_LIMIT)
   const bank = clamp(-drive.facingDelta * TURN_LEAN, -BANK_LIMIT, BANK_LIMIT)
   // A chibi's hips are a large fraction of its legs, so the same tilt swings its
@@ -181,7 +174,7 @@ export function writeLocomotion(
   // Leading, not trailing: the hip over the foot that is reaching forward turns
   // forward with it, which is where the extra step length comes from. A sine here
   // put the turn a quarter cycle out of step with the legs.
-  const yaw = -PELVIS_YAW * proportion * proportion * Math.cos(TAU * phase)
+  const yaw = -pelvisTurn(geometry) * Math.cos(TAU * phase)
 
   out.offset[0] = SWAY * roll * geometry.hipWidth
   out.offset[1] = geometry.ankleHeight + params.hipHeight - geometry.hipHeight + bob
@@ -201,9 +194,12 @@ export function writeLocomotion(
   // Each arm swings against the foot on its own side, driven by where that foot
   // actually is rather than by a wave fitted alongside it: a sine of the cycle is
   // a quarter-turn out of step with a stride whose stance is not half of it.
-  const swing = armSwingAmplitude(geometry, params.runBlend) / Math.max(1e-6, params.halfStep)
-  writeCarriedArm(geometry, state, out, LEFT, left * swing, params.runBlend, armCarry?.left)
-  writeCarriedArm(geometry, state, out, RIGHT, right * swing, params.runBlend, armCarry?.right)
+  // Clamped to the step: a swing foot reaches past its own footfall and comes
+  // back, and the arm answers the stride rather than the overshoot.
+  const swing = armSwingAmplitude(geometry, params.runBlend)
+  const step = Math.max(1e-6, params.halfStep)
+  writeCarriedArm(geometry, state, out, LEFT, clamp(left / step, -1, 1) * swing, params.runBlend, armCarry?.left)
+  writeCarriedArm(geometry, state, out, RIGHT, clamp(right / step, -1, 1) * swing, params.runBlend, armCarry?.right)
 }
 
 const FREQUENCY_PROBE = createGaitParams()

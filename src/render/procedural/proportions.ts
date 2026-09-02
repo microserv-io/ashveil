@@ -1,4 +1,4 @@
-import { lerp, TAU } from './curves'
+import { lerp, softMax, softMin, TAU } from './curves'
 import { footRoll } from './foot'
 import type { RigGeometry } from './geometry'
 import { Joint } from './joints'
@@ -37,8 +37,14 @@ const SWING_REACH = 0.9
  * geometric forces a bob here and this is the one number that is chosen.
  */
 const RUN_BOB = 0.05
+/**
+ * How wide the rounding is where two branches of the hip's height cross, as a
+ * fraction of the nominal leg. Wide enough to spread the corner over a few frames,
+ * narrow enough that the height it gives is still the height the leg can reach.
+ */
+const CORNER = 0.012
 /** How far the pelvis turns about the vertical each half stride, leading the swing leg. */
-export const PELVIS_YAW = 8 * Math.PI / 180
+const PELVIS_YAW = 8 * Math.PI / 180
 
 /**
  * The longest span the stance leg may use, and so the one place the whole
@@ -88,7 +94,9 @@ export function hipBob(
 ): number {
   const wave = Math.sin(TAU * (phase - duty * 0.5))
   const chosen = RUN_BOB * geometry.nominalLegLength * runBlend * wave * wave
-  return Math.max(hipHeight - stanceClearance(geometry, halfStep, footEnvelope(phase, duty)), chosen, 0)
+  const needed = hipHeight - stanceClearance(geometry, halfStep, footEnvelope(phase, duty))
+  const corner = CORNER * geometry.nominalLegLength
+  return softMax(softMax(needed, chosen, corner), 0, corner)
 }
 
 /** The deepest that bob ever gets, which is what the head has to be shielded from. */
@@ -124,12 +132,24 @@ function stanceClearance(geometry: RigGeometry, halfStep: number, excursion: num
 }
 
 /**
- * How far the turning pelvis carries a hip along the stride. Only most of it is
- * spent: the pelvis also rolls and sways, and the step budget has to leave the
- * chain enough room for those before it runs into full extension.
+ * How far the pelvis turns about the vertical for this body. A chibi's hips are a
+ * large fraction of its legs, so the same turn swings its feet much further than a
+ * person's, and it gets proportionally less of it.
+ */
+export function pelvisTurn(geometry: RigGeometry): number {
+  const share = geometry.nominalLegLength > 0
+    ? Math.min(1, geometry.legLength / geometry.nominalLegLength)
+    : 1
+  return PELVIS_YAW * share * share
+}
+
+/**
+ * How far that turn carries a hip along the stride. Only most of it is spent: the
+ * pelvis also rolls and sways, and the step budget has to leave the chain room for
+ * those before it runs into full extension.
  */
 export function pelvisLead(geometry: RigGeometry): number {
-  return geometry.hipWidth * Math.sin(PELVIS_YAW) * 0.6
+  return geometry.hipWidth * Math.sin(pelvisTurn(geometry)) * 0.35
 }
 
 const ROLL = new Float32Array(2)
@@ -145,7 +165,7 @@ function footEnvelope(phase: number, duty: number): number {
   const sinceMidStance = phase - duty * 0.5
   const half = sinceMidStance - Math.floor(sinceMidStance * 2 + 0.5) * 0.5
   const rise = Math.max(1e-6, Math.min(duty, 1 - duty) * 0.5)
-  return Math.min(1, Math.abs(half) / rise)
+  return softMin(Math.abs(half) / rise, 1, 0.25)
 }
 
 function kneeSpan(geometry: RigGeometry, bend: number): number {

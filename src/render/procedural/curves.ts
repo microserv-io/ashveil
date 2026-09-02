@@ -26,6 +26,35 @@ export function ease(raw: number, shape: number): number {
   return 1 - Math.pow(1 - t, 1 / shape)
 }
 
+/**
+ * The larger of two values, with the corner where they cross rounded off over
+ * `width`. A hard max between two smooth curves is a kink in the result, and a
+ * kink in a hip height is a frame that moves twice as far as the ones either side
+ * of it — a hitch, once a stride, in an otherwise flowing walk.
+ */
+export function softMax(a: number, b: number, width: number): number {
+  return 0.5 * (a + b + Math.hypot(a - b, width)) - width * 0.5
+}
+
+/** The same, rounded from above: never below either value, which a limit must not be. */
+export function softCeil(a: number, b: number, width: number): number {
+  return 0.5 * (a + b + Math.hypot(a - b, width))
+}
+
+export function softMin(a: number, b: number, width: number): number {
+  return -softMax(-a, -b, width)
+}
+
+/** Cubic through two points with a slope stated at each: the way to match a handover. */
+export function hermite(from: number, to: number, fromSlope: number, toSlope: number, t: number): number {
+  const square = t * t
+  const cube = square * t
+  return (2 * cube - 3 * square + 1) * from +
+    (cube - 2 * square + t) * fromSlope +
+    (-2 * cube + 3 * square) * to +
+    (cube - square) * toSlope
+}
+
 /** Lerp between two lanes of the same array, which is how a compiled clip stores its keys. */
 export function mix(values: Float32Array, from: number, to: number, t: number): number {
   return values[from]! + (values[to]! - values[from]!) * t

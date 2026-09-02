@@ -1,4 +1,4 @@
-import { lerp, smoothstep } from './curves'
+import { clamp, hermite } from './curves'
 import { footRoll } from './foot'
 import type { GaitParams } from './gait'
 import type { RigGeometry } from './geometry'
@@ -17,6 +17,13 @@ import { stanceReach, swingReach } from './proportions'
 const STANCE_NARROW = 0.15
 /** Toes up through mid-swing, so a swinging foot clears the ground it crosses. */
 const SWING_CLEARANCE = 0.25
+/**
+ * The swing leaves and lands at exactly the speed stance runs at. Anything less
+ * and the foot changes pace on the frame it touches down, which is a hitch once a
+ * stride; the cost is that the foot reaches past the step and comes back, which
+ * is what a real one does.
+ */
+const RETRACT = 0.5
 
 /** Writes one leg onto its stride, and answers how far forward of the hip it landed. */
 export function writeStrideLeg(
@@ -30,33 +37,30 @@ export function writeStrideLeg(
   const { duty, halfStep, runBlend, lift } = params
   const phase = legPhase - Math.floor(legPhase)
   let swing = 0
-  let pitch = 0
-  let forward = 0
+  let flat = 0
   if (phase < duty) {
     // Stance: straight back at the actor's own speed, which is the no-slide rule.
-    forward = 1 - 2 * (phase / duty)
-    pitch = footRoll(geometry, forward, ROLL)
-    scratch.target[1] = geometry.ankleHeight + ROLL[0]!
-    scratch.target[2] = halfStep * forward + ROLL[1]!
+    flat = 1 - 2 * (phase / duty)
   } else {
-    // Swing leaves the ground where the toe-off left it and lands where the heel
-    // strike wants it, so the foot never jumps at either handover.
+    // A foot that lands still is already travelling backwards: stance leaves at
+    // the body's own speed, so the swing arrives at that slope rather than easing
+    // to a stop and being yanked into the stride on the next frame.
     const s = (phase - duty) / (1 - duty)
-    const eased = smoothstep(0, 1, s)
     swing = Math.sin(Math.PI * s)
-    const off = footRoll(geometry, -1, ROLL)
-    const offRise = ROLL[0]!
-    const offAlong = -halfStep + ROLL[1]!
-    const strike = footRoll(geometry, 1, ROLL)
-    forward = -1 + 2 * eased
-    pitch = lerp(off, strike, eased) - SWING_CLEARANCE * swing
-    scratch.target[1] = geometry.ankleHeight + lerp(offRise, ROLL[0]!, eased) + lift * swing
-    scratch.target[2] = lerp(offAlong, halfStep + ROLL[1]!, eased)
+    const slope = -RETRACT * 2 * (1 - duty) / Math.max(0.05, duty)
+    flat = hermite(-1, 1, slope, slope, s)
   }
+  // The roll follows where the foot is along the stride rather than which half of
+  // the cycle it is in, so nothing changes rate at the handover.
+  const pitch = footRoll(geometry, clamp(flat, -1, 1), ROLL) - SWING_CLEARANCE * swing
   scratch.target[0] = side * geometry.hipWidth * (1 - STANCE_NARROW * runBlend)
+  // Squared, so the foot settles onto the ground instead of arriving with the
+  // whole descent still in it and stopping dead the frame it lands.
+  scratch.target[1] = geometry.ankleHeight + ROLL[0]! + lift * swing * swing
+  scratch.target[2] = halfStep * flat + ROLL[1]!
   if (phase >= duty) liftToReach(geometry, scratch, side, swing)
   writeLeg(geometry, scratch, out, side, pitch)
-  return forward * halfStep
+  return halfStep * flat
 }
 
 const ROLL = new Float32Array(2)
@@ -76,5 +80,9 @@ function liftToReach(geometry: RigGeometry, scratch: LimbScratch, side: number, 
   const flat = Math.hypot(dx, dz)
   if (flat >= reach) return
   const drop = Math.sqrt(reach * reach - flat * flat)
-  scratch.target[1] = Math.max(scratch.target[1]!, scratch.positions[hip * 3 + 1]! - drop)
+  // Faded out with the swing that needs it. Held to the end, this lifts the foot a
+  // centimetre above where the stride wants it and then lets go on the frame the
+  // foot lands: a corner in the one path a walk is built on, once a stride.
+  const wanted = scratch.positions[hip * 3 + 1]! - drop
+  if (wanted > scratch.target[1]!) scratch.target[1]! += (wanted - scratch.target[1]!) * swing
 }

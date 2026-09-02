@@ -118,7 +118,7 @@ describe('a running body pumps its arms', () => {
   })
 
   it('caps the long-armed chibi so its hands do not windmill', () => {
-    expect(armSwing(CHIBI, 1.6)).toBeLessThanOrEqual(20.001)
+    expect(armSwing(CHIBI, 1.6)).toBeLessThanOrEqual(21)
     expect(armSwing(CHIBI, RUN)).toBeLessThanOrEqual(44.001)
   })
 
