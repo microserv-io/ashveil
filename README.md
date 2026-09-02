@@ -178,7 +178,8 @@ which is the curve the loop is supposed to have. Re-measure with
 `npm run sim -- sweep` rather than trusting this paragraph.
 
 Working on this? Start with [CLAUDE.md](CLAUDE.md), then
-[docs/architecture.md](docs/architecture.md) for structural work and
+[docs/architecture.md](docs/architecture.md) for structural work,
+[docs/pipeline.md](docs/pipeline.md) before touching character animation, and
 [src/sim/CLAUDE.md](src/sim/CLAUDE.md) before touching the sim.
 
 **In:** direct movement with click-to-move as an option, gamepad and Steam Deck
