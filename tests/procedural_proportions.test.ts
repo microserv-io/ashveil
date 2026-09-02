@@ -10,7 +10,6 @@ import {
   CHIBI as chibi,
   HUMAN as human,
   HUMAN_LEG_RATIO,
-  KNIGHT as knight,
   MASCULINE as masculine,
 } from './fixtures/bodies'
 
@@ -324,22 +323,10 @@ describe('a human body runs like a person', () => {
   })
 })
 
-describe('a short-legged placeholder keeps up without sliding', () => {
-  it('walks the knight at a cadence a body could hold', () => {
-    gaitParams(knight, WALK, params)
-    expect(params.frequency, 'the legs may whirr, but not blur').toBeLessThan(6)
-    expect(params.duty).toBeGreaterThanOrEqual(0.52)
-    expect(walk(knight, WALK).stanceKnee).toBeLessThan(28)
-    // Its ankle sits a fifth of its leg off the ground and its toe is stubby, so
-    // the trailing knee folds further than a person's at toe-off. It is a chibi.
-    expect(walk(knight, WALK).peakKnee).toBeLessThan(50)
-  })
-})
-
 describe('the torso carries the bob without nodding', () => {
   for (const [name, speed, budget] of [['walk', WALK, 4], ['run', RUN, 8]] as const) {
     it(`keeps the ${name} torso within ${budget} degrees and the head level`, () => {
-      for (const [body, geometry] of [['human', human], ['knight', knight]] as const) {
+      for (const [body, geometry] of [['human', human], ['masculine-v3', masculine]] as const) {
         const measured = walk(geometry, speed)
         expect(measured.chestPitch, `${body} chest pitch swing`).toBeLessThanOrEqual(budget)
         expect(measured.headPitch, `${body} head is not level`).toBeLessThanOrEqual(3)
@@ -364,7 +351,7 @@ describe('gait proportions', () => {
   })
 
   for (const [name, geometry] of [
-    ['human', human], ['chibi', chibi], ['knight', knight], ['masculine-v3', masculine],
+    ['human', human], ['chibi', chibi], ['masculine-v3', masculine],
   ] as const) {
     it(`${name} keeps its planted contact still`, () => {
       const slide = contactSlide(geometry, WALK)

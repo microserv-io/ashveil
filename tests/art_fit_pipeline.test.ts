@@ -12,7 +12,8 @@ const MANIFEST = JSON.parse(readFileSync(join(COMMITTED, `${BODY}.manifest.json`
 const SOURCE = join(ROOT, 'docs', 'art-pipeline', 'sources', MANIFEST.source.file)
 const BLENDER = process.env.ASHVEIL_BLENDER ?? '/opt/homebrew/bin/blender'
 
-const ARTEFACTS = ['glb', 'manifest.json', 'report.json', 'review.png'] as const
+// The review sheet is a diagnostic render and is not committed; the three shipped files are.
+const ARTEFACTS = ['glb', 'manifest.json', 'report.json'] as const
 const runnable = existsSync(BLENDER) && existsSync(SOURCE)
 const scratch: string[] = []
 

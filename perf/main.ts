@@ -2,7 +2,6 @@ import '../src/style.css'
 import { Effects } from '../src/render/fx'
 import { FrameLoop, type FramePhase } from '../src/render/loop'
 import { loadModels } from '../src/render/models'
-import { readMotionMode, type MotionMode } from '../src/render/motionmode'
 import { prewarmShaders } from '../src/render/prewarm'
 import { WorldOverlay } from '../src/render/overlay'
 import { SceneHost } from '../src/render/scene'
@@ -30,12 +29,9 @@ const DEFAULT_FRAMES = 2400
 /** Matches the headless harness, so both measure a bot with human-ish reactions. */
 const DECISION_INTERVAL = 3
 
-export type { MotionMode }
-
 export interface FramePerf {
   seed: number
   policy: string
-  motion: MotionMode
   frames: number
   viewport: { width: number; height: number; pixelRatio: number }
   renderer: string
@@ -62,7 +58,7 @@ export interface FramePerf {
     depth: number
   }[]
   /** What the bot actually played. A change here invalidates the comparison. */
-  workload: { motion: MotionMode; ticks: number; depth: number; monstersKilled: number; level: number; deaths: number }
+  workload: { ticks: number; depth: number; monstersKilled: number; level: number; deaths: number }
 }
 
 export interface Percentiles {
@@ -76,8 +72,6 @@ const params = new URLSearchParams(globalThis.location.search)
 const seed = Number(params.get('seed') ?? 7)
 const frameTarget = Number(params.get('frames') ?? DEFAULT_FRAMES)
 const policy = POLICIES[params.get('policy') ?? 'brawler'] ?? POLICIES.brawler!
-// The same flag the bodies read, so the report can never name a mode it did not play.
-const motion: MotionMode = readMotionMode(globalThis.location.search)
 
 const app = document.getElementById('app')!
 const overlayRoot = document.createElement('div')
@@ -183,7 +177,6 @@ function publish(): void {
   const report: FramePerf = {
     seed,
     policy: policy.name,
-    motion,
     frames: frameTimes.length,
     viewport: {
       width: host.renderer.domElement.clientWidth,
@@ -208,7 +201,6 @@ function publish(): void {
     },
     worstFrames: [...samples].sort((a, b) => b.ms - a.ms).slice(0, 12),
     workload: {
-      motion,
       ticks: sim.tickCount,
       depth: sim.depth,
       monstersKilled: sim.monstersKilled,

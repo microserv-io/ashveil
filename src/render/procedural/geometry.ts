@@ -1,4 +1,3 @@
-import fixture from './fixtures/kaykit_knight.json'
 import { Joint, JOINT_NAMES, JOINT_PARENT } from './joints'
 
 /** Rest positions keyed by the names in `JOINT_NAMES`. */
@@ -165,14 +164,3 @@ function unitParentDirection(direction: Float32Array, joint: Joint): readonly nu
   const parent = JOINT_PARENT[joint]!
   return [direction[parent * 3]!, direction[parent * 3 + 1]!, direction[parent * 3 + 2]!]
 }
-
-/** The KayKit knight's bind pose, in model units. See `scripts/extract-rig-geometry.mjs`. */
-export const KAYKIT_KNIGHT_JOINTS: JointTable = fixture.joints
-export const KAYKIT_KNIGHT_STANDING_HEIGHT = fixture.standingHeight
-export const KAYKIT_KNIGHT_FOOTPRINT: FootPrint = fixture.footprint
-export const KAYKIT_KNIGHT_GEOMETRY: RigGeometry = buildRigGeometry(
-  KAYKIT_KNIGHT_JOINTS,
-  1,
-  KAYKIT_KNIGHT_STANDING_HEIGHT,
-  KAYKIT_KNIGHT_FOOTPRINT,
-)

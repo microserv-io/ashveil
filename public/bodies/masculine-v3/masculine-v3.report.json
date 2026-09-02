@@ -5,7 +5,7 @@
   "helpers": true,
   "normalise": {
     "input": {
-      "path": "/Users/roccolangeweg/Repositories/microserv-io/ashveil/workspaces/humanoid-fitter/docs/art-pipeline/sources/masculine-mannequin-tripo.glb",
+      "file": "masculine-mannequin-tripo.glb",
       "meshObjects": 1,
       "materials": [
         "tripo_620177bc_535c_4d15_9d7f_7c6e29fb857d"

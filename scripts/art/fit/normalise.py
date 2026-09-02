@@ -12,6 +12,8 @@ it forwards until something asks the mesh.
 
 from __future__ import annotations
 
+import os
+
 import math
 
 import bmesh
@@ -435,7 +437,9 @@ def run(input_path: str, contract: dict) -> dict:
         "regions": regions,
         "objects": {name: item["object"] for name, item in keep.items()},
         "report": {
-            "input": {"path": input_path, **imported, "removedZeroAreaFaces": removed,
+            # The report ships with the body and must not depend on which checkout
+            # produced it, so only the file name is recorded; the manifest has its hash.
+            "input": {"file": os.path.basename(input_path), **imported, "removedZeroAreaFaces": removed,
                       "sourceHeightMetres": round(source_height, 6)},
             "regionsKept": sorted(keep),
             "regionsExcluded": [name for name in contract["regions"]["excluded"] if name in named],

@@ -1,14 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { createGaitState } from '../src/render/procedural/gait'
-import {buildRigGeometry, KAYKIT_KNIGHT_JOINTS, KAYKIT_KNIGHT_STANDING_HEIGHT,  } from '../src/render/procedural/geometry'
 import { Joint } from '../src/render/procedural/joints'
 import { createPose, type Pose, resolvePositions } from '../src/render/procedural/pose'
 import { DEATH_SETTLE, POSE_CLIPS, SKILL_CLIPS } from '../src/render/procedural/clips'
 import { CARRY_HAND } from '../src/render/procedural/arms'
 import { writeClipPose } from '../src/render/procedural/poses'
 import { quatAngleBetween, quatLength } from '../src/render/procedural/quat'
+import { MASCULINE as geometry } from './fixtures/bodies'
 
-const geometry = buildRigGeometry(KAYKIT_KNIGHT_JOINTS, 1.2, KAYKIT_KNIGHT_STANDING_HEIGHT)
 const state = createGaitState()
 const pose = createPose()
 const positions = new Float32Array(Joint.Count * 3)
@@ -70,6 +69,7 @@ describe('placeholder skill poses', () => {
       expect(furthestAt, `${skill} does not strike on the turn`).toBeGreaterThan(0.45)
       expect(furthestAt).toBeLessThan(0.8)
       expect(nearestAt, `${skill} does not anticipate before it strikes`).toBeLessThan(furthestAt)
+      // A neutral first key hides an unreadable strike until the hand is already moving forward.
       expect(nearest, `${skill} never draws the hand back from its carry`).toBeLessThan(0)
     })
 

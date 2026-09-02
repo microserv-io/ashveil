@@ -8,8 +8,9 @@ import { Joint } from '../src/render/procedural/joints'
 import { createPose, resolvePositions } from '../src/render/procedural/pose'
 import { ProceduralDriver } from '../src/render/proceduraldriver'
 import { MASCULINE_PROFILE } from '../src/render/profiles/masculine'
-import { RIG_CLIPS, type RigState } from '../src/render/rig'
+import type { RigState } from '../src/render/rig'
 import { createRigInputOwner } from '../src/render/riginput'
+import { SKILLS } from '../src/sim/skills'
 import { loadGlbSkeleton } from './fixtures/glbskeleton'
 
 const MASCULINE = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v3', 'masculine-v3.glb')
@@ -17,6 +18,7 @@ const WALK = 1.6
 const DT = 1 / 60
 const DEGREES = 180 / Math.PI
 const DRIVEN = Object.values(MASCULINE_PROFILE.bones)
+const STATES: RigState[] = ['idle', 'moving', 'dead', ...(Object.keys(SKILLS) as RigState[])]
 
 function masculine(): { body: THREE.Object3D; driver: ProceduralDriver } {
   const body = loadGlbSkeleton(MASCULINE)
@@ -25,16 +27,26 @@ function masculine(): { body: THREE.Object3D; driver: ProceduralDriver } {
   return { body, driver }
 }
 
-function drive(driver: ProceduralDriver, state: RigState): void {
+function drive(driver: ProceduralDriver, state: RigState, frames = 40, from = 0, speed = WALK): number {
   const input = createRigInputOwner().rigInput
-  for (let frame = 1; frame <= 40; frame++) {
+  let time = from
+  for (let frame = 0; frame < frames; frame++) {
+    time += DT
     input.state = state
-    input.speed = state === 'moving' ? WALK : 0
+    input.speed = state === 'moving' ? speed : 0
     input.dashing = state === 'dash'
-    input.time = frame * DT
+    input.time = time
     input.seed = 11
     driver.update(input, DT)
   }
+  return time
+}
+
+function poseOf(body: THREE.Object3D): number[] {
+  return DRIVEN.flatMap((name) => {
+    const bone = body.getObjectByName(name)!
+    return [...bone.quaternion.toArray(), ...bone.position.toArray()]
+  })
 }
 
 function kneeBend(positions: Float32Array): number {
@@ -56,7 +68,7 @@ function kneeBend(positions: Float32Array): number {
 
 describe('humanoid.v1 procedural driver', () => {
   it('produces finite quaternions for every RigState on the real body', () => {
-    for (const state of Object.keys(RIG_CLIPS) as RigState[]) {
+    for (const state of STATES) {
       const { body, driver } = masculine()
       drive(driver, state)
       for (const name of DRIVEN) {
@@ -91,5 +103,30 @@ describe('humanoid.v1 procedural driver', () => {
       }
     }
     expect(stanceKnee, 'a walk, not a squat').toBeLessThan(25)
+  })
+
+  it('restores the bind pose and deterministic gait when a body is recycled', () => {
+    const { body, driver } = masculine()
+    const bind = poseOf(body)
+
+    drive(driver, 'dash', 30)
+    expect(poseOf(body)).not.toEqual(bind)
+
+    driver.reset()
+    expect(poseOf(body)).toEqual(bind)
+
+    drive(driver, 'moving', 25, 900, 3)
+    const recycled = poseOf(body)
+    const fresh = masculine()
+    drive(fresh.driver, 'moving', 25, 900, 3)
+    expect(recycled).toEqual(poseOf(fresh.body))
+
+    driver.dispose()
+    fresh.driver.dispose()
+  })
+
+  it('refuses to update before it is bound', () => {
+    const driver = new ProceduralDriver()
+    expect(() => drive(driver, 'idle', 1)).toThrow(/bind/)
   })
 })

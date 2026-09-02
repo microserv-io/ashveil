@@ -4,8 +4,8 @@
  * than rediscovered from the maths.
  *
  * **Body frame.** Right-handed, +Y up, +Z forward (the direction the actor faces),
- * +X to the actor's left. This is the frame the KayKit rig is already authored in:
- * its `upperarm.l` sits at positive X and its models face +Z (`actorview.ts`).
+ * +X to the actor's left. The fitted bodies use this frame and face +Z
+ * (`actorview.ts`).
  *
  * **Canonical joint frame.** A joint's rest direction is the unit vector from its
  * own rest position to its child's, in the body frame. Identity means the bone
@@ -22,7 +22,7 @@
  *     boneLocal(j) = inverse(parentBodyRotation) * q(j) * correction(j)
  *
  * where `correction(j)` maps the canonical rest direction onto the skeleton's own
- * bone axis. Nothing here knows about KayKit bone axes.
+ * bone axis. Nothing here knows about a concrete skeleton's bone axes.
  *
  * **Positions.** `geometry.ts` holds rest positions in the body frame with the
  * ground at y = 0. Lengths are in whatever unit `RigInput.speed` is in — slice 2b

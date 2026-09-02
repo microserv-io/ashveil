@@ -11,10 +11,9 @@ import { writeClipPose } from '../src/render/procedural/poses'
 import { quatRotate } from '../src/render/procedural/quat'
 import { ProceduralDriver } from '../src/render/proceduraldriver'
 import { MASCULINE_PROFILE } from '../src/render/profiles/masculine'
-import { KAYKIT_PROFILE } from '../src/render/profiles/kaykit'
 import { createRigInputOwner } from '../src/render/riginput'
 import { DT } from '../src/sim/types'
-import { KNIGHT, MASCULINE } from './fixtures/bodies'
+import { MASCULINE } from './fixtures/bodies'
 import { loadGlbSkeleton } from './fixtures/glbskeleton'
 
 /**
@@ -133,16 +132,17 @@ describe('the shoulder girdle follows the arm', () => {
   })
 
   it('skips the joint silently on a family that has none', () => {
-    const drive = createGaitDrive()
-    drive.speed = 1.6
-    writeLocomotion(KNIGHT, drive, state, pose)
-    writeShoulderGirdle(KNIGHT, pose)
-    // The pose still says it; the knight's profile maps no clavicle, so the
-    // binding never asks for one.
-    expect(KAYKIT_PROFILE.optional['clavicle.l']).toBeUndefined()
-    const body = loadGlbSkeleton(join(import.meta.dirname, '..', 'public', 'models', 'player.glb'))
+    const body = loadGlbSkeleton(join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v3', 'masculine-v3.glb'))
     const driver = new ProceduralDriver()
-    expect(() => driver.bind(body, KAYKIT_PROFILE)).not.toThrow()
+    const profile = { ...MASCULINE_PROFILE, optional: {} }
+    const { rigInput: input } = createRigInputOwner()
+    input.state = 'moving'
+    input.speed = 1.6
+    input.time = DT
+
+    expect(profile.optional).toEqual({})
+    driver.bind(body, profile)
+    expect(() => driver.update(input, DT)).not.toThrow()
     driver.dispose()
   })
 })

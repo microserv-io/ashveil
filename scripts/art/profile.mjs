@@ -183,7 +183,7 @@ export function generate(bodyName, { root = ROOT } = {}) {
     source: `public/bodies/${bodyName}/${bodyName}.glb`,
     note: 'Bind-pose joint positions in the body frame (+Y up, +Z forward, +X left), in model units.',
     armCarryNote: 'No weapon carry measured: the empty-hand carry is computed from the rest pose.',
-    ...extractRigGeometry(glb, mapping.required, mapping.optional, {}),
+    ...extractRigGeometry(glb, mapping.required, mapping.optional),
     // The fitter measured the footprint off the sole itself; the extractor's own
     // reading follows bone dominance, which loses the heel on a rig whose ankle
     // sits a fifth of the way along the foot.

@@ -49,6 +49,8 @@ const GROUND = -STANCE_HIP
 const LATE_STRIKE = 0.5 + 0.5 * 0.32
 /** Anticipation, then acceleration into the hit: a strike is not a slow push. */
 const STRIKE_EASE = 1
+const DRAW_BACK_L: Vec3 = [CARRY_HAND[0], CARRY_HAND[1], CARRY_HAND[2] - 0.02]
+const DRAW_BACK_R: Vec3 = [-CARRY_HAND[0], CARRY_HAND[1], CARRY_HAND[2] - 0.02]
 
 /**
  * Where a skill leaves the hand when its recovery runs out. Not the carry: a
@@ -86,7 +88,7 @@ export const POSE_SOURCES: Readonly<Record<PoseClipName, PoseClipSource>> = {
   cleave: {
     planted: true,
     keys: [
-      { at: 0, footL: [0, GROUND, 0] },
+      { at: 0, footL: [0, GROUND, 0], handL: DRAW_BACK_L, handR: DRAW_BACK_R },
       {
         // One pose in the wind-up, not two: thirteen frames is not enough to hold
         // a lift and a coil and still swing.
@@ -138,7 +140,7 @@ export const POSE_SOURCES: Readonly<Record<PoseClipName, PoseClipSource>> = {
   firebolt: {
     planted: true,
     keys: [
-      { at: 0 },
+      { at: 0, handL: DRAW_BACK_L, handR: DRAW_BACK_R },
       {
         at: 0.18,
         torso: [

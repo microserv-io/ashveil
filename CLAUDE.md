@@ -25,15 +25,16 @@ Small dependency set on purpose.
 | `src/sim/` | **The game. Deterministic, host-agnostic, the source of truth.** Has its own `CLAUDE.md`: read it before changing anything here. |
 | `src/session/` | Characters, persistence, the authoritative session. Owns what outlives an area. |
 | `src/net/` | Transport interface and wire protocol. Loopback today. No gameplay. |
-| `src/render/` | Three.js scene, models, effects, screen overlay, and the input layer (actions, device profiles, gamepad). Reads sim state, never mutates it. `models.ts` loads the kit, `rig.ts` owns pose mapping and precedence, `riginput.ts` projects sim state into the motion-driver seam, `clipdriver.ts` applies clips, `terrain.ts` builds the dungeon, and `actorview.ts` builds one body. |
+| `src/render/` | Three.js scene, models, effects, screen overlay, and the input layer (actions, device profiles, gamepad). Reads sim state, never mutates it. `models.ts` loads the committed body and fetched dungeon kit, `rig.ts` owns pose precedence, `riginput.ts` projects sim state into the procedural-motion seam, `profiles/` describes fitted skeletons, `terrain.ts` builds the dungeon, and `actorview.ts` builds one body. |
 | `src/ui/` | HUD, gear panel, passive tree. |
 | `headless/run.ts` | The CLI harness: `playtest`, `sweep`, `dps`, `trace`. |
 | `perf/` | The frame-budget harness: plays the game against itself in real Chrome and reports what each frame cost. `baseline.json` is this machine. |
 | `spike/deck/` | Shell diagnostics for the Steam Deck decision. Shell-agnostic on purpose. |
-| `spike/art/` | CC0 art evaluation: the real mapgen rendered with a candidate asset kit. |
 | `tests/` | Vitest, including the architecture guards that enforce the invariants below. |
 | `docs/architecture.md` | Why the architecture is shaped this way: netcode model, layering, zones, economy. Read before structural work. |
 | `docs/quality.md` | How work gets done: red/green, what must have a test, module-first, the gate, what to look for in review. |
+| `docs/pipeline.md` | The character and animation pipeline: the agent-run path from concept to a rigged body, the family contracts, the gear fitting recipe. Read before touching character generation or rigging. |
+| `docs/motion.md` | How to add or change a motion: the frame contract, the pose key format, the gates, the review page. Read before touching `src/render/procedural/`. |
 
 ## Commands
 
@@ -51,7 +52,6 @@ Small dependency set on purpose.
 - `npm run perf` measures the frame against the 60fps budget in real Chrome, and
   `npm run perf -- --record` makes the current numbers the baseline.
 - `npm run spike:dev` serves the Deck shell diagnostics on :5274.
-- `npm run art:dev` fetches the CC0 kit and serves the art spike on :5275.
 - `npm run art:fit -- --input <mesh> --family humanoid --body <name> [--helpers]` puts
   one body through the asset path into `public/bodies/<name>/`, and fails closed with
   a named gate. `npm run art:profile -- --body <name>` generates its fixture and
@@ -59,8 +59,7 @@ Small dependency set on purpose.
   `scripts/art/fit/frame.py` and are worth reading before touching either.
 - `npm run motion:dev` serves the motion review page on :5277, bound to every
   interface: one body at the gameplay camera with the driver, state, speed and
-  time scale under your hand. `?motion=procedural` picks the pose generator over
-  the clips in the game itself.
+  time scale under your hand.
 
 In dev the browser exposes `globalThis.ashveil` as `{ sim, host, view, controls }`,
 which is the fastest way to poke at a live game from the console.
@@ -157,9 +156,11 @@ untested, or unmeasurable by this bot", and the third is the easiest one to miss
   every shader program, so one light attached to a projectile recompiles all of them
   mid-fight: that was an 85ms frame. Claim one from `LightPool` in
   `src/render/lights.ts` instead. `tests/frame_budget.test.ts` guards it.
-- **Every sim state needs a pose.** `tests/rig.test.ts` fails if a new skill has no
-  mapped animation, because a missing one renders as a body frozen in its bind pose;
-  `tests/clipdriver_golden.test.ts` pins the resulting poses.
+- **Every sim state needs a pose.** `POSE_SOURCES`'s
+  `Readonly<Record<PoseClipName, PoseClipSource>>` type and the `SKILL_CLIPS` list
+  pinned in `tests/procedural_poses.test.ts` guard skill coverage;
+  `tests/rig.test.ts` fails if any `RigState` leaves masculine-v3 frozen in its bind
+  pose.
 - **Module-first.** New logic lands as its own tested module behind an existing seam,
   never appended to a coordinator. The deciding question: does it need the
   coordinator's private mutable state? If no, it is a sibling module every time.
@@ -217,11 +218,11 @@ deferred, and several would change the balance the loop is tuned around.
 Flasks and potions, currency and crafting, more than one character archetype, skill
 gems and supports, uniques, trade, a real endgame, and sound.
 
-Art is built: bodies, terrain, loot and the portal are KayKit models (CC0), loaded
-from `public/models` and fetched rather than committed. **Effects and affordances
-stay procedural on purpose** — projectiles, the cleave arc, aim arrows, target rings
-and rarity auras are read-aids, not scenery, and giving them meshes would make them
-harder to read, not easier.
+Art is built: every actor uses the committed Tripo-fitted masculine-v3 body. Terrain,
+loot and the portal remain KayKit models (CC0), fetched into `public/models` until
+their Tripo replacement lands. **Effects and affordances stay procedural on purpose**
+— projectiles, the cleave arc, aim arrows, target rings and rarity auras are read-aids,
+not scenery, and giving them meshes would make them harder to read, not easier.
 
 Netcode is also not built. The seams are in (`docs/architecture.md`), the wire is not.
 

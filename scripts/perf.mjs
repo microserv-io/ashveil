@@ -40,29 +40,19 @@ const VIEWPORT = { width: 1600, height: 900 }
 const PREVIEW_PORT = 5279
 
 const args = process.argv.slice(2)
-const { record, keepOpen, seed, frames, motion } = parsePerfOptions(args)
-const BASELINE = baselinePath(motion)
-
-/** One baseline per motion mode: each paces the frame differently. Clip keeps the plain name. */
-export function baselinePath(motion) {
-  return join(ROOT, 'perf', motion === 'clip' ? 'baseline.json' : `baseline.${motion}.json`)
-}
+const { record, keepOpen, seed, frames } = parsePerfOptions(args)
+const BASELINE = join(ROOT, 'perf', 'baseline.json')
 
 export function parsePerfOptions(argv) {
   const readFlag = (name) => {
     const index = argv.indexOf(name)
     return index === -1 ? null : argv[index + 1]
   }
-  const motion = readFlag('--motion') ?? 'clip'
-  if (motion !== 'clip' && motion !== 'procedural') {
-    throw new Error(`--motion must be clip or procedural, got ${motion}`)
-  }
   return {
     record: argv.includes('--record'),
     keepOpen: argv.includes('--headed'),
     seed: Number(readFlag('--seed') ?? 7),
     frames: Number(readFlag('--frames') ?? 2400),
-    motion,
   }
 }
 
@@ -203,7 +193,7 @@ async function measure() {
   let session = null
   try {
     session = await attach(port)
-    const query = new URLSearchParams({ seed: String(seed), frames: String(frames), motion })
+    const query = new URLSearchParams({ seed: String(seed), frames: String(frames) })
     const url = `http://127.0.0.1:${PREVIEW_PORT}/?${query}`
     await session.send('Page.enable')
     await session.send('Page.navigate', { url })
@@ -234,7 +224,7 @@ function format(report) {
   const lines = [
     `renderer        ${report.renderer}`,
     `viewport        ${report.viewport.width}x${report.viewport.height} @${report.viewport.pixelRatio}x`,
-    `frames          ${report.frames} (seed ${report.seed}, ${report.policy}, ${report.motion})`,
+    `frames          ${report.frames} (seed ${report.seed}, ${report.policy})`,
     `workload        depth ${report.workload.depth}, ${report.workload.monstersKilled} kills, level ${report.workload.level}`,
     '',
     `                    p50      p95      p99      max`,
@@ -294,11 +284,6 @@ export function comparePerfReports(report, baseline) {
 
   if (!baseline) {
     notes.push('no baseline recorded yet — run `npm run perf -- --record`')
-    return { failures, notes }
-  }
-
-  if (baseline.workload.motion !== report.workload.motion) {
-    failures.push(`no baseline for motion=${report.workload.motion}, run with --record`)
     return { failures, notes }
   }
 

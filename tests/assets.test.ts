@@ -6,7 +6,7 @@ import {
   validateAssetMetadata,
   verifyAssetBody,
 } from '../scripts/fetch-assets.mjs'
-import { MODEL_NAMES } from '../src/render/models'
+import { BODY_MODEL_NAMES, MODEL_NAMES } from '../src/render/models'
 
 /**
  * The renderer awaits every model before the first frame, so a name it asks for
@@ -16,7 +16,8 @@ import { MODEL_NAMES } from '../src/render/models'
 describe('every model the renderer needs is one the fetch script pulls', () => {
   it('has a fetch row per model name', () => {
     const fetched = Object.keys(ASSETS).map((file) => file.replace(/\.glb$/, ''))
-    expect([...MODEL_NAMES].filter((name) => !fetched.includes(name))).toEqual([])
+    const fetchedOrCommitted = [...fetched, ...BODY_MODEL_NAMES]
+    expect([...MODEL_NAMES].filter((name) => !fetchedOrCommitted.includes(name))).toEqual([])
   })
 
   it('fetches nothing the renderer never asks for', () => {
@@ -30,7 +31,7 @@ describe('every model the renderer needs is one the fetch script pulls', () => {
     expect(sources.every((source) => !source.url.includes('/main/'))).toBe(true)
     expect(Object.values(KAYKIT_REVISIONS).every((revision) => /^[0-9a-f]{40}$/.test(revision))).toBe(true)
     expect(Object.values(ASSET_SHA256).every((sha256) => /^[0-9a-f]{64}$/.test(sha256))).toBe(true)
-    expect(() => validateAssetMetadata('player.glb', ASSETS['player.glb']!)).not.toThrow()
+    expect(() => validateAssetMetadata('floor.glb', ASSETS['floor.glb']!)).not.toThrow()
   })
 
   it('rejects a GLB whose checksum does not match', () => {

@@ -54,12 +54,11 @@ gameplay motion.
   state and events and never writes.
 
 Known limit: procedural motion reads as game-like rather than performed. At the
-elevated ARPG camera that is acceptable. The seam below lets a code-authored clip
-plug in for a hero moment if ever wanted.
+elevated ARPG camera that is acceptable.
 
 ### The seam
 
-Two instance-level drivers share one lifecycle; both write a bound body.
+The instance-level procedural driver writes a bound body.
 
 ```
 RigInput = {
@@ -80,7 +79,6 @@ MotionDriver (per body, owned by ActorView)
   update(input, delta)       // writes the skeleton in place; allocates nothing
   dispose()
 
-ClipDriver       wraps today's Rig: mixer, RIG_CLIPS, FADE, scaleToDuration quirks kept
 ProceduralDriver gait generator, two-bone analytic IK, layered flinch, pose tables
 ```
 
@@ -104,21 +102,13 @@ Rules, each with a test:
   not resolve fail at bind time with profile and joint named.
 - Profiles are immutable data (names, axes, per-joint rest-axis correction, limits,
   optional flags, sockets). Bone handles and scratch state are resolved per clone.
-- Sources never blend across each other. A body runs one driver.
+- A body runs one driver.
 
 Semantic joints, 15: `root`, `pelvis`, `spine`, `chest`, `head`, and per side
 `shoulder`, `elbow`, `hand`, `hip`, `knee`, `foot`. Optional per family: `neck`,
 `clavicle`, `toes`, `wrist`, `tail`. Sockets (weapon, head attachment) are a
 separate map. The quadruped family maps forelegs to `shoulder`/`elbow`/`hand` with
 its own gait; if that proves wrong, `Pose` is redesigned before skill poses exist.
-
-Verified facts that make this feasible:
-
-- The KayKit rig's 18 IK and roll control bones carry zero skin weight, and all 76
-  clips animate the 20 deform bones directly. Writing rotations to the deform bones
-  with the mixer stopped produces a correct pose.
-- Every KayKit clip animates `root` including translation, so a driver switch or
-  pool reset must restore the bind pose before writing joints.
 
 ### States and layers
 
@@ -199,10 +189,13 @@ otherwise.
 
 Committed: concept images, the raw Tripo output (paid and non-deterministic, so
 irreplaceable), skeleton contracts and manifests, and runtime GLBs under a few MB.
+Every image dragged into Tripo is first committed under `docs/art-pipeline/concepts/`,
+and every accepted output under `docs/art-pipeline/sources/`, so a body can be rebuilt
+from the exact bytes.
 Not committed: Blender files, diagnostic renders, numpy dumps, anything a script
-regenerates. KayKit stays fetched, but pinned to an immutable commit with a SHA-256
-check and a committed skeleton and clip manifest that the profile tests read. Git LFS
-is not installed and not needed at this size; revisit past roughly 50 MB.
+regenerates. Only the KayKit dungeon kit stays fetched, pinned to an immutable commit
+with SHA-256 checks, until its Tripo replacement models land. Git LFS is not installed
+and not needed at this size; revisit past roughly 50 MB.
 
 ## AI motion and rigging models
 
@@ -223,22 +216,19 @@ paying for, not prerequisites.
 
 ## Slices, one PR each
 
-KayKit is a placeholder. The knight is the only rigged body that exists today, so
-it is the test bed for the motion system and nothing more; every body, monster and
-prop moves to a Tripo-generated model through the asset path below, and the clip
-driver retires with the last KayKit model.
+The KayKit bodies were placeholders and are now retired. Masculine-v3 is the only
+runtime body for the player and every monster. The KayKit dungeon kit remains while
+its Tripo replacement is still concept-only.
 
 0. **Docs and disposition.** Correct the GDD, record the decisions, add this
    document, close the archived spikes.
-1. **Seam refactor.** `MotionDriver`, `ClipDriver`, `RigInput` in its own module,
-   `windupTotal`/`recoveryTotal` in the sim. Behaviour-identical, proven by a
-   golden-pose fixture recorded from the original `Rig`. The perf harness gains a
-   `motion` mode in its fingerprint.
-2. **Procedural locomotion** on the KayKit knight as test bed: idle, walk, run,
-   dash, death settle, flinch layer, placeholder lunges so the mode is complete.
-   Gates: no foot slide, zero root drift per loop, no allocation in the frame path,
-   a perf baseline for the mode, and the live review page. Behind
-   `?motion=procedural` until watched and accepted.
+1. **Seam refactor.** `MotionDriver` and `RigInput` own the lifecycle and replicated
+   inputs; `windupTotal`/`recoveryTotal` live in the sim.
+2. **Procedural locomotion** supplies idle, walk, run, dash, death settle, flinch and
+   skill poses. It was first exercised on the now-retired KayKit knight; masculine-v3
+   is the only body and procedural motion is the only runtime driver. Gates remain no
+   foot slide, zero root drift per loop, no allocation in the frame path, one perf
+   baseline, and the live review page.
 3. **Own humanoid body** through the asset path on `humanoid.v1`: the masculine
    Tripo mesh already exists, so this validates the normalise, rig, profile and
    verify steps with the least new risk. Replaces the knight.
@@ -249,8 +239,9 @@ driver retires with the last KayKit model.
 5. **Procedural skills**: cleave, firebolt, frost nova, monster bite, bolt, slam,
    authored once against semantic joints with per-profile axis correction, phased to
    windup and recovery. Procedural becomes the default.
-6. **Monster bodies**: swarm, ranged and brute through the asset path, after which
-   the KayKit fetch and the clip driver are removed.
+6. **Body consolidation**: swarm, ranged and brute use masculine-v3 alongside the
+   player. KayKit body fetches and the clip driver are removed; the dungeon kit stays
+   until replacement environment models exist.
 
 Every slice attaches its doc updates: `CLAUDE.md`, `docs/architecture.md`,
 `docs/quality.md` where gates change, `README.md`, `src/sim/CLAUDE.md` when the
@@ -267,8 +258,7 @@ Tracked separately as issues #21 and #22, not blocking this pipeline's slices.
   PR stays unmerged until Rocco has watched it. Measured gates are necessary, not
   sufficient: earlier spikes passed their metrics with motion a human rejected.
 
-- `npm run gate` and `npm run gate:perf` green on every slice, both motion modes
-  while the flag exists.
+- `npm run gate` and `npm run gate:perf` green on every slice.
 - The sweep is byte-identical per seed on every slice.
 - Slice 4 done means a second family went end to end without a new animation
   system, which is the definition of "achievable" for the GDD.
@@ -278,3 +268,51 @@ Tracked separately as issues #21 and #22, not blocking this pipeline's slices.
 No Mixamo lock-in, no Tripo rig or animate, no hosted motion services, no models on
 non-commercial data, no armor fitting or modular head socket yet, no hand-authored
 keyframes in Blender, no stun or knockback presentation until the sim has them.
+## Gear: fitting pieces to a body
+
+Gear is separate skinned meshes bound to the body's own skeleton, so every piece
+moves with the same procedural driver and no piece ever carries animation. The
+body can be shown bare, so the base body's deformation is a shipping look, not a
+fallback.
+
+Slots: boots, gloves, belt, legs, chest or dress, head, shoulders; weapons: one-hand,
+two-hand, off-hand (shield), two-hand bow. Weapons attach to hand sockets; the rest
+are fitted pieces with body-region masks.
+
+### The recipe, all Blender built-ins
+
+1. Generate the piece in Tripo from an approved concept, on a plain background,
+   in the pose it is worn in (A-pose for chest and shoulders, the hand's rest for
+   gloves), textured. One piece per file.
+2. Normalise with the same frame rules as a body (Y up, +Z forward, metres) and
+   align it to the body's skeleton landmarks from the manifest: a chest piece to
+   pelvis, chest and shoulder landmarks, boots to ankle, heel and toe, gloves to
+   wrist and hand tip. Scale by the landmark span it covers, never by bounding box.
+3. Shrinkwrap where the piece must hug (cuffs, collars, straps), leave rigid where
+   it must not (pauldron plates, chest plates), by an authored per-slot mask in the
+   family contract.
+4. Transfer the body's cleaned skin weights onto the piece (Data Transfer by nearest
+   face interpolation), limit to four influences, normalise. Rigid plates take a
+   single bone.
+5. Export as a skinned mesh on the same joint list and inverse binds as the body;
+   the runtime binds it to the body's `Skeleton` and hides the body's masked region
+   (masks are per-vertex sets on the body, authored once per family and slot).
+6. Gate: no self-intersection with the body through the stress poses and the walk,
+   run, cleave, firebolt, frost nova and death cycles (a piece-to-body distance
+   field, sampled at 32 phases); silhouette readable at the gameplay camera (a
+   rendered contact sheet); triangle and material budgets per slot.
+
+### Refitting to another body
+
+Same skeleton hierarchy, different proportions: bind the piece to the source body's
+surface (Surface Deform), morph the source body into the target body's proportions
+by the shared bones, and the piece follows; retransfer weights from the target body;
+rerun the gate. Anatomically different parts (hooves, a tail) are per-body pieces or
+slot rules, not refits.
+
+### Sockets and masks in the contract
+
+`humanoid.v1.json` carries `sockets` (hand L/R, head). This slice adds slot regions
+and their masks. A slot region is a named vertex set on the canonical body; a mask
+hides it when the slot is filled. Both are authored per family once and validated
+by the fitter's gates on every body.

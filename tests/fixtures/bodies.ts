@@ -1,12 +1,5 @@
 import masculine from '../../src/render/procedural/fixtures/masculine.json'
-import {
-  buildRigGeometry,
-  KAYKIT_KNIGHT_FOOTPRINT,
-  KAYKIT_KNIGHT_JOINTS,
-  KAYKIT_KNIGHT_STANDING_HEIGHT,
-  type JointTable,
-  type RigGeometry,
-} from '../../src/render/procedural/geometry'
+import { buildRigGeometry, type JointTable, type RigGeometry } from '../../src/render/procedural/geometry'
 
 /**
  * The bodies the motion tests measure against, in one place: every file that pins
@@ -46,20 +39,11 @@ export function humanoid(legRatio: number, armRatio: number): RigGeometry {
     'knee.r': [-0.1, leg * 0.5, 0],
     'foot.r': [-0.1, 0, 0],
   }
-  // A foot measured off a real body of this height: `masculine-v1.glb`.
+  // A foot measured off a real body of this height.
   return buildRigGeometry(table, 1, STANDING_HEIGHT, { heel: 0.066, toe: 0.212, pitch: 0 })
 }
 
-/** `actorview.ts` scales a body by its collision radius; this is what the knight gets. */
-export const GAMEPLAY_SCALE = 0.44 * 1.93
-
 export const HUMAN = humanoid(HUMAN_LEG_RATIO, HUMAN_ARM_RATIO)
 export const CHIBI = humanoid(0.17, 0.255)
-export const KNIGHT = buildRigGeometry(
-  KAYKIT_KNIGHT_JOINTS,
-  GAMEPLAY_SCALE,
-  KAYKIT_KNIGHT_STANDING_HEIGHT,
-  KAYKIT_KNIGHT_FOOTPRINT,
-)
 /** The Tripo body, at the scale its own fixture is measured in. */
 export const MASCULINE = buildRigGeometry(masculine.joints, 1, masculine.standingHeight, masculine.footprint)

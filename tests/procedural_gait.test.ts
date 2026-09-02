@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import {buildRigGeometry, KAYKIT_KNIGHT_JOINTS, KAYKIT_KNIGHT_STANDING_HEIGHT,  } from '../src/render/procedural/geometry'
 import {
   createGaitDrive,
   createGaitParams,
@@ -13,15 +12,7 @@ import { writeDash, writeIdle } from '../src/render/procedural/stances'
 import { Joint, LEFT } from '../src/render/procedural/joints'
 import { createPose, resolvePositions } from '../src/render/procedural/pose'
 import { footContact } from './fixtures/motion'
-
-/**
- * The KayKit knight at a scale that gives it a half-metre leg, which is as close
- * to a person as a chibi gets. It is still a chibi: `procedural_proportions` is
- * where human numbers are pinned, and this file asks whether the loop closes and
- * the feet stay put on a body whose step its legs cannot reach.
- */
-const KNIGHT_SCALE = 1.2
-const geometry = buildRigGeometry(KAYKIT_KNIGHT_JOINTS, KNIGHT_SCALE, KAYKIT_KNIGHT_STANDING_HEIGHT)
+import { MASCULINE as geometry } from './fixtures/bodies'
 
 const SPEEDS = [0.5, 1.5, 3, 6]
 const SAMPLES = 720
@@ -111,11 +102,7 @@ describe('the planted contact does not slide', () => {
       }
       expect(seen.heel[1]! - seen.heel[0]!, 'the heel drifted while planted').toBeLessThan(0.005)
       expect(seen.toe[1]! - seen.toe[0]!, 'the toe drifted while planted').toBeLessThan(0.005)
-      // The knight's ankle sits a fifth of its leg off the ground and its toe is
-      // stubby, so the roll swings its ankle nearly as far as its own step: the
-      // budget covers the reach it asks for to within a centimetre, not a
-      // millimetre. `procedural_proportions` holds the human bodies to 5 mm.
-      expect(maxLift, 'the planted contact left the ground, so the IK is clamping').toBeLessThan(0.01)
+      expect(maxLift, 'the planted contact left the ground, so the IK is clamping').toBeLessThan(0.008)
       expect(maxDrift, 'the foot wandered sideways').toBeLessThan(geometry.hipWidth * 0.2)
     })
   }

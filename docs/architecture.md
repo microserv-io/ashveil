@@ -89,8 +89,8 @@ read sim state, never mutate it.
 
 Animation is also a projection: each actor view converts replicated state and sim
 time into a preallocated `RigInput`, then gives it to that body's `MotionDriver`.
-The clip-backed driver owns Three.js animation state; neither the driver nor the
-pose feeds information back into the simulation.
+The procedural driver owns the skeleton pose; neither the driver nor the pose feeds
+information back into the simulation.
 
 ### Zones
 

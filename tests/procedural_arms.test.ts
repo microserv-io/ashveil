@@ -5,7 +5,6 @@ import { Joint } from '../src/render/procedural/joints'
 import { createPose, resolvePositions } from '../src/render/procedural/pose'
 import { writeIdle } from '../src/render/procedural/stances'
 import { MASCULINE_PROFILE } from '../src/render/profiles/masculine'
-import { KAYKIT_PROFILE } from '../src/render/profiles/kaykit'
 import type { ArmCarry } from '../src/render/profiles/profile'
 import { CHIBI, HUMAN, MASCULINE } from './fixtures/bodies'
 
@@ -14,6 +13,18 @@ const RUN = 5.5
 const state = createGaitState()
 const pose = createPose()
 const positions = new Float32Array(Joint.Count * 3)
+
+function weaponCarry(geometry: RigGeometry): ArmCarry {
+  const carried = createPose()
+  writeIdle(geometry, createGaitDrive(), createGaitState(), carried)
+  return {
+    right: {
+      shoulder: [...carried.rotations.subarray(Joint.ShoulderR * 4, Joint.ShoulderR * 4 + 4)] as [number, number, number, number],
+      elbow: [...carried.rotations.subarray(Joint.ElbowR * 4, Joint.ElbowR * 4 + 4)] as [number, number, number, number],
+      swingScale: 0.5,
+    },
+  }
+}
 
 function idle(geometry: RigGeometry, carry = MASCULINE_PROFILE.armCarry): void {
   const drive = createGaitDrive()
@@ -72,13 +83,13 @@ describe('a weaponless body hangs its arms at its sides', () => {
     expect(elbowBend()).toBeLessThan(25)
   })
 
-  it('leaves a measured weapon carry alone', () => {
-    const carry = KAYKIT_PROFILE.armCarry?.right
-    expect(carry).toBeDefined()
+  it('leaves an explicit weapon carry alone', () => {
+    const profile = weaponCarry(HUMAN)
+    const carry = profile.right!
     const drive = createGaitDrive()
-    writeLocomotion(HUMAN, drive, state, pose, KAYKIT_PROFILE.armCarry)
+    writeLocomotion(HUMAN, drive, state, pose, profile)
     for (let lane = 0; lane < 4; lane++) {
-      expect(pose.rotations[Joint.ShoulderR * 4 + lane]).toBeCloseTo(carry!.shoulder[lane]!, 6)
+      expect(pose.rotations[Joint.ShoulderR * 4 + lane]).toBeCloseTo(carry.shoulder[lane]!, 6)
     }
   })
 })
@@ -169,7 +180,7 @@ describe('a running body pumps its arms', () => {
 
   it('halves the swing of the arm holding a weapon', () => {
     const empty = armSwing(CHIBI, RUN)
-    const sword = armSwing(CHIBI, RUN, KAYKIT_PROFILE.armCarry)
+    const sword = armSwing(CHIBI, RUN, weaponCarry(CHIBI))
     expect(sword).toBeCloseTo(empty * 0.5, 0)
   })
 
