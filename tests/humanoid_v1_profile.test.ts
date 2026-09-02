@@ -5,7 +5,7 @@ import { JOINT_NAMES } from '../src/render/procedural/joints'
 import { MASCULINE_PROFILE } from '../src/render/profiles/masculine'
 import { loadGlbSkeleton } from './fixtures/glbskeleton'
 
-const MASCULINE = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v2', 'masculine-v2.glb')
+const MASCULINE = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v3', 'masculine-v3.glb')
 
 describe('humanoid.v1 skeleton profile', () => {
   it('resolves every required joint against the committed body', () => {

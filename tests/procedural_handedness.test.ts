@@ -62,7 +62,7 @@ function arm(geometry: RigGeometry, side: number, swing: number, pace: ArmPace):
   return place(geometry, side === LEFT ? Joint.HandL : Joint.HandR)
 }
 
-describe.each([['human', HUMAN], ['masculine-v2', MASCULINE]] as const)('%s: what a positive number does', (_body, geometry) => {
+describe.each([['human', HUMAN], ['masculine-v3', MASCULINE]] as const)('%s: what a positive number does', (_body, geometry) => {
   const pace = armPace(geometry, 0)
 
   describe.each([['left', LEFT] as const, ['right', RIGHT] as const])('the %s arm', (_side, side) => {
@@ -175,8 +175,8 @@ describe.each([['human', HUMAN], ['masculine-v2', MASCULINE]] as const)('%s: wha
  * body-frame rotations into bone-local ones, and a mirrored axis correction there
  * would flip a sign without any of the above noticing.
  */
-describe('masculine-v2 through the binding', () => {
-  const MASCULINE_GLB = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v2', 'masculine-v2.glb')
+describe('masculine-v3 through the binding', () => {
+  const MASCULINE_GLB = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v3', 'masculine-v3.glb')
 
   function bound(): { body: THREE.Object3D; apply: (pose: Pose) => void } {
     const body = loadGlbSkeleton(MASCULINE_GLB)

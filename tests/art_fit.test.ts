@@ -34,9 +34,9 @@ describe('the art:fit wrapper', () => {
   })
 
   it('puts a body in its own directory under public/bodies', () => {
-    const plan = resolvePlan(parseArgs(['--input', 'raw.fbx', '--family', 'humanoid', '--body', 'masculine-v2']),
+    const plan = resolvePlan(parseArgs(['--input', 'raw.fbx', '--family', 'humanoid', '--body', 'masculine-v3']),
       { root: ROOT, exists: everythingExists })
-    expect(plan.outdir).toBe(join(ROOT, 'public', 'bodies', 'masculine-v2'))
+    expect(plan.outdir).toBe(join(ROOT, 'public', 'bodies', 'masculine-v3'))
     expect(plan.family).toBe('humanoid.v1')
     expect(plan.helpers).toBe(false)
   })

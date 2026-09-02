@@ -1,13 +1,16 @@
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
+import { restDirection } from '../src/render/procedural/geometry'
 import { Joint } from '../src/render/procedural/joints'
 import { createPose, setJointAxisAngle } from '../src/render/procedural/pose'
 import { MASCULINE_PROFILE } from '../src/render/profiles/masculine'
 import { bindSkeleton } from '../src/render/semanticskeleton'
 import { loadGlbSkeleton } from './fixtures/glbskeleton'
 
-const MASCULINE = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v2', 'masculine-v2.glb')
+const MASCULINE = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v3', 'masculine-v3.glb')
+const FIXTURE = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'render', 'procedural', 'fixtures', 'masculine.json'), 'utf8'))
 const DRIVEN = Object.values(MASCULINE_PROFILE.bones)
 
 function boneOf(body: THREE.Object3D, name: string): THREE.Bone {
@@ -42,20 +45,28 @@ describe('humanoid.v1 semantic skeleton binding', () => {
 
     skeleton.apply(pose)
     const rest = worldOf(body, 'foot_L')
-    expect(rest.toArray()).toEqual([
-      expect.closeTo(0.194607, 5),
-      expect.closeTo(0.112667, 5),
-      expect.closeTo(-0.054018, 5),
-    ])
+    // The extractor's own reading of this GLB, not a number typed in.
+    const ankle = FIXTURE.joints['foot.l'] as [number, number, number]
+    expect(rest.x, 'ankle x').toBeCloseTo(ankle[0], 4)
+    expect(rest.y, 'ankle y').toBeCloseTo(ankle[1], 4)
+    expect(rest.z, 'ankle z').toBeCloseTo(ankle[2], 4)
 
     setJointAxisAngle(pose, Joint.KneeL, 1, 0, 0, Math.PI / 2)
     skeleton.apply(pose)
     const bent = worldOf(body, 'foot_L')
-    expect(bent.toArray()).toEqual([
-      expect.closeTo(0.194607, 5),
-      expect.closeTo(0.525527, 5),
-      expect.closeTo(-0.452539, 5),
-    ])
-    expect(bent.distanceTo(worldOf(body, 'shin_L'))).toBeCloseTo(skeleton.geometry.shin, 5)
+    const knee = worldOf(body, 'shin_L')
+    // Where a shin of this length lands when it folds a quarter turn about +X.
+    const direction = new Float32Array(3)
+    restDirection(skeleton.geometry, Joint.KneeL, direction)
+    const expected = knee.clone().add(
+      new THREE.Vector3(direction[0]!, direction[1]!, direction[2]!)
+        .applyAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2)
+        .multiplyScalar(skeleton.geometry.shin),
+    )
+    expect(bent.x, 'bent ankle x').toBeCloseTo(expected.x, 4)
+    expect(bent.y, 'bent ankle y').toBeCloseTo(expected.y, 4)
+    expect(bent.z, 'bent ankle z').toBeCloseTo(expected.z, 4)
+    expect(bent.y, 'the foot swings back and up').toBeGreaterThan(knee.y - 0.05)
+    expect(bent.distanceTo(knee)).toBeCloseTo(skeleton.geometry.shin, 5)
   })
 })

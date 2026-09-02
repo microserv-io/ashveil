@@ -5,7 +5,7 @@ import { familyMapping, offAxisJoints, restCorrections } from '../scripts/art/pr
 
 const ROOT = join(import.meta.dirname, '..')
 const CONTRACT = JSON.parse(readFileSync(join(ROOT, 'scripts', 'art', 'contracts', 'humanoid.v1.json'), 'utf8'))
-const V2 = readFileSync(join(ROOT, 'public', 'bodies', 'masculine-v2', 'masculine-v2.glb'))
+const V2 = readFileSync(join(ROOT, 'public', 'bodies', 'masculine-v3', 'masculine-v3.glb'))
 const V1 = readFileSync(join(ROOT, 'public', 'bodies', 'masculine-v1.glb'))
 
 /**
@@ -16,7 +16,7 @@ const V1 = readFileSync(join(ROOT, 'public', 'bodies', 'masculine-v1.glb'))
 describe('rest-axis corrections on a fitted body', () => {
   const { required, optional } = familyMapping(CONTRACT)
 
-  it('is the identity for every semantic joint of masculine-v2', () => {
+  it('is the identity for every semantic joint of masculine-v3', () => {
     const corrections = restCorrections(V2, { ...required, ...optional })
     expect(Object.keys(corrections).sort()).toEqual(Object.keys({ ...required, ...optional }).sort())
     expect(offAxisJoints(corrections)).toEqual([])

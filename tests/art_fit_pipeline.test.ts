@@ -6,11 +6,10 @@ import { join } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
 
 const ROOT = join(import.meta.dirname, '..')
-const BODY = 'masculine-v2'
+const BODY = 'masculine-v3'
 const COMMITTED = join(ROOT, 'public', 'bodies', BODY)
 const MANIFEST = JSON.parse(readFileSync(join(COMMITTED, `${BODY}.manifest.json`), 'utf8'))
-const SOURCE = join(ROOT, '..', 'auto-rig-pro-spike', 'docs', 'art-pipeline', 'tripo-style-test',
-  'output', 'base-models', 'masculine', 'raw', MANIFEST.source.file)
+const SOURCE = join(ROOT, 'docs', 'art-pipeline', 'sources', MANIFEST.source.file)
 const BLENDER = process.env.ASHVEIL_BLENDER ?? '/opt/homebrew/bin/blender'
 
 const ARTEFACTS = ['glb', 'manifest.json', 'report.json', 'review.png'] as const

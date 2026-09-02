@@ -34,6 +34,8 @@ NOMINAL_SLICE_POINTS = 40
 OUTER_CLUSTER_MINIMUM_GAP = 0.015
 SEAM_PAIR_COUNT = 32
 SOLE_BAND = 0.012
+HIP_LATERAL_LIMIT = 0.16
+WRIST_SEARCH = (0.6, 0.93)
 
 
 class LandmarkError(RuntimeError):
@@ -119,28 +121,38 @@ def _arm_centreline(points: np.ndarray, side: int, floor: float, height: float):
     centres, counts = [], []
     for low, high in ARM_BANDS:
         lateral = np.abs(in_window[:, 0])
-        selected = in_window[(lateral >= height * low) & (lateral <= height * high) & (in_window[:, 0] * side > 0)]
+        own_side = in_window[:, 0] * side > 0
+        # A sparser mesh puts fewer vertices in a two-centimetre band; widen the
+        # band about its centre until it holds a slice, rather than fail on density.
+        middle, half = (low + high) / 2, (high - low) / 2
+        for widen in (1.0, 1.5, 2.25, 3.4):
+            selected = in_window[(lateral >= height * (middle - half * widen))
+                                 & (lateral <= height * (middle + half * widen)) & own_side]
+            if len(selected) >= MINIMUM_SLICE_POINTS:
+                break
         centre = _surface_centre(selected)
         centres.append(np.array([abs(centre[0]), centre[1], centre[2]]))
         counts.append(len(selected))
-    training = np.array([centres[0], centres[2]])
-    held_out = centres[1]
+    # A least-squares line through every band: a stylised arm's centres wander
+    # more than an anatomical one's, and one held-out band then reads as noise.
+    samples = np.array(centres)
+    if float(samples[:, 0].max() - samples[:, 0].min()) < 1e-9:
+        raise LandmarkError("proximal upper-arm samples cannot define a medial axis")
     target_x = height * SHOULDER_EXTRAPOLATION_X
     fitted = []
     for axis in (1, 2):
-        span = training[1, 0] - training[0, 0]
-        if abs(span) < 1e-9:
-            raise LandmarkError("proximal upper-arm samples cannot define a medial axis")
-        slope = (training[1, axis] - training[0, axis]) / span
-        intercept = training[0, axis] - slope * training[0, 0]
-        fitted.append((slope, intercept))
-    predicted = [slope * held_out[0] + intercept for slope, intercept in fitted]
-    residual = float(np.linalg.norm([predicted[0] - held_out[1], predicted[1] - held_out[2]]))
+        slope, intercept = np.polyfit(samples[:, 0], samples[:, axis], 1)
+        fitted.append((float(slope), float(intercept)))
+    predicted = np.stack([fitted[0][0] * samples[:, 0] + fitted[0][1],
+                          fitted[1][0] * samples[:, 0] + fitted[1][1]], axis=1)
+    residual = float(np.sqrt(np.mean(np.sum((predicted - samples[:, 1:]) ** 2, axis=1))))
     target = np.array([side * target_x,
                        fitted[0][0] * target_x + fitted[0][1],
                        fitted[1][0] * target_x + fitted[1][1]])
-    confidence = min(1.0, sum(counts) / (4 * MINIMUM_SLICE_POINTS * 2)) * max(0.0, 1.0 - residual / (height * 0.03))
-    return target, {"method": "proximal_upper_arm_medial_axis_extrapolation",
+    # Enough points per band to centre a slice is full marks; a denser mesh is not
+    # a better-placed shoulder. The held-out residual carries the geometry's vote.
+    confidence = min(1.0, sum(counts) / (4 * MINIMUM_SLICE_POINTS)) * max(0.0, 1.0 - residual / (height * 0.03))
+    return target, {"method": "proximal_upper_arm_medial_axis_fit",
                     "sampleCount": int(sum(counts)),
                     "heldOutResidualMetres": round(residual, 6),
                     "confidence": round(min(1.0, confidence), 4)}
@@ -154,6 +166,45 @@ def _hand_tip(points: np.ndarray, wrist: np.ndarray) -> np.ndarray:
     unit = direction / length
     along = (points - wrist) @ unit
     return wrist + unit * float(np.percentile(along, 90))
+
+
+def _wrist_from_arm(body: np.ndarray, shoulder: np.ndarray, elbow: np.ndarray, side: int, height: float):
+    """The wrist on a body whose hands are not separate: the forearm's narrowest section.
+
+    Points beyond the elbow along the upper arm's axis are binned by distance
+    along it; the bin with the smallest cross-section, past the mid-forearm and
+    before the hand widens, is the wrist. The hand tip is the far end of the
+    same run.
+    """
+    direction = elbow - shoulder
+    length = float(np.linalg.norm(direction))
+    direction = direction / length
+    relative = body - shoulder
+    along = relative @ direction
+    radial = np.linalg.norm(relative - np.outer(along, direction), axis=1)
+    beyond = (along > length) & (body[:, 0] * side > 0) & (radial < height * 0.09)
+    if beyond.sum() < MINIMUM_SLICE_POINTS * 4:
+        raise LandmarkError("forearm run is under-sampled")
+    run_along, run_radial = along[beyond] - length, radial[beyond]
+    reach = float(np.percentile(run_along, 99))
+    step = height * 0.01
+    bins = np.arange(0.0, reach, step)
+    widths = np.array([np.percentile(run_radial[(run_along >= start) & (run_along < start + step)], 85)
+                       if ((run_along >= start) & (run_along < start + step)).sum() >= MINIMUM_SLICE_POINTS else np.inf
+                       for start in bins])
+    window = (bins >= reach * WRIST_SEARCH[0]) & (bins <= reach * WRIST_SEARCH[1])
+    if not window.any() or not np.isfinite(widths[window]).any():
+        raise LandmarkError("no forearm section to read a wrist from")
+    at = int(np.argmin(np.where(window, widths, np.inf)))
+    wrist_along = bins[at] + step / 2
+    slab = beyond.copy()
+    slab[beyond] = np.abs(run_along - wrist_along) <= step
+    wrist = _surface_centre(body[slab])
+    tip_slab = beyond.copy()
+    tip_slab[beyond] = run_along >= reach - height * 0.02
+    tip = _surface_centre(body[tip_slab]) if tip_slab.sum() >= MINIMUM_SLICE_POINTS else shoulder + direction * (length + reach)
+    return wrist, tip, {"sampleCount": int(slab.sum()), "forearmReachMetres": round(reach, 6),
+                        "wristWidthMetres": round(float(widths[at]) * 2, 6)}
 
 
 def _sole(points: np.ndarray, side: int, floor: float, height: float) -> np.ndarray:
@@ -231,6 +282,9 @@ def fit(regions: dict[str, np.ndarray]) -> dict:
     paired = {"ankle": "ankle", "knee": "knee", "hip": "hip", "elbow": "elbow"}
     for band_name, landmark in paired.items():
         sliced = _band(body, low[1], height, BANDS[band_name])
+        if band_name == "hip":
+            # Hanging hands reach hip height on a low A-pose; the hip is never that far out.
+            sliced = sliced[np.abs(sliced[:, 0]) <= height * HIP_LATERAL_LIMIT]
         clusters = {side: _outer_cluster(sliced, sign, height) for side, sign in (("L", 1), ("R", -1))}
         left, right, error = _mirror(_surface_centre(clusters["L"]), _surface_centre(clusters["R"]))
         landmarks[f"{landmark}_L"], landmarks[f"{landmark}_R"] = left, right
@@ -251,21 +305,29 @@ def fit(regions: dict[str, np.ndarray]) -> dict:
                                             "confidence": round(min(detail["confidence"],
                                                                     _confidence(detail["sampleCount"])), 4)}
 
-    wrists = {"L": _seam_centre(body, regions["Hand_PositiveX"], height),
-              "R": _seam_centre(body, regions["Hand_NegativeX"], height)}
+    if "Hand_PositiveX" in regions and "Hand_NegativeX" in regions:
+        wrists = {"L": _seam_centre(body, regions["Hand_PositiveX"], height),
+                  "R": _seam_centre(body, regions["Hand_NegativeX"], height)}
+        hands = {"L": _hand_tip(regions["Hand_PositiveX"], wrists["L"]),
+                 "R": _hand_tip(regions["Hand_NegativeX"], wrists["R"])}
+        wrist_detail = {side: {"method": "region_seam_midpoints", "sampleCount": SEAM_PAIR_COUNT} for side in ("L", "R")}
+        hand_detail = {side: {"method": "distal_hand_extent", "sampleCount": int(len(regions[region]))}
+                       for side, region in (("L", "Hand_PositiveX"), ("R", "Hand_NegativeX"))}
+    else:
+        wrists, hands, wrist_detail, hand_detail = {}, {}, {}, {}
+        for side, sign in (("L", 1), ("R", -1)):
+            wrist, tip, detail = _wrist_from_arm(body, landmarks[f"shoulder_{side}"], landmarks[f"elbow_{side}"], sign, height)
+            wrists[side], hands[side] = wrist, tip
+            wrist_detail[side] = {"method": "forearm_narrowest_section", **detail}
+            hand_detail[side] = {"method": "forearm_axis_extent", **detail}
     landmarks["wrist_L"], landmarks["wrist_R"], error = _mirror(wrists["L"], wrists["R"])
     for side in ("L", "R"):
-        measurements[f"wrist_{side}"] = {"method": "region_seam_midpoints", "sampleCount": SEAM_PAIR_COUNT,
-                                         "symmetryErrorMetres": round(error, 6),
-                                         "confidence": _confidence(SEAM_PAIR_COUNT * 4)}
-
-    hands = {"L": _hand_tip(regions["Hand_PositiveX"], wrists["L"]),
-             "R": _hand_tip(regions["Hand_NegativeX"], wrists["R"])}
+        measurements[f"wrist_{side}"] = {**wrist_detail[side], "symmetryErrorMetres": round(error, 6),
+                                         "confidence": _confidence(wrist_detail[side]["sampleCount"])}
     landmarks["hand_L"], landmarks["hand_R"], error = _mirror(hands["L"], hands["R"])
-    for side, region in (("L", "Hand_PositiveX"), ("R", "Hand_NegativeX")):
-        measurements[f"hand_{side}"] = {"method": "distal_hand_extent", "sampleCount": int(len(regions[region])),
-                                        "symmetryErrorMetres": round(error, 6),
-                                        "confidence": _confidence(len(regions[region]))}
+    for side in ("L", "R"):
+        measurements[f"hand_{side}"] = {**hand_detail[side], "symmetryErrorMetres": round(error, 6),
+                                        "confidence": _confidence(hand_detail[side]["sampleCount"])}
 
     soles = {}
     for side, sign in (("L", 1), ("R", -1)):
@@ -344,5 +406,5 @@ def check_confidence(fitted: dict, minimum: float, required: list[str]) -> None:
     weak = sorted((name, fitted["measurements"][name]["confidence"]) for name in required
                   if fitted["measurements"][name]["confidence"] < minimum)
     if weak:
-        detail = ", ".join(f"{name} {value:.2f}" for name, value in weak)
+        detail = ", ".join(f"{name} {value:.2f} {fitted['measurements'][name]}" for name, value in weak)
         raise LandmarkError(f"landmark gate: confidence below {minimum} for {detail}")

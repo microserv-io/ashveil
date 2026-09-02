@@ -82,7 +82,7 @@ function play(geometry: RigGeometry, name: PoseClipName, windup: number, recover
   return { worst, joint, at, worstArm, armJoint, armAt }
 }
 
-describe.each([['human', HUMAN], ['masculine-v2', MASCULINE]] as const)(
+describe.each([['human', HUMAN], ['masculine-v3', MASCULINE]] as const)(
   '%s plays a skill at the speed the sim casts it',
   (_body, geometry) => {
     for (const name of SKILL_CLIPS) {

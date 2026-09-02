@@ -10,7 +10,7 @@ const read = (...path: string[]) => JSON.parse(readFileSync(join(...path), 'utf8
 const FAMILY_SCHEMA = read(CONTRACTS, 'family.schema.json')
 const MANIFEST_SCHEMA = read(CONTRACTS, 'body-manifest.schema.json')
 const HUMANOID = read(CONTRACTS, 'humanoid.v1.json')
-const MANIFEST = read(ROOT, 'public', 'bodies', 'masculine-v2', 'masculine-v2.manifest.json')
+const MANIFEST = read(ROOT, 'public', 'bodies', 'masculine-v3', 'masculine-v3.manifest.json')
 
 /**
  * The family contract says what a humanoid is; the manifest says what one body
@@ -44,7 +44,7 @@ describe('the family contract', () => {
   })
 })
 
-describe('the masculine-v2 manifest', () => {
+describe('the masculine-v3 manifest', () => {
   it('matches the body manifest schema', () => {
     expect(validate(MANIFEST_SCHEMA, MANIFEST)).toEqual([])
   })

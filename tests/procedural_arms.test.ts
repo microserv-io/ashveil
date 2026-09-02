@@ -42,8 +42,12 @@ function elbowBend(): number {
   return Math.acos(Math.max(-1, Math.min(1, cosine))) * DEGREES
 }
 
+function shoulderX(joint: Joint): number {
+  return axis(joint, 0)
+}
+
 describe('a weaponless body hangs its arms at its sides', () => {
-  it('drops the masculine-v2 hand beside its own hip', () => {
+  it('drops the masculine-v3 hand beside its own hip', () => {
     idle(MASCULINE)
     const hand = axis(Joint.HandR, 1)
     const hip = axis(Joint.HipR, 1)
@@ -52,10 +56,14 @@ describe('a weaponless body hangs its arms at its sides', () => {
     // so hanging is asserted against what the arm can actually reach.
     expect(hand - hip, 'the hand rides above the hip').toBeLessThan(0.05)
     expect(shoulder - hand, 'the arm is not hanging').toBeGreaterThan(MASCULINE.armLength * 0.9)
+    // Hanging within fifteen degrees of vertical from wherever this body's shoulder
+    // sits: a wider-shouldered body hangs its hand further from its hip and is not
+    // sticking its arm out.
+    const hangAllowance = Math.abs(shoulderX(Joint.ShoulderR) - axis(Joint.HipR, 0)) + MASCULINE.armLength * Math.sin(15 * Math.PI / 180)
     expect(
       Math.abs(axis(Joint.HandR, 0) - axis(Joint.HipR, 0)),
       'the arm sticks out sideways',
-    ).toBeLessThan(0.15)
+    ).toBeLessThan(hangAllowance)
   })
 
   it('keeps a slight bend in the idle elbow', () => {

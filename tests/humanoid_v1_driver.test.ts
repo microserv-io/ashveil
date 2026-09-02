@@ -12,7 +12,7 @@ import { RIG_CLIPS, type RigState } from '../src/render/rig'
 import { createRigInputOwner } from '../src/render/riginput'
 import { loadGlbSkeleton } from './fixtures/glbskeleton'
 
-const MASCULINE = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v2', 'masculine-v2.glb')
+const MASCULINE = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v3', 'masculine-v3.glb')
 const WALK = 1.6
 const DT = 1 / 60
 const DEGREES = 180 / Math.PI

@@ -18,7 +18,18 @@ export interface ReviewBodyDefinition {
   readonly clipDriver: boolean
 }
 
-/** The body the pipeline builds today: one `npm run art:fit` from the raw Tripo mesh. */
+/** The stylised mannequin from the concept sheet: one `npm run art:fit` from Tripo's GLB. */
+export const MASCULINE_V3_BODY: ReviewBodyDefinition = {
+  id: 'masculine-v3',
+  path: '/bodies/masculine-v3/masculine-v3.glb',
+  profile: MASCULINE_PROFILE,
+  clipDriver: false,
+}
+
+/**
+ * The anatomical test body, same skeleton and bone names as v3 so it binds to
+ * the same profile. It stays only for the shoulder comparison and retires with it.
+ */
 export const MASCULINE_V2_BODY: ReviewBodyDefinition = {
   id: 'masculine-v2',
   path: '/bodies/masculine-v2/masculine-v2.glb',
@@ -37,7 +48,7 @@ export const MASCULINE_V1_BODY: ReviewBodyDefinition = {
   clipDriver: false,
 }
 
-export const REVIEW_BODIES: readonly ReviewBodyDefinition[] = [MASCULINE_V2_BODY, MASCULINE_V1_BODY]
+export const REVIEW_BODIES: readonly ReviewBodyDefinition[] = [MASCULINE_V3_BODY, MASCULINE_V2_BODY, MASCULINE_V1_BODY]
 
 export function reviewBodyScale(radius: number, body: ReviewBodyDefinition): number {
   return radius * HEIGHT_PER_RADIUS / body.profile.standingHeight

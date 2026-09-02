@@ -23,6 +23,7 @@ from . import landmarks as landmark_fitter
 from .frame import BLENDER_FORWARD, blender_from_runtime, runtime_from_blender
 
 HAIR_REGION = "Hair_Source"
+SEAM_MERGE_DISTANCE = 1e-5
 FACING_AGREEMENT_DEGREES = 25.0
 UPRIGHT_PASSES = 8
 
@@ -97,6 +98,22 @@ def _drop_degenerate(obj) -> int:
     return len(degenerate)
 
 
+def _merge_seams(obj) -> int:
+    """Re-join the vertices glTF split along texture seams.
+
+    A textured export duplicates every vertex on a UV seam, so a watertight body
+    arrives as hundreds of loose patches and no island is a body. Merging by
+    distance restores the surface; the UV layer keeps its seams per face corner.
+    """
+    before = len(obj.data.vertices)
+    _select([obj])
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.mesh.remove_doubles(threshold=SEAM_MERGE_DISTANCE)
+    bpy.ops.object.mode_set(mode="OBJECT")
+    return before - len(obj.data.vertices)
+
+
 def _split_islands(objects) -> list:
     islands = []
     for obj in objects:
@@ -131,22 +148,30 @@ def _classify(islands, height: float) -> dict:
     hair, head = upper[0], upper[1]
     rest = [item for item in rest if item not in (hair, head)]
 
+    # Hands are separate islands on some generations and part of the body on
+    # others; either is a body. One hand island is a defect.
     hands = sorted([item for item in rest if abs(item["centre"][0]) > height * 0.16],
                    key=lambda item: item["vertices"], reverse=True)[:2]
-    if len(hands) != 2:
-        raise NormaliseError(f"region gate: found {len(hands)} hand islands, expected 2")
+    if len(hands) == 1:
+        raise NormaliseError("region gate: found 1 hand island, expected 0 or 2")
     rest = [item for item in rest if item not in hands]
 
     named = {"Body": body, HAIR_REGION: hair, "Head": head}
     for hand in hands:
         named[f"Hand_{'PositiveX' if hand['centre'][0] > 0 else 'NegativeX'}"] = hand
-    if len(named) != 5:
+    if len(named) != 3 + len(hands):
         raise NormaliseError("region gate: the two hand islands sit on the same side")
 
+    # Eyes are a mirrored pair of near-identical islands; two stray facial
+    # pieces that happen to sit on opposite sides are not, and pairing them
+    # skews every lateral reading that follows.
     mirrored = sorted(
         ((abs(left["vertices"] - right["vertices"]) + abs(abs(left["centre"][0]) - abs(right["centre"][0])) * 1000,
           left, right)
-         for left in rest for right in rest if left["centre"][0] > 0 > right["centre"][0]),
+         for left in rest for right in rest
+         if left["centre"][0] > 0 > right["centre"][0]
+         and min(left["vertices"], right["vertices"]) >= 0.5 * max(left["vertices"], right["vertices"])
+         and abs(abs(left["centre"][0]) - abs(right["centre"][0])) < height * 0.02),
         key=lambda entry: entry[0])
     if mirrored:
         _, left, right = mirrored[0]
@@ -218,20 +243,39 @@ def _lateral_axis(named: dict) -> np.ndarray:
         if len(pair) == 2:
             axes.append(_ground_unit(pair[0]["points"].mean(axis=0) - pair[1]["points"].mean(axis=0)))
     if not axes:
-        raise NormaliseError("facing gate: no bilateral region to read the body's lateral axis from")
+        # No paired regions: the shoulders are the widest thing at their height,
+        # so the principal axis of that slice in the ground plane is lateral.
+        body = named["Body"]["points"]
+        floor, height = body[:, 2].min(), body[:, 2].max() - body[:, 2].min()
+        band = body[(body[:, 2] >= floor + height * 0.74) & (body[:, 2] <= floor + height * 0.82)][:, :2]
+        if len(band) < 24:
+            raise NormaliseError("facing gate: no shoulder slice to read the body's lateral axis from")
+        centred = band - band.mean(axis=0)
+        _, vectors = np.linalg.eigh(centred.T @ centred)
+        axes.append(_ground_unit(vectors[:, -1]))
     for axis in axes[1:]:
         if float(np.dot(axes[0], axis)) < 0:
             axis *= -1
     return _ground_unit(sum(axes))
 
 
-def _foot_heading(sole: np.ndarray, height: float) -> np.ndarray:
-    """One foot's long axis in the ground plane. Which end is the toe is undecided."""
+def _foot_heading(sole: np.ndarray, height: float, ankle=None) -> np.ndarray:
+    """One foot's long axis in the ground plane, toe first.
+
+    The toe is the end of the sole farther from the ankle: an ankle sits behind
+    the middle of a foot, which is the same fact the runtime frame gate proves.
+    Without an ankle the sign is undecided and the caller must resolve it.
+    """
     span = sole[:, :2].max(axis=0) - sole[:, :2].min(axis=0)
     axis = int(np.argmax(span))
     front = sole[sole[:, axis] >= sole[:, axis].max() - height * 0.02].mean(axis=0)
     back = sole[sole[:, axis] <= sole[:, axis].min() + height * 0.02].mean(axis=0)
-    return _ground_unit(front - back)
+    heading = _ground_unit(front - back)
+    if ankle is not None:
+        ankle_flat = np.array([float(ankle[0]), float(ankle[1])])
+        if np.linalg.norm(front[:2] - ankle_flat) < np.linalg.norm(back[:2] - ankle_flat):
+            heading = -heading
+    return heading
 
 
 def _facing(named: dict, height: float) -> dict:
@@ -247,10 +291,13 @@ def _facing(named: dict, height: float) -> dict:
     body = named["Body"]["points"]
     floor = body[:, 2].min()
     standing = body[body[:, 2] <= floor + height * 0.07]
+    ankle_band = body[(body[:, 2] >= floor + height * 0.045) & (body[:, 2] <= floor + height * 0.09)]
     feet = [standing[standing[:, 0] * side > 0] for side in (1, -1)]
+    ankles = [ankle_band[ankle_band[:, 0] * side > 0] for side in (1, -1)]
     if min(len(foot) for foot in feet) < 24:
         raise NormaliseError("facing gate: no foot geometry to cross-check the heading")
-    headings = [_foot_heading(foot, height) for foot in feet]
+    headings = [_foot_heading(foot, height, ankle.mean(axis=0) if len(ankle) >= 12 else None)
+                for foot, ankle in zip(feet, ankles)]
     if float(np.dot(headings[0], headings[1])) < 0:
         headings[1] = -headings[1]
     foot_cue = _ground_unit(sum(headings))
@@ -270,6 +317,10 @@ def _facing(named: dict, height: float) -> dict:
         raise NormaliseError(
             f"facing gate: the feet and the lateral axis disagree by {agreement:.1f} degrees "
             f"(feet {foot_cue.round(3).tolist()}, forward {forward.round(3).tolist()})")
+    # Without a paired region the lateral axis is a slice estimate that can be a
+    # few degrees out; the feet, which agree with it, are then the better heading.
+    if not any(name.startswith(("Hand_", "Eye_")) for name in named):
+        forward = foot_cue
 
     yaw = math.atan2(BLENDER_FORWARD[1], BLENDER_FORWARD[0]) - math.atan2(forward[1], forward[0])
     return {"yawDegrees": round(math.degrees(yaw), 4),
@@ -303,6 +354,7 @@ def run(input_path: str, contract: dict) -> dict:
     for obj in meshes:
         _select([obj])
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    merged = sum(_merge_seams(obj) for obj in meshes)
     removed = sum(_drop_degenerate(obj) for obj in meshes)
 
     islands = _split_islands(meshes)

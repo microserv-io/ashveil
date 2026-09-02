@@ -36,7 +36,7 @@ const state = createGaitState()
 const pose = createPose()
 const positions = new Float32Array(Joint.Count * 3)
 
-const BODIES: readonly (readonly [string, RigGeometry])[] = [['human', HUMAN], ['masculine-v2', MASCULINE]]
+const BODIES: readonly (readonly [string, RigGeometry])[] = [['human', HUMAN], ['masculine-v3', MASCULINE]]
 /**
  * The arms, as segments rather than joints. Both ends of an upper arm can sit
  * outside the ribs with the bone itself straight through them — which is exactly

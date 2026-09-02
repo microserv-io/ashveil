@@ -8,7 +8,7 @@ import { MASCULINE_PROFILE } from '../src/render/profiles/masculine'
 import { bindSkeleton } from '../src/render/semanticskeleton'
 import { loadGlbSkeleton } from './fixtures/glbskeleton'
 
-const MASCULINE = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v2', 'masculine-v2.glb')
+const MASCULINE = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v3', 'masculine-v3.glb')
 
 function boneOf(body: THREE.Object3D, name: string): THREE.Bone {
   const bone = body.getObjectByName(name)

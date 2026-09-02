@@ -106,7 +106,7 @@ function walk(geometry: RigGeometry, speed: number): Hitch {
   return { worst, joint, phase, jerk, jerkPhase }
 }
 
-describe.each([['human', HUMAN], ['masculine-v2', MASCULINE]] as const)('%s walks without a hitch', (_body, geometry) => {
+describe.each([['human', HUMAN], ['masculine-v3', MASCULINE]] as const)('%s walks without a hitch', (_body, geometry) => {
   for (const speed of [0.8, 1.2, 1.6]) {
     it(`flows at ${speed} m/s`, () => {
       const hitch = walk(geometry, speed)
