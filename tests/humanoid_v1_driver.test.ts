@@ -90,6 +90,6 @@ describe('humanoid.v1 procedural driver', () => {
         stanceKnee = Math.max(stanceKnee, kneeBend(positions))
       }
     }
-    expect(stanceKnee).toBeLessThan(20)
+    expect(stanceKnee, 'a walk, not a squat').toBeLessThan(25)
   })
 })

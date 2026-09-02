@@ -1,10 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import { createGaitDrive, createGaitParams, createGaitState, gaitParams, writeLocomotion } from '../src/render/procedural/gait'
 import { resolvePositions, type RigGeometry } from '../src/render/procedural/geometry'
-import { Joint } from '../src/render/procedural/joints'
+import { Joint, LEFT } from '../src/render/procedural/joints'
 import { createPose } from '../src/render/procedural/pose'
 import { quatRotate } from '../src/render/procedural/quat'
-import { CHIBI as chibi, HUMAN as human, HUMAN_LEG_RATIO, KNIGHT as knight } from './fixtures/bodies'
+import { footContact } from './fixtures/motion'
+import {
+  CHIBI as chibi,
+  HUMAN as human,
+  HUMAN_LEG_RATIO,
+  KNIGHT as knight,
+  MASCULINE as masculine,
+} from './fixtures/bodies'
 
 const WALK = 1.6
 const RUN = 5.5
@@ -98,10 +105,10 @@ describe('a human body walks and runs at human numbers', () => {
     expect(params.halfStep).toBeLessThan(0.42)
     expect(params.duty, 'a walk keeps both feet down for part of the cycle').toBeGreaterThanOrEqual(0.52)
     const measured = walk(human, WALK)
-    expect(measured.stanceKnee, 'a standing walk, not a squat').toBeLessThanOrEqual(20)
-    // The other leg is still down at footfall and holds the hip low, so this knee
-    // takes the landing. Without a rolling foot there is nowhere else for it to go.
-    expect(measured.peakKnee, 'a knee that catches the step, not a squat').toBeLessThan(30)
+    expect(measured.stanceKnee, 'a standing walk, not a squat').toBeLessThanOrEqual(25)
+    // The peak is at toe-off, where the heel has left the ground and the knee
+    // folds to let it: a real one folds about this far there.
+    expect(measured.peakKnee, 'a knee that folds at toe-off, not a squat').toBeLessThan(40)
   })
 
   it('runs at 5.5 m/s with the cadence of a person', () => {
@@ -111,13 +118,55 @@ describe('a human body walks and runs at human numbers', () => {
   })
 })
 
+/**
+ * How far the planted contact travels through stance, in world space. A rolling
+ * foot pivots on its heel while it is ahead of the hip and on its ball once it is
+ * behind, so each is measured over the window it is actually standing on.
+ */
+function contactSlide(geometry: RigGeometry, speed: number): { heel: number; ball: number; lift: number } {
+  gaitParams(geometry, speed, params)
+  const drive = createGaitDrive()
+  drive.speed = speed
+  const bounds = { heel: [Infinity, -Infinity], ball: [Infinity, -Infinity] }
+  let lift = 0
+  for (let sample = 0; sample <= SAMPLES; sample++) {
+    drive.phase = (sample / SAMPLES) * params.duty
+    writeLocomotion(geometry, drive, state, pose)
+    const contact = footContact(geometry, pose, LEFT)
+    const travelled = (drive.phase / params.frequency) * speed
+    const planted = contact.pitch <= 0 ? contact.heel : contact.ball
+    const seen = contact.pitch <= 0 ? bounds.heel : bounds.ball
+    seen[0] = Math.min(seen[0]!, travelled + planted[2]!)
+    seen[1] = Math.max(seen[1]!, travelled + planted[2]!)
+    lift = Math.max(lift, Math.abs(planted[1]!))
+  }
+  return {
+    heel: bounds.heel[1]! - bounds.heel[0]!,
+    ball: bounds.ball[1]! - bounds.ball[0]!,
+    lift,
+  }
+}
+
+describe('the hips stay up through the stride', () => {
+  // A person's hips rise and fall about 45 mm over a walk cycle. Pinned to the
+  // ankle this was 90 on the human and 98 on the Tripo body, and the walk read as
+  // a lunge: the step is two thirds of a leg and something has to give.
+  for (const [name, geometry] of [['human', human], ['masculine-v1', masculine]] as const) {
+    it(`keeps the ${name} walk bob under 50 mm`, () => {
+      const measured = walk(geometry, WALK)
+      expect(measured.pelvisBob).toBeLessThanOrEqual(0.05)
+      expect(measured.stanceKnee, 'a walk, not a squat').toBeLessThanOrEqual(25)
+    })
+  }
+})
+
 describe('a short-legged placeholder keeps up without sliding', () => {
   it('walks the knight at a cadence a body could hold', () => {
     gaitParams(knight, WALK, params)
     expect(params.frequency, 'the legs may whirr, but not blur').toBeLessThan(6)
     expect(params.duty).toBeGreaterThanOrEqual(0.52)
-    expect(walk(knight, WALK).stanceKnee).toBeLessThan(25)
-    expect(walk(knight, WALK).peakKnee).toBeLessThan(35)
+    expect(walk(knight, WALK).stanceKnee).toBeLessThan(28)
+    expect(walk(knight, WALK).peakKnee).toBeLessThan(40)
   })
 })
 
@@ -148,26 +197,14 @@ describe('gait proportions', () => {
     expect(params.frequency).toBeGreaterThan(humanCadence)
   })
 
-  for (const [name, geometry] of [['human', human], ['chibi', chibi], ['knight', knight]] as const) {
-    it(`${name} keeps its stance foot planted`, () => {
-      gaitParams(geometry, WALK, params)
-      const drive = createGaitDrive()
-      drive.speed = WALK
-      let worldLow = Infinity
-      let worldHigh = -Infinity
-      let lift = 0
-      for (let sample = 0; sample <= SAMPLES; sample++) {
-        drive.phase = sample / SAMPLES * params.duty
-        writeLocomotion(geometry, drive, state, pose)
-        resolvePositions(geometry, pose, positions)
-        const travelled = drive.phase / params.frequency * WALK
-        const world = travelled + positions[Joint.FootL * 3 + 2]!
-        worldLow = Math.min(worldLow, world)
-        worldHigh = Math.max(worldHigh, world)
-        lift = Math.max(lift, Math.abs(positions[Joint.FootL * 3 + 1]! - geometry.ankleHeight))
-      }
-      expect(worldHigh - worldLow).toBeLessThan(0.005)
-      expect(lift).toBeLessThan(0.005)
+  for (const [name, geometry] of [
+    ['human', human], ['chibi', chibi], ['knight', knight], ['masculine-v1', masculine],
+  ] as const) {
+    it(`${name} keeps its planted contact still`, () => {
+      const slide = contactSlide(geometry, WALK)
+      expect(slide.heel, 'the heel slid while it was planted').toBeLessThan(0.005)
+      expect(slide.ball, 'the ball slid while it was planted').toBeLessThan(0.005)
+      expect(slide.lift, 'the planted contact left the ground').toBeLessThan(0.005)
     })
 
     it(`${name} closes its gait loop`, () => {

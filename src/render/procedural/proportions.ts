@@ -1,4 +1,5 @@
 import { lerp, TAU } from './curves'
+import { footRoll } from './foot'
 import type { RigGeometry } from './geometry'
 import { Joint } from './joints'
 
@@ -15,9 +16,9 @@ import { Joint } from './joints'
 /**
  * How bent the stance knee is allowed to look. This is the gait's one real dial:
  * straighter buys a taller, stiffer walk and a deeper bob, deeper buys a squat
- * and a flat one. A person walks at about 20 degrees.
+ * and a flat one. A person's mid-stance knee is about this bent.
  */
-const STANCE_KNEE = 17 * Math.PI / 180
+const STANCE_KNEE = 20 * Math.PI / 180
 /** Hip height while running, as a fraction of the leg. A run is a crouch. */
 const RUN_HIP_HEIGHT = 0.8
 /** How far the stance leg swings from vertical at either end of stance. */
@@ -83,12 +84,9 @@ export function hipBob(
   runBlend: number,
   phase: number,
 ): number {
-  const reach = stanceReach(geometry)
-  const forward = halfStep * footEnvelope(phase, duty)
-  const clear = Math.sqrt(Math.max(0, reach * reach - forward * forward))
   const wave = Math.sin(TAU * (phase - duty * 0.5))
   const chosen = RUN_BOB * geometry.nominalLegLength * runBlend * wave * wave
-  return Math.max(hipHeight - clear, chosen, 0)
+  return Math.max(hipHeight - stanceClearance(geometry, halfStep, footEnvelope(phase, duty)), chosen, 0)
 }
 
 /** The deepest that bob ever gets, which is what the head has to be shielded from. */
@@ -98,10 +96,28 @@ export function hipBobAmplitude(
   halfStep: number,
   runBlend: number,
 ): number {
-  const reach = stanceReach(geometry)
-  const clear = Math.sqrt(Math.max(0, reach * reach - halfStep * halfStep))
+  const clear = stanceClearance(geometry, halfStep, 1)
   return Math.max(hipHeight - clear, RUN_BOB * geometry.nominalLegLength * runBlend, 0)
 }
+
+/**
+ * How high the hip may ride above the planted ankle level with a foot this far
+ * from under it, in either direction. The foot rolls at both ends of stance, and
+ * that both lifts the ankle and pulls it back under the hip, so the leg reaches
+ * further than the flat-footed triangle says it does.
+ */
+function stanceClearance(geometry: RigGeometry, halfStep: number, excursion: number): number {
+  const reach = stanceReach(geometry)
+  let clear = Infinity
+  for (const forward of [excursion, -excursion]) {
+    footRoll(geometry, forward, ROLL)
+    const along = halfStep * forward + ROLL[1]!
+    clear = Math.min(clear, ROLL[0]! + Math.sqrt(Math.max(0, reach * reach - along * along)))
+  }
+  return clear
+}
+
+const ROLL = new Float32Array(2)
 
 /**
  * How far the furthest planted foot is from under the hip, as a fraction of the

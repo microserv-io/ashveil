@@ -15,8 +15,9 @@ import {
   type GaitDrive,
 } from '../src/render/procedural/gait'
 import { writeDash, writeIdle } from '../src/render/procedural/stances'
-import { Joint } from '../src/render/procedural/joints'
+import { Joint, LEFT } from '../src/render/procedural/joints'
 import { createPose } from '../src/render/procedural/pose'
+import { footContact } from './fixtures/motion'
 
 /**
  * The KayKit knight at a scale that gives it a half-metre leg, which is as close
@@ -34,6 +35,15 @@ const state = createGaitState()
 const pose = createPose()
 const positions = new Float32Array(Joint.Count * 3)
 const params = createGaitParams()
+
+/** How far a limb is stretched, from its root joint to the joint two bones down. */
+function span(from: Joint, to: Joint): number {
+  return Math.hypot(
+    positions[to * 3]! - positions[from * 3]!,
+    positions[to * 3 + 1]! - positions[from * 3 + 1]!,
+    positions[to * 3 + 2]! - positions[from * 3 + 2]!,
+  )
+}
 
 function drive(speed: number, phase: number): GaitDrive {
   const value = createGaitDrive()
@@ -68,39 +78,46 @@ describe('gait parameters', () => {
 
   it('keeps the step within the leg it has', () => {
     for (const speed of [...SPEEDS, 20]) {
-      gaitParams(geometry, speed, params)
-      const lowest = params.hipHeight - params.bob
-      expect(Math.hypot(params.halfStep, lowest), `${speed} m/s`).toBeLessThan(geometry.legLength)
+      let reach = 0
+      for (let i = 0; i <= 120; i++) {
+        writeLocomotion(geometry, drive(speed, i / 120), state, pose)
+        resolvePositions(geometry, pose, positions)
+        reach = Math.max(reach, span(Joint.HipL, Joint.FootL), span(Joint.HipR, Joint.FootR))
+      }
+      expect(reach, `${speed} m/s asks for more leg than it has`).toBeLessThanOrEqual(geometry.legLength)
     }
   })
 })
 
-describe('the stance foot does not slide', () => {
+/**
+ * The stance foot rolls over its heel and then its ball, so the ankle moves and
+ * the thing that must hold still is whichever contact is on the ground.
+ */
+describe('the planted contact does not slide', () => {
   for (const speed of SPEEDS) {
     it(`holds still at ${speed} m/s`, () => {
       const frequency = strideFrequency(geometry, speed)
       gaitParams(geometry, speed, params)
-      let minZ = Infinity
-      let maxZ = -Infinity
-      let minX = Infinity
-      let maxX = -Infinity
+      const seen = { heel: [Infinity, -Infinity], ball: [Infinity, -Infinity] }
       let maxLift = 0
+      let maxDrift = 0
       // Sample the left foot's stance window, one full cycle of it.
       for (let i = 0; i <= SAMPLES; i++) {
         const phase = (i / SAMPLES) * params.duty
         writeLocomotion(geometry, drive(speed, phase), state, pose)
-        resolvePositions(geometry, pose, positions)
-        const travelled = (phase / frequency) * speed
-        const worldZ = travelled + positions[Joint.FootL * 3 + 2]!
-        minZ = Math.min(minZ, worldZ)
-        maxZ = Math.max(maxZ, worldZ)
-        minX = Math.min(minX, positions[Joint.FootL * 3]!)
-        maxX = Math.max(maxX, positions[Joint.FootL * 3]!)
-        maxLift = Math.max(maxLift, Math.abs(positions[Joint.FootL * 3 + 1]! - geometry.ankleHeight))
+        const contact = footContact(geometry, pose, LEFT)
+        const planted = contact.pitch <= 0 ? contact.heel : contact.ball
+        const window = contact.pitch <= 0 ? seen.heel : seen.ball
+        const worldZ = (phase / frequency) * speed + planted[2]!
+        window[0] = Math.min(window[0]!, worldZ)
+        window[1] = Math.max(window[1]!, worldZ)
+        maxDrift = Math.max(maxDrift, Math.abs(planted[0]! - LEFT * geometry.hipWidth))
+        maxLift = Math.max(maxLift, Math.abs(planted[1]!))
       }
-      expect(maxZ - minZ, 'forward drift per stride').toBeLessThan(0.005)
-      expect(maxX - minX, 'lateral drift per stride').toBeLessThan(0.005)
-      expect(maxLift, 'the planted ankle left the ground, so the IK is clamping').toBeLessThan(0.005)
+      expect(seen.heel[1]! - seen.heel[0]!, 'the heel drifted while planted').toBeLessThan(0.005)
+      expect(seen.ball[1]! - seen.ball[0]!, 'the ball drifted while planted').toBeLessThan(0.005)
+      expect(maxLift, 'the planted contact left the ground, so the IK is clamping').toBeLessThan(0.005)
+      expect(maxDrift, 'the foot wandered sideways').toBeLessThan(geometry.hipWidth * 0.2)
     })
   }
 })

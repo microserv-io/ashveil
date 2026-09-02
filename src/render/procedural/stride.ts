@@ -1,4 +1,5 @@
-import { smoothstep } from './curves'
+import { lerp, smoothstep } from './curves'
+import { footRoll } from './foot'
 import type { GaitParams } from './gait'
 import type { RigGeometry } from './geometry'
 import { Joint, LEFT } from './joints'
@@ -14,7 +15,8 @@ import { stanceReach, swingReach } from './proportions'
 
 /** How much narrower the feet track under the body as it speeds up. */
 const STANCE_NARROW = 0.15
-const FOOT_SWING_PITCH = 0.45
+/** Toes up through mid-swing, so a swinging foot clears the ground it crosses. */
+const SWING_CLEARANCE = 0.25
 
 /** Writes one leg onto its stride, and answers how far forward of the hip it landed. */
 export function writeStrideLeg(
@@ -28,22 +30,36 @@ export function writeStrideLeg(
   const { duty, halfStep, runBlend, lift } = params
   const phase = legPhase - Math.floor(legPhase)
   let swing = 0
+  let pitch = 0
+  let forward = 0
   if (phase < duty) {
     // Stance: straight back at the actor's own speed, which is the no-slide rule.
-    scratch.target[1] = geometry.ankleHeight
-    scratch.target[2] = halfStep - 2 * halfStep * (phase / duty)
+    forward = 1 - 2 * (phase / duty)
+    pitch = footRoll(geometry, forward, ROLL)
+    scratch.target[1] = geometry.ankleHeight + ROLL[0]!
+    scratch.target[2] = halfStep * forward + ROLL[1]!
   } else {
+    // Swing leaves the ground where the toe-off left it and lands where the heel
+    // strike wants it, so the foot never jumps at either handover.
     const s = (phase - duty) / (1 - duty)
+    const eased = smoothstep(0, 1, s)
     swing = Math.sin(Math.PI * s)
-    scratch.target[1] = geometry.ankleHeight + lift * swing
-    scratch.target[2] = -halfStep + 2 * halfStep * smoothstep(0, 1, s)
+    const off = footRoll(geometry, -1, ROLL)
+    const offRise = ROLL[0]!
+    const offAlong = -halfStep + ROLL[1]!
+    const strike = footRoll(geometry, 1, ROLL)
+    forward = -1 + 2 * eased
+    pitch = lerp(off, strike, eased) - SWING_CLEARANCE * swing
+    scratch.target[1] = geometry.ankleHeight + lerp(offRise, ROLL[0]!, eased) + lift * swing
+    scratch.target[2] = lerp(offAlong, halfStep + ROLL[1]!, eased)
   }
   scratch.target[0] = side * geometry.hipWidth * (1 - STANCE_NARROW * runBlend)
   if (phase >= duty) liftToReach(geometry, scratch, side, swing)
-  const forward = scratch.target[2]!
-  writeLeg(geometry, scratch, out, side, -FOOT_SWING_PITCH * swing)
-  return forward
+  writeLeg(geometry, scratch, out, side, pitch)
+  return forward * halfStep
 }
+
+const ROLL = new Float32Array(2)
 
 /**
  * Raises a swinging foot until its own leg can reach it. The hip rides high at

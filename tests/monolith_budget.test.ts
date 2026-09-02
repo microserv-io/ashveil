@@ -37,7 +37,8 @@ const BUDGETS: Readonly<Record<string, number>> = {
   // these are the maths around it, and the limb solvers already moved to limbs.ts.
   'src/render/procedural/gait.ts': 215,
   // Where one foot goes over one stride: the stance line, the swing arc, the roll.
-  'src/render/procedural/stride.ts': 80,
+  'src/render/procedural/stride.ts': 95,
+  'src/render/procedural/foot.ts': 65,
   'src/render/procedural/arms.ts': 120,
   'src/render/procedural/stances.ts': 95,
   'src/render/procedural/poses.ts': 215,
