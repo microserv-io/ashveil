@@ -72,6 +72,11 @@ def measure(path: str, contract: dict, landmarks: dict, source_had: dict) -> dic
         "landmarkFrame": {
             "headAbovePelvisMetres": round(float(landmarks["head"][1] - landmarks["pelvis"][1]), 6),
             "toeAheadOfHeelMetres": round(float(landmarks["toe_L"][2] - landmarks["heel_L"][2]), 6),
+            # The toe is the front of the sole by definition, so it proves nothing on
+            # its own. Where the ankle sits along the foot does: it is behind the
+            # middle on a body facing forward and ahead of it on one facing backwards.
+            "ankleAlongFoot": round(float((landmarks["ankle_L"][2] - landmarks["heel_L"][2])
+                                          / (landmarks["toe_L"][2] - landmarks["heel_L"][2])), 4),
             "leftHandLateralMetres": round(float(landmarks["hand_L"][0]), 6),
         },
         "groundOffsetMetres": round(lowest, 6),
@@ -109,6 +114,8 @@ def gates(measured: dict, contract: dict) -> dict:
     return {
         "head_is_above_the_pelvis": frame["headAbovePelvisMetres"] > 0,
         "toes_are_ahead_of_the_heels": frame["toeAheadOfHeelMetres"] > 0,
+        "the_ankle_sits_behind_the_middle_of_the_foot":
+            0 < frame["ankleAlongFoot"] < limits["ankleAlongFootMax"],
         "the_left_hand_is_at_positive_x": frame["leftHandLateralMetres"] > 0,
         "the_feet_stand_on_the_ground": abs(measured["groundOffsetMetres"]) <= limits["groundToleranceMetres"],
         "the_body_is_the_canonical_height":

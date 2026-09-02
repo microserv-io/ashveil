@@ -30,8 +30,7 @@
     "hip_R", "knee_R", "ankle_R", "toe_R", "heel_R"
   ],
   "minimumLandmarkConfidence": 0.5,
-  "symmetryToleranceHeight": { "default": 0.012, "distal": 0.02 },
-  "distalLandmarks": ["wrist", "hand", "toe", "heel"],
+  "symmetryToleranceHeight": 0.012,
   "bones": [
     { "name": "root",         "parent": null,         "deform": false, "head": "root",      "tail": "pelvis",     "chain": "spine", "role": "root" },
     { "name": "pelvis",       "parent": "root",       "deform": true,  "head": "pelvis",    "tail": "spine",      "chain": "spine", "role": "pelvis" },
@@ -97,6 +96,7 @@
     "normalInversions90": 0,
     "normalInversions150": 5,
     "clavicleShare": 0.5,
+    "ankleAlongFootMax": 0.5,
     "maxLimbReachHeight": 0.16,
     "maxSpineReachHeight": 0.18
   }

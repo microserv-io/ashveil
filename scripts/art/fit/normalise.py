@@ -20,7 +20,7 @@ import numpy as np
 from mathutils import Matrix, Vector
 
 from . import landmarks as landmark_fitter
-from .frame import blender_from_runtime, runtime_from_blender
+from .frame import BLENDER_FORWARD, blender_from_runtime, runtime_from_blender
 
 HAIR_REGION = "Hair_Source"
 FACING_AGREEMENT_DEGREES = 25.0
@@ -200,53 +200,89 @@ def _transform(objects, matrix: Matrix) -> None:
         obj.data.update()
 
 
-def _facing(named: dict, height: float) -> dict:
-    """Yaw that takes the body's own forward onto Blender's front, which is -Y."""
-    body = named["Body"]["points"]
-    floor = body[:, 2].min()
-    sole = body[body[:, 2] <= floor + height * 0.07]
-    sole = sole[sole[:, 0] > 0] if (sole[:, 0] > 0).sum() > 24 else sole
-    if len(sole) < 24:
-        raise NormaliseError("facing gate: no foot geometry to read a heading from")
-    # One foot at a time: both feet together are wider than either is long, and
-    # the long axis of the pair is the axis between them, not the heading.
+def _ground_unit(vector) -> np.ndarray:
+    flat = np.array([float(vector[0]), float(vector[1])])
+    return flat / max(np.linalg.norm(flat), 1e-9)
+
+
+def _lateral_axis(named: dict) -> np.ndarray:
+    """The body's own left-right axis, from the pairs that can only be lateral.
+
+    Fitting the sagittal plane rather than the heading is what keeps the mirrored
+    landmarks honest: a body turned a few degrees off its own symmetry plane
+    reads as several centimetres of lopsidedness at every bilateral landmark.
+    """
+    axes = []
+    for prefix in ("Hand", "Eye"):
+        pair = [item for name, item in named.items() if name.startswith(f"{prefix}_")]
+        if len(pair) == 2:
+            axes.append(_ground_unit(pair[0]["points"].mean(axis=0) - pair[1]["points"].mean(axis=0)))
+    if not axes:
+        raise NormaliseError("facing gate: no bilateral region to read the body's lateral axis from")
+    for axis in axes[1:]:
+        if float(np.dot(axes[0], axis)) < 0:
+            axis *= -1
+    return _ground_unit(sum(axes))
+
+
+def _foot_heading(sole: np.ndarray, height: float) -> np.ndarray:
+    """One foot's long axis in the ground plane. Which end is the toe is undecided."""
     span = sole[:, :2].max(axis=0) - sole[:, :2].min(axis=0)
     axis = int(np.argmax(span))
-    toe = sole[sole[:, axis] >= sole[:, axis].max() - height * 0.02].mean(axis=0)
-    heel = sole[sole[:, axis] <= sole[:, axis].min() + height * 0.02].mean(axis=0)
-    # A foot is longer than it is wide, so its long axis is the heading; which
-    # end is the toe is decided by the face, below.
-    foot_cue = np.array([toe[0] - heel[0], toe[1] - heel[1]])
+    front = sole[sole[:, axis] >= sole[:, axis].max() - height * 0.02].mean(axis=0)
+    back = sole[sole[:, axis] <= sole[:, axis].min() + height * 0.02].mean(axis=0)
+    return _ground_unit(front - back)
 
-    cues = {"foot": foot_cue / max(np.linalg.norm(foot_cue), 1e-9)}
+
+def _facing(named: dict, height: float) -> dict:
+    """Yaw that takes the body's own forward onto Blender's front, which is -Y.
+
+    The lateral axis says which line the body faces along; the face says which
+    way along it. The feet only get a vote as a cross-check, because a stance
+    splays them and a splay reads as heading.
+    """
+    lateral = _lateral_axis(named)
+    forward = np.array([lateral[1], -lateral[0]])
+
+    body = named["Body"]["points"]
+    floor = body[:, 2].min()
+    standing = body[body[:, 2] <= floor + height * 0.07]
+    feet = [standing[standing[:, 0] * side > 0] for side in (1, -1)]
+    if min(len(foot) for foot in feet) < 24:
+        raise NormaliseError("facing gate: no foot geometry to cross-check the heading")
+    headings = [_foot_heading(foot, height) for foot in feet]
+    if float(np.dot(headings[0], headings[1])) < 0:
+        headings[1] = -headings[1]
+    foot_cue = _ground_unit(sum(headings))
+
     eyes = [item["points"] for name, item in named.items() if name.startswith("Eye_")]
     if eyes:
         eye_centre = np.concatenate(eyes).mean(axis=0)
-        head_centre = named["Head"]["points"].mean(axis=0)
-        face_cue = np.array([eye_centre[0] - head_centre[0], eye_centre[1] - head_centre[1]])
-        cues["face"] = face_cue / max(np.linalg.norm(face_cue), 1e-9)
-        if float(np.dot(cues["foot"], cues["face"])) < 0:
-            cues["foot"] = -cues["foot"]
-        agreement = math.degrees(math.acos(max(-1.0, min(1.0, float(np.dot(cues["foot"], cues["face"]))))))
-        if agreement > FACING_AGREEMENT_DEGREES:
-            raise NormaliseError(
-                f"facing gate: the feet and the face disagree by {agreement:.1f} degrees "
-                f"(feet {cues['foot'].round(3).tolist()}, face {cues['face'].round(3).tolist()})")
+        face_cue = _ground_unit(eye_centre - named["Head"]["points"].mean(axis=0))
     else:
-        agreement = None
-    heading = cues.get("face", cues["foot"]) + cues["foot"]
-    heading = heading / max(np.linalg.norm(heading), 1e-9)
-    yaw = math.atan2(-heading[0], -heading[1]) - math.atan2(0.0, -1.0)
+        face_cue = foot_cue
+    if float(np.dot(forward, face_cue)) < 0:
+        forward = -forward
+    if float(np.dot(foot_cue, forward)) < 0:
+        foot_cue = -foot_cue
+    agreement = math.degrees(math.acos(max(-1.0, min(1.0, float(np.dot(foot_cue, forward))))))
+    if agreement > FACING_AGREEMENT_DEGREES:
+        raise NormaliseError(
+            f"facing gate: the feet and the lateral axis disagree by {agreement:.1f} degrees "
+            f"(feet {foot_cue.round(3).tolist()}, forward {forward.round(3).tolist()})")
+
+    yaw = math.atan2(BLENDER_FORWARD[1], BLENDER_FORWARD[0]) - math.atan2(forward[1], forward[0])
     return {"yawDegrees": round(math.degrees(yaw), 4),
-            "cueAgreementDegrees": None if agreement is None else round(agreement, 3),
-            "cues": {name: [round(float(value), 4) for value in cue] for name, cue in cues.items()},
-            "matrix": Matrix.Rotation(-yaw, 4, "Z")}
+            "footAgreementDegrees": round(agreement, 3),
+            "cues": {"lateral": lateral.round(4).tolist(), "forward": forward.round(4).tolist(),
+                     "foot": foot_cue.round(4).tolist(), "face": face_cue.round(4).tolist()},
+            "matrix": Matrix.Rotation(yaw, 4, "Z")}
 
 
-def _upright(regions: dict, pivot: Vector, height: float) -> dict:
+def _upright(regions: dict, pivot: Vector, height: float, width: float) -> dict:
     """How far the torso axis leans, and the turn about the ankles that fixes it."""
     body = regions["Body"]
-    hip, torso = landmark_fitter.torso_lean(body, float(body[:, 1].min()), height)
+    hip, torso = landmark_fitter.torso_lean(body, float(body[:, 1].min()), height, width)
     axis = np.array(blender_from_runtime(torso - hip))
     axis = axis / max(np.linalg.norm(axis), 1e-9)
     lean = math.degrees(math.acos(max(-1.0, min(1.0, float(axis[2])))))
@@ -308,7 +344,7 @@ def run(input_path: str, contract: dict) -> dict:
     limit = contract["gates"]["uprightDegrees"]
     leans = []
     for _ in range(UPRIGHT_PASSES):
-        upright = _upright(regions, ankle_pivot, body_height)
+        upright = _upright(regions, ankle_pivot, body_height, width)
         leans.append(upright["leanDegrees"])
         if upright["leanDegrees"] <= limit:
             break
@@ -331,7 +367,8 @@ def run(input_path: str, contract: dict) -> dict:
                for name, item in keep.items()}
     everything = np.concatenate(list(regions.values()))
     residual = landmark_fitter.torso_lean(regions["Body"], float(everything[:, 1].min()),
-                                          contract["canonicalHeight"])
+                                          contract["canonicalHeight"],
+                                          float(everything[:, 0].max() - everything[:, 0].min()))
     residual_axis = residual[1] - residual[0]
     residual_lean = math.degrees(math.acos(max(-1.0, min(1.0, float(
         residual_axis[1] / max(np.linalg.norm(residual_axis), 1e-9))))))

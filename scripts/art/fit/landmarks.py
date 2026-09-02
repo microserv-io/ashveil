@@ -161,11 +161,18 @@ def _sole(points: np.ndarray, side: int, floor: float, height: float) -> np.ndar
     return foot[foot[:, 1] <= foot[:, 1].min() + height * SOLE_BAND]
 
 
-def _end_of(points: np.ndarray, axis: int, sign: int) -> np.ndarray:
-    """The far end of a cluster along one axis, always enough points to average."""
-    take = max(MINIMUM_SLICE_POINTS * 2, int(len(points) * 0.15))
-    order = np.argsort(sign * points[:, axis])[-take:]
-    return points[order]
+def _tip(points: np.ndarray, axis: int, sign: int, height: float) -> np.ndarray:
+    """The far end of a cluster along one axis: the tip, not the average near it.
+
+    Averaging back from an extreme is how a toe lands in the middle of a foot.
+    The window is widened only if the tip is too thin to average at all.
+    """
+    reach = float((sign * points[:, axis]).max())
+    for window in (0.01, 0.02, 0.04, 0.08):
+        near = points[sign * points[:, axis] >= reach - height * window]
+        if len(near) >= MINIMUM_SLICE_POINTS:
+            return _surface_centre(near)
+    raise LandmarkError("cluster has no tip with enough points to average")
 
 
 def _confidence(samples: int) -> float:
@@ -174,19 +181,22 @@ def _confidence(samples: int) -> float:
     return round(min(1.0, samples / NOMINAL_SLICE_POINTS), 4)
 
 
-def torso_lean(body: np.ndarray, floor: float, height: float) -> tuple[np.ndarray, np.ndarray]:
-    """The hip-to-shoulder axis, measured off bilateral pairs so it is sagittal.
+def torso_lean(body: np.ndarray, floor: float, height: float, width: float) -> tuple[np.ndarray, np.ndarray]:
+    """The torso's own axis, hip height to shoulder height, front to back only.
 
-    A central surface slice puts the midline wherever the mesh happens to be
-    dense, which reads as several degrees of sideways lean on a body that has
-    none. A mirrored pair cannot: its midpoint sits on x = 0 by construction, so
-    what is left is the lean that actually exists, front to back.
+    Both ends are the same kind of measurement - the midrange of a central slice
+    of the torso - because a lean is a difference between like things. Measuring
+    from a hip cluster to an extrapolated shoulder joint reads the shoulder's
+    anatomy (the ball sits behind the chest) as five degrees of backward lean,
+    and "correcting" that tilts an upright body over. Only the sagittal
+    component is kept: the lateral midline of a surface slice wanders by a
+    centimetre with the mesh's own density, which is three degrees of lean that
+    is not there.
     """
-    sliced = _band(body, floor, height, BANDS["hip"])
-    hips = [_surface_centre(_outer_cluster(sliced, sign, height)) for sign in (1, -1)]
-    shoulders = [_arm_centreline(body, sign, floor, height)[0] for sign in (1, -1)]
-    return ((hips[0] + hips[1]) / 2 * np.array([0.0, 1.0, 1.0]),
-            (shoulders[0] + shoulders[1]) / 2 * np.array([0.0, 1.0, 1.0]))
+    hip = _central(body, floor, height, width, BANDS["hip"])
+    shoulder = _central(body, floor, height, width, BANDS["upper_torso"])
+    sagittal = np.array([0.0, 1.0, 1.0])
+    return hip * sagittal, shoulder * sagittal
 
 
 def fit(regions: dict[str, np.ndarray]) -> dict:
@@ -240,8 +250,8 @@ def fit(regions: dict[str, np.ndarray]) -> dict:
 
     for side, sign in (("L", 1), ("R", -1)):
         sole = _sole(body, sign, low[1], height)
-        landmarks[f"toe_{side}"] = _surface_centre(_end_of(sole, 2, 1))
-        landmarks[f"heel_{side}"] = _surface_centre(_end_of(sole, 2, -1))
+        landmarks[f"toe_{side}"] = _tip(sole, 2, 1, height)
+        landmarks[f"heel_{side}"] = _tip(sole, 2, -1, height)
         for landmark in (f"toe_{side}", f"heel_{side}"):
             measurements[landmark] = {"method": "sole_extent", "sampleCount": int(len(sole)),
                                       "confidence": _confidence(len(sole))}
@@ -283,27 +293,24 @@ def fit(regions: dict[str, np.ndarray]) -> dict:
 def check_symmetry(fitted: dict, contract: dict) -> None:
     """A mirrored landmark hides how lopsided the mesh under it was; this reports it.
 
-    Distal landmarks get their own tolerance: a generator is least symmetric at
-    the end of a chain, and a centimetre at a fingertip is not a centimetre at a
-    hip.
+    On a body whose sagittal plane was fitted before the landmarks were, the
+    errors are sub-millimetre. A centimetre here means the plane is wrong, not
+    that the generator was sloppy.
     """
-    height = fitted["bounds"]["height"]
-    tolerances = contract["symmetryToleranceHeight"]
-    distal = set(contract["distalLandmarks"])
+    limit = fitted["bounds"]["height"] * contract["symmetryToleranceHeight"]
     lopsided = []
     for name, detail in sorted(fitted["measurements"].items()):
         error = detail.get("symmetryErrorMetres")
         if error is None:
             continue
-        root = name.rsplit("_", 1)[0]
-        limit = height * tolerances["distal" if root in distal else "default"]
         detail["symmetryToleranceMetres"] = round(limit, 6)
-        if error > limit and (root, error, limit) not in lopsided:
-            lopsided.append((root, error, limit))
+        root = name.rsplit("_", 1)[0]
+        if error > limit and (root, error) not in lopsided:
+            lopsided.append((root, error))
     if lopsided:
-        detail = ", ".join(f"{name} {error * 100:.2f}cm over {limit * 100:.2f}cm"
-                           for name, error, limit in lopsided)
-        raise LandmarkError(f"symmetry gate: bilateral landmarks are lopsided: {detail}")
+        detail = ", ".join(f"{name} {error * 100:.2f}cm" for name, error in lopsided)
+        raise LandmarkError(
+            f"symmetry gate: bilateral landmarks are lopsided by more than {limit * 100:.2f}cm: {detail}")
 
 
 def check_confidence(fitted: dict, minimum: float, required: list[str]) -> None:
