@@ -1,3 +1,4 @@
+import { CARRY_HAND } from './arms'
 import { clamp, smoothstep } from './curves'
 import type { RigGeometry } from './geometry'
 import { Joint, LEFT, RIGHT } from './joints'
@@ -44,8 +45,8 @@ export interface PoseClipSource {
 }
 
 const ZERO: Vec3 = [0, 0, 0]
-/** The hand's resting place beside the body, in arm lengths from its shoulder. */
-const HAND_REST: Vec3 = [0.185, -0.84, 0]
+/** The hand's resting place beside the body: the carry locomotion holds it in. */
+const HAND_REST: Vec3 = CARRY_HAND
 /** The foot's resting place under the hip, in leg lengths. Only used unplanted. */
 const FOOT_REST: Vec3 = [0, -0.94, 0]
 /** The clip is stored compiled: quaternions and targets, ready to interpolate. */

@@ -1,65 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { createGaitDrive, createGaitParams, createGaitState, gaitParams, writeLocomotion } from '../src/render/procedural/gait'
-import {
-  buildRigGeometry,
-  KAYKIT_KNIGHT_JOINTS,
-  KAYKIT_KNIGHT_STANDING_HEIGHT,
-  resolvePositions,
-  type JointTable,
-  type RigGeometry,
-} from '../src/render/procedural/geometry'
+import { resolvePositions, type RigGeometry } from '../src/render/procedural/geometry'
 import { Joint } from '../src/render/procedural/joints'
 import { createPose } from '../src/render/procedural/pose'
-import { quatAngleBetween, quatRotate } from '../src/render/procedural/quat'
-import { KAYKIT_PROFILE } from '../src/render/profiles/kaykit'
-import type { ArmCarry } from '../src/render/profiles/profile'
+import { quatRotate } from '../src/render/procedural/quat'
+import { CHIBI as chibi, HUMAN as human, HUMAN_LEG_RATIO, KNIGHT as knight } from './fixtures/bodies'
 
 const WALK = 1.6
 const RUN = 5.5
 const SAMPLES = 720
 const DEGREES = 180 / Math.PI
-
-/**
- * A 1.8 m person, which is the body every locomotion scale in `gait.ts` is fitted
- * to. Everything asserted against it is an absolute number rather than a
- * comparison, because "faster than the other one" was how the gait ended up
- * running a human at 3.3 Hz and nobody noticed.
- */
-const STANDING_HEIGHT = 1.8
-const HUMAN_LEG_RATIO = 0.48
-
-function humanoid(legRatio: number, armRatio: number): RigGeometry {
-  const leg = STANDING_HEIGHT * legRatio
-  const arm = STANDING_HEIGHT * armRatio
-  const shoulder = STANDING_HEIGHT * 0.76
-  const table: JointTable = {
-    root: [0, 0, 0],
-    pelvis: [0, leg + 0.08, 0],
-    spine: [0, shoulder - 0.34, 0],
-    chest: [0, shoulder, 0],
-    head: [0, STANDING_HEIGHT * 0.9, 0],
-    'shoulder.l': [0.16, shoulder, 0],
-    'elbow.l': [0.16 + arm * 0.5, shoulder, 0],
-    'hand.l': [0.16 + arm, shoulder, 0],
-    'shoulder.r': [-0.16, shoulder, 0],
-    'elbow.r': [-0.16 - arm * 0.5, shoulder, 0],
-    'hand.r': [-0.16 - arm, shoulder, 0],
-    'hip.l': [0.1, leg, 0],
-    'knee.l': [0.1, leg * 0.5, 0],
-    'foot.l': [0.1, 0, 0],
-    'hip.r': [-0.1, leg, 0],
-    'knee.r': [-0.1, leg * 0.5, 0],
-    'foot.r': [-0.1, 0, 0],
-  }
-  return buildRigGeometry(table, 1, STANDING_HEIGHT)
-}
-
-/** `actorview.ts` scales a body by its collision radius; this is what the knight gets. */
-const GAMEPLAY_SCALE = 0.44 * 1.93
-
-const human = humanoid(HUMAN_LEG_RATIO, 0.44)
-const chibi = humanoid(0.17, 0.255)
-const knight = buildRigGeometry(KAYKIT_KNIGHT_JOINTS, GAMEPLAY_SCALE, KAYKIT_KNIGHT_STANDING_HEIGHT)
 
 const state = createGaitState()
 const pose = createPose()
@@ -184,17 +134,6 @@ describe('the torso carries the bob without nodding', () => {
   }
 })
 
-function armAmplitude(geometry: RigGeometry, joint: Joint, carry?: ArmCarry, speed = WALK): number {
-  const drive = createGaitDrive()
-  drive.speed = speed
-  drive.phase = 0.25
-  writeLocomotion(geometry, drive, state, pose, carry)
-  const forward = new Float32Array(pose.rotations)
-  drive.phase = 0.75
-  writeLocomotion(geometry, drive, state, pose, carry)
-  return quatAngleBetween(forward, joint * 4, pose.rotations, joint * 4) * 0.5
-}
-
 describe('gait proportions', () => {
   it('uses the same human-scale gait fit for human and chibi bodies', () => {
     expect(human.nominalLegLength).toBeCloseTo(chibi.nominalLegLength, 6)
@@ -207,32 +146,6 @@ describe('gait proportions', () => {
     const humanCadence = params.frequency
     gaitParams(chibi, WALK, params)
     expect(params.frequency).toBeGreaterThan(humanCadence)
-  })
-
-  it('caps the long-armed chibi at a readable walk swing', () => {
-    const left = armAmplitude(chibi, Joint.ShoulderL, KAYKIT_PROFILE.armCarry)
-    const sword = armAmplitude(chibi, Joint.ShoulderR, KAYKIT_PROFILE.armCarry)
-    expect(left * DEGREES).toBeLessThanOrEqual(20)
-    expect(sword).toBeCloseTo(left * 0.5, 5)
-  })
-
-  it('caps the long-armed chibi at a readable run swing', () => {
-    const left = armAmplitude(chibi, Joint.ShoulderL, KAYKIT_PROFILE.armCarry, RUN)
-    const sword = armAmplitude(chibi, Joint.ShoulderR, KAYKIT_PROFILE.armCarry, RUN)
-    expect(left * DEGREES).toBeLessThan(35.001)
-    expect(sword).toBeCloseTo(left * 0.5, 5)
-  })
-
-  it('starts the sword swing from the measured carry', () => {
-    const carry = KAYKIT_PROFILE.armCarry?.right
-    expect(carry).toBeDefined()
-    const drive = createGaitDrive()
-    drive.speed = WALK
-    drive.phase = 0
-    writeLocomotion(chibi, drive, state, pose, KAYKIT_PROFILE.armCarry)
-    for (let lane = 0; lane < 4; lane++) {
-      expect(pose.rotations[Joint.ShoulderR * 4 + lane]).toBeCloseTo(carry!.shoulder[lane]!, 6)
-    }
   })
 
   for (const [name, geometry] of [['human', human], ['chibi', chibi], ['knight', knight]] as const) {

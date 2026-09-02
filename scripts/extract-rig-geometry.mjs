@@ -72,11 +72,6 @@ export const HUMANOID_V1_OPTIONAL_JOINTS = {
   'clavicle.r': 'clavicle.R',
 }
 
-const IDENTITY_ARM_CARRY = {
-  left: { shoulder: [0, 0, 0, 1], elbow: [0, 0, 0, 1] },
-  right: { shoulder: [0, 0, 0, 1], elbow: [0, 0, 0, 1] },
-}
-
 /**
  * The clip the carried-arm pose is averaged out of. A run holds the sword arm
  * where a fight would, and averaging a whole cycle of it cancels the swing that
@@ -302,7 +297,8 @@ const PROFILES = {
   'humanoid-v1': {
     joints: HUMANOID_V1_JOINTS,
     optional: HUMANOID_V1_OPTIONAL_JOINTS,
-    identityCarry: IDENTITY_ARM_CARRY,
+    // No weapon: the empty-hand carry is computed from the rest pose at runtime.
+    identityCarry: undefined,
     carrySides: { left: 1, right: 1 },
   },
 }
@@ -312,9 +308,10 @@ PROFILES['humanoid.v1'] = PROFILES['humanoid-v1']
 export function createRigFixture(body, source, profileName, carryClip) {
   const profile = PROFILES[profileName]
   if (!profile) throw new Error(`unknown rig profile "${profileName}"`)
+  // An empty carry means "no carry": the default is the knight's measured one.
   const carry = carryClip
     ? { clip: carryClip, sides: profile.carrySides }
-    : profile.identityCarry ? { pose: profile.identityCarry } : undefined
+    : profile.identityCarry ? { pose: profile.identityCarry } : {}
   const sourcePath = isAbsolute(source) ? source : resolve(ROOT, source)
   const sourceLabel = relative(ROOT, sourcePath)
   const fixture = {
@@ -325,7 +322,9 @@ export function createRigFixture(body, source, profileName, carryClip) {
       carryClip,
     } : profile.identityCarry ? {
       armCarryNote: 'Identity absolute body-frame rotations keep both arms in their authored rest carry.',
-    } : {}),
+    } : {
+      armCarryNote: 'No weapon carry measured: the empty-hand carry is computed from the rest pose.',
+    }),
     ...extractRigGeometry(body, profile.joints, profile.optional, carry),
   }
   return fixture

@@ -9,6 +9,7 @@ import {
 import { Joint } from '../src/render/procedural/joints'
 import { createPose, type Pose } from '../src/render/procedural/pose'
 import { DEATH_SETTLE, POSE_CLIPS, SKILL_CLIPS } from '../src/render/procedural/clips'
+import { CARRY_HAND } from '../src/render/procedural/arms'
 import { writeClipPose } from '../src/render/procedural/poses'
 import { quatAngleBetween, quatLength } from '../src/render/procedural/quat'
 
@@ -28,12 +29,12 @@ function deviation(from: Float32Array, to: Pose): number {
   return total
 }
 
-/** How far the leading hand reaches ahead of its own shoulder, in arm lengths. */
+/** How far the leading hand reaches ahead of the carry it started from, in arm lengths. */
 function reach(): number {
   resolvePositions(geometry, pose, positions)
   const left = positions[Joint.HandL * 3 + 2]! - positions[Joint.ShoulderL * 3 + 2]!
   const right = positions[Joint.HandR * 3 + 2]! - positions[Joint.ShoulderR * 3 + 2]!
-  return Math.max(left, right) / geometry.armLength
+  return Math.max(left, right) / geometry.armLength - CARRY_HAND[2]!
 }
 
 describe('placeholder skill poses', () => {
@@ -72,7 +73,7 @@ describe('placeholder skill poses', () => {
       expect(furthestAt, `${skill} does not strike between windup and recovery`).toBeGreaterThan(0.35)
       expect(furthestAt).toBeLessThan(0.65)
       expect(nearestAt, `${skill} does not anticipate before it strikes`).toBeLessThan(furthestAt)
-      expect(nearest, `${skill} never draws the hand behind the shoulder`).toBeLessThan(0)
+      expect(nearest, `${skill} never draws the hand back from its carry`).toBeLessThan(0)
     })
 
     it(`${skill} returns to where it started`, () => {

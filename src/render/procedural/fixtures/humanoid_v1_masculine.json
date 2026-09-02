@@ -1,38 +1,8 @@
 {
   "source": "public/bodies/masculine-v1.glb",
   "note": "Bind-pose joint positions in the body frame (+Y up, +Z forward, +X left), in model units.",
-  "armCarryNote": "Identity absolute body-frame rotations keep both arms in their authored rest carry.",
+  "armCarryNote": "No weapon carry measured: the empty-hand carry is computed from the rest pose.",
   "standingHeight": 1.8,
-  "armCarry": {
-    "left": {
-      "shoulder": [
-        0,
-        0,
-        0,
-        1
-      ],
-      "elbow": [
-        0,
-        0,
-        0,
-        1
-      ]
-    },
-    "right": {
-      "shoulder": [
-        0,
-        0,
-        0,
-        1
-      ],
-      "elbow": [
-        0,
-        0,
-        0,
-        1
-      ]
-    }
-  },
   "joints": {
     "root": [
       0,

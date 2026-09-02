@@ -3,17 +3,10 @@ import { armSwingAmplitude, writeCarriedArm } from './arms'
 import { clamp, lerp, smoothstep, TAU } from './curves'
 import type { RigGeometry } from './geometry'
 import { Joint, LEFT, RIGHT } from './joints'
-import { createLimbScratch, resolveTorso, writeLeg, writeTorso, type LimbScratch } from './limbs'
+import { createLimbScratch, resolveTorso, writeTorso, type LimbScratch } from './limbs'
 import { resetPose, type Pose } from './pose'
-import {
-  hipBob,
-  hipBobAmplitude,
-  reachableHalfStep,
-  stanceHipHeight,
-  stanceReach,
-  swingReach,
-  torsoBobPitch,
-} from './proportions'
+import { writeStrideLeg } from './stride'
+import { hipBob, hipBobAmplitude, reachableHalfStep, stanceHipHeight, torsoBobPitch } from './proportions'
 
 /** What locomotion needs from the sim, already reduced to numbers. */
 export interface GaitDrive {
@@ -89,8 +82,6 @@ const RUN_BLEND_LOW = 2.3
 const RUN_BLEND_HIGH = 3.2
 const WALK_LIFT = 0.09
 const RUN_LIFT = 0.2
-const STANCE_NARROW = 0.15
-const FOOT_SWING_PITCH = 0.45
 const PELVIS_ROLL = 0.04
 const PELVIS_YAW = 0.06
 const CHEST_COUNTER = 0.8
@@ -198,52 +189,18 @@ export function writeLocomotion(
   writeTorso(out, Joint.Head, 0, yaw * 0.4, -bank * 0.4, state)
   resolveTorso(geometry, out, state)
 
-  writeGaitLeg(geometry, state, out, LEFT, phase)
-  writeGaitLeg(geometry, state, out, RIGHT, phase + 0.5)
-  const swing = armSwingAmplitude(geometry, params.runBlend)
-  writeCarriedArm(geometry, state, out, LEFT, Math.sin(TAU * wrap(phase + 0.5)) * swing, params.runBlend, armCarry?.left)
-  writeCarriedArm(geometry, state, out, RIGHT, Math.sin(TAU * phase) * swing, params.runBlend, armCarry?.right)
+  const left = writeStrideLeg(geometry, params, state, out, LEFT, phase)
+  const right = writeStrideLeg(geometry, params, state, out, RIGHT, phase + 0.5)
+  // Each arm swings against the foot on its own side, driven by where that foot
+  // actually is rather than by a wave fitted alongside it: a sine of the cycle is
+  // a quarter-turn out of step with a stride whose stance is not half of it.
+  const swing = armSwingAmplitude(geometry, params.runBlend) / Math.max(1e-6, params.halfStep)
+  writeCarriedArm(geometry, state, out, LEFT, left * swing, params.runBlend, armCarry?.left)
+  writeCarriedArm(geometry, state, out, RIGHT, right * swing, params.runBlend, armCarry?.right)
 }
 
 const FREQUENCY_PROBE = createGaitParams()
 
 function wrap(phase: number): number {
   return phase - Math.floor(phase)
-}
-
-function writeGaitLeg(geometry: RigGeometry, state: GaitState, out: Pose, side: number, legPhase: number): void {
-  const { duty, halfStep, runBlend, lift } = state.params
-  const phase = wrap(legPhase)
-  let swing = 0
-  if (phase < duty) {
-    // Stance: straight back at the actor's own speed, which is the no-slide rule.
-    state.target[1] = geometry.ankleHeight
-    state.target[2] = halfStep - 2 * halfStep * (phase / duty)
-  } else {
-    const s = (phase - duty) / (1 - duty)
-    swing = Math.sin(Math.PI * s)
-    state.target[1] = geometry.ankleHeight + lift * swing
-    state.target[2] = -halfStep + 2 * halfStep * smoothstep(0, 1, s)
-  }
-  state.target[0] = side * geometry.hipWidth * (1 - STANCE_NARROW * runBlend)
-  if (phase >= duty) liftToReach(geometry, state, side, swing)
-  writeLeg(geometry, state, out, side, -FOOT_SWING_PITCH * swing)
-}
-
-/**
- * Raises a swinging foot until its own leg can reach it. The hip rides high at
- * mid-stance, which is exactly when the other foot is furthest forward, so the
- * arc the lift alone describes runs the chain into full extension and the knee
- * snaps straight. A foot that lifts as far as the leg needs cannot.
- */
-function liftToReach(geometry: RigGeometry, state: GaitState, side: number, swing: number): void {
-  const hip = side === LEFT ? Joint.HipL : Joint.HipR
-  // Eased over the swing so the foot leaves and lands where stance left it.
-  const reach = lerp(stanceReach(geometry), swingReach(geometry), swing)
-  const dx = state.target[0]! - state.positions[hip * 3]!
-  const dz = state.target[2]! - state.positions[hip * 3 + 2]!
-  const flat = Math.hypot(dx, dz)
-  if (flat >= reach) return
-  const drop = Math.sqrt(reach * reach - flat * flat)
-  state.target[1] = Math.max(state.target[1]!, state.positions[hip * 3 + 1]! - drop)
 }

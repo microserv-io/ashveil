@@ -32,14 +32,11 @@ describe('rig geometry extractor CLI', () => {
     expect(extracted).toBe(readFileSync(KAYKIT_FIXTURE, 'utf8'))
   })
 
-  it('extracts humanoid.v1 without a carry clip and uses identity carry', () => {
+  it('extracts humanoid.v1 without a carry clip and states no carry', () => {
     const extracted = JSON.parse(extract(MASCULINE, 'humanoid-v1'))
     expect(extracted.standingHeight).toBe(1.8)
     expect(extracted).not.toHaveProperty('carryClip')
-    expect(extracted.armCarry).toEqual({
-      left: { shoulder: [0, 0, 0, 1], elbow: [0, 0, 0, 1] },
-      right: { shoulder: [0, 0, 0, 1], elbow: [0, 0, 0, 1] },
-    })
+    expect(extracted).not.toHaveProperty('armCarry')
   })
 })
 

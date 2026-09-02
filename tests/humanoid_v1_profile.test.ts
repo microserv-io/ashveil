@@ -20,7 +20,7 @@ describe('humanoid.v1 skeleton profile', () => {
     }
   })
 
-  it('maps the optional neck and clavicles with an identity arm carry', () => {
+  it('maps the optional neck and clavicles and states no weapon carry', () => {
     const body = loadGlbSkeleton(MASCULINE)
     expect(HUMANOID_V1_PROFILE.optional).toEqual({
       neck: 'neck',
@@ -30,9 +30,7 @@ describe('humanoid.v1 skeleton profile', () => {
     for (const bone of Object.values(HUMANOID_V1_PROFILE.optional)) {
       expect(body.getObjectByName(bone)).toBeDefined()
     }
-    expect(HUMANOID_V1_PROFILE.armCarry).toEqual({
-      left: { shoulder: [0, 0, 0, 1], elbow: [0, 0, 0, 1] },
-      right: { shoulder: [0, 0, 0, 1], elbow: [0, 0, 0, 1] },
-    })
+    // An A-pose rest is not a carry: the empty-hand one is computed from the rig.
+    expect(HUMANOID_V1_PROFILE.armCarry).toBeUndefined()
   })
 })

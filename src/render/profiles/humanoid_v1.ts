@@ -1,19 +1,14 @@
 import fixture from '../procedural/fixtures/humanoid_v1_masculine.json'
 import type { SkeletonProfile } from './profile'
 
+/**
+ * The Tripo humanoid rig. It carries no weapon and states no `armCarry`: an
+ * A-pose rest is not a carry, so the empty-hand one is computed from the rest
+ * directions in `procedural/arms.ts`.
+ */
 export const HUMANOID_V1_PROFILE: SkeletonProfile = {
   name: 'humanoid.v1',
   standingHeight: fixture.standingHeight,
-  armCarry: {
-    left: {
-      shoulder: quaternion(fixture.armCarry.left.shoulder),
-      elbow: quaternion(fixture.armCarry.left.elbow),
-    },
-    right: {
-      shoulder: quaternion(fixture.armCarry.right.shoulder),
-      elbow: quaternion(fixture.armCarry.right.elbow),
-    },
-  },
   bones: {
     root: 'root',
     pelvis: 'pelvis',
@@ -38,9 +33,4 @@ export const HUMANOID_V1_PROFILE: SkeletonProfile = {
     'clavicle.l': 'clavicle.L',
     'clavicle.r': 'clavicle.R',
   },
-}
-
-function quaternion(values: readonly number[]): readonly [number, number, number, number] {
-  if (values.length !== 4) throw new Error('arm carry rotation must be a quaternion')
-  return [values[0]!, values[1]!, values[2]!, values[3]!]
 }

@@ -97,7 +97,7 @@ export function createPoseGenerator(geometry: RigGeometry, armCarry?: ArmCarry):
   function write(current: Mode, input: RigInput, out: Pose): void {
     if (current === 'idle') return writeIdle(geometry, drive, scratch, out, armCarry)
     if (current === 'moving') return writeLocomotion(geometry, drive, scratch, out, armCarry)
-    if (current === 'dash') return writeDash(geometry, drive, scratch, out)
+    if (current === 'dash') return writeDash(geometry, drive, scratch, out, armCarry)
     const at = current === 'dead' ? fallProgress(input.time) : castPhase(input)
     writeClipPose(geometry, POSE_CLIPS[current], at, scratch, out)
   }

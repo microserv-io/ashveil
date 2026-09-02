@@ -84,7 +84,7 @@ describe('humanoid.v1 procedural driver', () => {
     let stanceKnee = 0
     for (let sample = 0; sample <= 720; sample++) {
       drive.phase = sample / 720
-      writeLocomotion(geometry, drive, gait, pose, HUMANOID_V1_PROFILE.armCarry)
+      writeLocomotion(geometry, drive, gait, pose)
       resolvePositions(geometry, pose, positions)
       if (drive.phase > params.duty * 0.25 && drive.phase < params.duty * 0.75) {
         stanceKnee = Math.max(stanceKnee, kneeBend(positions))

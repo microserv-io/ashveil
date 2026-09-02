@@ -1,4 +1,4 @@
-import { writeCarriedArm, writeHangingArm } from './arms'
+import { writeCarriedArm } from './arms'
 import { TAU } from './curves'
 import type { RigGeometry } from './geometry'
 import { Joint, LEFT, RIGHT } from './joints'
@@ -25,6 +25,8 @@ const DASH_LUNGE = 0.12
 const DASH_TRAIL = 0.3
 const DASH_FOOT_LIFT = 0.18
 const FOOT_SWING_PITCH = 0.45
+/** Elbows in and hands back: a dash throws the body forward past its own arms. */
+const DASH_ARM_TUCK = 0.42
 
 export function writeIdle(geometry: RigGeometry, drive: GaitDrive, state: GaitState, out: Pose, armCarry?: ArmCarry): void {
   resetPose(out)
@@ -51,7 +53,7 @@ export function writeIdle(geometry: RigGeometry, drive: GaitDrive, state: GaitSt
  * A held pose, not a sprint: `dash` outlives the skill that started it, so the body
  * stays committed forward with its legs trailing until the flag clears.
  */
-export function writeDash(geometry: RigGeometry, _drive: GaitDrive, state: GaitState, out: Pose): void {
+export function writeDash(geometry: RigGeometry, _drive: GaitDrive, state: GaitState, out: Pose, armCarry?: ArmCarry): void {
   resetPose(out)
   plant(state.params)
   out.offset[0] = 0
@@ -66,8 +68,8 @@ export function writeDash(geometry: RigGeometry, _drive: GaitDrive, state: GaitS
 
   trailLeg(geometry, state, out, LEFT)
   trailLeg(geometry, state, out, RIGHT)
-  writeHangingArm(geometry, state, out, LEFT, -geometry.armLength * 0.3, 1)
-  writeHangingArm(geometry, state, out, RIGHT, -geometry.armLength * 0.3, 1)
+  writeCarriedArm(geometry, state, out, LEFT, DASH_ARM_TUCK, 1, armCarry?.left)
+  writeCarriedArm(geometry, state, out, RIGHT, DASH_ARM_TUCK, 1, armCarry?.right)
 }
 
 
