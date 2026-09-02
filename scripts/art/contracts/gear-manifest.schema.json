@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ashveil.gear-manifest.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "family",
+    "contractVersion",
+    "body",
+    "slot",
+    "piece",
+    "source",
+    "bones",
+    "inverseBindSha256",
+    "covers",
+    "maskBody",
+    "weights",
+    "alignment",
+    "budget",
+    "gates",
+    "reportFile"
+  ],
+  "properties": {
+    "schema": {
+      "const": "ashveil.gear-manifest.v1"
+    },
+    "family": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+\\.v[0-9]+$"
+    },
+    "contractVersion": {
+      "type": "string"
+    },
+    "body": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "slot": {
+      "enum": [
+        "feet",
+        "legs",
+        "waist",
+        "chest",
+        "back",
+        "hands",
+        "shoulders",
+        "head"
+      ]
+    },
+    "piece": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file",
+        "sha256"
+      ],
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "bones": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "inverseBindSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "covers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "feet",
+          "legs",
+          "waist",
+          "chest",
+          "back",
+          "hands",
+          "shoulders",
+          "head"
+        ]
+      }
+    },
+    "maskBody": {
+      "type": "boolean"
+    },
+    "weights": {
+      "enum": [
+        "transfer",
+        "rigid"
+      ]
+    },
+    "alignment": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/alignment"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "L",
+            "R"
+          ],
+          "properties": {
+            "L": {
+              "$ref": "#/$defs/alignment"
+            },
+            "R": {
+              "$ref": "#/$defs/alignment"
+            }
+          }
+        }
+      ]
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "triangles",
+        "materials",
+        "meshes",
+        "maxInfluencesPerVertex"
+      ],
+      "properties": {
+        "triangles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "materials": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "meshes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxInfluencesPerVertex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
+    "reportFile": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "alignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scale",
+        "yawDegrees",
+        "translation"
+      ],
+      "properties": {
+        "scale": {
+          "type": "number"
+        },
+        "yawDegrees": {
+          "enum": [
+            0,
+            180
+          ]
+        },
+        "translation": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  }
+}

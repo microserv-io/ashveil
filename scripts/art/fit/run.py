@@ -19,7 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from fit import export as exporter  # noqa: E402
-from fit import gate, landmarks, normalise, review, skeleton, weights  # noqa: E402
+from fit import gate, landmarks, masks, normalise, review, skeleton, weights  # noqa: E402
 from fit.glb import Glb  # noqa: E402
 from fit.skin import Body  # noqa: E402
 
@@ -68,11 +68,15 @@ def run(args) -> dict:
     glb.write(glb_path)
 
     table = {name: [float(value) for value in point] for name, point in fitted["landmarks"].items()}
+    shipped = Body(Glb(glb_path), contract)
+    resolved_masks = masks.resolve(shipped, contract, table)
+    mask_gates = masks.gates(resolved_masks, contract, set(shipped.index))
+    masks.write(str(out / f"{args.body}.masks.json"), args.body, contract, resolved_masks)
     source_had = {"uvs": any(normalised["report"]["input"]["uvLayers"].values()),
                   "textures": bool(normalised["report"]["input"]["images"])}
     measured = gate.measure(glb_path, contract, table, source_had)
     frame_gates = gate.gates(measured, contract, args.helpers)
-    gates_table = {**weight_gates, **frame_gates}
+    gates_table = {**weight_gates, **frame_gates, **mask_gates}
 
     report = {
         "schema": "ashveil.body-report.v1",
@@ -103,6 +107,11 @@ def run(args) -> dict:
               "maxInfluencesPerVertex": after["maxInfluencesPerVertex"]}
     manifest = exporter.manifest(args.body, contract, args.input, fitted["landmarks"], fitted["footprint"],
                                  built["report"], args.helpers, budget, gates_table, glb_path)
+    manifest["masksFile"] = f"{args.body}.masks.json"
+    manifest["slots"] = {
+        slot: {"vertices": sum(len(indices) for indices in meshes.values())}
+        for slot, meshes in resolved_masks.items()
+    }
     exporter.write_json(str(out / f"{args.body}.manifest.json"), manifest)
 
     scratch = tempfile.mkdtemp(prefix="ashveil-review-")

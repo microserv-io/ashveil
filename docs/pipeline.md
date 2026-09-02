@@ -30,6 +30,21 @@ The neck-gap and knee-topology issues found on the same body are real, unrelated
 defects, not measurement artifacts, and stand as open items until the next body is
 measured (see the GDD).
 
+**Symptom: a gear piece could align against surface geometry that was not the body.**
+`bpy.ops.import_scene.gltf` leaves scene objects the file's own meshes never named (a
+stray Icosphere from the importer's default scene), and a shipped body GLB is
+seam-split for UV islands, so a straight join of its meshes has thousands of boundary
+edges and is not a closed volume a ray can count crossings into. `gear/body.py` keeps
+only the meshes both the armature skins and the masks sidecar name, and welds seams
+(`normalise._merge_seams`) before building the inside/outside surface a piece aligns
+against.
+
+**Symptom: the clip gate read a piece resting cleanly on a masked slot as buried.**
+Searching only the body's visible surface signs a vertex by the nearest hole's rim —
+an armpit crease centimetres away — instead of the triangle actually underneath it.
+`scripts/art/gear/penetration.ts` searches the whole body and discards a hit only when
+the nearest triangle is hidden under a worn slot, so resting on a mask reads as clear.
+
 ## Design
 
 ### Motion is code, not data
@@ -266,53 +281,94 @@ Tracked separately as issues #21 and #22, not blocking this pipeline's slices.
 ## Non-goals
 
 No Mixamo lock-in, no Tripo rig or animate, no hosted motion services, no models on
-non-commercial data, no armor fitting or modular head socket yet, no hand-authored
-keyframes in Blender, no stun or knockback presentation until the sim has them.
+non-commercial data, no modular head socket yet, no hand-authored keyframes in
+Blender, no stun or knockback presentation until the sim has them.
 ## Gear: fitting pieces to a body
 
-Gear is separate skinned meshes bound to the body's own skeleton, so every piece
-moves with the same procedural driver and no piece ever carries animation. The
-body can be shown bare, so the base body's deformation is a shipping look, not a
-fallback.
+Gear is a separate skinned mesh bound to the body's own skeleton, so every piece
+moves with the same procedural driver and no piece ever carries animation. The body
+can still be shown bare: masking a worn region is a runtime index edit, never a
+change to the shipped mesh.
 
-Slots: boots, gloves, belt, legs, chest or dress, head, shoulders; weapons: one-hand,
-two-hand, off-hand (shield), two-hand bow. Weapons attach to hand sockets; the rest
-are fitted pieces with body-region masks.
+```
+npm run art:gear -- --input <piece.glb> --slot <slot> --body <body> --piece <name> \
+  [--weights transfer|rigid] [--covers <slot,slot>] [--no-mask] [--outdir <dir>]
+```
 
-### The recipe, all Blender built-ins
+Writes `public/gear/<piece>/`: `<piece>.glb`, `<piece>.manifest.json`,
+`<piece>.report.json` (every measurement), `<piece>.review.png` (not committed). Same
+contract as `art:fit`: a failed gate deletes the GLB and exits non-zero named after
+it. `--input proxy:<slot>` builds a test piece from the body's own region instead of
+importing one (see "Proxy fixtures"). `--covers` names the slot regions the piece
+hides, its own slot by default: a short-sleeved tunic covers `chest,shoulders`, and
+both the bind gate and the clip gate stop counting what a covered region hides.
 
-1. Generate the piece in Tripo from an approved concept, on a plain background,
-   in the pose it is worn in (A-pose for chest and shoulders, the hand's rest for
-   gloves), textured. One piece per file.
-2. Normalise with the same frame rules as a body (Y up, +Z forward, metres) and
-   align it to the body's skeleton landmarks from the manifest: a chest piece to
-   pelvis, chest and shoulder landmarks, boots to ankle, heel and toe, gloves to
-   wrist and hand tip. Scale by the landmark span it covers, never by bounding box.
-3. Shrinkwrap where the piece must hug (cuffs, collars, straps), leave rigid where
-   it must not (pauldron plates, chest plates), by an authored per-slot mask in the
-   family contract.
-4. Transfer the body's cleaned skin weights onto the piece (Data Transfer by nearest
-   face interpolation), limit to four influences, normalise. Rigid plates take a
-   single bone.
-5. Export as a skinned mesh on the same joint list and inverse binds as the body;
-   the runtime binds it to the body's `Skeleton` and hides the body's masked region
-   (masks are per-vertex sets on the body, authored once per family and slot).
-6. Gate: no self-intersection with the body through the stress poses and the walk,
-   run, cleave, firebolt, frost nova and death cycles (a piece-to-body distance
-   field, sampled at 32 phases); silhouette readable at the gameplay camera (a
-   rendered contact sheet); triangle and material budgets per slot.
+Eight slots, three of them pairs: `feet`, `hands`, `shoulders` (two islands, one per
+side), and `legs`, `waist`, `chest`, `back`, `head` (one). `back` is the cloak: its
+contract region is empty, so it never masks body geometry.
 
-### Refitting to another body
+A slot's region lives in `humanoid.v1.json`'s `slots` block as `{bone, along}` rules:
+a body vertex belongs to the slot when its dominant bone (largest skin weight) is
+named and its position along that bone's landmark segment, a 0-1 fraction, falls in
+`along` (default the whole bone). `fit/masks.py` resolves this once per body into
+`<body>.masks.json` — vertex indices per mesh, per slot — which the gear fitter and
+the runtime both read.
 
-Same skeleton hierarchy, different proportions: bind the piece to the source body's
-surface (Surface Deform), morph the source body into the target body's proportions
-by the shared bones, and the piece follows; retransfer weights from the target body;
-rerun the gate. Anatomically different parts (hooves, a tail) are per-body pieces or
-slot rules, not refits.
+**Alignment.** The piece is scaled uniformly so its extent along the region's
+`span.axis` matches the region's own extent times `factor`, then translated so each
+axis's anchor (piece min/centre/max onto body min/centre/max, plus a metres offset)
+lines up. Pairs align each island to its own side's region (`_L`/`_R` bones); `back`
+borrows the chest's extents via `referenceSlot`. Yaw is tried at 0 and 180 degrees
+about +Y, and the orientation with fewer piece vertices landing inside the body wins,
+ties broken by lower mean distance to the surface. Two shrinkwrap passes follow: the
+whole piece is pulled to `clearance` metres outside the body, then a `hug` vertex
+group — the bands of the piece's own span that should hug (a cuff, a collar, the
+belt) — is pulled onto the skin within `hug.reach` of it, smoothstepped at the edges.
 
-### Sockets and masks in the contract
+**Weights and export.** `transfer` copies the body's cleaned weights by nearest-face
+interpolation, keeps only the slot's `allowedBones` (a pair's side keeps only its own
+`_L`/`_R` bones plus unsuffixed ones), sends orphans to the nearest allowed bone
+segment, caps four influences and renormalises. `rigid` gives every vertex weight 1.0
+on one bone (per side for pairs). Either way the piece exports on the body's own
+joint list with identical inverse binds, so the runtime binds it straight to the
+body's `Skeleton`.
 
-`humanoid.v1.json` carries `sockets` (hand L/R, head). This slice adds slot regions
-and their masks. A slot region is a named vertex set on the canonical body; a mask
-hides it when the slot is filled. Both are authored per family once and validated
-by the fitter's gates on every body.
+**Gates.** Blender-side (`scripts/art/gear/gate.py`), measured off the exported file:
+joints and inverse binds match the body, at most four influences summing to one,
+every influence an allowed bone, triangle and material budgets, UVs and textures
+surviving, rest axes identity, the piece clear of the skin at bind, one mesh (or two
+islands for a pair). Two clip gates (`scripts/art/gear/clip.ts`) run after:
+`clears_the_body_through_motion_cycles` and `clears_the_body_through_stress_poses`.
+Each skins the piece onto the body's own bones through 32 phases of walk, run,
+`cleave`, `firebolt`, `frost_nova`, `dead`, then bind, two abductions, two arm
+flexions, two spine twists, a torso flex and a hip-plus-knee flexion — the far ends
+of the rig, not anything an animation plays. 180-degree abduction is deliberately
+absent: linear skinning folds this body's own shoulder through itself there, so the
+pose would measure the body rather than the piece, and no skill raises an arm that
+far. A piece fails when more than the slot's `clip.fraction` of its vertices sit
+deeper than `clip.depth` inside the *visible* body — a masked triangle still tells a
+vertex which way is out, but never counts as a hit.
+
+**Proxy fixtures.** `--input proxy:feet` and `--input proxy:legs` carve a piece from
+the body's own masked region, offset outward along its vertex normals, so a fitter
+run needs no paid Tripo asset (alignment forced to `factor` 1.0, zero offsets — a
+proxy is already the body's own shape). They exist to prove the fitter reproduces
+byte for byte (`tests/fixtures/gear/proxy-{feet,legs}/`); the legs proxy declares
+`--covers legs,waist`, because a waistband sits in the waist region. They are fixtures,
+not production art, and the review page never lists them.
+
+**Runtime and review.** `src/render/gear.ts`: a piece binds to the body's own
+`Skeleton` object as a sibling `SkinnedMesh`; `applyBodyMasks` drops body triangles
+whose three vertices all sit inside a worn slot's mask from the index, sharing every
+attribute by reference. Wearing a piece costs exactly one more draw call. The motion
+review page's Gear panel (`spike/motion/gear.ts`) lists every fitted piece under
+`public/gear` — proxy fixtures excluded — with a checkbox each plus "Wear all" and
+"Bare".
+
+Commit gear the way a body is committed: concept images under
+`docs/art-pipeline/concepts/gear/<set>/`, accepted Tripo GLBs under
+`docs/art-pipeline/sources/gear/`.
+
+Refitting a piece to a second body (Surface Deform onto the shared bones, retransfer
+weights, rerun the gate) is not built: no second humanoid body exists yet to refit
+onto.

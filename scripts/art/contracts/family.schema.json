@@ -3,7 +3,7 @@
   "type": "object",
   "required": ["schema", "family", "version", "canonicalHeight", "frame", "boneAxisRule", "budget",
                "landmarks", "minimumLandmarkConfidence", "symmetryToleranceHeight", "bones", "helpers",
-               "sockets", "regions", "gates"],
+               "sockets", "slots", "regions", "gates"],
   "properties": {
     "schema": { "const": "ashveil.family-contract.v1" },
     "family": { "type": "string", "pattern": "^[a-z]+\\.v[0-9]+$" },
@@ -86,6 +86,147 @@
         "required": ["role", "bone"],
         "additionalProperties": false,
         "properties": { "role": { "type": "string" }, "bone": { "type": "string" } }
+      }
+    },
+    "slots": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["pair", "region", "align", "clearance", "hug", "weights", "clip", "budget"],
+        "properties": {
+          "pair": { "type": "boolean" },
+          "region": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["bone"],
+              "properties": {
+                "bone": { "type": "string", "pattern": "^[A-Za-z0-9_]+$" },
+                "along": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": { "type": "number", "minimum": 0, "maximum": 1 }
+                }
+              }
+            }
+          },
+          "align": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["span", "anchors"],
+            "properties": {
+              "referenceSlot": { "type": "string" },
+              "span": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["axis", "factor"],
+                "properties": {
+                  "axis": { "enum": ["X", "Y", "Z"] },
+                  "factor": { "type": "number", "minimum": 0 }
+                }
+              },
+              "anchors": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["X", "Y", "Z"],
+                "properties": {
+                  "X": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["piece", "body", "offset"],
+                    "properties": {
+                      "piece": { "enum": ["min", "centre", "max"] },
+                      "body": { "enum": ["min", "centre", "max"] },
+                      "offset": { "type": "number" }
+                    }
+                  },
+                  "Y": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["piece", "body", "offset"],
+                    "properties": {
+                      "piece": { "enum": ["min", "centre", "max"] },
+                      "body": { "enum": ["min", "centre", "max"] },
+                      "offset": { "type": "number" }
+                    }
+                  },
+                  "Z": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["piece", "body", "offset"],
+                    "properties": {
+                      "piece": { "enum": ["min", "centre", "max"] },
+                      "body": { "enum": ["min", "centre", "max"] },
+                      "offset": { "type": "number" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "clearance": { "type": "number", "minimum": 0 },
+          "hug": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["bands", "reach", "fade"],
+            "properties": {
+              "bands": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": { "type": "number", "minimum": 0, "maximum": 1 }
+                }
+              },
+              "reach": { "type": "number", "minimum": 0 },
+              "fade": { "type": "number", "minimum": 0 }
+            }
+          },
+          "weights": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["mode", "allowedBones", "rigidBone"],
+            "properties": {
+              "mode": { "enum": ["transfer", "rigid"] },
+              "allowedBones": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": { "type": "string", "pattern": "^[A-Za-z0-9_]+$" }
+              },
+              "rigidBone": {
+                "type": ["object", "string", "null"],
+                "additionalProperties": false,
+                "required": ["L", "R"],
+                "properties": {
+                  "L": { "type": "string", "pattern": "^[A-Za-z0-9_]+$" },
+                  "R": { "type": "string", "pattern": "^[A-Za-z0-9_]+$" }
+                }
+              }
+            }
+          },
+          "clip": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["depth", "fraction"],
+            "properties": {
+              "depth": { "type": "number", "minimum": 0 },
+              "fraction": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          },
+          "budget": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["maxTriangles", "maxMaterials"],
+            "properties": {
+              "maxTriangles": { "type": "integer", "minimum": 1 },
+              "maxMaterials": { "type": "integer", "minimum": 1 }
+            }
+          }
+        }
       }
     },
     "regions": {

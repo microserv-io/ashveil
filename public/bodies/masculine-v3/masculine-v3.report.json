@@ -1433,7 +1433,10 @@
     "meshes_within_budget": true,
     "uvs_survived_the_pipeline": true,
     "textures_survived_the_pipeline": true,
-    "bones_rest_axis_aligned": true
+    "bones_rest_axis_aligned": true,
+    "slot_region_bones_exist": true,
+    "every_slot_region_resolves": true,
+    "slot_regions_do_not_overlap": true
   },
   "gatesPass": true,
   "outputs": {

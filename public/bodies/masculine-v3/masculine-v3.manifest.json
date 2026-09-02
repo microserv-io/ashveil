@@ -1,7 +1,7 @@
 {
   "schema": "ashveil.body-manifest.v1",
   "family": "humanoid.v1",
-  "contractVersion": "1.1.0",
+  "contractVersion": "1.2.0",
   "body": "masculine-v3",
   "source": {
     "file": "masculine-mannequin-tripo.glb",
@@ -200,7 +200,37 @@
     "meshes_within_budget": true,
     "uvs_survived_the_pipeline": true,
     "textures_survived_the_pipeline": true,
-    "bones_rest_axis_aligned": true
+    "bones_rest_axis_aligned": true,
+    "slot_region_bones_exist": true,
+    "every_slot_region_resolves": true,
+    "slot_regions_do_not_overlap": true
   },
-  "reportFile": "masculine-v3.report.json"
+  "reportFile": "masculine-v3.report.json",
+  "masksFile": "masculine-v3.masks.json",
+  "slots": {
+    "feet": {
+      "vertices": 1532
+    },
+    "legs": {
+      "vertices": 1280
+    },
+    "waist": {
+      "vertices": 150
+    },
+    "chest": {
+      "vertices": 1626
+    },
+    "back": {
+      "vertices": 0
+    },
+    "hands": {
+      "vertices": 3986
+    },
+    "shoulders": {
+      "vertices": 263
+    },
+    "head": {
+      "vertices": 999
+    }
+  }
 }

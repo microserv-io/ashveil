@@ -1,6 +1,15 @@
 import '../../src/style.css'
 import * as THREE from 'three'
 import { disposeActorView, orientActorView, type ActorView } from '../../src/render/actorview'
+import {
+  applyBodyMasks,
+  coveredSlots,
+  removePiece,
+  viewMaterialsWith,
+  wearPiece,
+  type BodyMasks,
+  type WornPiece,
+} from '../../src/render/gear'
 import { loadModels } from '../../src/render/models'
 import type { RigState } from '../../src/render/rig'
 import type { RigInput } from '../../src/render/riginput'
@@ -16,6 +25,7 @@ import {
   reviewBodyScale,
   type ReviewBodyDefinition,
 } from './body'
+import { loadReviewGear, loadReviewMasks, REVIEW_GEAR } from './gear'
 
 /**
  * One body, the gameplay camera, and every knob the animation pipeline has.
@@ -34,12 +44,16 @@ const LEASH = 4.5
 const TURN_RATE = 2.6
 const TURN_DURATION = 0.8
 const PANEL_KEY = 'ashveil.motion.panel'
+const GEAR_KEY = 'ashveil.motion.gear'
 /** Below this the panel would cover the body, so it starts out of the way. */
 const NARROW_VIEWPORT = 640
 
 const sim = new Sim({ seed: SEED })
 await loadModels('models')
 const bodySources = await loadReviewBodies()
+const gearSources = await loadReviewGear()
+// Fetched only when there is something to wear: the sidecar lands with the refit.
+const bodyMasks: BodyMasks | null = REVIEW_GEAR.length > 0 ? await loadReviewMasks() : null
 
 const host = new SceneHost(document.getElementById('stage')!)
 host.buildTerrain(sim.map)
@@ -86,7 +100,14 @@ let hitAge: number | null = null
 let castAt = 0
 let stepQueued = false
 let previous = performance.now()
+let worn: WornPiece[] = []
+let bodyMaterials = 0
+const wearing = readGearPreference()
+// Declared before the panel is built: a `const` below that call is still in its
+// temporal dead zone when the first checkbox is made.
+const gearBoxes = new Map<string, HTMLInputElement>()
 
+buildGearPanel()
 rebuild()
 recentre()
 
@@ -235,6 +256,79 @@ function rebuild(): void {
   view = createReviewBodyView(actor, bodySources.get(chosen.definition.id)!, chosen.definition)
   bodyScale = reviewBodyScale(actor.radius)
   host.scene.add(view.group)
+  // The pieces belong to the reviewer's session, not to one body, so a rebuild
+  // puts back whatever was on.
+  worn = []
+  bodyMaterials = view.materials.length
+  rewear()
+}
+
+/**
+ * Gear rides the body's own skeleton, so wearing is attach-time work: bind the
+ * piece, hide the body under it, and hand the worn materials to the view so the
+ * hit flash and death fade cover them.
+ */
+function rewear(): void {
+  const body = view!
+  for (const piece of worn) removePiece(body.group, piece)
+  worn = REVIEW_GEAR.filter((entry) => wearing.has(entry.piece)).flatMap((entry) => {
+    const loaded = gearSources.get(entry.piece)
+    return loaded ? [wearPiece(body.group, { slot: entry.slot, scene: loaded.scene, covers: loaded.covers })] : []
+  })
+  if (bodyMasks) applyBodyMasks(body.group, bodyMasks, coveredSlots(worn))
+  viewMaterialsWith(body, bodyMaterials, worn)
+  saveGear()
+}
+
+function buildGearPanel(): void {
+  element('gear-panel').hidden = REVIEW_GEAR.length === 0
+  element('gear').replaceChildren(
+    ...REVIEW_GEAR.map((entry) => {
+      const label = document.createElement('label')
+      label.className = 'flex items-center gap-2'
+      const box = document.createElement('input')
+      box.type = 'checkbox'
+      box.checked = wearing.has(entry.piece)
+      box.className = 'accent-ember'
+      box.addEventListener('change', () => {
+        if (box.checked) wearing.add(entry.piece)
+        else wearing.delete(entry.piece)
+        rewear()
+      })
+      const name = document.createElement('span')
+      name.textContent = `${entry.slot} · ${entry.piece}`
+      label.append(box, name)
+      gearBoxes.set(entry.piece, box)
+      return label
+    }),
+  )
+  element('gear-all').addEventListener('click', () => setGear(REVIEW_GEAR.map((entry) => entry.piece)))
+  element('gear-bare').addEventListener('click', () => setGear([]))
+}
+
+function setGear(pieces: readonly string[]): void {
+  wearing.clear()
+  for (const piece of pieces) wearing.add(piece)
+  for (const [piece, box] of gearBoxes) box.checked = wearing.has(piece)
+  rewear()
+}
+
+function wornSlots(): string {
+  return worn.length === 0 ? 'bare' : worn.map((piece) => piece.slot).join(' ')
+}
+
+function saveGear(): void {
+  try {
+    localStorage.setItem(GEAR_KEY, JSON.stringify([...wearing]))
+  } catch {}
+}
+
+function readGearPreference(): Set<string> {
+  try {
+    const stored = localStorage.getItem(GEAR_KEY)
+    if (stored) return new Set(JSON.parse(stored) as string[])
+  } catch {}
+  return new Set()
 }
 
 function recentre(): void {
@@ -259,6 +353,7 @@ function describe(wall: number): string {
     'driver     procedural',
     `body       ${bodySelect.value}`,
     `bodyScale  ${bodyScale.toFixed(6)}`,
+    `gear       ${wornSlots()}`,
     `cast       ${castAt.toFixed(2)}s of ${CAST_LENGTH.toFixed(2)}`,
     `frame      ${(wall * 1000).toFixed(1)}ms`,
     '',

@@ -15,6 +15,7 @@
     "spike:build": "vite build --config spike/deck/vite.config.ts",
     "assets": "node scripts/fetch-assets.mjs",
     "art:fit": "node scripts/art/fit.mjs",
+    "art:gear": "node scripts/art/gear.mjs",
     "art:profile": "node scripts/art/profile.mjs",
     "motion:dev": "npm run assets && vite --config spike/motion/vite.config.ts",
     "perf": "node scripts/perf.mjs",

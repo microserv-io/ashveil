@@ -1,0 +1,190 @@
+{
+  "schema": "ashveil.gear-report.v1",
+  "family": "humanoid.v1",
+  "contractVersion": "1.2.0",
+  "body": "masculine-v3",
+  "slot": "legs",
+  "piece": "proxy-legs",
+  "covers": [
+    "legs",
+    "waist"
+  ],
+  "source": {
+    "file": "proxy:legs",
+    "sha256": "28a5088916abf4069df26bf1b7461544ed6063e2a307d8f83061b0e296bea826"
+  },
+  "islands": {
+    "found": 1,
+    "kept": 1,
+    "grouped": {
+      "all": 1
+    },
+    "droppedTriangleCounts": [],
+    "triangles": 1471
+  },
+  "alignment": {
+    "all": {
+      "scale": 0.996412,
+      "yawDegrees": 0,
+      "translation": [
+        -0.000001,
+        0.003396,
+        0.000145
+      ],
+      "insideVerticesBeforeShrinkwrap": 0,
+      "meanSurfaceDistanceMetres": 0.014061,
+      "anchorResidualMetres": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "proxy": true
+    }
+  },
+  "decimation": {
+    "trianglesBefore": 1471,
+    "trianglesAfter": 1471,
+    "ratio": 1
+  },
+  "shrinkwrap": {
+    "wholeMovedVertices": 29,
+    "hugSelectedVertices": 326,
+    "hugMovedVertices": 296
+  },
+  "weights": {
+    "mode": "transfer",
+    "strippedGroups": {
+      "proxy-legs": [
+        "chest",
+        "clavicle_L",
+        "clavicle_R",
+        "foot_L",
+        "foot_R",
+        "forearm_L",
+        "forearm_R",
+        "hand_L",
+        "hand_R",
+        "head",
+        "neck",
+        "root",
+        "shoulder_helper_L",
+        "shoulder_helper_R",
+        "spine",
+        "twist_upper_arm_L",
+        "twist_upper_arm_R",
+        "upper_arm_L",
+        "upper_arm_R"
+      ]
+    },
+    "orphanedVertices": {}
+  },
+  "rest": {
+    "maxRestRotationBefore": 0,
+    "maxRestRotationAfter": 0,
+    "joints": 24
+  },
+  "runtime": {
+    "bones": [
+      "root",
+      "pelvis",
+      "spine",
+      "chest",
+      "clavicle_L",
+      "shoulder_helper_L",
+      "upper_arm_L",
+      "forearm_L",
+      "hand_L",
+      "twist_upper_arm_L",
+      "clavicle_R",
+      "shoulder_helper_R",
+      "upper_arm_R",
+      "forearm_R",
+      "hand_R",
+      "twist_upper_arm_R",
+      "neck",
+      "head",
+      "thigh_L",
+      "shin_L",
+      "foot_L",
+      "thigh_R",
+      "shin_R",
+      "foot_R"
+    ],
+    "bodyBones": [
+      "root",
+      "pelvis",
+      "spine",
+      "chest",
+      "clavicle_L",
+      "shoulder_helper_L",
+      "upper_arm_L",
+      "forearm_L",
+      "hand_L",
+      "twist_upper_arm_L",
+      "clavicle_R",
+      "shoulder_helper_R",
+      "upper_arm_R",
+      "forearm_R",
+      "hand_R",
+      "twist_upper_arm_R",
+      "neck",
+      "head",
+      "thigh_L",
+      "shin_L",
+      "foot_L",
+      "thigh_R",
+      "shin_R",
+      "foot_R"
+    ],
+    "inverseBindMaxAbsDifference": 1.79e-7,
+    "triangles": 1471,
+    "materials": 0,
+    "meshes": 1,
+    "islands": 1,
+    "maxInfluencesPerVertex": 3,
+    "minWeightSum": 0.999999925,
+    "maxWeightSum": 1.000000066,
+    "influencingBones": [
+      "pelvis",
+      "shin_L",
+      "shin_R",
+      "thigh_L",
+      "thigh_R"
+    ],
+    "hasUvs": false,
+    "textures": 0,
+    "maxRestRotation": 0,
+    "sourceHad": {
+      "uvs": false,
+      "textures": false
+    },
+    "bindClearance": {
+      "insideVertices": 0,
+      "maxPenetrationMetres": 0
+    }
+  },
+  "gates": {
+    "piece_joints_match_the_body": true,
+    "inverse_binds_match_the_body": true,
+    "at_most_four_influences_per_vertex": true,
+    "weights_sum_to_one": true,
+    "every_influence_is_an_allowed_bone": true,
+    "triangles_within_budget": true,
+    "materials_within_budget": true,
+    "uvs_survived_the_pipeline": true,
+    "textures_survived_the_pipeline": true,
+    "bones_rest_axis_aligned": true,
+    "piece_sits_off_the_skin_at_bind": true,
+    "piece_is_one_mesh": true,
+    "clears_the_body_through_motion_cycles": true,
+    "clears_the_body_through_stress_poses": true
+  },
+  "gatesPass": true,
+  "outputs": {
+    "glb": "proxy-legs.glb",
+    "manifest": "proxy-legs.manifest.json",
+    "report": "proxy-legs.report.json",
+    "review": "proxy-legs.review.png",
+    "sha256": "22e00a5a77a0d3008666430f6a963807efde94f99a085ebda74ba45c4bc34aa9"
+  }
+}

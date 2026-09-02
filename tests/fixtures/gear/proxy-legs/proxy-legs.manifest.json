@@ -1,0 +1,77 @@
+{
+  "schema": "ashveil.gear-manifest.v1",
+  "family": "humanoid.v1",
+  "contractVersion": "1.2.0",
+  "body": "masculine-v3",
+  "slot": "legs",
+  "piece": "proxy-legs",
+  "source": {
+    "file": "proxy:legs",
+    "sha256": "28a5088916abf4069df26bf1b7461544ed6063e2a307d8f83061b0e296bea826"
+  },
+  "bones": [
+    "root",
+    "pelvis",
+    "spine",
+    "chest",
+    "clavicle_L",
+    "shoulder_helper_L",
+    "upper_arm_L",
+    "forearm_L",
+    "hand_L",
+    "twist_upper_arm_L",
+    "clavicle_R",
+    "shoulder_helper_R",
+    "upper_arm_R",
+    "forearm_R",
+    "hand_R",
+    "twist_upper_arm_R",
+    "neck",
+    "head",
+    "thigh_L",
+    "shin_L",
+    "foot_L",
+    "thigh_R",
+    "shin_R",
+    "foot_R"
+  ],
+  "inverseBindSha256": "ce74de82b83a051d3c3163fb757c9c33883c31964952cedde03585d4ee85deb1",
+  "covers": [
+    "legs",
+    "waist"
+  ],
+  "maskBody": true,
+  "weights": "transfer",
+  "alignment": {
+    "scale": 0.996412,
+    "yawDegrees": 0,
+    "translation": [
+      -0.000001,
+      0.003396,
+      0.000145
+    ]
+  },
+  "budget": {
+    "triangles": 1471,
+    "materials": 0,
+    "meshes": 1,
+    "maxInfluencesPerVertex": 3
+  },
+  "gates": {
+    "piece_joints_match_the_body": true,
+    "inverse_binds_match_the_body": true,
+    "at_most_four_influences_per_vertex": true,
+    "weights_sum_to_one": true,
+    "every_influence_is_an_allowed_bone": true,
+    "triangles_within_budget": true,
+    "materials_within_budget": true,
+    "uvs_survived_the_pipeline": true,
+    "textures_survived_the_pipeline": true,
+    "bones_rest_axis_aligned": true,
+    "piece_sits_off_the_skin_at_bind": true,
+    "piece_is_one_mesh": true,
+    "clears_the_body_through_motion_cycles": true,
+    "clears_the_body_through_stress_poses": true
+  },
+  "reportFile": "proxy-legs.report.json"
+}

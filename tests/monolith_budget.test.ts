@@ -32,6 +32,9 @@ const BUDGETS: Readonly<Record<string, number>> = {
   // correction. All of it is bind-time work around one small per-frame loop.
   'src/render/semanticskeleton.ts': 155,
   'src/render/helperbones.ts': 130,
+  // Binding a fitted piece to the body's skeleton and hiding the body under it.
+  // All of it runs on attach; the frame path only sees the extra draw call.
+  'src/render/gear.ts': 200,
   'src/render/skeletonbones.ts': 60,
   'src/render/riginput.ts': 100,
   // The procedural pose generator. `clips.ts` is the pose table and so exempt;
