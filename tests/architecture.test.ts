@@ -102,3 +102,43 @@ describe('layering', () => {
     }
   }
 })
+
+/**
+ * The procedural pose generator is the half of the animation pipeline that runs
+ * in Node: foot planting, loop closure and allocation are asserted headless like
+ * a sim rule. Only the skeleton binding in `views.ts` may touch Three.js, so one
+ * convenience import of `Vector3` here would take the whole thing off the test
+ * bench without anything failing.
+ */
+describe('src/render/procedural stays three-free', () => {
+  const DIR = join(import.meta.dirname, '..', 'src', 'render', 'procedural')
+
+  function moduleFiles(dir = DIR): string[] {
+    return readdirSync(dir).flatMap((entry) => {
+      const full = join(dir, entry)
+      if (statSync(full).isDirectory()) return moduleFiles(full)
+      return full.endsWith('.ts') ? [full] : []
+    })
+  }
+
+  const files = moduleFiles()
+
+  it('has files to check', () => {
+    expect(files.length).toBeGreaterThan(6)
+  })
+
+  for (const file of files) {
+    const name = file.slice(DIR.length + 1)
+    const source = stripComments(readFileSync(file, 'utf8'))
+
+    it(`${name} does not import three`, () => {
+      expect(source).not.toMatch(/from ['"]three/)
+    })
+
+    it(`${name} does not reach for the DOM or a wall clock`, () => {
+      for (const banned of [/\bdocument\./, /\bwindow\./, /\bperformance\.now\b/, /\bDate\.now\b/]) {
+        expect(source, `${name} must run headless on sim time`).not.toMatch(banned)
+      }
+    })
+  }
+})

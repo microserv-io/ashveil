@@ -1,9 +1,12 @@
 import * as THREE from 'three'
 import type { Actor } from '../sim/types'
-import { ClipDriver, type ClipProfile } from './clipdriver'
+import { ClipDriver } from './clipdriver'
 import { clipsOf, meshesOf, spawnModel, type ModelName } from './models'
-import type { MotionDriver } from './motion'
+import type { BoundMotionDriver } from './motion'
+import { motionMode, type MotionMode } from './motionmode'
 import { PALETTE } from './palette'
+import { ProceduralDriver } from './proceduraldriver'
+import { KAYKIT_PROFILE } from './profiles/kaykit'
 import { createRigInputOwner, resetRigInput, type RigInputOwner } from './riginput'
 
 /** One actor's body: the model, the handles needed to tint it, and its animation. */
@@ -13,7 +16,7 @@ export interface ActorView extends RigInputOwner {
   baseColours: THREE.Color[]
   /** What the kit shipped, so a faded corpse can be handed back looking new. */
   baseTransparent: boolean[]
-  driver: MotionDriver<ClipProfile>
+  driver: BoundMotionDriver
   fadeLeft: number
   /** Which pool this body came from; see `actorpool.ts`. */
   key: string
@@ -25,7 +28,7 @@ export const DEATH_FADE = 1.6
  * The kit's characters stand ~2.17 model units tall. Scaling by the collision radius
  * keeps the body the size the sim thinks it is, so a brute looks as wide as it walks.
  */
-const HEIGHT_PER_RADIUS = 1.93
+export const HEIGHT_PER_RADIUS = 1.93
 /** The models face +Z; the sim's zero facing is +X. */
 const MODEL_FACING = Math.PI / 2
 
@@ -51,7 +54,7 @@ function modelFor(actor: Actor): ModelName {
   }
 }
 
-export function createActorView(actor: Actor): ActorView {
+export function createActorView(actor: Actor, mode: MotionMode = motionMode()): ActorView {
   const group = new THREE.Group()
   const model = spawnModel(modelFor(actor))
   model.scale.setScalar(actor.radius * HEIGHT_PER_RADIUS)
@@ -59,8 +62,7 @@ export function createActorView(actor: Actor): ActorView {
 
   const materials = meshesOf(model).map((mesh) => mesh.material as THREE.MeshStandardMaterial)
   const baseColours = materials.map((material) => material.color.clone())
-  const driver = new ClipDriver()
-  driver.bind(model, { clips: clipsOf(modelFor(actor)) })
+  const driver = bindDriver(model, modelFor(actor), mode)
   const inputOwner = createRigInputOwner()
 
   if (actor.kind === 'player') {
@@ -76,6 +78,22 @@ export function createActorView(actor: Actor): ActorView {
 
   const baseTransparent = materials.map((material) => material.transparent)
   return { group, materials, baseColours, baseTransparent, driver, fadeLeft: 0, key: viewKey(actor), ...inputOwner }
+}
+
+/**
+ * Every body in the kit wears the same 41-bone rig, so one profile drives the
+ * knight and every monster. Bound here rather than in the pool: the scale is on
+ * the model by now, and the binding measures the rest pose in sim metres.
+ */
+function bindDriver(model: THREE.Object3D, name: ModelName, mode: MotionMode): BoundMotionDriver {
+  if (mode === 'procedural') {
+    const driver = new ProceduralDriver()
+    driver.bind(model, KAYKIT_PROFILE)
+    return driver
+  }
+  const driver = new ClipDriver()
+  driver.bind(model, { clips: clipsOf(name) })
+  return driver
 }
 
 function rarityColour(actor: Actor): number {

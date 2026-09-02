@@ -2,6 +2,7 @@ import '../src/style.css'
 import { Effects } from '../src/render/fx'
 import { FrameLoop, type FramePhase } from '../src/render/loop'
 import { loadModels } from '../src/render/models'
+import { readMotionMode, type MotionMode } from '../src/render/motionmode'
 import { prewarmShaders } from '../src/render/prewarm'
 import { WorldOverlay } from '../src/render/overlay'
 import { SceneHost } from '../src/render/scene'
@@ -28,6 +29,8 @@ const WARMUP_FRAMES = 180
 const DEFAULT_FRAMES = 2400
 /** Matches the headless harness, so both measure a bot with human-ish reactions. */
 const DECISION_INTERVAL = 3
+
+export type { MotionMode }
 
 export interface FramePerf {
   seed: number
@@ -62,8 +65,6 @@ export interface FramePerf {
   workload: { motion: MotionMode; ticks: number; depth: number; monstersKilled: number; level: number; deaths: number }
 }
 
-export type MotionMode = 'clip' | 'procedural'
-
 export interface Percentiles {
   p50: number
   p95: number
@@ -75,9 +76,8 @@ const params = new URLSearchParams(globalThis.location.search)
 const seed = Number(params.get('seed') ?? 7)
 const frameTarget = Number(params.get('frames') ?? DEFAULT_FRAMES)
 const policy = POLICIES[params.get('policy') ?? 'brawler'] ?? POLICIES.brawler!
-const motionParam = params.get('motion') ?? 'clip'
-if (motionParam !== 'clip' && motionParam !== 'procedural') throw new Error(`unknown motion mode ${motionParam}`)
-const motion: MotionMode = motionParam
+// The same flag the bodies read, so the report can never name a mode it did not play.
+const motion: MotionMode = readMotionMode(globalThis.location.search)
 
 const app = document.getElementById('app')!
 const overlayRoot = document.createElement('div')

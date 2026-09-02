@@ -8,3 +8,10 @@ export interface MotionDriver<Profile = unknown> {
   update(input: RigInput, delta: number): void
   dispose(): void
 }
+
+/**
+ * A driver after it has been bound, which is all a body ever holds. Dropping `bind`
+ * is what lets one body type hold either driver: the two are bound to different
+ * profiles and only ever agree from here on.
+ */
+export type BoundMotionDriver = Omit<MotionDriver, 'bind'>

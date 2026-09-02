@@ -4,4 +4,7 @@ workspaces/
 .DS_Store
 *.local
 .vite/
+# A directory when the assets are fetched, a symlink to a sibling worktree's copy
+# when they are shared. Both are machine-local and neither belongs in the repo.
+public/models
 public/models/

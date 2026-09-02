@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ashveil — motion review</title>
+  </head>
+  <body>
+    <div id="stage" class="fixed inset-0"></div>
+
+    <div class="fixed top-0 inset-x-0 z-30 flex items-center gap-2 px-2 py-1.5 bg-ash-900/85 border-b border-ash-600 text-[12px] backdrop-blur-sm">
+      <button
+        id="panel-toggle"
+        type="button"
+        aria-expanded="true"
+        aria-controls="controls readout"
+        class="shrink-0 w-8 h-8 grid place-items-center rounded border border-ash-600 bg-ash-700 hover:bg-ash-600 text-base leading-none"
+      >
+        <span id="panel-toggle-icon">&times;</span>
+      </button>
+      <span id="summary" class="truncate text-ash-300 font-mono"></span>
+    </div>
+
+    <div
+      id="controls"
+      class="fixed top-12 left-2 z-20 w-64 max-sm:w-[calc(100vw-1rem)] max-h-[calc(100dvh-4rem)] max-sm:max-h-[46dvh] overflow-y-auto panel p-3 text-[13px] space-y-3"
+    >
+      <div class="font-display text-base text-ash-100">Motion review</div>
+
+      <label class="block space-y-1">
+        <span class="text-ash-300 text-[11px] uppercase tracking-wide">Body</span>
+        <select id="body" class="w-full bg-ash-800 border border-ash-600 rounded px-2 py-1"></select>
+      </label>
+
+      <label class="block space-y-1">
+        <span class="text-ash-300 text-[11px] uppercase tracking-wide">Driver</span>
+        <select id="driver" class="w-full bg-ash-800 border border-ash-600 rounded px-2 py-1">
+          <option value="clip">clip</option>
+          <option value="procedural" selected>procedural</option>
+        </select>
+      </label>
+
+      <label class="block space-y-1">
+        <span class="text-ash-300 text-[11px] uppercase tracking-wide">State</span>
+        <select id="state" class="w-full bg-ash-800 border border-ash-600 rounded px-2 py-1"></select>
+      </label>
+
+      <label class="block space-y-1">
+        <span class="text-ash-300 text-[11px] uppercase tracking-wide">Speed <span id="speed-value">3.0</span> m/s</span>
+        <input id="speed" type="range" min="0" max="8" step="0.1" value="3" class="w-full accent-ember" />
+      </label>
+
+      <label class="block space-y-1">
+        <span class="text-ash-300 text-[11px] uppercase tracking-wide">Time <span id="scale-value">1.00</span>x</span>
+        <input id="scale" type="range" min="0" max="2" step="0.05" value="1" class="w-full accent-ember" />
+      </label>
+
+      <label class="block space-y-1">
+        <span class="text-ash-300 text-[11px] uppercase tracking-wide">Camera <span id="distance-value">23.9</span> m</span>
+        <input id="distance" type="range" min="2.5" max="24" step="0.5" value="23.9" class="w-full accent-ember" />
+      </label>
+
+      <label class="block space-y-1">
+        <span class="text-ash-300 text-[11px] uppercase tracking-wide">Pitch <span id="pitch-value">53</span>&deg;</span>
+        <input id="pitch" type="range" min="8" max="75" step="1" value="53" class="w-full accent-ember" />
+      </label>
+
+      <label class="block space-y-1">
+        <span class="text-ash-300 text-[11px] uppercase tracking-wide">Orbit <span id="orbit-value">90</span>&deg;</span>
+        <input id="orbit" type="range" min="0" max="350" step="10" value="90" class="w-full accent-ember" />
+      </label>
+
+      <div class="grid grid-cols-2 gap-2">
+        <button id="turn" class="bg-ash-700 hover:bg-ash-600 border border-ash-600 rounded px-2 py-1">Turn</button>
+        <button id="hit" class="bg-ash-700 hover:bg-ash-600 border border-ash-600 rounded px-2 py-1">Hit</button>
+        <button id="step" class="bg-ash-700 hover:bg-ash-600 border border-ash-600 rounded px-2 py-1">Step</button>
+        <button id="cycle" class="bg-ash-700 hover:bg-ash-600 border border-ash-600 rounded px-2 py-1">Cycle</button>
+        <button id="recenter" class="bg-ash-700 hover:bg-ash-600 border border-ash-600 rounded px-2 py-1">Recentre</button>
+      </div>
+    </div>
+
+    <pre
+      id="readout"
+      class="fixed top-12 right-2 z-20 panel p-3 text-[12px] leading-5 whitespace-pre max-sm:top-auto max-sm:bottom-2 max-sm:left-2 max-sm:right-2 max-sm:text-[11px] max-sm:leading-4"
+    ></pre>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

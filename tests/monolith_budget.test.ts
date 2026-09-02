@@ -29,7 +29,25 @@ const BUDGETS: Readonly<Record<string, number>> = {
   // Actor bodies moved to actorview.ts and terrain to terrain.ts when art landed.
   'src/render/views.ts': 290,
   'src/render/clipdriver.ts': 110,
+  // Binding a pose onto a real skeleton: the resolve, the units and the axis
+  // correction. All of it is bind-time work around one small per-frame loop.
+  'src/render/semanticskeleton.ts': 155,
+  'src/render/skeletonbones.ts': 60,
   'src/render/riginput.ts': 100,
+  // The procedural pose generator. `clips.ts` is the pose table and so exempt;
+  // these are the maths around it, and the limb solvers already moved to limbs.ts.
+  'src/render/procedural/gait.ts': 215,
+  // Where one foot goes over one stride: the stance line, the swing arc, the roll.
+  'src/render/procedural/stride.ts': 95,
+  'src/render/procedural/foot.ts': 65,
+  'src/render/procedural/arms.ts': 120,
+  'src/render/procedural/armpace.ts': 70,
+  'src/render/procedural/stances.ts': 95,
+  // The pose-clip player. The key format and its compiler are in posekeys.ts.
+  'src/render/procedural/poses.ts': 130,
+  'src/render/procedural/posekeys.ts': 130,
+  'src/render/procedural/geometry.ts': 187,
+  'src/render/procedural/generator.ts': 145,
   'src/sim/pathfind.ts': 300,
   'headless/run.ts': 280,
   'src/render/scene.ts': 200,
