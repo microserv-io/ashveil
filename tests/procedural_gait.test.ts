@@ -19,11 +19,13 @@ import { Joint } from '../src/render/procedural/joints'
 import { createPose } from '../src/render/procedural/pose'
 
 /**
- * The KayKit knight scaled to a 1.8 m humanoid, so the brief's walk and run speeds
- * mean what they say. Slice 2b scales each body's rest pose the same way.
+ * The KayKit knight at a scale that gives it a half-metre leg, which is as close
+ * to a person as a chibi gets. It is still a chibi: `procedural_proportions` is
+ * where human numbers are pinned, and this file asks whether the loop closes and
+ * the feet stay put on a body whose step its legs cannot reach.
  */
-const HUMAN_SCALE = 1.2
-const geometry = buildRigGeometry(KAYKIT_KNIGHT_JOINTS, HUMAN_SCALE, KAYKIT_KNIGHT_STANDING_HEIGHT)
+const KNIGHT_SCALE = 1.2
+const geometry = buildRigGeometry(KAYKIT_KNIGHT_JOINTS, KNIGHT_SCALE, KAYKIT_KNIGHT_STANDING_HEIGHT)
 
 const SPEEDS = [0.5, 1.5, 3, 6]
 const SAMPLES = 720
@@ -67,8 +69,8 @@ describe('gait parameters', () => {
   it('keeps the step within the leg it has', () => {
     for (const speed of [...SPEEDS, 20]) {
       gaitParams(geometry, speed, params)
-      const hip = geometry.legLength * 0.85
-      expect(Math.hypot(params.halfStep, hip), `${speed} m/s`).toBeLessThan(geometry.legLength)
+      const lowest = params.hipHeight - params.bob
+      expect(Math.hypot(params.halfStep, lowest), `${speed} m/s`).toBeLessThan(geometry.legLength)
     }
   })
 })

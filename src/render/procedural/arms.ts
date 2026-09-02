@@ -48,8 +48,9 @@ export function writeCarriedArm(
   const hand = side === LEFT ? Joint.HandL : Joint.HandR
   writeHangingArm(geometry, scratch, out, side, 0, runBlend)
   if (carry) {
-    setJointQuat(out, shoulder, ...carry.shoulder)
-    setJointQuat(out, elbow, ...carry.elbow)
+    // Spread onto the frame path allocates an arguments array; these are per-frame.
+    setJointQuat(out, shoulder, carry.shoulder[0], carry.shoulder[1], carry.shoulder[2], carry.shoulder[3])
+    setJointQuat(out, elbow, carry.elbow[0], carry.elbow[1], carry.elbow[2], carry.elbow[3])
   }
 
   quatFromAxisAngle(scratch.quat, 0, 1, 0, 0, swing * (carry?.swingScale ?? 1))

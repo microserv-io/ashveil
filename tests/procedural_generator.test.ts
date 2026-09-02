@@ -14,6 +14,7 @@ import { DEATH_SETTLE } from '../src/render/procedural/clips'
 import { quatAngleBetween, quatLength } from '../src/render/procedural/quat'
 import { RIG_CLIPS, type RigState } from '../src/render/rig'
 import type { RigInput } from '../src/render/riginput'
+import { KAYKIT_PROFILE } from '../src/render/profiles/kaykit'
 import { DT } from '../src/sim/types'
 
 const SHOULDER = 1.368
@@ -291,7 +292,8 @@ describe('determinism and allocation', () => {
   })
 
   it('allocates nothing on the frame path', () => {
-    const generator = createPoseGenerator(geometry)
+    // With the arm carry, which is the only frame-path code that reads a profile.
+    const generator = createPoseGenerator(geometry, KAYKIT_PROFILE.armCarry)
     const pose = createPose()
     const frame = input({ state: 'moving', speed: 3 })
     const run = (times: number): void => {

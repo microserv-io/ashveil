@@ -65,9 +65,9 @@ export function createGaitState(): GaitState {
 }
 
 /**
- * Stride length in leg lengths per cycle, against speed in leg lengths per second.
- * The two lines are fitted to human cadence, which is why the gait reads right on
- * anything shaped like a person regardless of how big it is.
+ * Stride length in nominal leg lengths per cycle, against speed in nominal leg
+ * lengths per second. The two lines are fitted to human cadence, which is why the
+ * gait reads right on anything shaped like a person regardless of how big it is.
  */
 const WALK_STRIDE = [0.83, 0.48] as const
 const RUN_STRIDE = [1.05, 0.45] as const
@@ -85,7 +85,7 @@ const MAX_SWING_TIME = 0.5
  * around 2.3, and reading it in leg lengths rather than metres is what lets a
  * short-legged body run at a speed a long-legged one still walks.
  */
-const RUN_BLEND_LOW = 2
+const RUN_BLEND_LOW = 2.3
 const RUN_BLEND_HIGH = 3.2
 const WALK_LIFT = 0.09
 const RUN_LIFT = 0.2
@@ -94,7 +94,7 @@ const FOOT_SWING_PITCH = 0.45
 const PELVIS_ROLL = 0.04
 const PELVIS_YAW = 0.06
 const CHEST_COUNTER = 0.8
-/** How much the torso may pitch over a cycle. An 11-degree nod at 8 Hz is a seizure, not a walk. */
+/** How much the torso may pitch over a cycle: a nodding chest reads long before a bobbing head. */
 const TORSO_PITCH_WALK = 4 * Math.PI / 180
 const TORSO_PITCH_RUN = 8 * Math.PI / 180
 const LEAN_RUN = 0.22
@@ -171,8 +171,8 @@ export function writeLocomotion(
   const phase = wrap(drive.phase)
   // Down-only, so the peak hip height stays the one the reach budget assumed.
   const bob = -hipBob(geometry, params.hipHeight, params.halfStep, params.duty, params.runBlend, phase)
-  // Pitching forward while the hips ride high takes some of the bob off the head.
-  // Only some: past the budget the nod is the thing you notice, not the bob.
+  // Pitching forward while the hips ride high takes some of the bob off the head,
+  // but only some: buying height costs the square of the angle.
   const bobPitch = Math.min(
     torsoBobPitch(geometry, (bob + params.bob) * 0.5),
     lerp(TORSO_PITCH_WALK, TORSO_PITCH_RUN, params.runBlend),
