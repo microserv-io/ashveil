@@ -3,6 +3,7 @@ import type { RigInput } from '../riginput'
 import type { ArmCarry } from '../profiles/profile'
 import { applyFlinch } from './flinch'
 import { createGaitDrive, createGaitState, seedOffset, strideFrequency, writeLocomotion } from './gait'
+import { writeShoulderGirdle } from './girdle'
 import { writeDash, writeIdle } from './stances'
 import type { RigGeometry } from './geometry'
 import { blendPose, copyPose, createPose, type Pose } from './pose'
@@ -84,6 +85,9 @@ export function createPoseGenerator(geometry: RigGeometry, armCarry?: ArmCarry):
     mode = next
 
     write(next, input, target)
+    // Over the top of whatever state wrote it: an arm swings from a shoulder, and
+    // the shoulder has to go with it.
+    writeShoulderGirdle(geometry, target)
 
     if (blendLeft > 0) {
       blendLeft = Math.max(0, blendLeft - delta)

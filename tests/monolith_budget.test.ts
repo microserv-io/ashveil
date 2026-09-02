@@ -31,7 +31,8 @@ const BUDGETS: Readonly<Record<string, number>> = {
   'src/render/clipdriver.ts': 110,
   // Binding a pose onto a real skeleton: the resolve, the units and the axis
   // correction. All of it is bind-time work around one small per-frame loop.
-  'src/render/semanticskeleton.ts': 165,
+  'src/render/semanticskeleton.ts': 155,
+  'src/render/skeletonbones.ts': 60,
   'src/render/riginput.ts': 100,
   // The procedural pose generator. `clips.ts` is the pose table and so exempt;
   // these are the maths around it, and the limb solvers already moved to limbs.ts.

@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { buildRigGeometry, type JointTable, type RigGeometry } from './procedural/geometry'
 import { Joint, JOINT_NAMES } from './procedural/joints'
+import { resolveBones } from './skeletonbones'
 import type { Pose } from './procedural/pose'
 import { quatConjugate, quatMultiply, quatRotate } from './procedural/quat'
 import type { SkeletonProfile } from './profiles/profile'
@@ -31,25 +32,7 @@ export function bindSkeleton(body: THREE.Object3D, profile: SkeletonProfile): Se
     if (child instanceof THREE.Bone) bones.push(child)
   })
 
-  // `GLTFLoader` strips the characters `PropertyBinding` reserves, so the rig on
-  // the page calls the left shoulder `upperarml` while the glTF and the profile
-  // call it `upperarm.l`. Both sides are sanitised so a profile can be written
-  // against the names the artist chose.
-  const named = new Map<string, number>()
-  bones.forEach((bone, at) => named.set(THREE.PropertyBinding.sanitizeNodeName(bone.name), at))
-
-  const jointBone = new Int32Array(Joint.Count)
-  const boneJoint = new Int32Array(bones.length).fill(-1)
-  for (let joint = 0; joint < Joint.Count; joint++) {
-    const name = JOINT_NAMES[joint]!
-    const wanted = profile.bones[name]
-    const found = wanted === undefined ? -1 : named.get(THREE.PropertyBinding.sanitizeNodeName(wanted)) ?? -1
-    if (found === -1) {
-      throw new Error(`profile "${profile.name}" cannot bind joint "${name}": no bone named "${wanted ?? '(unmapped)'}"`)
-    }
-    jointBone[joint] = found
-    boneJoint[found] = joint
-  }
+  const { jointBone, boneJoint, boneExtra } = resolveBones(bones, profile)
 
   const parent = new Int32Array(bones.length)
   const restLocalQuat = new Float32Array(bones.length * 4)
@@ -101,14 +84,17 @@ export function bindSkeleton(body: THREE.Object3D, profile: SkeletonProfile): Se
 
   function apply(pose: Pose): void {
     for (let at = 0; at < bones.length; at++) {
+      const extra = boneExtra[at]!
+      const driven = extra >= 0 && pose.written[extra] === 1
       const joint = boneJoint[at]!
       const above = parent[at]!
       const frame = above >= 0 ? world : anchor
       const frameAt = above >= 0 ? above * 4 : at * 4
 
       if (joint >= 0) quatMultiply(pose.rotations, joint * 4, correction, at * 4, world, at * 4)
+      else if (driven) quatMultiply(pose.extras, extra * 4, correction, at * 4, world, at * 4)
       else quatMultiply(frame, frameAt, restLocalQuat, at * 4, world, at * 4)
-      if (joint < 0) continue
+      if (joint < 0 && !driven) continue
 
       quatConjugate(frame, frameAt, SCRATCH, 0)
       quatMultiply(SCRATCH, 0, world, at * 4, SCRATCH, 4)
@@ -130,7 +116,7 @@ export function bindSkeleton(body: THREE.Object3D, profile: SkeletonProfile): Se
 
   function restore(): void {
     for (let at = 0; at < bones.length; at++) {
-      if (boneJoint[at]! < 0) continue
+      if (boneJoint[at]! < 0 && boneExtra[at]! < 0) continue
       const bone = bones[at]!
       bone.quaternion.set(
         restLocalQuat[at * 4]!,

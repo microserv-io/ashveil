@@ -1,5 +1,5 @@
 import type { RigGeometry } from './geometry'
-import { Joint, JOINT_PARENT } from './joints'
+import { Joint, JOINT_PARENT, OptionalJoint } from './joints'
 import { quatFromAxisAngle, quatIdentity, quatMultiply, quatNlerp, quatRotate, quatSet } from './quat'
 
 /**
@@ -16,6 +16,14 @@ export interface Pose {
   readonly offset: Float32Array
   /** Extra yaw about +Y, on top of the actor's own facing. */
   readonly yaw: Float32Array
+  /**
+   * `OptionalJoint.Count * 4`: the joints only some families have. A body without
+   * one poses correctly without it, so these are written only where the pose has
+   * something to say, and `written` says where that is — an unwritten one is not
+   * identity, it is a bone left to follow its parent.
+   */
+  readonly extras: Float32Array
+  readonly written: Uint8Array
 }
 
 export function createPose(): Pose {
@@ -23,6 +31,8 @@ export function createPose(): Pose {
     rotations: new Float32Array(Joint.Count * 4),
     offset: new Float32Array(3),
     yaw: new Float32Array(1),
+    extras: new Float32Array(OptionalJoint.Count * 4),
+    written: new Uint8Array(OptionalJoint.Count),
   }
   resetPose(pose)
   return pose
@@ -30,6 +40,10 @@ export function createPose(): Pose {
 
 export function resetPose(pose: Pose): void {
   for (let joint = 0; joint < Joint.Count; joint++) quatIdentity(pose.rotations, joint * 4)
+  for (let extra = 0; extra < OptionalJoint.Count; extra++) {
+    quatIdentity(pose.extras, extra * 4)
+    pose.written[extra] = 0
+  }
   pose.offset[0] = 0
   pose.offset[1] = 0
   pose.offset[2] = 0
@@ -49,6 +63,12 @@ export function multiplyJoint(pose: Pose, joint: Joint, x: number, y: number, z:
   const scratch = ADDITIVE
   quatSet(scratch, 0, x, y, z, w)
   quatMultiply(scratch, 0, pose.rotations, joint * 4, pose.rotations, joint * 4)
+}
+
+/** Writes one of the joints only some families have; the rest keep following their parent. */
+export function setExtraQuat(pose: Pose, joint: OptionalJoint, from: Float32Array, at: number): void {
+  quatSet(pose.extras, joint * 4, from[at]!, from[at + 1]!, from[at + 2]!, from[at + 3]!)
+  pose.written[joint] = 1
 }
 
 export function copyJointFrom(pose: Pose, joint: Joint, source: Joint): void {
@@ -74,6 +94,8 @@ export function copyPose(from: Pose, out: Pose): void {
   out.rotations.set(from.rotations)
   out.offset.set(from.offset)
   out.yaw[0] = from.yaw[0]!
+  out.extras.set(from.extras)
+  out.written.set(from.written)
 }
 
 export function blendPose(from: Pose, to: Pose, t: number, out: Pose): void {
@@ -84,6 +106,12 @@ export function blendPose(from: Pose, to: Pose, t: number, out: Pose): void {
     out.offset[axis] = from.offset[axis]! + (to.offset[axis]! - from.offset[axis]!) * t
   }
   out.yaw[0] = from.yaw[0]! + (to.yaw[0]! - from.yaw[0]!) * t
+  for (let extra = 0; extra < OptionalJoint.Count; extra++) {
+    // An unwritten side is its own rest, which is identity here, so a crossover
+    // into or out of a family that has the joint blends rather than snaps.
+    quatNlerp(from.extras, extra * 4, to.extras, extra * 4, t, out.extras, extra * 4)
+    out.written[extra] = from.written[extra]! | to.written[extra]!
+  }
 }
 
 /** Module-level because `multiplyJoint` is on the frame path and must not allocate. */
