@@ -8,3 +8,7 @@ workspaces/
 # when they are shared. Both are machine-local and neither belongs in the repo.
 public/models
 public/models/
+
+# Diagnostic renders: every body regenerates its own contact sheet.
+public/bodies/*/*.review.png
+__pycache__/

@@ -1,0 +1,103 @@
+{
+  "schema": "ashveil.family-contract.v1",
+  "family": "humanoid.v1",
+  "version": "1.0.0",
+  "canonicalHeight": 1.8,
+  "frame": {
+    "up": "+Y",
+    "forward": "+Z",
+    "anatomicalLeft": "+X",
+    "note": "The runtime frame of src/render/procedural/joints.ts. Blender is +Z up and -Y front; scripts/art/fit/frame.py is the only converter."
+  },
+  "boneAxisRule": {
+    "primary": "local +Y from head to tail, so a bone points at its child",
+    "limbSecondary": "local +X along the body's lateral axis, so knee and elbow hinge about one local axis",
+    "spineSecondary": "local +Z faces runtime forward",
+    "restOrientationInRuntimeFile": "identity",
+    "why": "An identity bone rest orientation makes semanticskeleton.ts derive an identity rest-axis correction for every semantic joint. A non-identity correction on a body this pipeline built is a fitter bug, not a profile detail."
+  },
+  "budget": {
+    "maxTriangles": 18000,
+    "maxMaterials": 4,
+    "maxMeshes": 8,
+    "maxInfluencesPerVertex": 4
+  },
+  "landmarks": [
+    "root", "pelvis", "spine", "chest", "neck_base", "neck", "head",
+    "shoulder_L", "elbow_L", "wrist_L", "hand_L",
+    "shoulder_R", "elbow_R", "wrist_R", "hand_R",
+    "hip_L", "knee_L", "ankle_L", "toe_L", "heel_L",
+    "hip_R", "knee_R", "ankle_R", "toe_R", "heel_R"
+  ],
+  "minimumLandmarkConfidence": 0.5,
+  "symmetryToleranceHeight": { "default": 0.012, "distal": 0.02 },
+  "distalLandmarks": ["wrist", "hand", "toe", "heel"],
+  "bones": [
+    { "name": "root",         "parent": null,         "deform": false, "head": "root",      "tail": "pelvis",     "chain": "spine", "role": "root" },
+    { "name": "pelvis",       "parent": "root",       "deform": true,  "head": "pelvis",    "tail": "spine",      "chain": "spine", "role": "pelvis" },
+    { "name": "spine",        "parent": "pelvis",     "deform": true,  "head": "spine",     "tail": "chest",      "chain": "spine", "role": "spine" },
+    { "name": "chest",        "parent": "spine",      "deform": true,  "head": "chest",     "tail": "neck_base",  "chain": "spine", "role": "chest" },
+    { "name": "neck",         "parent": "chest",      "deform": true,  "head": "neck_base", "tail": "neck",       "chain": "spine", "role": "neck" },
+    { "name": "head",         "parent": "neck",       "deform": true,  "head": "neck",      "tail": "head",       "chain": "spine", "role": "head" },
+    { "name": "clavicle_L",   "parent": "chest",      "deform": true,  "head": "neck_base", "tail": "shoulder_L", "chain": "spine", "role": "clavicle.l" },
+    { "name": "upper_arm_L",  "parent": "clavicle_L", "deform": true,  "head": "shoulder_L","tail": "elbow_L",    "chain": "limb",  "role": "shoulder.l" },
+    { "name": "forearm_L",    "parent": "upper_arm_L","deform": true,  "head": "elbow_L",   "tail": "wrist_L",    "chain": "limb",  "role": "elbow.l" },
+    { "name": "hand_L",       "parent": "forearm_L",  "deform": true,  "head": "wrist_L",   "tail": "hand_L",     "chain": "limb",  "role": "hand.l" },
+    { "name": "clavicle_R",   "parent": "chest",      "deform": true,  "head": "neck_base", "tail": "shoulder_R", "chain": "spine", "role": "clavicle.r" },
+    { "name": "upper_arm_R",  "parent": "clavicle_R", "deform": true,  "head": "shoulder_R","tail": "elbow_R",    "chain": "limb",  "role": "shoulder.r" },
+    { "name": "forearm_R",    "parent": "upper_arm_R","deform": true,  "head": "elbow_R",   "tail": "wrist_R",    "chain": "limb",  "role": "elbow.r" },
+    { "name": "hand_R",       "parent": "forearm_R",  "deform": true,  "head": "wrist_R",   "tail": "hand_R",     "chain": "limb",  "role": "hand.r" },
+    { "name": "thigh_L",      "parent": "pelvis",     "deform": true,  "head": "hip_L",     "tail": "knee_L",     "chain": "limb",  "role": "hip.l" },
+    { "name": "shin_L",       "parent": "thigh_L",    "deform": true,  "head": "knee_L",    "tail": "ankle_L",    "chain": "limb",  "role": "knee.l" },
+    { "name": "foot_L",       "parent": "shin_L",     "deform": true,  "head": "ankle_L",   "tail": "toe_L",      "chain": "limb",  "role": "foot.l" },
+    { "name": "thigh_R",      "parent": "pelvis",     "deform": true,  "head": "hip_R",     "tail": "knee_R",     "chain": "limb",  "role": "hip.r" },
+    { "name": "shin_R",       "parent": "thigh_R",    "deform": true,  "head": "knee_R",    "tail": "ankle_R",    "chain": "limb",  "role": "knee.r" },
+    { "name": "foot_R",       "parent": "shin_R",     "deform": true,  "head": "ankle_R",   "tail": "toe_R",      "chain": "limb",  "role": "foot.r" }
+  ],
+  "helpers": [
+    { "name": "shoulder_helper_L", "parent": "clavicle_L",  "deform": false, "chain": "limb",
+      "head": { "from": "shoulder_L", "towards": "elbow_L", "along": 0.0 },
+      "tail": { "from": "shoulder_L", "towards": "elbow_L", "along": 0.35 } },
+    { "name": "twist_upper_arm_L", "parent": "upper_arm_L", "deform": false, "chain": "limb",
+      "head": { "from": "shoulder_L", "towards": "elbow_L", "along": 0.5 },
+      "tail": { "from": "shoulder_L", "towards": "elbow_L", "along": 1.0 } },
+    { "name": "shoulder_helper_R", "parent": "clavicle_R",  "deform": false, "chain": "limb",
+      "head": { "from": "shoulder_R", "towards": "elbow_R", "along": 0.0 },
+      "tail": { "from": "shoulder_R", "towards": "elbow_R", "along": 0.35 } },
+    { "name": "twist_upper_arm_R", "parent": "upper_arm_R", "deform": false, "chain": "limb",
+      "head": { "from": "shoulder_R", "towards": "elbow_R", "along": 0.5 },
+      "tail": { "from": "shoulder_R", "towards": "elbow_R", "along": 1.0 } }
+  ],
+  "helperNote": "Non-semantic and non-deform: they carry no skin weight and the pose generator never writes one. They exist so a later slice can drive shoulder rhythm and forearm twist without refitting a body.",
+  "sockets": [
+    { "role": "headAttachment", "bone": "head" },
+    { "role": "leftHand", "bone": "hand_L" },
+    { "role": "rightHand", "bone": "hand_R" }
+  ],
+  "regions": {
+    "required": ["Body", "Head", "Hand_PositiveX", "Hand_NegativeX"],
+    "excluded": ["Hair_Source"],
+    "allowedBones": {
+      "Body": ["pelvis", "spine", "chest", "neck", "clavicle_L", "upper_arm_L", "forearm_L", "hand_L", "clavicle_R", "upper_arm_R", "forearm_R", "hand_R", "thigh_L", "shin_L", "foot_L", "thigh_R", "shin_R", "foot_R"],
+      "Head": ["neck", "head"],
+      "Hand_PositiveX": ["forearm_L", "hand_L"],
+      "Hand_NegativeX": ["forearm_R", "hand_R"],
+      "Eye_PositiveX": ["head"],
+      "Eye_NegativeX": ["head"],
+      "Facial_Feature_01": ["head"]
+    }
+  },
+  "gates": {
+    "uprightDegrees": 0.5,
+    "heightTolerance": 0.01,
+    "groundToleranceMetres": 0.005,
+    "farFieldDisplacement90Cm": 1.0,
+    "farFieldDisplacement150Cm": 2.0,
+    "flexion60DisplacementCm": 2.0,
+    "normalInversions90": 0,
+    "normalInversions150": 5,
+    "clavicleShare": 0.5,
+    "maxLimbReachHeight": 0.16,
+    "maxSpineReachHeight": 0.18
+  }
+}
