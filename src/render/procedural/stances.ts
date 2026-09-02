@@ -49,8 +49,8 @@ export function writeIdle(geometry: RigGeometry, drive: GaitDrive, state: GaitSt
   writeTorso(out, Joint.Head, -breath * IDLE_BREATH_PITCH, shift * 0.06, 0, state)
   plantFeet(geometry, state, out)
   const pace = armPace(geometry, 0)
-  writeCarriedArm(geometry, state, out, LEFT, breath * IDLE_ARM_DRIFT, pace, armCarry?.left)
-  writeCarriedArm(geometry, state, out, RIGHT, -breath * IDLE_ARM_DRIFT, pace, armCarry?.right)
+  writeCarriedArm(geometry, state, out, LEFT, -breath * IDLE_ARM_DRIFT, pace, armCarry?.left)
+  writeCarriedArm(geometry, state, out, RIGHT, breath * IDLE_ARM_DRIFT, pace, armCarry?.right)
 }
 
 /** A held pose, not a sprint: `dash` outlives the skill, so the body stays committed. */
@@ -70,8 +70,8 @@ export function writeDash(geometry: RigGeometry, _drive: GaitDrive, state: GaitS
   trailLeg(geometry, state, out, LEFT)
   trailLeg(geometry, state, out, RIGHT)
   const pace = armPace(geometry, 1)
-  writeCarriedArm(geometry, state, out, LEFT, DASH_ARM_TUCK, pace, armCarry?.left)
-  writeCarriedArm(geometry, state, out, RIGHT, DASH_ARM_TUCK, pace, armCarry?.right)
+  writeCarriedArm(geometry, state, out, LEFT, -DASH_ARM_TUCK, pace, armCarry?.left)
+  writeCarriedArm(geometry, state, out, RIGHT, -DASH_ARM_TUCK, pace, armCarry?.right)
 }
 
 

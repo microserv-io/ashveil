@@ -36,17 +36,16 @@ const LOWER = new Float32Array(3)
 export const CARRY_HAND: readonly [number, number, number] = carryHand()
 
 /**
- * One arm at one instant. `drive` is where the foot on this side is along its own
- * stride, from -1 with the arm fully forward to +1 with it fully back, so the arm
- * answers the stride rather than a wave fitted alongside it. `carry` is a
- * profile's measured weapon pose, which swings as it was measured.
+ * One arm at one instant. `swing` is where the hand is along its own arc, from -1
+ * fully back to +1 fully forward. `carry` is a profile's measured weapon pose,
+ * which swings as it was measured.
  */
 export function writeCarriedArm(
   geometry: RigGeometry,
   scratch: LimbScratch,
   out: Pose,
   side: number,
-  drive: number,
+  swing: number,
   pace: ArmPace,
   carry?: ArmCarryPose,
 ): void {
@@ -61,18 +60,19 @@ export function writeCarriedArm(
     writeHangingArm(geometry, out, side, pace)
   }
 
-  const reach = clamp(drive, -1, 1)
-  // Smooth in the drive rather than a forward branch and a back one: a swing that
+  const reach = clamp(swing, -1, 1)
+  // Smooth in the swing rather than a forward branch and a back one: a swing that
   // changes its rule as it passes through the middle has a corner there, twice a
   // stride, and a corner is what the eye reads as the path breaking.
   const swept = carry
     ? pace.swing * reach * carry.swingScale!
-    : pace.swing * reach * (1 - SWING_ASYMMETRY * reach)
-  quatFromAxisAngle(scratch.quat, 0, 1, 0, 0, swept)
+    : pace.swing * reach * (1 + SWING_ASYMMETRY * reach)
+  // Negative about +X, because the arm hangs down: see the sign table in `joints.ts`.
+  quatFromAxisAngle(scratch.quat, 0, 1, 0, 0, -swept)
   if (!carry) {
     // In across the body as the hand comes forward, out to the side as it goes
     // back — never past the shoulder either way.
-    quatFromAxisAngle(scratch.spare, 0, 0, 1, 0, -side * pace.cross * (1 - reach) * 0.5)
+    quatFromAxisAngle(scratch.spare, 0, 0, 1, 0, -side * pace.cross * (1 + reach) * 0.5)
     quatMultiply(scratch.spare, 0, scratch.quat, 0, scratch.quat, 0)
   }
   quatMultiply(scratch.quat, 0, out.rotations, shoulder * 4, out.rotations, shoulder * 4)

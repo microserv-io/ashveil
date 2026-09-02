@@ -199,12 +199,12 @@ export function writeLocomotion(
   // Each arm swings against the foot on its own side, driven by where that foot
   // actually is rather than by a wave fitted alongside it: a sine of the cycle is
   // a quarter-turn out of step with a stride whose stance is not half of it.
-  // Where each foot is along its own stride: a swing foot reaches past its own
-  // footfall and comes back, and the arm answers the stride, not the overshoot.
+  // Clamped to the step and negated: a swing foot reaches past its own footfall
+  // and comes back, and an arm goes forward as the foot on its side goes back.
   const pace = armPace(geometry, params.runBlend)
   const step = Math.max(1e-6, params.halfStep)
-  writeCarriedArm(geometry, state, out, LEFT, left / step, pace, armCarry?.left)
-  writeCarriedArm(geometry, state, out, RIGHT, right / step, pace, armCarry?.right)
+  writeCarriedArm(geometry, state, out, LEFT, -left / step, pace, armCarry?.left)
+  writeCarriedArm(geometry, state, out, RIGHT, -right / step, pace, armCarry?.right)
 }
 
 const FREQUENCY_PROBE = createGaitParams()

@@ -31,6 +31,33 @@
  *
  * **Angles** are radians. **Time** is `RigInput.time`, which is sim time; render
  * delta is never accumulated here.
+ *
+ * **What a positive number does.** More work here has gone the wrong way on a
+ * sign than on anything else — an arm crossing outward instead of in, a pelvis
+ * leading the wrong leg, a toe rolling into the floor — and none of it was
+ * visible in the maths. Read this before touching a sign;
+ * `tests/procedural_handedness.test.ts` holds every line of it to a landmark
+ * measured off the body, on both fixtures and through the real binding.
+ *
+ * | Positive… | moves |
+ * |---|---|
+ * | shoulder swing (`arms.ts`) | that hand **forward** (+Z) |
+ * | abduction (`armpace.out`) | that hand **away** from the centre line |
+ * | crossing (`armpace.cross`) | that hand **towards** the centre line |
+ * | elbow bend (`armpace.bend`) | that hand **up and forward** |
+ * | turn about +X at a **down**-pointing bone (hip, knee) | its tip **back** |
+ * | turn about +X at an **up**-pointing bone (spine, chest) | its tip **forward** |
+ * | pitch on a foot (`writeLeg`) | the toes **down**, the heel **up** |
+ * | `footRoll` excursion | +1 the foot **ahead** of the hip (rolls onto its heel), -1 **behind** it (over its toe) |
+ * | yaw about +Y (`writeTorso`) | the body to its **left**: the left hip back, the right hip forward |
+ * | roll about +Z (`writeTorso`) | the body's **left side down** |
+ * | `pose.offset` +Z | the whole body **forward** |
+ *
+ * Two of those read backwards against the anatomy and are worth saying twice.
+ * **Hip flexion** — bringing the foot forward — is a *negative* turn about +X,
+ * because the thigh hangs down and the same turn that tips a chest forward swings
+ * a thigh back. And a *positive* pelvis yaw does **not** lead with the left leg:
+ * it turns the body left, which carries the left hip backwards.
  */
 
 /** The 17 required semantic joints. Every skeleton family must resolve all of them. */
