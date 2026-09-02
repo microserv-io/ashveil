@@ -13,6 +13,7 @@ import type { SkeletonProfile } from './profile'
  */
 export const KAYKIT_PROFILE: SkeletonProfile = {
   name: 'kaykit',
+  // Both measured off the GLB by the extractor, never typed here: see the fixture.
   standingHeight: fixture.standingHeight,
   armCarry: {
     right: {

@@ -38,10 +38,15 @@ describe('rig geometry', () => {
     expect(g.hipWidth).toBeCloseTo(0.1709, 3)
   })
 
-  it('derives its nominal leg from measured standing height', () => {
+  /**
+   * The knight is a chibi: a leg of 0.48 of its measured height would be longer
+   * than everything above its hips, so the body's own frame is what caps it.
+   */
+  it('caps its nominal leg at the frame it hangs off', () => {
     const g = KAYKIT_KNIGHT_GEOMETRY
-    expect(g.standingHeight).toBeCloseTo(2.17, 3)
-    expect(g.nominalLegLength).toBeCloseTo(g.standingHeight * 0.48, 6)
+    expect(g.standingHeight).toBeCloseTo(2.3145, 3)
+    expect(g.nominalLegLength).toBeLessThan(g.standingHeight * 0.48)
+    expect(g.nominalLegLength).toBeCloseTo(g.legLength + (g.height - g.hipHeight), 6)
   })
 
   it('scales every length by the same factor', () => {
@@ -103,7 +108,8 @@ describe('the committed KayKit fixture', () => {
     const extracted = extractRigGeometry(readFileSync(PLAYER))
     const committed = JSON.parse(
       readFileSync(join(import.meta.dirname, '..', 'src', 'render', 'procedural', 'fixtures', 'kaykit_knight.json'), 'utf8'),
-    ) as { joints: Record<string, number[]> }
+    ) as { joints: Record<string, number[]>; standingHeight: number }
     expect(committed.joints).toEqual(extracted.joints)
+    expect(committed.standingHeight).toEqual(extracted.standingHeight)
   })
 })

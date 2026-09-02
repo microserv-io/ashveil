@@ -3,12 +3,10 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { JOINT_NAMES, OPTIONAL_JOINT_NAMES } from '../src/render/procedural/joints'
 import { KAYKIT_PROFILE } from '../src/render/profiles/kaykit'
-import {
-  KAYKIT_ARM_CARRY,
-  KAYKIT_JOINTS,
-  KAYKIT_OPTIONAL_JOINTS,
-  KAYKIT_STANDING_HEIGHT,
-} from '../scripts/extract-rig-geometry.mjs'
+import { extractRigGeometry, KAYKIT_JOINTS, KAYKIT_OPTIONAL_JOINTS } from '../scripts/extract-rig-geometry.mjs'
+import { existsSync, readFileSync as readBinary } from 'node:fs'
+
+const PLAYER = join(import.meta.dirname, '..', 'public', 'models', 'player.glb')
 
 const RIG: string[] = JSON.parse(
   readFileSync(join(import.meta.dirname, '..', 'src', 'render', 'profiles', 'kaykit.json'), 'utf8'),
@@ -44,12 +42,18 @@ describe('KayKit skeleton profile', () => {
     expect(new Set(bones).size).toBe(bones.length)
   })
 
-  it('carries the sword arm from measured clip rotations', () => {
-    expect(KAYKIT_PROFILE.armCarry?.right?.swingScale).toBe(0.5)
-    expect(KAYKIT_PROFILE.armCarry?.right?.shoulder).toEqual([0, -0.379653, 0.254475, 0.889441])
-    expect(KAYKIT_PROFILE.armCarry?.right?.elbow).toEqual([0, 0.208753, 0.331613, 0.92003])
-    expect(KAYKIT_PROFILE.armCarry).toEqual(KAYKIT_ARM_CARRY)
-    expect(KAYKIT_PROFILE.standingHeight).toBe(KAYKIT_STANDING_HEIGHT)
+  /**
+   * The carry and the standing height are measurements, so the check is that the
+   * extractor still produces them rather than that they equal another copy of
+   * themselves. A typed literal agreeing with itself was how the sword arm ended
+   * up with an x of exactly zero.
+   */
+  it.skipIf(!existsSync(PLAYER))('carries the sword arm the extractor measured', () => {
+    const extracted = extractRigGeometry(readBinary(PLAYER))
+    expect(KAYKIT_PROFILE.armCarry?.right?.shoulder).toEqual(extracted.armCarry.right.shoulder)
+    expect(KAYKIT_PROFILE.armCarry?.right?.elbow).toEqual(extracted.armCarry.right.elbow)
+    expect(KAYKIT_PROFILE.armCarry?.right?.swingScale).toBe(extracted.armCarry.right.swingScale)
+    expect(KAYKIT_PROFILE.standingHeight).toBe(extracted.standingHeight)
   })
 
   /**

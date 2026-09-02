@@ -46,14 +46,14 @@ export const KAYKIT_OPTIONAL_JOINTS = {
   'wrist.r': 'wrist.r',
 }
 
-export const KAYKIT_STANDING_HEIGHT = 2.17
-export const KAYKIT_ARM_CARRY = {
-  right: {
-    shoulder: [0, -0.379653, 0.254475, 0.889441],
-    elbow: [0, 0.208753, 0.331613, 0.92003],
-    swingScale: 0.5,
-  },
-}
+/**
+ * The clip the carried-arm pose is averaged out of. A run holds the sword arm
+ * where a fight would, and averaging a whole cycle of it cancels the swing that
+ * the gait puts back itself.
+ */
+export const KAYKIT_CARRY_CLIP = 'Running_A'
+/** The sword arm swings half as far as the free one: authored, not measured. */
+export const KAYKIT_CARRY_SWING_SCALE = 0.5
 
 export function readGlb(body) {
   let offset = 12
@@ -69,6 +69,120 @@ export function readGlb(body) {
   }
   if (!json || !bin) throw new Error('glb is missing a JSON or binary chunk')
   return { json, bin }
+}
+
+/**
+ * Visible height of the body in bind pose, from the bounds of the skinned meshes
+ * alone. Everything else in the file — the swords, the shields, the cape — is an
+ * unskinned prop parented into the rig, and measuring those would say the knight
+ * is as tall as the greatsword it is holding.
+ */
+export function bindPoseHeight(body) {
+  const { json } = readGlb(body)
+  const skinned = new Set(json.nodes.filter((node) => node.skin !== undefined).map((node) => node.mesh))
+  let low = Infinity
+  let high = -Infinity
+  for (const mesh of skinned) {
+    for (const primitive of json.meshes[mesh].primitives) {
+      const accessor = json.accessors[primitive.attributes.POSITION]
+      if (!accessor?.min || !accessor?.max) throw new Error('mesh has no position bounds')
+      low = Math.min(low, accessor.min[1])
+      high = Math.max(high, accessor.max[1])
+    }
+  }
+  if (!Number.isFinite(low)) throw new Error('glb has no skinned mesh to measure')
+  return Number((high - low).toFixed(6))
+}
+
+/**
+ * A bone's average rotation over a clip, as an absolute body-frame rotation in
+ * the convention of `procedural/joints.ts`: the turn that takes the bone from
+ * where the bind pose points it to where the clip does. Composing each ancestor's
+ * animated rotation and dividing out the rest chain is what makes it absolute,
+ * so the torso's own lean is already in it and the generator can write it
+ * straight onto the joint.
+ */
+export function averageBoneRotation(body, clip, bone) {
+  const { json } = readGlb(body)
+  const animation = json.animations?.find((each) => each.name === clip)
+  if (!animation) throw new Error(`glb has no animation named "${clip}"`)
+  const parent = new Int32Array(json.nodes.length).fill(-1)
+  json.nodes.forEach((node, at) => (node.children ?? []).forEach((child) => { parent[child] = at }))
+  const named = new Map(json.nodes.map((node, at) => [node.name, at]))
+  if (!named.has(bone)) throw new Error(`glb has no bone named "${bone}"`)
+
+  const tracks = new Map()
+  for (const channel of animation.channels) {
+    if (channel.target.path !== 'rotation') continue
+    const sampler = animation.samplers[channel.sampler]
+    tracks.set(channel.target.node, {
+      time: readAccessor(body, json.accessors[sampler.input], 1),
+      value: readAccessor(body, json.accessors[sampler.output], 4),
+    })
+  }
+
+  const chain = []
+  for (let at = named.get(bone); at >= 0; at = parent[at]) chain.unshift(at)
+  const times = [...new Set([...tracks.values()].flatMap((track) => [...track.time]))].sort((a, b) => a - b)
+  const rest = chainRotation(json, tracks, chain, null)
+  let sum = [0, 0, 0, 0]
+  let reference = null
+  for (const time of times) {
+    let turn = multiply(chainRotation(json, tracks, chain, time), conjugate(rest))
+    reference ??= turn
+    // Neighbouring samples can straddle the double cover; averaging across it
+    // would cancel the pose down to something near identity.
+    if (turn.reduce((total, lane, at) => total + lane * reference[at], 0) < 0) turn = turn.map((lane) => -lane)
+    sum = sum.map((lane, at) => lane + turn[at])
+  }
+  return normalise(sum).map((lane) => Number(lane.toFixed(6)))
+}
+
+function chainRotation(json, tracks, chain, time) {
+  let rotation = [0, 0, 0, 1]
+  for (const node of chain) rotation = multiply(rotation, localRotation(json, tracks, node, time))
+  return rotation
+}
+
+function localRotation(json, tracks, node, time) {
+  const track = time === null ? undefined : tracks.get(node)
+  if (!track) return json.nodes[node].rotation ?? [0, 0, 0, 1]
+  let at = 0
+  while (at < track.time.length - 1 && track.time[at + 1] <= time) at++
+  const next = Math.min(at + 1, track.time.length - 1)
+  const span = track.time[next] - track.time[at]
+  const along = span > 1e-9 ? (time - track.time[at]) / span : 0
+  const from = [...track.value.subarray(at * 4, at * 4 + 4)]
+  const to = [...track.value.subarray(next * 4, next * 4 + 4)]
+  const sign = from.reduce((total, lane, lane_at) => total + lane * to[lane_at], 0) < 0 ? -1 : 1
+  return normalise(from.map((lane, lane_at) => lane + (to[lane_at] * sign - lane) * along))
+}
+
+function readAccessor(body, accessor, lanes) {
+  const { json, bin } = readGlb(body)
+  if (accessor.componentType !== 5126) throw new Error('sampler is not float32')
+  const view = json.bufferViews[accessor.bufferView]
+  const start = bin.byteOffset + (view.byteOffset ?? 0) + (accessor.byteOffset ?? 0)
+  return new Float32Array(bin.buffer, start, accessor.count * lanes)
+}
+
+function multiply(a, b) {
+  return [
+    a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
+    a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
+    a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3],
+    a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2],
+  ]
+}
+
+function conjugate(q) {
+  return [-q[0], -q[1], -q[2], q[3]]
+}
+
+function normalise(q) {
+  const length = Math.hypot(q[0], q[1], q[2], q[3])
+  if (length < 1e-9) throw new Error('cannot normalise a zero quaternion')
+  return q.map((lane) => lane / length)
 }
 
 /** Bone name to bind-pose world position, from the first skin's inverse bind matrices. */
@@ -126,6 +240,14 @@ function mapJoints(positions, mapping, label) {
 export function extractRigGeometry(body, mapping = KAYKIT_JOINTS, optional = KAYKIT_OPTIONAL_JOINTS) {
   const positions = bindPosePositions(body)
   return {
+    standingHeight: bindPoseHeight(body),
+    armCarry: {
+      right: {
+        shoulder: averageBoneRotation(body, KAYKIT_CARRY_CLIP, mapping['shoulder.r']),
+        elbow: averageBoneRotation(body, KAYKIT_CARRY_CLIP, mapping['elbow.r']),
+        swingScale: KAYKIT_CARRY_SWING_SCALE,
+      },
+    },
     joints: mapJoints(positions, mapping, 'required'),
     optional: mapJoints(positions, optional, 'optional'),
   }
@@ -138,9 +260,8 @@ if (process.argv[1] === import.meta.filename) {
   const fixture = {
     source: 'public/models/player.glb',
     note: 'Bind-pose joint positions in the body frame (+Y up, +Z forward, +X left), in model units.',
-    armCarryNote: 'Right arm absolute body-frame rotations averaged from Running_A.',
-    standingHeight: KAYKIT_STANDING_HEIGHT,
-    armCarry: KAYKIT_ARM_CARRY,
+    armCarryNote: `Right arm absolute body-frame rotations averaged over ${KAYKIT_CARRY_CLIP}.`,
+    carryClip: KAYKIT_CARRY_CLIP,
     ...extractRigGeometry(readFileSync(source)),
   }
   writeFileSync(FIXTURE, `${JSON.stringify(fixture, null, 2)}\n`)

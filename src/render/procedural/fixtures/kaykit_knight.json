@@ -1,21 +1,22 @@
 {
   "source": "public/models/player.glb",
   "note": "Bind-pose joint positions in the body frame (+Y up, +Z forward, +X left), in model units.",
-  "armCarryNote": "Right arm absolute body-frame rotations averaged from Running_A.",
-  "standingHeight": 2.17,
+  "armCarryNote": "Right arm absolute body-frame rotations averaged over Running_A.",
+  "carryClip": "Running_A",
+  "standingHeight": 2.314534,
   "armCarry": {
     "right": {
       "shoulder": [
-        0,
-        -0.379653,
-        0.254475,
-        0.889441
+        0.135676,
+        -0.309501,
+        0.314647,
+        0.887017
       ],
       "elbow": [
-        0,
-        0.208753,
-        0.331613,
-        0.92003
+        -0.037428,
+        0.168241,
+        0.340938,
+        0.924151
       ],
       "swingScale": 0.5
     }

@@ -23,7 +23,7 @@ export interface SkeletonProfile {
   readonly bones: Readonly<Record<string, string>>
   /** Names from `OPTIONAL_JOINT_NAMES` the family happens to have. Never required. */
   readonly optional: Readonly<Record<string, string>>
-  /** Visible bind-pose height in model units. */
+  /** Measured bind-pose height of the skinned body, in model units. */
   readonly standingHeight: number
   /** Absolute body-frame arm rotations; an omitted side uses the relaxed hang. */
   readonly armCarry?: ArmCarry
