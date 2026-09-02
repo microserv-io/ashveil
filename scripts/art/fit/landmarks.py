@@ -28,6 +28,7 @@ BANDS = {
 ARM_BANDS = ((0.10, 0.12), (0.12, 0.14), (0.14, 0.16), (0.16, 0.18))
 ARM_HEIGHT_WINDOW = (0.68, 0.83)
 SHOULDER_EXTRAPOLATION_X = 0.105
+SHOULDER_HEAD_DEPTH = 1.0
 CENTRAL_WIDTH_FRACTION = 0.18
 MINIMUM_SLICE_POINTS = 12
 NOMINAL_SLICE_POINTS = 40
@@ -149,6 +150,19 @@ def _arm_centreline(points: np.ndarray, side: int, floor: float, height: float):
     target = np.array([side * target_x,
                        fitted[0][0] * target_x + fitted[0][1],
                        fitted[1][0] * target_x + fitted[1][1]])
+    # The medial axis runs up the middle of the arm and reaches the joint low on
+    # a body whose deltoid bulges: the humeral head sits about one upper-arm
+    # radius below the top of the shoulder, so the joint is lifted to there and
+    # never lowered. A joint below the head sags the top of a raised arm.
+    upper = points[(points[:, 0] * side > height * 0.14) & (points[:, 0] * side < height * 0.19)
+                   & (points[:, 1] >= window[0]) & (points[:, 1] <= window[1])]
+    if len(upper) >= MINIMUM_SLICE_POINTS:
+        column = points[(np.abs(points[:, 0] - target[0]) <= height * 0.02)
+                        & (np.abs(points[:, 2] - target[2]) <= height * 0.04)
+                        & (points[:, 1] > target[1])]
+        if len(column) >= MINIMUM_SLICE_POINTS:
+            radius = float(np.percentile(upper[:, 2], 90) - np.percentile(upper[:, 2], 10)) / 2
+            target[1] = max(target[1], float(column[:, 1].max()) - radius * SHOULDER_HEAD_DEPTH)
     # Enough points per band to centre a slice is full marks; a denser mesh is not
     # a better-placed shoulder. The held-out residual carries the geometry's vote.
     confidence = min(1.0, sum(counts) / (4 * MINIMUM_SLICE_POINTS)) * max(0.0, 1.0 - residual / (height * 0.03))

@@ -179,6 +179,12 @@ def _shoulder_region(body: Body, side: str, radius: float, params: dict) -> dict
     keep_arm[distal] = np.maximum(keep_arm[distal], radial[distal])
 
     armpit = shoulder[1] - params["armpit_drop"]
+    # Below the armpit line the only thing the upper arm may hold is the arm
+    # itself: the capsule's fade reaches the latissimus there, and a raised arm
+    # would drag it. Inside the arm's own radius nothing changes.
+    within_arm = 1.0 - _smoothstep((distance - radius * 0.95) / params["radial_fade"])
+    under_armpit = 1.0 - _smoothstep((body.positions[:, 1] - armpit) / params["armpit_fade"])
+    keep_arm = keep_arm * (1.0 - under_armpit * (1.0 - within_arm))
     scapula = shoulder[1] - params["scapula_drop"]
     above_armpit = _smoothstep((body.positions[:, 1] - armpit) / params["armpit_fade"])
     on_back = _smoothstep((shoulder[2] - params["back_plane"] - body.positions[:, 2]) / params["back_fade"])

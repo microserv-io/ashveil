@@ -212,7 +212,7 @@
         "sampleCount": 176,
         "heldOutResidualMetres": 0.017621,
         "confidence": 0.6737,
-        "symmetryErrorMetres": 2.5e-05,
+        "symmetryErrorMetres": 2.3e-05,
         "symmetryToleranceMetres": 0.0216
       },
       "shoulder_R": {
@@ -220,41 +220,41 @@
         "sampleCount": 176,
         "heldOutResidualMetres": 0.017625,
         "confidence": 0.6736,
-        "symmetryErrorMetres": 2.5e-05,
+        "symmetryErrorMetres": 2.3e-05,
         "symmetryToleranceMetres": 0.0216
       },
       "wrist_L": {
         "method": "forearm_narrowest_section",
-        "sampleCount": 209,
-        "forearmReachMetres": 0.431261,
-        "wristWidthMetres": 0.21399,
+        "sampleCount": 206,
+        "forearmReachMetres": 0.432899,
+        "wristWidthMetres": 0.216236,
         "symmetryErrorMetres": 5.2e-05,
         "confidence": 1.0,
         "symmetryToleranceMetres": 0.0216
       },
       "wrist_R": {
         "method": "forearm_narrowest_section",
-        "sampleCount": 209,
-        "forearmReachMetres": 0.43126,
-        "wristWidthMetres": 0.214099,
+        "sampleCount": 206,
+        "forearmReachMetres": 0.432897,
+        "wristWidthMetres": 0.216342,
         "symmetryErrorMetres": 5.2e-05,
         "confidence": 1.0,
         "symmetryToleranceMetres": 0.0216
       },
       "hand_L": {
         "method": "forearm_axis_extent",
-        "sampleCount": 209,
-        "forearmReachMetres": 0.431261,
-        "wristWidthMetres": 0.21399,
+        "sampleCount": 206,
+        "forearmReachMetres": 0.432899,
+        "wristWidthMetres": 0.216236,
         "symmetryErrorMetres": 5.3e-05,
         "confidence": 1.0,
         "symmetryToleranceMetres": 0.0216
       },
       "hand_R": {
         "method": "forearm_axis_extent",
-        "sampleCount": 209,
-        "forearmReachMetres": 0.43126,
-        "wristWidthMetres": 0.214099,
+        "sampleCount": 206,
+        "forearmReachMetres": 0.432897,
+        "wristWidthMetres": 0.216342,
         "symmetryErrorMetres": 5.3e-05,
         "confidence": 1.0,
         "symmetryToleranceMetres": 0.0216
@@ -376,12 +376,12 @@
         -0.071009
       ],
       "hand_L": [
-        0.447736,
+        0.447337,
         0.779734,
         0.017349
       ],
       "hand_R": [
-        -0.447736,
+        -0.447337,
         0.779734,
         0.017349
       ],
@@ -442,12 +442,12 @@
       ],
       "shoulder_L": [
         0.189,
-        1.419108,
+        1.459305,
         -0.062384
       ],
       "shoulder_R": [
         -0.189,
-        1.419108,
+        1.459305,
         -0.062384
       ],
       "spine": [
@@ -466,14 +466,14 @@
         0.150707
       ],
       "wrist_L": [
-        0.430562,
-        0.818343,
-        -0.000802
+        0.431139,
+        0.821006,
+        -0.000669
       ],
       "wrist_R": [
-        -0.430562,
-        0.818343,
-        -0.000802
+        -0.431139,
+        0.821006,
+        -0.000669
       ]
     }
   },
@@ -636,170 +636,170 @@
       "clavicle_L": {
         "chain": "spine",
         "primary": [
-          0.989745,
-          0.129133,
-          -0.061064
+          0.980667,
+          0.127948,
+          0.148061
         ],
         "secondary": [
-          0.128887,
-          -0.991627,
-          -0.007952
+          0.126514,
+          -0.991781,
+          0.019101
         ],
         "hinge": [
-          -0.06158,
+          0.149288,
           -0.0,
-          -0.998102
+          -0.988794
         ],
-        "driftDegrees": 0.0102,
-        "roll": 1.632415,
-        "lengthMetres": 0.19096
+        "driftDegrees": 0.0084,
+        "roll": 1.420948,
+        "lengthMetres": 0.192728
       },
       "upper_arm_L": {
         "chain": "limb",
         "primary": [
-          0.425893,
-          0.031565,
-          -0.904223
+          0.375315,
+          0.027816,
+          -0.92648
         ],
         "secondary": [
-          0.0,
-          0.999391,
-          0.034887
+          -0.0,
+          0.99955,
+          0.03001
         ],
         "hinge": [
-          0.904773,
-          -0.014858,
-          0.425634
+          0.926897,
+          -0.011263,
+          0.375146
         ],
         "driftDegrees": 0.0,
-        "roll": -0.425318,
-        "lengthMetres": 0.273237
+        "roll": -0.373626,
+        "lengthMetres": 0.310059
       },
       "forearm_L": {
         "chain": "limb",
         "primary": [
-          0.327975,
-          -0.183926,
-          -0.926609
+          0.33144,
+          -0.185368,
+          -0.925087
         ],
         "secondary": [
           -0.0,
-          0.980864,
-          -0.194696
+          0.980509,
+          -0.196473
         ],
         "hinge": [
-          0.944686,
-          0.063855,
-          0.321699
+          0.943476,
+          0.065119,
+          0.32498
         ],
-        "driftDegrees": 0.0148,
-        "roll": -0.405201,
-        "lengthMetres": 0.381713
+        "driftDegrees": 0.0156,
+        "roll": -0.410348,
+        "lengthMetres": 0.379462
       },
       "hand_L": {
         "chain": "limb",
         "primary": [
-          0.373433,
-          -0.394667,
-          -0.839515
+          0.338468,
+          -0.37648,
+          -0.862381
         ],
         "secondary": [
           -0.0,
-          0.904984,
-          -0.425445
+          0.916474,
+          -0.400095
         ],
         "hinge": [
-          0.927657,
-          0.158876,
-          0.337951
+          0.940978,
+          0.13542,
+          0.310197
         ],
-        "driftDegrees": 0.0313,
-        "roll": -0.592324,
-        "lengthMetres": 0.04599
+        "driftDegrees": 0.0,
+        "roll": -0.520708,
+        "lengthMetres": 0.047858
       },
       "clavicle_R": {
         "chain": "spine",
         "primary": [
-          -0.989745,
-          0.129135,
-          -0.061065
+          -0.980666,
+          0.127951,
+          0.148064
         ],
         "secondary": [
-          -0.12889,
-          -0.991627,
-          -0.007952
+          -0.126517,
+          -0.991781,
+          0.019102
         ],
         "hinge": [
-          -0.061581,
-          -0.0,
-          0.998102
+          0.149291,
+          0.0,
+          0.988793
         ],
-        "driftDegrees": 0.0,
-        "roll": -1.632416,
-        "lengthMetres": 0.190956
+        "driftDegrees": 0.0041,
+        "roll": -1.420945,
+        "lengthMetres": 0.192724
       },
       "upper_arm_R": {
         "chain": "limb",
         "primary": [
-          -0.425893,
-          0.031565,
-          -0.904223
+          -0.375315,
+          0.027816,
+          -0.92648
         ],
         "secondary": [
-          -0.0,
-          0.999391,
-          0.034887
+          0.0,
+          0.99955,
+          0.03001
         ],
         "hinge": [
-          0.904773,
-          0.014858,
-          -0.425634
+          0.926897,
+          0.011263,
+          -0.375146
         ],
         "driftDegrees": 0.0,
-        "roll": 0.425318,
-        "lengthMetres": 0.273237
+        "roll": 0.373626,
+        "lengthMetres": 0.310059
       },
       "forearm_R": {
         "chain": "limb",
         "primary": [
-          -0.327975,
-          -0.183926,
-          -0.926609
+          -0.33144,
+          -0.185368,
+          -0.925087
         ],
         "secondary": [
           0.0,
-          0.980864,
-          -0.194696
+          0.980509,
+          -0.196473
         ],
         "hinge": [
-          0.944686,
-          -0.063855,
-          -0.321699
+          0.943476,
+          -0.065119,
+          -0.32498
         ],
-        "driftDegrees": 0.0148,
-        "roll": 0.405201,
-        "lengthMetres": 0.381713
+        "driftDegrees": 0.0156,
+        "roll": 0.410348,
+        "lengthMetres": 0.379462
       },
       "hand_R": {
         "chain": "limb",
         "primary": [
-          -0.373433,
-          -0.394667,
-          -0.839515
+          -0.338468,
+          -0.37648,
+          -0.862381
         ],
         "secondary": [
           0.0,
-          0.904984,
-          -0.425445
+          0.916474,
+          -0.400095
         ],
         "hinge": [
-          0.927657,
-          -0.158876,
-          -0.337951
+          0.940978,
+          -0.13542,
+          -0.310197
         ],
-        "driftDegrees": 0.0313,
-        "roll": 0.592324,
-        "lengthMetres": 0.04599
+        "driftDegrees": 0.0,
+        "roll": 0.520708,
+        "lengthMetres": 0.047858
       },
       "thigh_L": {
         "chain": "limb",
@@ -930,89 +930,89 @@
       "shoulder_helper_L": {
         "chain": "limb",
         "primary": [
-          0.425894,
-          0.031565,
-          -0.904222
+          0.375315,
+          0.027816,
+          -0.92648
         ],
         "secondary": [
-          0.0,
-          0.999391,
-          0.034887
+          -0.0,
+          0.99955,
+          0.03001
         ],
         "hinge": [
-          0.904773,
-          -0.014858,
-          0.425634
+          0.926897,
+          -0.011263,
+          0.375146
         ],
-        "driftDegrees": 0.0,
-        "roll": -0.425318,
-        "lengthMetres": 0.095633
+        "driftDegrees": 0.0227,
+        "roll": -0.373626,
+        "lengthMetres": 0.108521
       },
       "twist_upper_arm_L": {
         "chain": "limb",
         "primary": [
-          0.425894,
-          0.031565,
-          -0.904222
+          0.375315,
+          0.027816,
+          -0.92648
         ],
         "secondary": [
-          0.0,
-          0.999391,
-          0.034887
+          -0.0,
+          0.99955,
+          0.03001
         ],
         "hinge": [
-          0.904773,
-          -0.014858,
-          0.425634
+          0.926897,
+          -0.011263,
+          0.375146
         ],
         "driftDegrees": 0.0,
-        "roll": -0.425318,
-        "lengthMetres": 0.136618
+        "roll": -0.373626,
+        "lengthMetres": 0.15503
       },
       "shoulder_helper_R": {
         "chain": "limb",
         "primary": [
-          -0.425894,
-          0.031565,
-          -0.904222
+          -0.375315,
+          0.027816,
+          -0.92648
         ],
         "secondary": [
-          -0.0,
-          0.999391,
-          0.034887
+          0.0,
+          0.99955,
+          0.03001
         ],
         "hinge": [
-          0.904773,
-          0.014858,
-          -0.425634
+          0.926897,
+          0.011263,
+          -0.375146
         ],
-        "driftDegrees": 0.0,
-        "roll": 0.425318,
-        "lengthMetres": 0.095633
+        "driftDegrees": 0.0227,
+        "roll": 0.373626,
+        "lengthMetres": 0.108521
       },
       "twist_upper_arm_R": {
         "chain": "limb",
         "primary": [
-          -0.425894,
-          0.031565,
-          -0.904222
+          -0.375315,
+          0.027816,
+          -0.92648
         ],
         "secondary": [
-          -0.0,
-          0.999391,
-          0.034887
+          0.0,
+          0.99955,
+          0.03001
         ],
         "hinge": [
-          0.904773,
-          0.014858,
-          -0.425634
+          0.926897,
+          0.011263,
+          -0.375146
         ],
         "driftDegrees": 0.0,
-        "roll": 0.425318,
-        "lengthMetres": 0.136618
+        "roll": 0.373626,
+        "lengthMetres": 0.15503
       }
     },
-    "restSignatureSha256": "7a9de55575bcf361ea26d5185f01e8b7b2cc44205a10f414e0a53ea1f1528350",
+    "restSignatureSha256": "b01751bf6a374d99814ef83e1d05bf709045810357b697781fa2496541335032",
     "rule": {
       "primary": "local +Y from head to tail, so a bone points at its child",
       "limbSecondary": "local +X along the body's lateral axis, so knee and elbow hinge about one local axis",
@@ -1099,18 +1099,18 @@
       "maxInfluencesPerVertexBeforeExport": 7,
       "verticesPerBone": {
         "pelvis": 502,
-        "spine": 846,
-        "chest": 968,
-        "neck": 1721,
+        "spine": 852,
+        "chest": 994,
+        "neck": 1683,
         "head": 3051,
-        "clavicle_L": 847,
-        "upper_arm_L": 476,
+        "clavicle_L": 839,
+        "upper_arm_L": 488,
         "forearm_L": 1123,
-        "hand_L": 749,
-        "clavicle_R": 839,
-        "upper_arm_R": 478,
+        "hand_L": 752,
+        "clavicle_R": 837,
+        "upper_arm_R": 490,
         "forearm_R": 1124,
-        "hand_R": 748,
+        "hand_R": 747,
         "thigh_L": 561,
         "shin_L": 498,
         "foot_L": 435,
@@ -1121,25 +1121,25 @@
     },
     "clean": {
       "armRadiusCm": {
-        "L": 7.26,
-        "R": 6.7
+        "L": 8.18,
+        "R": 7.71
       },
       "shoulder": {
         "L": {
-          "armStrippedVertices": 140,
-          "clavicleStrippedVertices": 283,
-          "capVertices": 248,
-          "armRadiusCm": 7.26,
-          "shoulderHelperVertices": 282,
-          "twistHelperVertices": 201
+          "armStrippedVertices": 114,
+          "clavicleStrippedVertices": 307,
+          "capVertices": 227,
+          "armRadiusCm": 8.18,
+          "shoulderHelperVertices": 298,
+          "twistHelperVertices": 229
         },
         "R": {
-          "armStrippedVertices": 155,
-          "clavicleStrippedVertices": 278,
-          "capVertices": 240,
-          "armRadiusCm": 6.7,
-          "shoulderHelperVertices": 292,
-          "twistHelperVertices": 234
+          "armStrippedVertices": 126,
+          "clavicleStrippedVertices": 309,
+          "capVertices": 239,
+          "armRadiusCm": 7.71,
+          "shoulderHelperVertices": 310,
+          "twistHelperVertices": 266
         }
       },
       "thigh": {
@@ -1154,106 +1154,106 @@
       }
     },
     "before": {
-      "farFieldVertices": 5218,
+      "farFieldVertices": 5177,
       "displacement": {
         "abduct90": {
-          "vertices": 5218,
-          "maxCm": 2.76,
+          "vertices": 5177,
+          "maxCm": 4.395,
           "p95Cm": 0.0
         },
         "abduct150": {
-          "vertices": 5218,
-          "maxCm": 4.601,
+          "vertices": 5177,
+          "maxCm": 7.107,
           "p95Cm": 0.0
         },
         "abduct180": {
-          "vertices": 5218,
-          "maxCm": 5.106,
+          "vertices": 5177,
+          "maxCm": 7.805,
           "p95Cm": 0.0
         },
         "flex60": {
-          "vertices": 5218,
-          "maxCm": 2.536,
+          "vertices": 5177,
+          "maxCm": 4.116,
           "p95Cm": 0.0
         },
         "abduct150_rhythm": {
-          "vertices": 5218,
-          "maxCm": 14.72,
-          "p95Cm": 4.472
+          "vertices": 5177,
+          "maxCm": 16.814,
+          "p95Cm": 4.713
         },
         "abduct180_rhythm": {
-          "vertices": 5218,
-          "maxCm": 18.059,
-          "p95Cm": 5.406
+          "vertices": 5177,
+          "maxCm": 20.321,
+          "p95Cm": 5.591
         }
       },
       "normalInversions": {
         "abduct90_L": 0,
         "abduct90_R": 0,
         "abduct150_L": 0,
-        "abduct150_R": 0,
+        "abduct150_R": 2,
         "abduct150_rhythm_L": 0,
         "abduct150_rhythm_R": 0,
-        "abduct180_L": 5,
-        "abduct180_R": 5,
+        "abduct180_L": 4,
+        "abduct180_R": 4,
         "abduct180_rhythm_L": 0,
         "abduct180_rhythm_R": 0
       },
       "deltoidRingRatio": {
-        "bind_L": 1.449,
-        "bind_R": 1.405,
-        "abduct90_L": 1.667,
-        "abduct90_R": 1.64,
-        "abduct150_rhythm_L": 1.781,
-        "abduct150_rhythm_R": 1.752,
-        "abduct180_rhythm_L": 1.806,
-        "abduct180_rhythm_R": 1.684
+        "bind_L": 2.587,
+        "bind_R": 2.627,
+        "abduct90_L": 3.352,
+        "abduct90_R": 2.97,
+        "abduct150_rhythm_L": 3.457,
+        "abduct150_rhythm_R": 3.015,
+        "abduct180_rhythm_L": 3.725,
+        "abduct180_rhythm_R": 3.228
       },
       "armpitGapCm": {
         "bind": {
-          "L": 3.54,
-          "R": 3.47
+          "L": 4.14,
+          "R": 3.27
         },
         "abduct90": {
-          "L": 3.98,
-          "R": 5.53
+          "L": 5.75,
+          "R": 4.98
         }
       },
       "maxInfluencesPerVertex": 4,
-      "weightSumMaxError": 1.12e-07
+      "weightSumMaxError": 1.08e-07
     },
     "after": {
-      "farFieldVertices": 5218,
+      "farFieldVertices": 5177,
       "displacement": {
         "abduct90": {
-          "vertices": 5218,
-          "maxCm": 0.535,
+          "vertices": 5177,
+          "maxCm": 0.681,
           "p95Cm": 0.0
         },
         "abduct150": {
-          "vertices": 5218,
-          "maxCm": 0.885,
+          "vertices": 5177,
+          "maxCm": 1.095,
           "p95Cm": 0.0
         },
         "abduct180": {
-          "vertices": 5218,
-          "maxCm": 0.974,
+          "vertices": 5177,
+          "maxCm": 1.196,
           "p95Cm": 0.0
         },
         "flex60": {
-          "vertices": 5218,
-          "maxCm": 0.618,
+          "vertices": 5177,
+          "maxCm": 0.646,
           "p95Cm": 0.0
         },
         "abduct150_rhythm": {
-          "vertices": 5218,
-          "maxCm": 11.777,
-          "p95Cm": 3.456
+          "vertices": 5177,
+          "maxCm": 10.988,
+          "p95Cm": 3.898
         },
         "abduct180_rhythm": {
-          "vertices": 5218,
-          "maxCm": 14.215,
-          "p95Cm": 4.171
+          "vertices": 5177,
+          "maxCm": 13.189,
+          "p95Cm": 4.679
         }
       },
       "normalInversions": {
@@ -1263,29 +1263,29 @@
         "abduct150_R": 0,
         "abduct150_rhythm_L": 0,
         "abduct150_rhythm_R": 0,
-        "abduct180_L": 8,
-        "abduct180_R": 6,
+        "abduct180_L": 0,
+        "abduct180_R": 0,
         "abduct180_rhythm_L": 0,
         "abduct180_rhythm_R": 0
       },
       "deltoidRingRatio": {
-        "bind_L": 1.449,
-        "bind_R": 1.405,
-        "abduct90_L": 1.895,
-        "abduct90_R": 1.758,
-        "abduct150_rhythm_L": 2.836,
-        "abduct150_rhythm_R": 2.799,
-        "abduct180_rhythm_L": 2.844,
-        "abduct180_rhythm_R": 2.495
+        "bind_L": 2.587,
+        "bind_R": 2.517,
+        "abduct90_L": 4.038,
+        "abduct90_R": 3.475,
+        "abduct150_rhythm_L": 8.166,
+        "abduct150_rhythm_R": 5.539,
+        "abduct180_rhythm_L": 5.303,
+        "abduct180_rhythm_R": 4.91
       },
       "armpitGapCm": {
         "bind": {
-          "L": 3.54,
-          "R": 3.47
+          "L": 4.14,
+          "R": 4.56
         },
         "abduct90": {
-          "L": 4.0,
-          "R": 5.92
+          "L": 6.81,
+          "R": 8.65
         }
       },
       "maxInfluencesPerVertex": 4,
@@ -1293,7 +1293,7 @@
     }
   },
   "rest": {
-    "maxRestRotationBefore": 1.999391,
+    "maxRestRotationBefore": 1.99955,
     "maxRestRotationAfter": 0.0,
     "joints": 24
   },
@@ -1329,7 +1329,7 @@
       "headAbovePelvisMetres": 0.900515,
       "toeAheadOfHeelMetres": 0.268491,
       "ankleAlongFoot": 0.2165,
-      "leftHandLateralMetres": 0.447736
+      "leftHandLateralMetres": 0.447337
     },
     "groundOffsetMetres": 0.0,
     "standingHeightMetres": 1.8,
@@ -1348,21 +1348,21 @@
     "verticesPerBone": {
       "root": 0,
       "pelvis": 1136,
-      "spine": 1449,
-      "chest": 2447,
-      "clavicle_L": 1245,
-      "shoulder_helper_L": 314,
-      "upper_arm_L": 636,
+      "spine": 1373,
+      "chest": 2480,
+      "clavicle_L": 1157,
+      "shoulder_helper_L": 374,
+      "upper_arm_L": 644,
       "forearm_L": 2143,
-      "hand_L": 1578,
-      "twist_upper_arm_L": 247,
-      "clavicle_R": 1209,
-      "shoulder_helper_R": 320,
-      "upper_arm_R": 700,
+      "hand_L": 1580,
+      "twist_upper_arm_L": 277,
+      "clavicle_R": 1138,
+      "shoulder_helper_R": 392,
+      "upper_arm_R": 699,
       "forearm_R": 2159,
-      "hand_R": 1547,
-      "twist_upper_arm_R": 287,
-      "neck": 3283,
+      "hand_R": 1549,
+      "twist_upper_arm_R": 317,
+      "neck": 3213,
       "head": 6504,
       "thigh_L": 496,
       "shin_L": 807,
@@ -1380,28 +1380,28 @@
     ],
     "boneReachMetres": {
       "pelvis": 0.2025,
-      "spine": 0.1912,
-      "chest": 0.2571,
-      "neck": 0.1926,
+      "spine": 0.2035,
+      "chest": 0.2407,
+      "neck": 0.1526,
       "head": 0.1291,
-      "clavicle_L": 0.1767,
-      "upper_arm_L": 0.1227,
-      "forearm_L": 0.1137,
-      "hand_L": 0.1159,
-      "clavicle_R": 0.1767,
-      "upper_arm_R": 0.1207,
-      "forearm_R": 0.1137,
-      "hand_R": 0.1159,
+      "clavicle_L": 0.1753,
+      "upper_arm_L": 0.1257,
+      "forearm_L": 0.1127,
+      "hand_L": 0.1128,
+      "clavicle_R": 0.1753,
+      "upper_arm_R": 0.1236,
+      "forearm_R": 0.1128,
+      "hand_R": 0.1128,
       "thigh_L": 0.116,
       "shin_L": 0.1255,
       "foot_L": 0.1255,
       "thigh_R": 0.116,
       "shin_R": 0.1254,
       "foot_R": 0.1254,
-      "shoulder_helper_L": 0.1035,
-      "twist_upper_arm_L": 0.0694,
-      "shoulder_helper_R": 0.099,
-      "twist_upper_arm_R": 0.0695
+      "shoulder_helper_L": 0.1101,
+      "twist_upper_arm_L": 0.0775,
+      "shoulder_helper_R": 0.1077,
+      "twist_upper_arm_R": 0.0774
     },
     "maxRestRotation": 0.0,
     "sourceHad": {
@@ -1440,6 +1440,6 @@
     "glb": "masculine-v3.glb",
     "manifest": "masculine-v3.manifest.json",
     "review": "masculine-v3.review.png",
-    "sha256": "c7890175b68c27ac5c5f35c0842f1661a516894764147a59495d54721fb7d2a1"
+    "sha256": "28a5088916abf4069df26bf1b7461544ed6063e2a307d8f83061b0e296bea826"
   }
 }
