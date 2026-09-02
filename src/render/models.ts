@@ -55,6 +55,11 @@ function model(name: ModelName): Model {
   return found
 }
 
+/** The model's bounds in its own units, so a floor can be laid with its top at ground level. */
+export function boundsOf(name: ModelName): THREE.Box3 {
+  return new THREE.Box3().setFromObject(model(name).scene)
+}
+
 export function clipsOf(name: ModelName): THREE.AnimationClip[] {
   return model(name).animations
 }

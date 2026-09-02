@@ -31,7 +31,7 @@ export function createLimbScratch(): LimbScratch {
 }
 
 /** The knee leads forward and the elbow trails back, which is what makes a body read as a body. */
-const KNEE_POLE_SIDE = 0.15
+export const KNEE_POLE_SIDE = 0.15
 const ELBOW_POLE_SIDE = 0.35
 /**
  * Hip height while a body simply stands on its feet, as a fraction of leg length.
@@ -84,7 +84,14 @@ export function writeTorso(out: Pose, joint: Joint, pitch: number, yaw: number, 
  * happened to be authored that way, and a fraction of a degree of tilt is a toe
  * through the ground once the body stands on it.
  */
-export function writeLeg(geometry: RigGeometry, scratch: LimbScratch, out: Pose, side: number, footPitch: number): void {
+export function writeLeg(
+  geometry: RigGeometry,
+  scratch: LimbScratch,
+  out: Pose,
+  side: number,
+  footPitch: number,
+  pole?: Float32Array,
+): void {
   const hip = side === LEFT ? Joint.HipL : Joint.HipR
   const knee = side === LEFT ? Joint.KneeL : Joint.KneeR
   const foot = side === LEFT ? Joint.FootL : Joint.FootR
@@ -97,9 +104,11 @@ export function writeLeg(geometry: RigGeometry, scratch: LimbScratch, out: Pose,
     chain.root[axis] = scratch.positions[hip * 3 + axis]!
     chain.target[axis] = scratch.target[axis]!
   }
-  chain.pole[0] = side * KNEE_POLE_SIDE
-  chain.pole[1] = 0
-  chain.pole[2] = 1
+  // Where the knee leads: forward for a body on its feet, wherever a clip says
+  // for one that is not (a body on its back bends its knees toward the sky).
+  chain.pole[0] = pole ? pole[0]! : side * KNEE_POLE_SIDE
+  chain.pole[1] = pole ? pole[1]! : 0
+  chain.pole[2] = pole ? pole[2]! : 1
   solveTwoBone(chain, out.rotations, hip * 4, knee * 4)
   setJointAxisAngle(out, foot, 1, 0, 0, geometry.footPitch + footPitch)
 }

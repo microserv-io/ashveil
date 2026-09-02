@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { isFloor } from '../sim/mapgen'
 import type { AreaMap } from '../sim/types'
-import { instancedModel } from './models'
+import { boundsOf, instancedModel } from './models'
 
 /**
  * Turns an `AreaMap` into dungeon geometry.
@@ -47,12 +47,15 @@ function buildFloor(map: AreaMap): THREE.Group {
   const plain: THREE.Matrix4[] = []
   const rocky: THREE.Matrix4[] = []
   const scale = FLOOR_SPAN / MODEL_SPAN
+  // The tile is a slab with its origin inside it; bodies stand at y = 0, so the
+  // slab's top surface is what has to sit at zero, not its origin.
+  const top = boundsOf('floor').max.y * scale
 
   for (let by = 0; by < map.height; by += FLOOR_SPAN) {
     for (let bx = 0; bx < map.width; bx += FLOOR_SPAN) {
       if (!blockHasFloor(map, bx, by)) continue
       const placement = new THREE.Matrix4().compose(
-        new THREE.Vector3(bx + FLOOR_SPAN / 2, 0, by + FLOOR_SPAN / 2),
+        new THREE.Vector3(bx + FLOOR_SPAN / 2, -top, by + FLOOR_SPAN / 2),
         new THREE.Quaternion(),
         new THREE.Vector3(scale, scale, scale),
       )
