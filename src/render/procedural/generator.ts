@@ -17,11 +17,12 @@ export interface PoseGenerator {
 }
 
 /**
- * How long a change of state takes to cross over. Long enough that no joint moves
- * more than 0.2 rad in a frame at 60 Hz even when a walk becomes a swing, which
+ * How long a change of state takes to cross over: short enough that a body reads
+ * as reacting rather than easing, long enough that no joint moves more than
+ * 0.2 rad in a frame at 60 Hz even when a walk becomes a swing, which
  * `tests/procedural_generator.test.ts` pins.
  */
-const BLEND = 0.22
+const BLEND = 0.12
 /** Above this the actor is moving; below it, a body reads as standing. */
 const MOVING_SPEED = 0.05
 

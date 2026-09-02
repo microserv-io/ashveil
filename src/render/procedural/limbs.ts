@@ -44,11 +44,12 @@ export function stanceOffset(geometry: RigGeometry): number {
 /** Both feet flat under the hips: the base every rooted pose stands on. */
 export function plantFeet(geometry: RigGeometry, scratch: LimbScratch, out: Pose): void {
   resolveTorso(geometry, out, scratch)
-  plantOne(geometry, scratch, out, LEFT)
-  plantOne(geometry, scratch, out, RIGHT)
+  plantLeg(geometry, scratch, out, LEFT)
+  plantLeg(geometry, scratch, out, RIGHT)
 }
 
-function plantOne(geometry: RigGeometry, scratch: LimbScratch, out: Pose, side: number): void {
+/** One foot flat under its own hip, wherever the torso above it went. */
+export function plantLeg(geometry: RigGeometry, scratch: LimbScratch, out: Pose, side: number): void {
   scratch.target[0] = side * geometry.hipWidth
   scratch.target[1] = geometry.ankleHeight
   scratch.target[2] = 0

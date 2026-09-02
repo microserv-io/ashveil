@@ -88,15 +88,20 @@ describe('placeholder skill poses', () => {
       expect(deviation(neutral, pose), `${skill} does not return to neutral`).toBeLessThan(peak * 0.35)
     })
 
-    it(`${skill} keeps both feet planted, because skills root you`, () => {
+    it(`${skill} keeps both feet on the ground, because skills root you`, () => {
       write(skill, 0)
       resolvePositions(geometry, pose, positions)
       const planted = [positions[Joint.FootL * 3 + 2]!, positions[Joint.FootR * 3 + 2]!]
+      const ground = positions[Joint.FootL * 3 + 1]!
       for (let i = 1; i <= 20; i++) {
         write(skill, i / 20)
         resolvePositions(geometry, pose, positions)
-        expect(Math.abs(positions[Joint.FootL * 3 + 2]! - planted[0]!), skill).toBeLessThan(1e-3)
-        expect(Math.abs(positions[Joint.FootR * 3 + 2]! - planted[1]!), skill).toBeLessThan(1e-3)
+        // A step into a swing is a step, not a walk: it stays on the ground and
+        // inside a third of a leg of where the body is standing.
+        expect(Math.abs(positions[Joint.FootL * 3 + 2]! - planted[0]!), skill).toBeLessThan(geometry.legLength * 0.3)
+        expect(Math.abs(positions[Joint.FootR * 3 + 2]! - planted[1]!), skill).toBeLessThan(geometry.legLength * 0.3)
+        expect(positions[Joint.FootL * 3 + 1]! - ground, skill).toBeLessThan(1e-3)
+        expect(positions[Joint.FootR * 3 + 1]! - ground, skill).toBeLessThan(1e-3)
       }
     })
   }

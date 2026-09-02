@@ -1,8 +1,8 @@
 import { CARRY_HAND } from './arms'
-import { clamp, smoothstep } from './curves'
+import { clamp, ease, mix } from './curves'
 import type { RigGeometry } from './geometry'
 import { Joint, LEFT, RIGHT } from './joints'
-import { plantFeet, resolveTorso, stanceOffset, writeArm, writeLeg, type LimbScratch } from './limbs'
+import { plantLeg, resolveTorso, stanceOffset, writeArm, writeLeg, type LimbScratch } from './limbs'
 import { resetPose, type Pose } from './pose'
 import { quatFromAxisAngle, quatIdentity, quatMultiply, quatNlerp } from './quat'
 
@@ -39,7 +39,7 @@ export interface PoseKey {
 }
 
 export interface PoseClipSource {
-  /** True keeps both feet flat on the ground and ignores any foot key. */
+  /** True keeps a foot flat under its own hip unless a key states where it steps. */
   readonly planted: boolean
   readonly keys: readonly PoseKey[]
 }
@@ -52,6 +52,8 @@ const FOOT_REST: Vec3 = [0, -0.94, 0]
 /** The clip is stored compiled: quaternions and targets, ready to interpolate. */
 export interface PoseClip {
   readonly planted: boolean
+  /** Sides some key states a foot for. A planted clip leaves the others where they stand. */
+  readonly steps: readonly [boolean, boolean]
   readonly times: Float32Array
   /** `keys * Joint.Count * 4`. */
   readonly rotations: Float32Array
@@ -66,6 +68,7 @@ export function compilePoseClip(source: PoseClipSource): PoseClip {
   const count = source.keys.length
   const clip: PoseClip = {
     planted: source.planted,
+    steps: [source.keys.some((key) => key.footL), source.keys.some((key) => key.footR)],
     times: new Float32Array(count),
     rotations: new Float32Array(count * Joint.Count * 4),
     eases: new Float32Array(count),
@@ -131,13 +134,9 @@ export function writeClipPose(
   }
   out.offset[1]! += stanceOffset(geometry)
 
-  if (clip.planted) {
-    plantFeet(geometry, scratch, out)
-  } else {
-    resolveTorso(geometry, out, scratch)
-    writeClipLeg(geometry, clip, index, t, scratch, out, LEFT, 0)
-    writeClipLeg(geometry, clip, index, t, scratch, out, RIGHT, 3)
-  }
+  resolveTorso(geometry, out, scratch)
+  writeClipFoot(geometry, clip, index, t, scratch, out, LEFT, 0)
+  writeClipFoot(geometry, clip, index, t, scratch, out, RIGHT, 3)
   writeClipArm(geometry, clip, index, t, scratch, out, LEFT, 0)
   writeClipArm(geometry, clip, index, t, scratch, out, RIGHT, 3)
 }
@@ -151,19 +150,19 @@ function writeSided(into: Float32Array, index: number, left: Vec3 | undefined, r
   }
 }
 
-/**
- * Eases into a key. Both branches keep a bounded slope, which a power of a
- * smoothstep does not: `smoothstep(x) ** 0.4` is vertical at x = 0, so the first
- * frame after a key would jump further than the rest of the segment together.
- */
-function ease(raw: number, shape: number): number {
-  const t = smoothstep(0, 1, raw)
-  if (shape >= 1) return Math.pow(t, shape)
-  return 1 - Math.pow(1 - t, 1 / shape)
-}
-
-function mix(values: Float32Array, from: number, to: number, t: number): number {
-  return values[from]! + (values[to]! - values[from]!) * t
+/** A stated foot is solved onto its target; an unstated one stands where it is. */
+function writeClipFoot(
+  geometry: RigGeometry,
+  clip: PoseClip,
+  index: number,
+  t: number,
+  scratch: LimbScratch,
+  out: Pose,
+  side: number,
+  lane: number,
+): void {
+  if (clip.planted && !clip.steps[side === LEFT ? 0 : 1]!) return plantLeg(geometry, scratch, out, side)
+  writeClipLeg(geometry, clip, index, t, scratch, out, side, lane)
 }
 
 function writeClipLeg(
