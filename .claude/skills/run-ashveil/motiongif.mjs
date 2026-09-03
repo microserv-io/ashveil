@@ -17,12 +17,15 @@ const set = async (id, value) => page.evaluate(([id, value]) => {
   const el = document.getElementById(id); el.value = String(value); el.dispatchEvent(new Event('input'))
 }, [id, value])
 
-await page.selectOption('#driver', process.env.DRIVER ?? 'procedural')
 await page.selectOption('#state', 'moving')
 await set('distance', 5)
 await set('pitch', 14)
 await set('speed', 1.6)
 await page.click('#recenter')
+await page.evaluate(() => {
+  const start = { ...globalThis.motion.actor.pos }
+  setInterval(() => Object.assign(globalThis.motion.actor.pos, start), 16)
+})
 await page.click('#panel-toggle')
 await page.waitForTimeout(1200)
 

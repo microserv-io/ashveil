@@ -210,7 +210,9 @@ MIT. Client, server, simulation and all — see [LICENSE](LICENSE).
 
 The dependency set is deliberately small and permissively licensed (Three.js, Vite
 and Vitest are all MIT). Every actor currently uses the committed masculine-v3 body,
-generated with Tripo and fitted by the repository's humanoid pipeline. The dungeon,
+generated with Tripo and fitted by the repository's humanoid pipeline. A parallel
+pipeline fits gear pieces to that same body and binds them to its skeleton at
+runtime; no pieces are shipped yet. The dungeon,
 loot and portal remain from KayKit Dungeon Remastered by Kay Lousberg
 (kaylousberg.com), released under CC0 1.0, until their replacement models land; they
 are fetched by `npm run assets`. There is no audio.

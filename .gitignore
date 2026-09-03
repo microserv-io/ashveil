@@ -11,4 +11,6 @@ public/models/
 
 # Diagnostic renders: every body regenerates its own contact sheet.
 public/bodies/*/*.review.png
+public/gear/*/*.review.png
+tests/fixtures/gear/*/*.review.png
 __pycache__/

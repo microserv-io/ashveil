@@ -1,0 +1,849 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ashveil.gear-manifest.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "family",
+    "contractVersion",
+    "body",
+    "slot",
+    "piece",
+    "source",
+    "bones",
+    "inverseBindSha256",
+    "covers",
+    "under",
+    "hides",
+    "weights",
+    "alignment",
+    "budget",
+    "gates",
+    "reportFile"
+  ],
+  "properties": {
+    "schema": {
+      "const": "ashveil.gear-manifest.v1"
+    },
+    "family": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+\\.v[0-9]+$"
+    },
+    "contractVersion": {
+      "type": "string"
+    },
+    "body": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "slot": {
+      "enum": [
+        "feet",
+        "legs",
+        "waist",
+        "chest",
+        "back",
+        "hands",
+        "shoulders",
+        "head"
+      ]
+    },
+    "piece": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file",
+        "sha256"
+      ],
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "bones": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "inverseBindSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "covers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "feet",
+          "legs",
+          "waist",
+          "chest",
+          "back",
+          "hands",
+          "shoulders",
+          "head"
+        ]
+      }
+    },
+    "under": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      }
+    },
+    "hidesPieces": {
+      "type": "boolean"
+    },
+    "twoSided": {
+      "const": true
+    },
+    "drapes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "attachBone",
+          "bones",
+          "segmentLength",
+          "restDegrees",
+          "root",
+          "toward"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*(?:_[LR])?$"
+          },
+          "attachBone": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]+$"
+          },
+          "bones": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 6,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^drape_[a-z][a-z0-9_]*(?:_[LR])?_[1-6]$"
+            }
+          },
+          "segmentLength": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "restDegrees": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 45
+          },
+          "root": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number"
+            }
+          },
+          "toward": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number"
+            }
+          },
+          "supports": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 144,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["segment", "terms", "bodyTerms", "normal", "clearance"],
+              "properties": {
+                "segment": { "type": "integer", "minimum": 0, "maximum": 5 },
+                "terms": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 12,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["joint", "weight", "position"],
+                    "properties": {
+                      "joint": { "type": "string", "pattern": "^[A-Za-z0-9_]+$" },
+                      "weight": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+                      "position": {
+                        "type": "array",
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "items": { "type": "number" }
+                      }
+                    }
+                  }
+                },
+                "bodyTerms": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["joint", "weight", "position"],
+                    "properties": {
+                      "joint": { "type": "string", "pattern": "^[A-Za-z0-9_]+$" },
+                      "weight": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+                      "position": {
+                        "type": "array",
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "items": { "type": "number" }
+                      }
+                    }
+                  }
+                },
+                "normal": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": { "type": "number" }
+                },
+                "clearance": { "type": "number", "minimum": 0 }
+              }
+            }
+          },
+          "colliders": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 16,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["from", "to", "radius"],
+              "properties": {
+                "from": { "type": "string", "pattern": "^[A-Za-z0-9_]+$" },
+                "to": { "type": "string", "pattern": "^[A-Za-z0-9_]+$" },
+                "radius": { "type": "number", "exclusiveMinimum": 0 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "hides": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "uniqueItems": true,
+        "items": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "weights": {
+      "enum": [
+        "transfer",
+        "stiff",
+        "rigid"
+      ]
+    },
+    "alignment": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/alignment"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "L",
+            "R"
+          ],
+          "properties": {
+            "L": {
+              "$ref": "#/$defs/alignment"
+            },
+            "R": {
+              "$ref": "#/$defs/alignment"
+            }
+          }
+        }
+      ]
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "triangles",
+        "materials",
+        "meshes",
+        "maxInfluencesPerVertex"
+      ],
+      "properties": {
+        "triangles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "materials": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "meshes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxInfluencesPerVertex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
+    "reportFile": {
+      "type": "string"
+    },
+    "thumb": {
+      "enum": [
+        "+Z",
+        "-Z",
+        "inward",
+        "outward"
+      ]
+    }
+  },
+  "$defs": {
+    "alignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scale",
+        "yawDegrees",
+        "translation"
+      ],
+      "properties": {
+        "scale": {
+          "type": "number"
+        },
+        "yawDegrees": {
+          "enum": [
+            0,
+            180
+          ]
+        },
+        "translation": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        },
+        "layerSeat": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "axis",
+            "direction",
+            "bandAxis",
+            "band",
+            "selectedVertices",
+            "stepMetres",
+            "minimumMetres",
+            "maximumMetres",
+            "targetDepthMetres",
+            "clearanceMetres",
+            "translationMetres",
+            "before",
+            "after"
+          ],
+          "properties": {
+            "axis": {
+              "enum": [
+                "X",
+                "Y",
+                "Z"
+              ]
+            },
+            "direction": {
+              "enum": [
+                -1,
+                1
+              ]
+            },
+            "bandAxis": {
+              "enum": [
+                "X",
+                "Y",
+                "Z"
+              ]
+            },
+            "band": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "selectedVertices": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "stepMetres": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "minimumMetres": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "maximumMetres": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "targetDepthMetres": {
+              "type": "number",
+              "minimum": 0
+            },
+            "clearanceMetres": {
+              "type": "number",
+              "minimum": 0
+            },
+            "translationMetres": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "number"
+              }
+            },
+            "before": {
+              "$ref": "#/$defs/layerSeatMeasurement"
+            },
+            "after": {
+              "$ref": "#/$defs/layerSeatMeasurement"
+            }
+          }
+        },
+        "spanOverride": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "axis",
+            "from",
+            "to",
+            "metres",
+            "factor"
+          ],
+          "properties": {
+            "axis": {
+              "enum": [
+                "X",
+                "Y",
+                "Z"
+              ]
+            },
+            "from": {
+              "type": "string"
+            },
+            "to": {
+              "type": "string"
+            },
+            "metres": {
+              "type": "number",
+              "minimum": 0
+            },
+            "factor": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "limb": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "bone",
+            "band",
+            "fade",
+            "correctionDegrees",
+            "seatMetres",
+            "pieceAxis",
+            "boneDirection",
+            "bandVertices"
+          ],
+          "properties": {
+            "bone": {
+              "type": "string"
+            },
+            "band": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "number"
+              }
+            },
+            "fade": {
+              "type": "number",
+              "minimum": 0
+            },
+            "correctionDegrees": {
+              "type": "number",
+              "minimum": 0
+            },
+            "seatMetres": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "number"
+              }
+            },
+            "pieceAxis": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "number"
+              }
+            },
+            "boneDirection": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "number"
+              }
+            },
+            "bandVertices": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "roll": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "bone",
+            "axis",
+            "scoredRegionVertices",
+            "stepDegrees",
+            "chosenDegrees",
+            "candidates",
+            "best",
+            "secondBest",
+            "atZero"
+          ],
+          "properties": {
+            "bone": {
+              "type": "string"
+            },
+            "axis": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "number"
+              }
+            },
+            "scoredRegionVertices": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "stepDegrees": {
+              "type": "number"
+            },
+            "chosenDegrees": {
+              "type": "number"
+            },
+            "candidates": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "best": {
+              "$ref": "#/$defs/rollCandidate"
+            },
+            "secondBest": {
+              "$ref": "#/$defs/rollCandidate"
+            },
+            "atZero": {
+              "$ref": "#/$defs/rollCandidate"
+            },
+            "prior": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "degrees",
+                "windowDegrees",
+                "refinedDegrees",
+                "pieceThumb",
+                "bodyThumb",
+                "candidates"
+              ],
+              "properties": {
+                "degrees": {
+                  "type": "number"
+                },
+                "windowDegrees": {
+                  "type": "number"
+                },
+                "refinedDegrees": {
+                  "type": "number"
+                },
+                "pieceThumb": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "bodyThumb": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "candidates": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          }
+        },
+        "tube": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "slices",
+            "sliceMetres",
+            "smooth",
+            "radialFactorMin",
+            "radialFactorMax",
+            "radialFactorMean",
+            "centreShiftMaxMetres",
+            "radial",
+            "radialClampedLanes",
+            "sliceStations",
+            "sliceRatios",
+            "knotStations",
+            "knotFactors"
+          ],
+          "properties": {
+            "stations": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "piece",
+                "body",
+                "stretch"
+              ],
+              "properties": {
+                "piece": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "body": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "stretch": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            },
+            "slices": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "sliceMetres": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "smooth": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "radialFactorMin": {
+              "type": "number"
+            },
+            "radialFactorMax": {
+              "type": "number"
+            },
+            "radialFactorMean": {
+              "type": "number"
+            },
+            "radial": {
+              "enum": [
+                "enclose",
+                "match"
+              ]
+            },
+            "radialClampedLanes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "centreShiftMaxMetres": {
+              "type": "number",
+              "minimum": 0
+            },
+            "sliceStations": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "knotStations": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "knotFactors": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              }
+            },
+            "sliceRatios": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "rollCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "degrees",
+        "meanDistanceMetres",
+        "outsideFraction",
+        "score"
+      ],
+      "properties": {
+        "degrees": {
+          "type": "number"
+        },
+        "meanDistanceMetres": {
+          "type": "number",
+          "minimum": 0
+        },
+        "outsideFraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0
+        },
+        "fromPriorDegrees": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "encloseStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scale",
+        "insideFraction"
+      ],
+      "properties": {
+        "scale": {
+          "type": "number",
+          "minimum": 1
+        },
+        "insideFraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "layerSeatMeasurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "insideVertices",
+        "maxPenetrationMetres",
+        "minimumClearanceMetres"
+      ],
+      "properties": {
+        "insideVertices": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxPenetrationMetres": {
+          "type": "number",
+          "minimum": 0
+        },
+        "minimumClearanceMetres": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

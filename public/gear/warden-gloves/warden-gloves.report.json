@@ -1,0 +1,768 @@
+{
+  "schema": "ashveil.gear-report.v1",
+  "family": "humanoid.v1",
+  "contractVersion": "1.2.0",
+  "body": "masculine-v3",
+  "slot": "hands",
+  "piece": "warden-gloves",
+  "covers": [
+    "hands"
+  ],
+  "under": [],
+  "referenceRegions": [
+    "hands"
+  ],
+  "coverage": {
+    "reachMetres": 0.06,
+    "triangles": 3997,
+    "hangingTriangles": 0,
+    "hiddenVertices": {
+      "Body": 4070,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    },
+    "measuredVertices": {
+      "Body": 1119,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    },
+    "replacedVertices": {
+      "Body": 4033,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    }
+  },
+  "replaces": [
+    {
+      "bone": "hand_L"
+    },
+    {
+      "bone": "hand_R"
+    },
+    {
+      "bone": "forearm_L",
+      "along": [
+        0.7,
+        1
+      ]
+    },
+    {
+      "bone": "forearm_R",
+      "along": [
+        0.7,
+        1
+      ]
+    }
+  ],
+  "source": {
+    "file": "warden-gloves-tripo.glb",
+    "sha256": "f8e9bb938f47d43b0b5877d4825638e07233a89f02b726bea502e743240e85c3"
+  },
+  "islands": {
+    "found": 4,
+    "kept": 4,
+    "grouped": {
+      "L": 2,
+      "R": 2
+    },
+    "droppedTriangleCounts": [],
+    "triangles": 10141
+  },
+  "alignment": {
+    "L": {
+      "scale": 0.348394,
+      "yawDegrees": 0,
+      "translation": [
+        0.304302,
+        0.751213,
+        0.019499
+      ],
+      "insideVerticesBeforeShrinkwrap": 281,
+      "insideFractionBeforeShrinkwrap": 0.107088,
+      "deepInsideVerticesBeforeShrinkwrap": 146,
+      "deepInsideFractionBeforeShrinkwrap": 0.05564,
+      "meanSurfaceDistanceMetres": 0.026422,
+      "insideVerticesByYaw": {
+        "0": 166,
+        "180": 384
+      },
+      "meanSurfaceDistanceByYaw": {
+        "0": 0.046287,
+        "180": 0.020127
+      },
+      "anchorResidualMetres": {
+        "X": 0.003012597,
+        "Y": 0.008357026,
+        "Z": 0.019669328
+      },
+      "roll": {
+        "bone": "forearm_L",
+        "axis": [
+          0.252294,
+          -0.966756,
+          0.041589
+        ],
+        "scoredRegionVertices": 1979,
+        "stepDegrees": 10,
+        "chosenDegrees": 280,
+        "candidates": 36,
+        "best": {
+          "degrees": 280,
+          "meanDistanceMetres": 0.020647,
+          "outsideFraction": 0.715008,
+          "score": 0.056397,
+          "fromPriorDegrees": 9.378
+        },
+        "secondBest": {
+          "degrees": 290,
+          "meanDistanceMetres": 0.021153,
+          "outsideFraction": 0.725619,
+          "score": 0.057434,
+          "fromPriorDegrees": 19.378
+        },
+        "atZero": {
+          "degrees": 0,
+          "meanDistanceMetres": 0.028249,
+          "outsideFraction": 0.899444,
+          "score": 0.073221,
+          "fromPriorDegrees": 89.378
+        },
+        "prior": {
+          "degrees": 270.622,
+          "windowDegrees": 20,
+          "refinedDegrees": 9.378,
+          "pieceThumb": [
+            -0.967651,
+            -0.252061,
+            0.010843
+          ],
+          "bodyThumb": [
+            -0.010502,
+            0.040241,
+            0.999135
+          ],
+          "candidates": 4
+        }
+      },
+      "tube": {
+        "stations": {
+          "piece": [
+            -0.10213,
+            0.065537,
+            0.175388
+          ],
+          "body": [
+            -0.105382,
+            0,
+            0.184982
+          ],
+          "stretch": [
+            0.628519,
+            1.683941
+          ]
+        },
+        "slices": 15,
+        "sliceMetres": 0.02,
+        "smooth": 3,
+        "radialFactorMin": 0.85,
+        "radialFactorMax": 1.35,
+        "radialFactorMean": 1.1,
+        "radial": "match",
+        "radialClampedLanes": 4,
+        "centre": "cuff",
+        "centreShiftMaxMetres": 0.075151,
+        "centreStations": [
+          -0.105382,
+          0,
+          0.184982
+        ],
+        "centreKnotShifts": [
+          [
+            0.002521,
+            -0.012957
+          ],
+          [
+            0.002521,
+            -0.012957
+          ],
+          [
+            0.002521,
+            -0.012957
+          ]
+        ],
+        "knotStations": [
+          -0.105382,
+          0.092491
+        ],
+        "knotFactors": [
+          [
+            0.85,
+            0.85
+          ],
+          [
+            1.35,
+            1.35
+          ]
+        ],
+        "sliceStations": [
+          -0.095703,
+          -0.076346,
+          -0.056988,
+          -0.03763,
+          -0.018273,
+          0.001085,
+          0.020443,
+          0.0398,
+          0.059158,
+          0.078515,
+          0.097873,
+          0.117231,
+          0.136588,
+          0.155946,
+          0.175303
+        ],
+        "sliceRatios": [
+          [
+            0.620375,
+            0.80011
+          ],
+          [
+            0.698307,
+            0.61169
+          ],
+          [
+            0.88452,
+            0.914715
+          ],
+          [
+            0.927599,
+            0.657175
+          ],
+          [
+            1.20529,
+            1.427935
+          ],
+          [
+            1.578922,
+            2.06353
+          ],
+          [
+            1.677603,
+            1.941284
+          ],
+          [
+            0.956331,
+            0.791039
+          ],
+          [
+            4.054789,
+            6.528578
+          ],
+          [
+            1.453766,
+            1.948806
+          ],
+          [
+            1.54499,
+            1.634826
+          ],
+          [
+            1.532167,
+            1.188262
+          ],
+          [
+            1.548007,
+            1.0553
+          ],
+          [
+            1.398177,
+            1.025117
+          ],
+          [
+            1.473722,
+            1.256851
+          ]
+        ]
+      },
+      "proxy": false,
+      "reference": [
+        "hands"
+      ]
+    },
+    "R": {
+      "scale": 0.348393,
+      "yawDegrees": 0,
+      "translation": [
+        -0.304305,
+        0.751213,
+        0.019547
+      ],
+      "insideVerticesBeforeShrinkwrap": 317,
+      "insideFractionBeforeShrinkwrap": 0.120854,
+      "deepInsideVerticesBeforeShrinkwrap": 152,
+      "deepInsideFractionBeforeShrinkwrap": 0.057949,
+      "meanSurfaceDistanceMetres": 0.021938,
+      "insideVerticesByYaw": {
+        "0": 166,
+        "180": 384
+      },
+      "meanSurfaceDistanceByYaw": {
+        "0": 0.046279,
+        "180": 0.020125
+      },
+      "anchorResidualMetres": {
+        "X": 0.002876069,
+        "Y": 0.008002175,
+        "Z": 0.006121773
+      },
+      "roll": {
+        "bone": "forearm_R",
+        "axis": [
+          -0.252294,
+          -0.966756,
+          0.041589
+        ],
+        "scoredRegionVertices": 1947,
+        "stepDegrees": 10,
+        "chosenDegrees": 80,
+        "candidates": 36,
+        "best": {
+          "degrees": 80,
+          "meanDistanceMetres": 0.020473,
+          "outsideFraction": 0.716487,
+          "score": 0.056297,
+          "fromPriorDegrees": 9.378
+        },
+        "secondBest": {
+          "degrees": 70,
+          "meanDistanceMetres": 0.020957,
+          "outsideFraction": 0.719055,
+          "score": 0.05691,
+          "fromPriorDegrees": 19.378
+        },
+        "atZero": {
+          "degrees": 0,
+          "meanDistanceMetres": 0.028306,
+          "outsideFraction": 0.90036,
+          "score": 0.073324,
+          "fromPriorDegrees": 89.378
+        },
+        "prior": {
+          "degrees": 89.378,
+          "windowDegrees": 20,
+          "refinedDegrees": -9.378,
+          "pieceThumb": [
+            0.967651,
+            -0.252061,
+            0.010843
+          ],
+          "bodyThumb": [
+            0.010502,
+            0.040241,
+            0.999135
+          ],
+          "candidates": 4
+        }
+      },
+      "tube": {
+        "stations": {
+          "piece": [
+            -0.102127,
+            0.06554,
+            0.175391
+          ],
+          "body": [
+            -0.105379,
+            0,
+            0.184985
+          ],
+          "stretch": [
+            0.628503,
+            1.683965
+          ]
+        },
+        "slices": 15,
+        "sliceMetres": 0.02,
+        "smooth": 3,
+        "radialFactorMin": 0.85,
+        "radialFactorMax": 1.35,
+        "radialFactorMean": 1.067467,
+        "radial": "match",
+        "radialClampedLanes": 2,
+        "centre": "cuff",
+        "centreShiftMaxMetres": 0.079064,
+        "centreStations": [
+          -0.105379,
+          0,
+          0.184985
+        ],
+        "centreKnotShifts": [
+          [
+            -0.002518,
+            -0.00264
+          ],
+          [
+            -0.002518,
+            -0.00264
+          ],
+          [
+            -0.002518,
+            -0.00264
+          ]
+        ],
+        "knotStations": [
+          -0.105379,
+          0.092492
+        ],
+        "knotFactors": [
+          [
+            0.85,
+            0.881515
+          ],
+          [
+            1.35,
+            1.188352
+          ]
+        ],
+        "sliceStations": [
+          -0.0957,
+          -0.076343,
+          -0.056985,
+          -0.037628,
+          -0.01827,
+          0.001088,
+          0.020445,
+          0.039803,
+          0.05916,
+          0.078518,
+          0.097876,
+          0.117233,
+          0.136591,
+          0.155948,
+          0.175306
+        ],
+        "sliceRatios": [
+          [
+            0.620371,
+            0.80009
+          ],
+          [
+            0.698278,
+            0.881515
+          ],
+          [
+            0.884485,
+            0.914726
+          ],
+          [
+            0.927601,
+            0.657143
+          ],
+          [
+            1.205237,
+            1.427916
+          ],
+          [
+            1.511664,
+            2.063603
+          ],
+          [
+            1.677467,
+            1.94135
+          ],
+          [
+            1.31783,
+            1.021314
+          ],
+          [
+            4.365113,
+            6.934225
+          ],
+          [
+            1.453659,
+            1.948867
+          ],
+          [
+            1.544871,
+            1.175294
+          ],
+          [
+            1.532076,
+            1.188352
+          ],
+          [
+            1.547913,
+            1.0554
+          ],
+          [
+            1.398087,
+            1.025189
+          ],
+          [
+            1.473628,
+            1.103047
+          ]
+        ]
+      },
+      "proxy": false,
+      "reference": [
+        "hands"
+      ]
+    }
+  },
+  "facing": {
+    "pieceCentroidZ": 0.051366,
+    "regionCentroidZ": 0.012303,
+    "aheadOfRegionMetres": 0.039063
+  },
+  "regionEnclosed": {
+    "L": {
+      "regionVertices": 2053,
+      "withinPieceBox": 2034,
+      "insideVertices": 379,
+      "insideFraction": 0.186332
+    },
+    "R": {
+      "regionVertices": 2026,
+      "withinPieceBox": 2006,
+      "insideVertices": 352,
+      "insideFraction": 0.175474
+    }
+  },
+  "decimation": {
+    "trianglesBefore": 10141,
+    "trianglesAfter": 3997,
+    "ratio": 0.394438
+  },
+  "shrinkwrap": {
+    "mode": "unreplaced",
+    "pieceVertices": 2101,
+    "outsidePasses": [
+      {
+        "movedVertices": 376,
+        "movedFraction": 0.178962,
+        "carriedVertices": 0,
+        "insideAfter": 0
+      }
+    ],
+    "wholeMovedVertices": 376,
+    "hugSelectedVertices": 616,
+    "hugMovedVertices": 592,
+    "shellRadius": 0,
+    "wholeMovedFraction": 0.178962,
+    "hugMovedFraction": 0.281771
+  },
+  "weights": {
+    "mode": "stiff",
+    "strippedGroups": {
+      "warden-gloves_L": [
+        "chest",
+        "clavicle_L",
+        "clavicle_R",
+        "foot_L",
+        "foot_R",
+        "forearm_R",
+        "hand_R",
+        "head",
+        "neck",
+        "pelvis",
+        "root",
+        "shin_L",
+        "shin_R",
+        "shoulder_helper_L",
+        "shoulder_helper_R",
+        "spine",
+        "thigh_L",
+        "thigh_R",
+        "twist_upper_arm_L",
+        "twist_upper_arm_R",
+        "upper_arm_L",
+        "upper_arm_R"
+      ],
+      "warden-gloves_R": [
+        "chest",
+        "clavicle_L",
+        "clavicle_R",
+        "foot_L",
+        "foot_R",
+        "forearm_L",
+        "hand_L",
+        "head",
+        "neck",
+        "pelvis",
+        "root",
+        "shin_L",
+        "shin_R",
+        "shoulder_helper_L",
+        "shoulder_helper_R",
+        "spine",
+        "thigh_L",
+        "thigh_R",
+        "twist_upper_arm_L",
+        "twist_upper_arm_R",
+        "upper_arm_L",
+        "upper_arm_R"
+      ]
+    },
+    "orphanedVertices": {},
+    "band": {
+      "warden-gloves_L": {
+        "vertices": 1050,
+        "bandVertices": 26,
+        "bandFraction": 0.024762,
+        "ceiling": 0.8,
+        "minPeakWeight": 0.516119,
+        "meanPeakWeight": 0.988357,
+        "bandHeightMetres": 0.037831,
+        "bandMinY": 0.935074,
+        "bandMaxY": 0.972905
+      },
+      "warden-gloves_R": {
+        "vertices": 1051,
+        "bandVertices": 19,
+        "bandFraction": 0.018078,
+        "ceiling": 0.8,
+        "minPeakWeight": 0.505299,
+        "meanPeakWeight": 0.988587,
+        "bandHeightMetres": 0.03497,
+        "bandMinY": 0.933409,
+        "bandMaxY": 0.968379
+      }
+    },
+    "stiffness": 3
+  },
+  "drapes": [],
+  "twoSided": null,
+  "rest": {
+    "maxRestRotationBefore": 0,
+    "maxRestRotationAfter": 0,
+    "joints": 24
+  },
+  "runtime": {
+    "bones": [
+      "root",
+      "pelvis",
+      "spine",
+      "chest",
+      "clavicle_L",
+      "shoulder_helper_L",
+      "upper_arm_L",
+      "forearm_L",
+      "hand_L",
+      "twist_upper_arm_L",
+      "clavicle_R",
+      "shoulder_helper_R",
+      "upper_arm_R",
+      "forearm_R",
+      "hand_R",
+      "twist_upper_arm_R",
+      "neck",
+      "head",
+      "thigh_L",
+      "shin_L",
+      "foot_L",
+      "thigh_R",
+      "shin_R",
+      "foot_R"
+    ],
+    "bodyBones": [
+      "root",
+      "pelvis",
+      "spine",
+      "chest",
+      "clavicle_L",
+      "shoulder_helper_L",
+      "upper_arm_L",
+      "forearm_L",
+      "hand_L",
+      "twist_upper_arm_L",
+      "clavicle_R",
+      "shoulder_helper_R",
+      "upper_arm_R",
+      "forearm_R",
+      "hand_R",
+      "twist_upper_arm_R",
+      "neck",
+      "head",
+      "thigh_L",
+      "shin_L",
+      "foot_L",
+      "thigh_R",
+      "shin_R",
+      "foot_R"
+    ],
+    "extraBones": [],
+    "extraBoneParents": {},
+    "inverseBindMaxAbsDifference": 1.79e-7,
+    "triangles": 3997,
+    "materials": 1,
+    "meshes": 1,
+    "sides": {
+      "L": 2,
+      "R": 2,
+      "islands": 4
+    },
+    "maxInfluencesPerVertex": 2,
+    "minWeightSum": 0.99999997,
+    "maxWeightSum": 1.00000003,
+    "influencingBones": [
+      "forearm_L",
+      "forearm_R",
+      "hand_L",
+      "hand_R"
+    ],
+    "hasUvs": true,
+    "textures": 1,
+    "maxRestRotation": 0,
+    "sourceHad": {
+      "uvs": true,
+      "textures": true
+    },
+    "bindClearance": {
+      "insideVertices": 0,
+      "disagreeingVertices": 0,
+      "maxPenetrationMetres": 0,
+      "deepestPoint": null
+    }
+  },
+  "gates": {
+    "piece_joints_match_the_body": true,
+    "inverse_binds_match_the_body": true,
+    "at_most_four_influences_per_vertex": true,
+    "weights_sum_to_one": true,
+    "every_influence_is_an_allowed_bone": true,
+    "triangles_within_budget": true,
+    "materials_within_budget": true,
+    "uvs_survived_the_pipeline": true,
+    "textures_survived_the_pipeline": true,
+    "bones_rest_axis_aligned": true,
+    "piece_sits_off_the_skin_at_bind": true,
+    "pair_has_both_sides": true,
+    "clears_the_body_through_motion_cycles": true,
+    "clears_the_body_through_stress_poses": true
+  },
+  "gatesPass": true,
+  "outputs": {
+    "glb": "warden-gloves.glb",
+    "manifest": "warden-gloves.manifest.json",
+    "report": "warden-gloves.report.json",
+    "review": "warden-gloves.review.png",
+    "sha256": "204fee206edc5e2966f32f6eff11f99312dd72aac8e5ab2f9ea344637f3c4da3"
+  },
+  "review": {
+    "bodyVerticesInsideThePiece": {
+      "bind": 29,
+      "abduct90": 38,
+      "flex60": 31
+    }
+  }
+}

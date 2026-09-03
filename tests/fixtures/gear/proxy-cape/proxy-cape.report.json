@@ -1,0 +1,360 @@
+{
+  "schema": "ashveil.gear-report.v1",
+  "family": "humanoid.v1",
+  "contractVersion": "1.3.0",
+  "body": "masculine-v3",
+  "slot": "back",
+  "piece": "proxy-cape",
+  "covers": [
+    "back"
+  ],
+  "under": [],
+  "referenceRegions": [
+    "chest"
+  ],
+  "coverage": {
+    "reachMetres": 0.06,
+    "triangles": 2816,
+    "hangingTriangles": 2508,
+    "hiddenVertices": {
+      "Body": 0,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    },
+    "measuredVertices": {
+      "Body": 0,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    },
+    "replacedVertices": {
+      "Body": 0,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    }
+  },
+  "replaces": [],
+  "source": {
+    "file": "proxy:cape",
+    "sha256": "9b72b23dc2a60c1784f4892da3da72635a530f0257ce459e77219068b74c0063"
+  },
+  "islands": {
+    "found": 1,
+    "kept": 1,
+    "grouped": {
+      "all": 1
+    },
+    "droppedTriangleCounts": [],
+    "triangles": 2816
+  },
+  "alignment": {
+    "all": {
+      "scale": 1.848521,
+      "yawDegrees": 0,
+      "translation": [
+        0.000381,
+        -1.364956,
+        0.476373
+      ],
+      "insideVerticesBeforeShrinkwrap": 0,
+      "insideFractionBeforeShrinkwrap": 0,
+      "deepInsideVerticesBeforeShrinkwrap": 0,
+      "deepInsideFractionBeforeShrinkwrap": 0,
+      "meanSurfaceDistanceMetres": 0.076822,
+      "insideVerticesByYaw": {
+        "0": 0,
+        "180": 0
+      },
+      "meanSurfaceDistanceByYaw": {
+        "0": 0.076822,
+        "180": 0.089033
+      },
+      "anchorResidualMetres": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "proxy": false,
+      "reference": [
+        "chest"
+      ]
+    }
+  },
+  "facing": {
+    "pieceCentroidZ": 0.129824,
+    "regionCentroidZ": -0.02181,
+    "aheadOfRegionMetres": 0.151634
+  },
+  "regionEnclosed": {
+    "all": {
+      "regionVertices": 1523,
+      "withinPieceBox": 1523,
+      "insideVertices": 0,
+      "insideFraction": 0
+    }
+  },
+  "decimation": {
+    "trianglesBefore": 2816,
+    "trianglesAfter": 2816,
+    "ratio": 1
+  },
+  "shrinkwrap": {
+    "mode": "all",
+    "pieceVertices": 1495,
+    "outsidePasses": [
+      {
+        "movedVertices": 81,
+        "movedFraction": 0.054181,
+        "carriedVertices": 0,
+        "insideAfter": 0
+      },
+      {
+        "movedVertices": 9,
+        "movedFraction": 0.00602,
+        "carriedVertices": 0,
+        "insideAfter": 0
+      },
+      {
+        "movedVertices": 0,
+        "movedFraction": 0,
+        "carriedVertices": 0,
+        "insideAfter": 0
+      }
+    ],
+    "wholeMovedVertices": 90,
+    "hugSelectedVertices": 0,
+    "hugMovedVertices": 0,
+    "shellRadius": 0.01,
+    "wholeMovedFraction": 0.060201,
+    "hugMovedFraction": 0
+  },
+  "weights": {
+    "mode": "transfer",
+    "strippedGroups": {
+      "proxy-cape": [
+        "foot_L",
+        "foot_R",
+        "forearm_L",
+        "forearm_R",
+        "hand_L",
+        "hand_R",
+        "head",
+        "root"
+      ]
+    },
+    "orphanedVertices": {},
+    "band": {
+      "proxy-cape": {
+        "vertices": 1495,
+        "bandVertices": 561,
+        "bandFraction": 0.375251,
+        "ceiling": 0.8,
+        "minPeakWeight": 0.331463,
+        "meanPeakWeight": 0.823024,
+        "bandHeightMetres": 1.090627,
+        "bandMinY": 0.409077,
+        "bandMaxY": 1.499704
+      }
+    }
+  },
+  "drapes": [
+    {
+      "name": "cape",
+      "attachBone": "chest",
+      "bones": [
+        "drape_cape_1",
+        "drape_cape_2",
+        "drape_cape_3"
+      ],
+      "segmentLength": 0.345057,
+      "restDegrees": 0,
+      "root": [
+        -0.000449,
+        1.425763,
+        0.129674
+      ],
+      "toward": [
+        0.003508,
+        0,
+        -0.999994
+      ],
+      "island": "proxy-cape",
+      "from": 0,
+      "to": 0.95,
+      "segments": 3,
+      "islandHeightMetres": 1.109113,
+      "restTiltMetresAtTheHem": 0,
+      "toLineY": 1.444249,
+      "chainLengthMetres": 1.035172,
+      "axis": [
+        0,
+        -1,
+        0
+      ],
+      "towardMetres": 0.126996,
+      "bandCentre": [
+        -0.000446,
+        0.90818,
+        0.129923
+      ],
+      "nearestSkinMetres": 0.039361,
+      "nearestSkin": [
+        -0.202728,
+        0,
+        -0.979235
+      ],
+      "bandVertices": 1311,
+      "fadeVertices": 23
+    }
+  ],
+  "twoSided": null,
+  "rest": {
+    "maxRestRotationBefore": 2,
+    "maxRestRotationAfter": 0,
+    "joints": 27
+  },
+  "runtime": {
+    "bones": [
+      "root",
+      "pelvis",
+      "spine",
+      "chest",
+      "clavicle_L",
+      "shoulder_helper_L",
+      "upper_arm_L",
+      "forearm_L",
+      "hand_L",
+      "twist_upper_arm_L",
+      "clavicle_R",
+      "shoulder_helper_R",
+      "upper_arm_R",
+      "forearm_R",
+      "hand_R",
+      "twist_upper_arm_R",
+      "neck",
+      "head",
+      "thigh_L",
+      "shin_L",
+      "foot_L",
+      "thigh_R",
+      "shin_R",
+      "foot_R",
+      "drape_cape_1",
+      "drape_cape_2",
+      "drape_cape_3"
+    ],
+    "bodyBones": [
+      "root",
+      "pelvis",
+      "spine",
+      "chest",
+      "clavicle_L",
+      "shoulder_helper_L",
+      "upper_arm_L",
+      "forearm_L",
+      "hand_L",
+      "twist_upper_arm_L",
+      "clavicle_R",
+      "shoulder_helper_R",
+      "upper_arm_R",
+      "forearm_R",
+      "hand_R",
+      "twist_upper_arm_R",
+      "neck",
+      "head",
+      "thigh_L",
+      "shin_L",
+      "foot_L",
+      "thigh_R",
+      "shin_R",
+      "foot_R"
+    ],
+    "extraBones": [
+      "drape_cape_1",
+      "drape_cape_2",
+      "drape_cape_3"
+    ],
+    "extraBoneParents": {
+      "drape_cape_1": "chest",
+      "drape_cape_2": "drape_cape_1",
+      "drape_cape_3": "drape_cape_2"
+    },
+    "inverseBindMaxAbsDifference": 1.79e-7,
+    "triangles": 2816,
+    "materials": 0,
+    "meshes": 1,
+    "sides": {
+      "L": 0,
+      "R": 1,
+      "islands": 1
+    },
+    "maxInfluencesPerVertex": 4,
+    "minWeightSum": 0.999999911,
+    "maxWeightSum": 1.000000103,
+    "influencingBones": [
+      "chest",
+      "clavicle_L",
+      "clavicle_R",
+      "drape_cape_1",
+      "drape_cape_2",
+      "drape_cape_3",
+      "neck",
+      "shoulder_helper_L",
+      "shoulder_helper_R",
+      "upper_arm_L",
+      "upper_arm_R"
+    ],
+    "hasUvs": false,
+    "textures": 0,
+    "maxRestRotation": 0,
+    "sourceHad": {
+      "uvs": false,
+      "textures": false
+    },
+    "bindClearance": {
+      "insideVertices": 0,
+      "disagreeingVertices": 0,
+      "maxPenetrationMetres": 0,
+      "deepestPoint": null
+    }
+  },
+  "gates": {
+    "piece_joints_match_the_body": true,
+    "inverse_binds_match_the_body": true,
+    "at_most_four_influences_per_vertex": true,
+    "weights_sum_to_one": true,
+    "every_influence_is_an_allowed_bone": true,
+    "triangles_within_budget": true,
+    "materials_within_budget": true,
+    "uvs_survived_the_pipeline": true,
+    "textures_survived_the_pipeline": true,
+    "bones_rest_axis_aligned": true,
+    "piece_sits_off_the_skin_at_bind": true,
+    "piece_is_one_mesh": true,
+    "clears_the_body_through_motion_cycles": true,
+    "clears_the_body_through_stress_poses": true
+  },
+  "gatesPass": true,
+  "outputs": {
+    "glb": "proxy-cape.glb",
+    "manifest": "proxy-cape.manifest.json",
+    "report": "proxy-cape.report.json",
+    "review": "proxy-cape.review.png",
+    "sha256": "fcbaefe6d419a52f825fb5a940833cfa78f61665de3aff54690a07e01e5bc3dc"
+  },
+  "review": {
+    "bodyVerticesInsideThePiece": {
+      "bind": 0,
+      "abduct90": 0,
+      "flex60": 14
+    }
+  }
+}

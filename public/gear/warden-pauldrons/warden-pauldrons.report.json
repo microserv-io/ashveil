@@ -1,0 +1,623 @@
+{
+  "schema": "ashveil.gear-report.v1",
+  "family": "humanoid.v1",
+  "contractVersion": "1.3.0",
+  "body": "masculine-v3",
+  "slot": "shoulders",
+  "piece": "warden-pauldrons",
+  "covers": [
+    "shoulders"
+  ],
+  "under": [
+    "warden-tunic"
+  ],
+  "referenceRegions": [
+    "shoulders"
+  ],
+  "coverage": {
+    "reachMetres": 0.06,
+    "triangles": 3999,
+    "hangingTriangles": 1793,
+    "hiddenVertices": {
+      "Body": 80,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    },
+    "measuredVertices": {
+      "Body": 80,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    },
+    "replacedVertices": {
+      "Body": 0,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    }
+  },
+  "replaces": [],
+  "source": {
+    "file": "warden-pauldrons-tripo.glb",
+    "sha256": "bb23ed0fde6651f6b4f68182eb32f64d351484f73fffda17e11fb42e1cb71a64"
+  },
+  "islands": {
+    "found": 24,
+    "kept": 7,
+    "grouped": {
+      "L": 3,
+      "R": 4
+    },
+    "droppedTriangleCounts": [
+      37,
+      37,
+      58,
+      58,
+      58,
+      58,
+      58,
+      58,
+      58,
+      58,
+      58,
+      58,
+      58,
+      58,
+      111,
+      111,
+      160
+    ],
+    "triangles": 8463
+  },
+  "alignment": {
+    "L": {
+      "scale": 0.328856,
+      "yawDegrees": 0,
+      "translation": [
+        0.122212,
+        1.33642,
+        -0.060813
+      ],
+      "insideVerticesBeforeShrinkwrap": 1396,
+      "insideFractionBeforeShrinkwrap": 0.613087,
+      "deepInsideVerticesBeforeShrinkwrap": 851,
+      "deepInsideFractionBeforeShrinkwrap": 0.373737,
+      "meanSurfaceDistanceMetres": 0.014603,
+      "insideVerticesByYaw": {
+        "0": 1396,
+        "180": 1927
+      },
+      "meanSurfaceDistanceByYaw": {
+        "0": 0.014603,
+        "180": 0.020977
+      },
+      "anchorResidualMetres": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "proxy": false,
+      "reference": [
+        "shoulders"
+      ],
+      "layerSeat": {
+        "axis": "X",
+        "direction": 1,
+        "bandAxis": "Y",
+        "band": [
+          0.5,
+          1
+        ],
+        "selectedVertices": 659,
+        "stepMetres": 0.001,
+        "minimumMetres": 0.018,
+        "maximumMetres": 0.04,
+        "targetDepthMetres": 0.003,
+        "clearanceMetres": 0.016,
+        "translationMetres": [
+          0.018,
+          0,
+          0
+        ],
+        "before": {
+          "insideVertices": 0,
+          "maxPenetrationMetres": 0,
+          "minimumClearanceMetres": 0.01599998
+        },
+        "after": {
+          "insideVertices": 0,
+          "maxPenetrationMetres": 0,
+          "minimumClearanceMetres": 0.0214005
+        }
+      }
+    },
+    "R": {
+      "scale": 0.298407,
+      "yawDegrees": 0,
+      "translation": [
+        -0.131601,
+        1.337752,
+        -0.060791
+      ],
+      "insideVerticesBeforeShrinkwrap": 1876,
+      "insideFractionBeforeShrinkwrap": 0.791561,
+      "deepInsideVerticesBeforeShrinkwrap": 1065,
+      "deepInsideFractionBeforeShrinkwrap": 0.449367,
+      "meanSurfaceDistanceMetres": 0.014245,
+      "insideVerticesByYaw": {
+        "0": 1876,
+        "180": 2103
+      },
+      "meanSurfaceDistanceByYaw": {
+        "0": 0.014245,
+        "180": 0.0215
+      },
+      "anchorResidualMetres": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "proxy": false,
+      "reference": [
+        "shoulders"
+      ],
+      "layerSeat": {
+        "axis": "X",
+        "direction": -1,
+        "bandAxis": "Y",
+        "band": [
+          0.5,
+          1
+        ],
+        "selectedVertices": 509,
+        "stepMetres": 0.001,
+        "minimumMetres": 0.018,
+        "maximumMetres": 0.04,
+        "targetDepthMetres": 0.003,
+        "clearanceMetres": 0.016,
+        "translationMetres": [
+          -0.018,
+          0,
+          0
+        ],
+        "before": {
+          "insideVertices": 0,
+          "maxPenetrationMetres": 0,
+          "minimumClearanceMetres": 0.015999986
+        },
+        "after": {
+          "insideVertices": 0,
+          "maxPenetrationMetres": 0,
+          "minimumClearanceMetres": 0.02427603
+        }
+      }
+    }
+  },
+  "facing": {
+    "pieceCentroidZ": -0.059695,
+    "regionCentroidZ": -0.061531,
+    "aheadOfRegionMetres": 0.001836
+  },
+  "regionEnclosed": {
+    "L": {
+      "regionVertices": 134,
+      "withinPieceBox": 134,
+      "insideVertices": 39,
+      "insideFraction": 0.291045
+    },
+    "R": {
+      "regionVertices": 129,
+      "withinPieceBox": 129,
+      "insideVertices": 13,
+      "insideFraction": 0.100775
+    }
+  },
+  "decimation": {
+    "trianglesBefore": 8463,
+    "trianglesAfter": 3999,
+    "ratio": 0.472646
+  },
+  "shrinkwrap": {
+    "mode": "all",
+    "pieceVertices": 2333,
+    "outsidePasses": [
+      {
+        "movedVertices": 4533,
+        "movedFraction": 1.942992,
+        "carriedVertices": 4053,
+        "insideAfter": 131
+      },
+      {
+        "movedVertices": 737,
+        "movedFraction": 0.315902,
+        "carriedVertices": 894,
+        "insideAfter": 48
+      },
+      {
+        "movedVertices": 390,
+        "movedFraction": 0.167167,
+        "carriedVertices": 488,
+        "insideAfter": 26
+      },
+      {
+        "movedVertices": 254,
+        "movedFraction": 0.108873,
+        "carriedVertices": 244,
+        "insideAfter": 26
+      },
+      {
+        "movedVertices": 245,
+        "movedFraction": 0.105015,
+        "carriedVertices": 259,
+        "insideAfter": 23
+      },
+      {
+        "movedVertices": 144,
+        "movedFraction": 0.061723,
+        "carriedVertices": 130,
+        "insideAfter": 30
+      },
+      {
+        "movedVertices": 170,
+        "movedFraction": 0.072868,
+        "carriedVertices": 174,
+        "insideAfter": 8
+      },
+      {
+        "movedVertices": 187,
+        "movedFraction": 0.080154,
+        "carriedVertices": 194,
+        "insideAfter": 7
+      }
+    ],
+    "wholeMovedVertices": 6660,
+    "hugSelectedVertices": 0,
+    "hugMovedVertices": 0,
+    "shellRadius": 0.01,
+    "wholeMovedFraction": 2.854694,
+    "hugMovedFraction": 0,
+    "layerSeatPasses": [
+      {
+        "movedVertices": 164,
+        "insideVertices": 1,
+        "disagreeingVertices": 0,
+        "maxPenetrationMetres": 0.014874198,
+        "deepestPoint": [
+          0.173955,
+          1.288336,
+          0.020503
+        ]
+      },
+      {
+        "movedVertices": 9,
+        "insideVertices": 0,
+        "disagreeingVertices": 2,
+        "maxPenetrationMetres": 0,
+        "deepestPoint": null
+      }
+    ]
+  },
+  "weights": {
+    "mode": "transfer",
+    "strippedGroups": {
+      "warden-pauldrons_L": [
+        "chest",
+        "clavicle_R",
+        "foot_L",
+        "foot_R",
+        "forearm_L",
+        "forearm_R",
+        "hand_L",
+        "hand_R",
+        "head",
+        "neck",
+        "pelvis",
+        "root",
+        "shin_L",
+        "shin_R",
+        "shoulder_helper_R",
+        "spine",
+        "thigh_L",
+        "thigh_R",
+        "twist_upper_arm_L",
+        "twist_upper_arm_R",
+        "upper_arm_R"
+      ],
+      "warden-pauldrons_R": [
+        "chest",
+        "clavicle_L",
+        "foot_L",
+        "foot_R",
+        "forearm_L",
+        "forearm_R",
+        "hand_L",
+        "hand_R",
+        "head",
+        "neck",
+        "pelvis",
+        "root",
+        "shin_L",
+        "shin_R",
+        "shoulder_helper_L",
+        "spine",
+        "thigh_L",
+        "thigh_R",
+        "twist_upper_arm_L",
+        "twist_upper_arm_R",
+        "upper_arm_L"
+      ]
+    },
+    "orphanedVertices": {},
+    "band": {
+      "warden-pauldrons_L": {
+        "vertices": 1142,
+        "bandVertices": 940,
+        "bandFraction": 0.823117,
+        "ceiling": 0.8,
+        "minPeakWeight": 0.444632,
+        "meanPeakWeight": 0.669455,
+        "bandHeightMetres": 0.194638,
+        "bandMinY": 1.331996,
+        "bandMaxY": 1.526634
+      },
+      "warden-pauldrons_R": {
+        "vertices": 1191,
+        "bandVertices": 973,
+        "bandFraction": 0.816961,
+        "ceiling": 0.8,
+        "minPeakWeight": 0.444874,
+        "meanPeakWeight": 0.665993,
+        "bandHeightMetres": 0.194476,
+        "bandMinY": 1.326649,
+        "bandMaxY": 1.521125
+      }
+    }
+  },
+  "drapes": [
+    {
+      "name": "cloth_L",
+      "attachBone": "upper_arm_L",
+      "bones": [
+        "drape_cloth_L_1",
+        "drape_cloth_L_2"
+      ],
+      "segmentLength": 0.094739,
+      "restDegrees": 0,
+      "root": [
+        0.28687,
+        1.390022,
+        -0.078469
+      ],
+      "toward": [
+        -0.933735,
+        0,
+        -0.357964
+      ],
+      "island": "warden-pauldrons_L",
+      "from": 0,
+      "to": 0.5,
+      "segments": 2,
+      "islandHeightMetres": 0.256286,
+      "restTiltMetresAtTheHem": 0,
+      "toLineY": 1.39849,
+      "chainLengthMetres": 0.189477,
+      "axis": [
+        -0.556051,
+        -0.598008,
+        0.577229
+      ],
+      "towardMetres": 0.085346,
+      "bandCentre": [
+        0.26869,
+        1.360731,
+        -0.031833
+      ],
+      "nearestSkinMetres": 0.016279,
+      "nearestSkin": [
+        -0.997669,
+        0,
+        0.068233
+      ],
+      "bandVertices": 469,
+      "fadeVertices": 261
+    },
+    {
+      "name": "cloth_R",
+      "attachBone": "upper_arm_R",
+      "bones": [
+        "drape_cloth_R_1",
+        "drape_cloth_R_2"
+      ],
+      "segmentLength": 0.086464,
+      "restDegrees": 0,
+      "root": [
+        -0.28945,
+        1.402999,
+        -0.065997
+      ],
+      "toward": [
+        0.938121,
+        0,
+        -0.346308
+      ],
+      "island": "warden-pauldrons_R",
+      "from": 0,
+      "to": 0.5,
+      "segments": 2,
+      "islandHeightMetres": 0.223335,
+      "restTiltMetresAtTheHem": 0,
+      "toLineY": 1.409458,
+      "chainLengthMetres": 0.172928,
+      "axis": [
+        0.591532,
+        -0.557745,
+        0.582247
+      ],
+      "towardMetres": 0.088181,
+      "bandCentre": [
+        -0.271725,
+        1.37077,
+        -0.031846
+      ],
+      "nearestSkinMetres": 0.019467,
+      "nearestSkin": [
+        0.995802,
+        0,
+        0.09153
+      ],
+      "bandVertices": 682,
+      "fadeVertices": 274
+    }
+  ],
+  "twoSided": null,
+  "rest": {
+    "maxRestRotationBefore": 1.598009,
+    "maxRestRotationAfter": 0,
+    "joints": 28
+  },
+  "runtime": {
+    "bones": [
+      "root",
+      "pelvis",
+      "spine",
+      "chest",
+      "clavicle_L",
+      "shoulder_helper_L",
+      "upper_arm_L",
+      "forearm_L",
+      "hand_L",
+      "twist_upper_arm_L",
+      "clavicle_R",
+      "shoulder_helper_R",
+      "upper_arm_R",
+      "forearm_R",
+      "hand_R",
+      "twist_upper_arm_R",
+      "neck",
+      "head",
+      "thigh_L",
+      "shin_L",
+      "foot_L",
+      "thigh_R",
+      "shin_R",
+      "foot_R",
+      "drape_cloth_L_1",
+      "drape_cloth_L_2",
+      "drape_cloth_R_1",
+      "drape_cloth_R_2"
+    ],
+    "bodyBones": [
+      "root",
+      "pelvis",
+      "spine",
+      "chest",
+      "clavicle_L",
+      "shoulder_helper_L",
+      "upper_arm_L",
+      "forearm_L",
+      "hand_L",
+      "twist_upper_arm_L",
+      "clavicle_R",
+      "shoulder_helper_R",
+      "upper_arm_R",
+      "forearm_R",
+      "hand_R",
+      "twist_upper_arm_R",
+      "neck",
+      "head",
+      "thigh_L",
+      "shin_L",
+      "foot_L",
+      "thigh_R",
+      "shin_R",
+      "foot_R"
+    ],
+    "extraBones": [
+      "drape_cloth_L_1",
+      "drape_cloth_L_2",
+      "drape_cloth_R_1",
+      "drape_cloth_R_2"
+    ],
+    "extraBoneParents": {
+      "drape_cloth_L_1": "upper_arm_L",
+      "drape_cloth_L_2": "drape_cloth_L_1",
+      "drape_cloth_R_1": "upper_arm_R",
+      "drape_cloth_R_2": "drape_cloth_R_1"
+    },
+    "inverseBindMaxAbsDifference": 1.79e-7,
+    "triangles": 3999,
+    "materials": 1,
+    "meshes": 1,
+    "sides": {
+      "L": 3,
+      "R": 4,
+      "islands": 7
+    },
+    "maxInfluencesPerVertex": 4,
+    "minWeightSum": 0.999999891,
+    "maxWeightSum": 1.000000104,
+    "influencingBones": [
+      "clavicle_L",
+      "clavicle_R",
+      "drape_cloth_L_1",
+      "drape_cloth_L_2",
+      "drape_cloth_R_1",
+      "drape_cloth_R_2",
+      "shoulder_helper_L",
+      "shoulder_helper_R",
+      "upper_arm_L",
+      "upper_arm_R"
+    ],
+    "hasUvs": true,
+    "textures": 1,
+    "maxRestRotation": 0,
+    "sourceHad": {
+      "uvs": true,
+      "textures": true
+    },
+    "bindClearance": {
+      "insideVertices": 0,
+      "disagreeingVertices": 1,
+      "maxPenetrationMetres": 0,
+      "deepestPoint": null
+    }
+  },
+  "gates": {
+    "piece_joints_match_the_body": true,
+    "inverse_binds_match_the_body": true,
+    "at_most_four_influences_per_vertex": true,
+    "weights_sum_to_one": true,
+    "every_influence_is_an_allowed_bone": true,
+    "triangles_within_budget": true,
+    "materials_within_budget": true,
+    "uvs_survived_the_pipeline": true,
+    "textures_survived_the_pipeline": true,
+    "bones_rest_axis_aligned": true,
+    "piece_sits_off_the_skin_at_bind": true,
+    "pair_has_both_sides": true,
+    "clears_the_body_through_motion_cycles": true,
+    "clears_the_body_through_stress_poses": true
+  },
+  "gatesPass": true,
+  "outputs": {
+    "glb": "warden-pauldrons.glb",
+    "manifest": "warden-pauldrons.manifest.json",
+    "report": "warden-pauldrons.report.json",
+    "review": "warden-pauldrons.review.png",
+    "sha256": "63ac65fbc116ca48f9fd390a1181a02b7d8c647b07f05ed01047f9d075120bf0"
+  },
+  "review": {
+    "bodyVerticesInsideThePiece": {
+      "bind": 96,
+      "abduct90": 98,
+      "flex60": 77
+    }
+  }
+}

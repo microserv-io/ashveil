@@ -1,7 +1,7 @@
 {
   "schema": "ashveil.family-contract.v1",
   "family": "humanoid.v1",
-  "version": "1.1.0",
+  "version": "1.3.0",
   "canonicalHeight": 1.8,
   "frame": {
     "up": "+Y",
@@ -315,6 +315,793 @@
       "bone": "hand_R"
     }
   ],
+  "slotsNote": "A slot region is the body's own vertices, chosen by dominant bone and position along that bone, so the same rule resolves on every body of the family; the fitter writes the resolved sets to <body>.masks.json. Alignment spans and anchors read the region's extents (per side for pairs); hug bands are fractions of the piece's own extent along the span axis; the X anchor offset on a pair is outward, away from the body's centre.",
+  "slots": {
+    "feet": {
+      "pair": true,
+      "defaultCovers": [
+        "feet"
+      ],
+      "region": [
+        {
+          "bone": "foot_L"
+        },
+        {
+          "bone": "foot_R"
+        },
+        {
+          "bone": "shin_L",
+          "along": [
+            0.72,
+            1.0
+          ]
+        },
+        {
+          "bone": "shin_R",
+          "along": [
+            0.72,
+            1.0
+          ]
+        }
+      ],
+      "replaces": [
+        {
+          "bone": "foot_L"
+        },
+        {
+          "bone": "foot_R"
+        }
+      ],
+      "align": {
+        "span": {
+          "axis": "Z",
+          "factor": 1.1
+        },
+        "anchors": {
+          "X": {
+            "piece": "centre",
+            "body": "centre",
+            "offset": 0.0
+          },
+          "Y": {
+            "piece": "min",
+            "body": "min",
+            "offset": 0.0
+          },
+          "Z": {
+            "piece": "centre",
+            "body": "centre",
+            "offset": 0.0
+          }
+        },
+        "limb": {
+          "bone": {
+            "L": "shin_L",
+            "R": "shin_R"
+          },
+          "band": [
+            0.35,
+            1.0
+          ],
+          "fade": 0.25
+        },
+        "tube": {
+          "axisFrom": {
+            "L": "ankle_L",
+            "R": "ankle_R"
+          },
+          "axisTo": {
+            "L": "knee_L",
+            "R": "knee_R"
+          },
+          "sliceMetres": 0.02,
+          "smooth": 3,
+          "centre": "none",
+          "band": [
+            0.35,
+            1.0
+          ],
+          "fade": 0.25
+        }
+      },
+      "clearance": 0.014,
+      "layer": 2,
+      "coverReach": 0.06,
+      "hug": {
+        "bands": [
+          [
+            0.85,
+            1.0
+          ]
+        ],
+        "reach": 0.03,
+        "fade": 0.08
+      },
+      "weights": {
+        "mode": "stiff",
+        "allowedBones": [
+          "shin_L",
+          "foot_L",
+          "shin_R",
+          "foot_R"
+        ],
+        "rigidBone": {
+          "L": "foot_L",
+          "R": "foot_R"
+        },
+        "stiffness": 3
+      },
+      "clip": {
+        "depth": 0.005,
+        "fraction": 0.002
+      },
+      "budget": {
+        "maxTriangles": 6000,
+        "maxMaterials": 1
+      }
+    },
+    "legs": {
+      "pair": false,
+      "defaultCovers": [
+        "legs",
+        "waist"
+      ],
+      "region": [
+        {
+          "bone": "pelvis",
+          "along": [
+            0.0,
+            0.55
+          ]
+        },
+        {
+          "bone": "thigh_L"
+        },
+        {
+          "bone": "thigh_R"
+        },
+        {
+          "bone": "shin_L",
+          "along": [
+            0.0,
+            0.72
+          ]
+        },
+        {
+          "bone": "shin_R",
+          "along": [
+            0.0,
+            0.72
+          ]
+        }
+      ],
+      "replaces": [],
+      "align": {
+        "span": {
+          "axis": "Y",
+          "factor": 1.0
+        },
+        "anchors": {
+          "X": {
+            "piece": "centre",
+            "body": "centre",
+            "offset": 0.0
+          },
+          "Y": {
+            "piece": "max",
+            "body": "max",
+            "offset": 0.0
+          },
+          "Z": {
+            "piece": "centre",
+            "body": "centre",
+            "offset": 0.0
+          }
+        }
+      },
+      "clearance": 0.008,
+      "layer": 1,
+      "coverReach": 0.06,
+      "hug": {
+        "bands": [
+          [
+            0.0,
+            0.12
+          ],
+          [
+            0.9,
+            1.0
+          ]
+        ],
+        "reach": 0.03,
+        "fade": 0.08
+      },
+      "weights": {
+        "mode": "transfer",
+        "allowedBones": [
+          "pelvis",
+          "spine",
+          "thigh_L",
+          "shin_L",
+          "thigh_R",
+          "shin_R"
+        ],
+        "rigidBone": "pelvis"
+      },
+      "clip": {
+        "depth": 0.005,
+        "fraction": 0.002
+      },
+      "budget": {
+        "maxTriangles": 6000,
+        "maxMaterials": 1
+      }
+    },
+    "waist": {
+      "pair": false,
+      "defaultCovers": [
+        "waist"
+      ],
+      "region": [
+        {
+          "bone": "pelvis",
+          "along": [
+            0.55,
+            1.0
+          ]
+        },
+        {
+          "bone": "spine",
+          "along": [
+            0.0,
+            0.35
+          ]
+        }
+      ],
+      "replaces": [],
+      "align": {
+        "span": {
+          "axis": "X",
+          "factor": 1.08
+        },
+        "anchors": {
+          "X": {
+            "piece": "centre",
+            "body": "centre",
+            "offset": 0.0
+          },
+          "Y": {
+            "piece": "centre",
+            "body": "centre",
+            "offset": 0.0
+          },
+          "Z": {
+            "piece": "centre",
+            "body": "centre",
+            "offset": 0.0
+          }
+        }
+      },
+      "clearance": 0.02,
+      "layer": 4,
+      "coverReach": 0.06,
+      "hug": {
+        "bands": [
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "reach": 0.02,
+        "fade": 0.08
+      },
+      "weights": {
+        "mode": "transfer",
+        "allowedBones": [
+          "pelvis",
+          "spine",
+          "thigh_L",
+          "thigh_R"
+        ],
+        "rigidBone": "pelvis"
+      },
+      "clip": {
+        "depth": 0.005,
+        "fraction": 0.002
+      },
+      "budget": {
+        "maxTriangles": 4000,
+        "maxMaterials": 1
+      }
+    },
+    "chest": {
+      "pair": false,
+      "defaultCovers": [
+        "chest",
+        "shoulders"
+      ],
+      "region": [
+        {
+          "bone": "spine",
+          "along": [
+            0.35,
+            1.0
+          ]
+        },
+        {
+          "bone": "chest"
+        },
+        {
+          "bone": "clavicle_L"
+        },
+        {
+          "bone": "clavicle_R"
+        }
+      ],
+      "replaces": [],
+      "align": {
+        "span": {
+          "axis": "Y",
+          "factor": 1.18
+        },
+        "anchors": {
+          "X": {
+            "piece": "centre",
+            "body": "centre",
+            "offset": 0.0
+          },
+          "Y": {
+            "piece": "max",
+            "body": "max",
+            "offset": 0.01
+          },
+          "Z": {
+            "piece": "centre",
+            "body": "centre",
+            "offset": 0.0
+          }
+        }
+      },
+      "clearance": 0.012,
+      "layer": 2,
+      "coverReach": 0.06,
+      "hug": {
+        "bands": [
+          [
+            0.9,
+            1.0
+          ]
+        ],
+        "reach": 0.03,
+        "fade": 0.08
+      },
+      "weights": {
+        "mode": "transfer",
+        "allowedBones": [
+          "pelvis",
+          "spine",
+          "chest",
+          "neck",
+          "clavicle_L",
+          "shoulder_helper_L",
+          "upper_arm_L",
+          "clavicle_R",
+          "shoulder_helper_R",
+          "upper_arm_R"
+        ],
+        "rigidBone": "chest"
+      },
+      "clip": {
+        "depth": 0.005,
+        "fraction": 0.002
+      },
+      "budget": {
+        "maxTriangles": 10000,
+        "maxMaterials": 1
+      }
+    },
+    "back": {
+      "pair": false,
+      "defaultCovers": [
+        "back"
+      ],
+      "region": [],
+      "replaces": [],
+      "align": {
+        "referenceSlot": "chest",
+        "span": {
+          "axis": "Y",
+          "factor": 2.2
+        },
+        "anchors": {
+          "X": {
+            "piece": "centre",
+            "body": "centre",
+            "offset": 0.0
+          },
+          "Y": {
+            "piece": "max",
+            "body": "max",
+            "offset": -0.05
+          },
+          "Z": {
+            "piece": "max",
+            "body": "max",
+            "offset": 0.03
+          }
+        }
+      },
+      "clearance": 0.026,
+      "layer": 5,
+      "coverReach": 0.06,
+      "hug": {
+        "bands": [],
+        "reach": 0.04,
+        "fade": 0.08
+      },
+      "weights": {
+        "mode": "transfer",
+        "allowedBones": [
+          "pelvis",
+          "spine",
+          "chest",
+          "neck",
+          "clavicle_L",
+          "shoulder_helper_L",
+          "upper_arm_L",
+          "twist_upper_arm_L",
+          "clavicle_R",
+          "shoulder_helper_R",
+          "upper_arm_R",
+          "twist_upper_arm_R",
+          "thigh_L",
+          "shin_L",
+          "thigh_R",
+          "shin_R"
+        ],
+        "rigidBone": "chest"
+      },
+      "clip": {
+        "depth": 0.008,
+        "fraction": 0.005
+      },
+      "budget": {
+        "maxTriangles": 6000,
+        "maxMaterials": 1
+      }
+    },
+    "hands": {
+      "pair": true,
+      "defaultCovers": [
+        "hands"
+      ],
+      "region": [
+        {
+          "bone": "hand_L"
+        },
+        {
+          "bone": "hand_R"
+        },
+        {
+          "bone": "forearm_L",
+          "along": [
+            0.55,
+            1.0
+          ]
+        },
+        {
+          "bone": "forearm_R",
+          "along": [
+            0.55,
+            1.0
+          ]
+        }
+      ],
+      "replaces": [
+        {
+          "bone": "hand_L"
+        },
+        {
+          "bone": "hand_R"
+        },
+        {
+          "bone": "forearm_L",
+          "along": [
+            0.7,
+            1.0
+          ]
+        },
+        {
+          "bone": "forearm_R",
+          "along": [
+            0.7,
+            1.0
+          ]
+        }
+      ],
+      "thumb": "+Z",
+      "align": {
+        "span": {
+          "axis": "Y",
+          "factor": 1.02
+        },
+        "anchors": {
+          "X": {
+            "piece": "centre",
+            "body": "centre",
+            "offset": 0.0
+          },
+          "Y": {
+            "piece": "min",
+            "body": "min",
+            "offset": -0.005
+          },
+          "Z": {
+            "piece": "centre",
+            "body": "centre",
+            "offset": 0.0
+          }
+        },
+        "roll": {
+          "bone": {
+            "L": "forearm_L",
+            "R": "forearm_R"
+          },
+          "stepDegrees": 10
+        },
+        "tube": {
+          "axisFrom": {
+            "L": "wrist_L",
+            "R": "wrist_R"
+          },
+          "axisTo": {
+            "L": "hand_L",
+            "R": "hand_R"
+          },
+          "sliceMetres": 0.02,
+          "smooth": 3,
+          "radial": "match",
+          "centre": "cuff",
+          "radialKnots": [
+            0.0,
+            1.5
+          ],
+          "stretch": {
+            "bone": {
+              "L": "hand_L",
+              "R": "hand_R"
+            },
+            "waist": {
+              "L": "wrist_L",
+              "R": "wrist_R"
+            }
+          }
+        }
+      },
+      "clearance": 0.003,
+      "shrinkwrap": "unreplaced",
+      "layer": 1,
+      "coverReach": 0.06,
+      "hug": {
+        "bands": [
+          [
+            0.8,
+            1.0
+          ]
+        ],
+        "reach": 0.03,
+        "fade": 0.08
+      },
+      "weights": {
+        "mode": "stiff",
+        "allowedBones": [
+          "forearm_L",
+          "hand_L",
+          "forearm_R",
+          "hand_R"
+        ],
+        "rigidBone": {
+          "L": "hand_L",
+          "R": "hand_R"
+        },
+        "stiffness": 3
+      },
+      "clip": {
+        "depth": 0.005,
+        "fraction": 0.002
+      },
+      "budget": {
+        "maxTriangles": 4000,
+        "maxMaterials": 1
+      }
+    },
+    "shoulders": {
+      "pair": true,
+      "defaultCovers": [
+        "shoulders"
+      ],
+      "region": [
+        {
+          "bone": "shoulder_helper_L"
+        },
+        {
+          "bone": "shoulder_helper_R"
+        },
+        {
+          "bone": "upper_arm_L",
+          "along": [
+            0.0,
+            0.35
+          ]
+        },
+        {
+          "bone": "upper_arm_R",
+          "along": [
+            0.0,
+            0.35
+          ]
+        }
+      ],
+      "replaces": [],
+      "align": {
+        "span": {
+          "axis": "Y",
+          "factor": 1.1
+        },
+        "anchors": {
+          "X": {
+            "piece": "centre",
+            "body": "centre",
+            "offset": 0.01
+          },
+          "Y": {
+            "piece": "max",
+            "body": "max",
+            "offset": 0.015
+          },
+          "Z": {
+            "piece": "centre",
+            "body": "centre",
+            "offset": 0.0
+          }
+        },
+        "layerSeat": {
+          "axis": "X",
+          "direction": 1,
+          "mirror": true,
+          "minimum": 0.018,
+          "bandAxis": "Y",
+          "step": 0.001,
+          "maximum": 0.04,
+          "depth": 0.003,
+          "band": [
+            0.5,
+            1.0
+          ]
+        }
+      },
+      "clearance": 0.016,
+      "layer": 6,
+      "coverReach": 0.06,
+      "hug": {
+        "bands": [],
+        "reach": 0.02,
+        "fade": 0.08
+      },
+      "weights": {
+        "mode": "transfer",
+        "allowedBones": [
+          "clavicle_L",
+          "shoulder_helper_L",
+          "upper_arm_L",
+          "clavicle_R",
+          "shoulder_helper_R",
+          "upper_arm_R"
+        ],
+        "rigidBone": {
+          "L": "shoulder_helper_L",
+          "R": "shoulder_helper_R"
+        },
+        "stiffness": 3
+      },
+      "clip": {
+        "depth": 0.005,
+        "fraction": 0.002
+      },
+      "budget": {
+        "maxTriangles": 4000,
+        "maxMaterials": 1
+      }
+    },
+    "head": {
+      "pair": false,
+      "defaultCovers": [
+        "head"
+      ],
+      "region": [
+        {
+          "bone": "head",
+          "along": [
+            0.66,
+            1.0
+          ],
+          "forward": [
+            -1.0,
+            0.075
+          ]
+        },
+        {
+          "bone": "head",
+          "along": [
+            0.0,
+            0.66
+          ],
+          "forward": [
+            -1.0,
+            -0.02
+          ]
+        },
+        {
+          "bone": "neck",
+          "along": [
+            0.0,
+            1.0
+          ]
+        }
+      ],
+      "replaces": [],
+      "align": {
+        "span": {
+          "axis": "Y",
+          "from": "neck_base",
+          "to": "head",
+          "factor": 1.08
+        },
+        "anchors": {
+          "X": {
+            "piece": "centre",
+            "body": "centre",
+            "offset": 0.0
+          },
+          "Y": {
+            "piece": "max",
+            "body": "max",
+            "offset": 0.02
+          },
+          "Z": {
+            "piece": "centre",
+            "body": "centre",
+            "offset": 0.0
+          }
+        }
+      },
+      "clearance": 0.016,
+      "layer": 6,
+      "coverReach": 0.06,
+      "hug": {
+        "bands": [],
+        "reach": 0.03,
+        "fade": 0.08
+      },
+      "weights": {
+        "mode": "stiff",
+        "allowedBones": [
+          "neck",
+          "head"
+        ],
+        "rigidBone": "head",
+        "stiffness": 3
+      },
+      "clip": {
+        "depth": 0.005,
+        "fraction": 0.002
+      },
+      "budget": {
+        "maxTriangles": 5000,
+        "maxMaterials": 1
+      }
+    }
+  },
   "regions": {
     "required": [
       "Body",

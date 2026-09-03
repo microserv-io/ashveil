@@ -101,8 +101,9 @@ When a feature changes a player-facing rule, its PR must:
   clean planes, simplified anatomy, strong silhouettes, expressive poses and large
   readable clothing shapes. Avoid chibi proportions and the presentation language
   of a generic anime gacha game.
-- **Surface language.** Combine hand-painted-looking colour with restrained PBR
-  lighting. Prefer broad material reads over photoreal micro-detail or hard outlines.
+- **Surface language.** Hand-painted colour under a three-step toon ramp, a flat
+  hemisphere fill and a soft key, so the authored base colour survives lighting.
+  Prefer broad material reads over photoreal micro-detail or hard outlines.
 - **Production target.** At gameplay distance the scene should resemble a moving
   fantasy illustration; on closer inspection it should remain tactile, coherent 3D.
 - **World materials.** Cream stone, timber, ceramics, woven cloth, weathered metal,

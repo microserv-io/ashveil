@@ -1,0 +1,312 @@
+{
+  "schema": "ashveil.gear-report.v1",
+  "family": "humanoid.v1",
+  "contractVersion": "1.2.0",
+  "body": "masculine-v3",
+  "slot": "legs",
+  "piece": "warden-trousers",
+  "covers": [
+    "legs",
+    "waist"
+  ],
+  "under": [],
+  "referenceRegions": [
+    "legs",
+    "waist"
+  ],
+  "coverage": {
+    "reachMetres": 0.06,
+    "triangles": 6000,
+    "hangingTriangles": 0,
+    "hiddenVertices": {
+      "Body": 1407,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    },
+    "measuredVertices": {
+      "Body": 1407,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    },
+    "replacedVertices": {
+      "Body": 0,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    }
+  },
+  "replaces": [],
+  "source": {
+    "file": "warden-trousers-tripo.glb",
+    "sha256": "33d31dede2a0cbaf5753475bd86076e6e57d89c848567a89b50d4622a9c0bdbc"
+  },
+  "islands": {
+    "found": 4,
+    "kept": 1,
+    "grouped": {
+      "all": 1
+    },
+    "droppedTriangleCounts": [
+      170,
+      170,
+      170
+    ],
+    "triangles": 9817
+  },
+  "alignment": {
+    "all": {
+      "scale": 0.834727,
+      "yawDegrees": 0,
+      "translation": [
+        -0.000007,
+        0.226331,
+        -0.023085
+      ],
+      "insideVerticesBeforeShrinkwrap": 1385,
+      "insideFractionBeforeShrinkwrap": 0.280251,
+      "deepInsideVerticesBeforeShrinkwrap": 707,
+      "deepInsideFractionBeforeShrinkwrap": 0.143059,
+      "meanSurfaceDistanceMetres": 0.010762,
+      "insideVerticesByYaw": {
+        "0": 1385,
+        "180": 1309
+      },
+      "meanSurfaceDistanceByYaw": {
+        "0": 0.010762,
+        "180": 0.026488
+      },
+      "anchorResidualMetres": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "proxy": false,
+      "reference": [
+        "legs",
+        "waist"
+      ]
+    }
+  },
+  "facing": {
+    "pieceCentroidZ": -0.036128,
+    "regionCentroidZ": -0.026933,
+    "aheadOfRegionMetres": -0.009195
+  },
+  "regionEnclosed": {
+    "all": {
+      "regionVertices": 1533,
+      "withinPieceBox": 1530,
+      "insideVertices": 1376,
+      "insideFraction": 0.899346
+    }
+  },
+  "decimation": {
+    "trianglesBefore": 9817,
+    "trianglesAfter": 6000,
+    "ratio": 0.611185
+  },
+  "shrinkwrap": {
+    "mode": "all",
+    "pieceVertices": 3028,
+    "outsidePasses": [
+      {
+        "movedVertices": 1642,
+        "movedFraction": 0.542272,
+        "carriedVertices": 529,
+        "insideAfter": 0
+      },
+      {
+        "movedVertices": 52,
+        "movedFraction": 0.017173,
+        "carriedVertices": 209,
+        "insideAfter": 0
+      },
+      {
+        "movedVertices": 0,
+        "movedFraction": 0,
+        "carriedVertices": 0,
+        "insideAfter": 0
+      }
+    ],
+    "wholeMovedVertices": 1694,
+    "hugSelectedVertices": 1118,
+    "hugMovedVertices": 625,
+    "shellRadius": 0.01,
+    "wholeMovedFraction": 0.559445,
+    "hugMovedFraction": 0.206407
+  },
+  "weights": {
+    "mode": "transfer",
+    "strippedGroups": {
+      "warden-trousers": [
+        "chest",
+        "clavicle_L",
+        "clavicle_R",
+        "foot_L",
+        "foot_R",
+        "forearm_L",
+        "forearm_R",
+        "hand_L",
+        "hand_R",
+        "head",
+        "neck",
+        "root",
+        "shoulder_helper_L",
+        "shoulder_helper_R",
+        "twist_upper_arm_L",
+        "twist_upper_arm_R",
+        "upper_arm_L",
+        "upper_arm_R"
+      ]
+    },
+    "orphanedVertices": {},
+    "band": {
+      "warden-trousers": {
+        "vertices": 3028,
+        "bandVertices": 956,
+        "bandFraction": 0.31572,
+        "ceiling": 0.8,
+        "minPeakWeight": 0.466463,
+        "meanPeakWeight": 0.864115,
+        "bandHeightMetres": 0.589659,
+        "bandMinY": 0.467475,
+        "bandMaxY": 1.057134
+      }
+    }
+  },
+  "drapes": [],
+  "twoSided": null,
+  "rest": {
+    "maxRestRotationBefore": 0,
+    "maxRestRotationAfter": 0,
+    "joints": 24
+  },
+  "runtime": {
+    "bones": [
+      "root",
+      "pelvis",
+      "spine",
+      "chest",
+      "clavicle_L",
+      "shoulder_helper_L",
+      "upper_arm_L",
+      "forearm_L",
+      "hand_L",
+      "twist_upper_arm_L",
+      "clavicle_R",
+      "shoulder_helper_R",
+      "upper_arm_R",
+      "forearm_R",
+      "hand_R",
+      "twist_upper_arm_R",
+      "neck",
+      "head",
+      "thigh_L",
+      "shin_L",
+      "foot_L",
+      "thigh_R",
+      "shin_R",
+      "foot_R"
+    ],
+    "bodyBones": [
+      "root",
+      "pelvis",
+      "spine",
+      "chest",
+      "clavicle_L",
+      "shoulder_helper_L",
+      "upper_arm_L",
+      "forearm_L",
+      "hand_L",
+      "twist_upper_arm_L",
+      "clavicle_R",
+      "shoulder_helper_R",
+      "upper_arm_R",
+      "forearm_R",
+      "hand_R",
+      "twist_upper_arm_R",
+      "neck",
+      "head",
+      "thigh_L",
+      "shin_L",
+      "foot_L",
+      "thigh_R",
+      "shin_R",
+      "foot_R"
+    ],
+    "extraBones": [],
+    "extraBoneParents": {},
+    "inverseBindMaxAbsDifference": 1.79e-7,
+    "triangles": 6000,
+    "materials": 1,
+    "meshes": 1,
+    "sides": {
+      "L": 1,
+      "R": 0,
+      "islands": 1
+    },
+    "maxInfluencesPerVertex": 4,
+    "minWeightSum": 0.999999892,
+    "maxWeightSum": 1.000000095,
+    "influencingBones": [
+      "pelvis",
+      "shin_L",
+      "shin_R",
+      "spine",
+      "thigh_L",
+      "thigh_R"
+    ],
+    "hasUvs": true,
+    "textures": 1,
+    "maxRestRotation": 0,
+    "sourceHad": {
+      "uvs": true,
+      "textures": true
+    },
+    "bindClearance": {
+      "insideVertices": 0,
+      "disagreeingVertices": 0,
+      "maxPenetrationMetres": 0,
+      "deepestPoint": null
+    }
+  },
+  "gates": {
+    "piece_joints_match_the_body": true,
+    "inverse_binds_match_the_body": true,
+    "at_most_four_influences_per_vertex": true,
+    "weights_sum_to_one": true,
+    "every_influence_is_an_allowed_bone": true,
+    "triangles_within_budget": true,
+    "materials_within_budget": true,
+    "uvs_survived_the_pipeline": true,
+    "textures_survived_the_pipeline": true,
+    "bones_rest_axis_aligned": true,
+    "piece_sits_off_the_skin_at_bind": true,
+    "piece_is_one_mesh": true,
+    "clears_the_body_through_motion_cycles": true,
+    "clears_the_body_through_stress_poses": true
+  },
+  "gatesPass": true,
+  "outputs": {
+    "glb": "warden-trousers.glb",
+    "manifest": "warden-trousers.manifest.json",
+    "report": "warden-trousers.report.json",
+    "review": "warden-trousers.review.png",
+    "sha256": "107ab858df1853c0c22b1c1fbc019e1a91b6d99614f78df8f48912ed75fffd50"
+  },
+  "review": {
+    "bodyVerticesInsideThePiece": {
+      "bind": 163,
+      "abduct90": 163,
+      "flex60": 163
+    }
+  }
+}

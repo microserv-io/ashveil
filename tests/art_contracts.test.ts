@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { DRAPE_LIMBS } from '../src/render/drapecollide'
+import { GEAR_SLOTS, SLOT_CLEARANCES, SLOT_LAYERS } from '../src/render/gear'
 import { validate } from '../scripts/art/schema.mjs'
 
 const ROOT = join(import.meta.dirname, '..')
@@ -35,6 +37,58 @@ describe('the family contract', () => {
     for (const bone of [...HUMANOID.bones, ...HUMANOID.helpers]) {
       if (bone.parent !== null) expect(seen).toContain(bone.parent)
       seen.add(bone.name)
+    }
+  })
+
+  it('keeps fixed overlap ordered from chest to back to shoulders and headgear', () => {
+    expect(HUMANOID.slots.back.layer).toBeGreaterThan(HUMANOID.slots.chest.layer)
+    expect(HUMANOID.slots.shoulders.layer).toBeGreaterThan(HUMANOID.slots.back.layer)
+    expect(HUMANOID.slots.head.layer).toBe(HUMANOID.slots.shoulders.layer)
+    for (const [slot, rule] of Object.entries(HUMANOID.slots) as [string, { clearance: number }][]) {
+      expect(rule.clearance, slot).toBeGreaterThan(0)
+    }
+  })
+
+  /** The renderer hides one piece under another by layer, so its table is the contract's. */
+  it('is the layer table the renderer hides gear by', () => {
+    expect(Object.keys(HUMANOID.slots).sort()).toEqual([...GEAR_SLOTS].sort())
+    for (const [slot, rule] of Object.entries(HUMANOID.slots) as [string, { layer: number }][]) {
+      expect(SLOT_LAYERS[slot as keyof typeof SLOT_LAYERS], slot).toBe(rule.layer)
+    }
+  })
+
+  it('is the clearance table a drape holds itself off a limb by', () => {
+    for (const [slot, rule] of Object.entries(HUMANOID.slots) as [string, { clearance: number }][]) {
+      expect(SLOT_CLEARANCES[slot as keyof typeof SLOT_CLEARANCES], slot).toBe(rule.clearance)
+    }
+  })
+
+  it('lets generic back attachments follow a shoulder wrap', () => {
+    const allowed = new Set(HUMANOID.slots.back.weights.allowedBones)
+    for (const bone of [
+      'shoulder_helper_L', 'upper_arm_L', 'twist_upper_arm_L',
+      'shoulder_helper_R', 'upper_arm_R', 'twist_upper_arm_R',
+    ]) expect(allowed).toContain(bone)
+    expect(HUMANOID.slots.back.hidesPieces).toBeUndefined()
+  })
+
+  it('seats paired shoulder caps outward over a lower chest layer', () => {
+    expect(HUMANOID.slots.shoulders.align.layerSeat).toMatchObject({
+      axis: 'X',
+      direction: 1,
+      mirror: true,
+      bandAxis: 'Y',
+      band: [0.5, 1],
+    })
+  })
+
+  /** A capsule named after a bone the family has not is a capsule that never forms. */
+  it('names only bones the family has for the limbs a drape is pushed off', () => {
+    const bones = new Set((HUMANOID.bones as { name: string }[]).map((bone) => bone.name))
+    for (const limb of DRAPE_LIMBS) {
+      expect(bones, `${limb.from} -> ${limb.to}`).toContain(limb.from)
+      expect(bones).toContain(limb.to)
+      expect(limb.radius).toBeGreaterThan(0)
     }
   })
 

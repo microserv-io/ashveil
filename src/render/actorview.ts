@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import type { Actor } from '../sim/types'
+import type { BodyMaterial } from './look'
 import { meshesOf, spawnModel, type ModelName } from './models'
 import type { BoundMotionDriver } from './motion'
 import { PALETTE } from './palette'
@@ -10,7 +11,7 @@ import { createRigInputOwner, resetRigInput, type RigInputOwner } from './riginp
 /** One actor's body: the model, the handles needed to tint it, and its animation. */
 export interface ActorView extends RigInputOwner {
   group: THREE.Group
-  materials: THREE.MeshStandardMaterial[]
+  materials: BodyMaterial[]
   baseColours: THREE.Color[]
   /** The body's original transparency, so a faded corpse can be handed back looking new. */
   baseTransparent: boolean[]
@@ -56,7 +57,7 @@ export function createActorView(actor: Actor): ActorView {
   model.scale.setScalar(actor.radius * HEIGHT_PER_RADIUS)
   group.add(model)
 
-  const materials = meshesOf(model).map((mesh) => mesh.material as THREE.MeshStandardMaterial)
+  const materials = meshesOf(model).map((mesh) => mesh.material as BodyMaterial)
   const tint = bodyTint(actor)
   if (tint !== null) materials.forEach((material) => material.color.setHex(tint))
   const baseColours = materials.map((material) => material.color.clone())

@@ -1,58 +1,162 @@
 {
   "title": "ashveil.family-contract.v1",
   "type": "object",
-  "required": ["schema", "family", "version", "canonicalHeight", "frame", "boneAxisRule", "budget",
-               "landmarks", "minimumLandmarkConfidence", "symmetryToleranceHeight", "bones", "helpers",
-               "sockets", "regions", "gates"],
+  "required": [
+    "schema",
+    "family",
+    "version",
+    "canonicalHeight",
+    "frame",
+    "boneAxisRule",
+    "budget",
+    "landmarks",
+    "minimumLandmarkConfidence",
+    "symmetryToleranceHeight",
+    "bones",
+    "helpers",
+    "sockets",
+    "slots",
+    "regions",
+    "gates"
+  ],
   "properties": {
-    "schema": { "const": "ashveil.family-contract.v1" },
-    "family": { "type": "string", "pattern": "^[a-z]+\\.v[0-9]+$" },
-    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
-    "canonicalHeight": { "type": "number", "minimum": 0.1 },
+    "schema": {
+      "const": "ashveil.family-contract.v1"
+    },
+    "family": {
+      "type": "string",
+      "pattern": "^[a-z]+\\.v[0-9]+$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "canonicalHeight": {
+      "type": "number",
+      "minimum": 0.1
+    },
     "frame": {
       "type": "object",
-      "required": ["up", "forward", "anatomicalLeft"],
+      "required": [
+        "up",
+        "forward",
+        "anatomicalLeft"
+      ],
       "properties": {
-        "up": { "const": "+Y" },
-        "forward": { "const": "+Z" },
-        "anatomicalLeft": { "const": "+X" },
-        "note": { "type": "string" }
+        "up": {
+          "const": "+Y"
+        },
+        "forward": {
+          "const": "+Z"
+        },
+        "anatomicalLeft": {
+          "const": "+X"
+        },
+        "note": {
+          "type": "string"
+        }
       }
     },
     "boneAxisRule": {
       "type": "object",
-      "required": ["primary", "limbSecondary", "spineSecondary", "restOrientationInRuntimeFile"],
+      "required": [
+        "primary",
+        "limbSecondary",
+        "spineSecondary",
+        "restOrientationInRuntimeFile"
+      ],
       "properties": {
-        "primary": { "type": "string" },
-        "limbSecondary": { "type": "string" },
-        "spineSecondary": { "type": "string" },
-        "restOrientationInRuntimeFile": { "const": "identity" },
-        "why": { "type": "string" }
+        "primary": {
+          "type": "string"
+        },
+        "limbSecondary": {
+          "type": "string"
+        },
+        "spineSecondary": {
+          "type": "string"
+        },
+        "restOrientationInRuntimeFile": {
+          "const": "identity"
+        },
+        "why": {
+          "type": "string"
+        }
       }
     },
     "budget": {
       "type": "object",
-      "required": ["maxTriangles", "maxMaterials", "maxMeshes", "maxInfluencesPerVertex"],
-      "additionalProperties": { "type": "integer", "minimum": 1 }
+      "required": [
+        "maxTriangles",
+        "maxMaterials",
+        "maxMeshes",
+        "maxInfluencesPerVertex"
+      ],
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 1
+      }
     },
-    "landmarks": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
-    "minimumLandmarkConfidence": { "type": "number", "minimum": 0, "maximum": 1 },
-    "symmetryToleranceHeight": { "type": "number", "minimum": 0 },
+    "landmarks": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "minimumLandmarkConfidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "symmetryToleranceHeight": {
+      "type": "number",
+      "minimum": 0
+    },
     "bones": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["name", "parent", "deform", "head", "tail", "chain", "role"],
+        "required": [
+          "name",
+          "parent",
+          "deform",
+          "head",
+          "tail",
+          "chain",
+          "role"
+        ],
         "additionalProperties": false,
         "properties": {
-          "name": { "type": "string", "pattern": "^[A-Za-z0-9_]+$" },
-          "parent": { "type": ["string", "null"] },
-          "deform": { "type": "boolean" },
-          "head": { "type": "string" },
-          "tail": { "type": "string" },
-          "chain": { "enum": ["spine", "limb"] },
-          "role": { "type": "string" }
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]+$"
+          },
+          "parent": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "deform": {
+            "type": "boolean"
+          },
+          "head": {
+            "type": "string"
+          },
+          "tail": {
+            "type": "string"
+          },
+          "chain": {
+            "enum": [
+              "spine",
+              "limb"
+            ]
+          },
+          "role": {
+            "type": "string"
+          }
         }
       }
     },
@@ -60,53 +164,925 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["name", "parent", "deform", "chain", "head", "tail"],
+        "required": [
+          "name",
+          "parent",
+          "deform",
+          "chain",
+          "head",
+          "tail"
+        ],
         "additionalProperties": false,
         "properties": {
-          "name": { "type": "string", "pattern": "^[A-Za-z0-9_]+$" },
-          "parent": { "type": "string" },
-          "deform": { "type": "boolean" },
-          "chain": { "enum": ["spine", "limb"] },
-          "head": { "type": "object", "additionalProperties": false,
-                     "required": ["from", "towards", "along"],
-                     "properties": { "from": { "type": "string" }, "towards": { "type": "string" },
-                                     "along": { "type": "number", "minimum": 0, "maximum": 1 } } },
-          "tail": { "type": "object", "additionalProperties": false,
-                     "required": ["from", "towards", "along"],
-                     "properties": { "from": { "type": "string" }, "towards": { "type": "string" },
-                                     "along": { "type": "number", "minimum": 0, "maximum": 1 } } }
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]+$"
+          },
+          "parent": {
+            "type": "string"
+          },
+          "deform": {
+            "type": "boolean"
+          },
+          "chain": {
+            "enum": [
+              "spine",
+              "limb"
+            ]
+          },
+          "head": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "towards",
+              "along"
+            ],
+            "properties": {
+              "from": {
+                "type": "string"
+              },
+              "towards": {
+                "type": "string"
+              },
+              "along": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          },
+          "tail": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "towards",
+              "along"
+            ],
+            "properties": {
+              "from": {
+                "type": "string"
+              },
+              "towards": {
+                "type": "string"
+              },
+              "along": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          }
         }
       }
     },
-    "helperNote": { "type": "string" },
+    "helperNote": {
+      "type": "string"
+    },
     "sockets": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["role", "bone"],
+        "required": [
+          "role",
+          "bone"
+        ],
         "additionalProperties": false,
-        "properties": { "role": { "type": "string" }, "bone": { "type": "string" } }
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "bone": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "slots": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pair",
+          "region",
+          "replaces",
+          "defaultCovers",
+          "align",
+          "clearance",
+          "layer",
+          "coverReach",
+          "hug",
+          "weights",
+          "clip",
+          "budget"
+        ],
+        "properties": {
+          "pair": {
+            "type": "boolean"
+          },
+          "defaultCovers": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]+$"
+            }
+          },
+          "region": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "bone"
+              ],
+              "properties": {
+                "bone": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_]+$"
+                },
+                "along": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                },
+                "forward": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "replaces": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "bone"
+              ],
+              "properties": {
+                "bone": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_]+$"
+                },
+                "along": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                },
+                "forward": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "thumb": {
+            "enum": [
+              "+Z",
+              "-Z"
+            ]
+          },
+          "align": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "span",
+              "anchors"
+            ],
+            "properties": {
+              "referenceSlot": {
+                "type": "string"
+              },
+              "span": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "axis",
+                  "factor"
+                ],
+                "properties": {
+                  "axis": {
+                    "enum": [
+                      "X",
+                      "Y",
+                      "Z"
+                    ]
+                  },
+                  "from": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9_]+$"
+                  },
+                  "to": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9_]+$"
+                  },
+                  "factor": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                }
+              },
+              "anchors": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "X",
+                  "Y",
+                  "Z"
+                ],
+                "properties": {
+                  "X": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "piece",
+                      "body",
+                      "offset"
+                    ],
+                    "properties": {
+                      "piece": {
+                        "enum": [
+                          "min",
+                          "centre",
+                          "max"
+                        ]
+                      },
+                      "body": {
+                        "enum": [
+                          "min",
+                          "centre",
+                          "max"
+                        ]
+                      },
+                      "offset": {
+                        "type": "number"
+                      }
+                    }
+                  },
+                  "Y": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "piece",
+                      "body",
+                      "offset"
+                    ],
+                    "properties": {
+                      "piece": {
+                        "enum": [
+                          "min",
+                          "centre",
+                          "max"
+                        ]
+                      },
+                      "body": {
+                        "enum": [
+                          "min",
+                          "centre",
+                          "max"
+                        ]
+                      },
+                      "offset": {
+                        "type": "number"
+                      }
+                    }
+                  },
+                  "Z": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "piece",
+                      "body",
+                      "offset"
+                    ],
+                    "properties": {
+                      "piece": {
+                        "enum": [
+                          "min",
+                          "centre",
+                          "max"
+                        ]
+                      },
+                      "body": {
+                        "enum": [
+                          "min",
+                          "centre",
+                          "max"
+                        ]
+                      },
+                      "offset": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              },
+              "layerSeat": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "axis",
+                  "direction",
+                  "step",
+                  "maximum",
+                  "depth",
+                  "band"
+                ],
+                "properties": {
+                  "axis": {
+                    "enum": [
+                      "X",
+                      "Y",
+                      "Z"
+                    ]
+                  },
+                  "direction": {
+                    "enum": [
+                      -1,
+                      1
+                    ]
+                  },
+                  "mirror": {
+                    "type": "boolean"
+                  },
+                  "minimum": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 0.1
+                  },
+                  "bandAxis": {
+                    "enum": [
+                      "X",
+                      "Y",
+                      "Z"
+                    ]
+                  },
+                  "step": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 0.01
+                  },
+                  "maximum": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 0.1
+                  },
+                  "depth": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.01
+                  },
+                  "band": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  }
+                }
+              },
+              "limb": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "bone",
+                  "band",
+                  "fade"
+                ],
+                "properties": {
+                  "bone": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_]+$"
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "L",
+                          "R"
+                        ],
+                        "properties": {
+                          "L": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          },
+                          "R": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "band": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "fade": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                }
+              },
+              "roll": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "bone",
+                  "stepDegrees"
+                ],
+                "properties": {
+                  "bone": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_]+$"
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "L",
+                          "R"
+                        ],
+                        "properties": {
+                          "L": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          },
+                          "R": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "stepDegrees": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 180
+                  }
+                }
+              },
+              "enclose": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "fraction",
+                  "step",
+                  "maxGrow"
+                ],
+                "properties": {
+                  "bone": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_]+$"
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "L",
+                          "R"
+                        ],
+                        "properties": {
+                          "L": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          },
+                          "R": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "fraction": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 1
+                  },
+                  "step": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 1
+                  },
+                  "maxGrow": {
+                    "type": "number",
+                    "minimum": 1
+                  }
+                }
+              },
+              "tube": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "axisFrom",
+                  "axisTo"
+                ],
+                "properties": {
+                  "axisFrom": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_]+$"
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "L",
+                          "R"
+                        ],
+                        "properties": {
+                          "L": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          },
+                          "R": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "axisTo": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_]+$"
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "L",
+                          "R"
+                        ],
+                        "properties": {
+                          "L": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          },
+                          "R": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "sliceMetres": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "smooth": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "radial": {
+                    "enum": [
+                      "enclose",
+                      "match"
+                    ]
+                  },
+                  "centre": {
+                    "enum": [
+                      "limb",
+                      "cuff",
+                      "none"
+                    ]
+                  },
+                  "radialKnots": {
+                    "type": "array",
+                    "minItems": 2,
+                    "items": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  },
+                  "band": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "fade": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "stretch": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "bone",
+                      "waist"
+                    ],
+                    "properties": {
+                      "bone": {
+                        "oneOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "L",
+                              "R"
+                            ],
+                            "properties": {
+                              "L": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z0-9_]+$"
+                              },
+                              "R": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z0-9_]+$"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "waist": {
+                        "oneOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "L",
+                              "R"
+                            ],
+                            "properties": {
+                              "L": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z0-9_]+$"
+                              },
+                              "R": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z0-9_]+$"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "clearance": {
+            "type": "number",
+            "minimum": 0
+          },
+          "hidesPieces": {
+            "type": "boolean"
+          },
+          "shellRadius": {
+            "type": "number",
+            "minimum": 0
+          },
+          "shrinkwrap": {
+            "enum": [
+              "all",
+              "unreplaced",
+              "none"
+            ]
+          },
+          "layer": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "coverReach": {
+            "type": "number",
+            "minimum": 0
+          },
+          "hug": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "bands",
+              "reach",
+              "fade"
+            ],
+            "properties": {
+              "bands": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                }
+              },
+              "reach": {
+                "type": "number",
+                "minimum": 0
+              },
+              "fade": {
+                "type": "number",
+                "minimum": 0
+              }
+            }
+          },
+          "weights": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "mode",
+              "allowedBones",
+              "rigidBone"
+            ],
+            "properties": {
+              "mode": {
+                "enum": [
+                  "transfer",
+                  "stiff",
+                  "rigid"
+                ]
+              },
+              "allowedBones": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_]+$"
+                }
+              },
+              "rigidBone": {
+                "type": [
+                  "object",
+                  "string",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "required": [
+                  "L",
+                  "R"
+                ],
+                "properties": {
+                  "L": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_]+$"
+                  },
+                  "R": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_]+$"
+                  }
+                }
+              },
+              "stiffness": {
+                "type": "number",
+                "minimum": 1
+              }
+            }
+          },
+          "clip": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "depth",
+              "fraction"
+            ],
+            "properties": {
+              "depth": {
+                "type": "number",
+                "minimum": 0
+              },
+              "fraction": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          },
+          "budget": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "maxTriangles",
+              "maxMaterials"
+            ],
+            "properties": {
+              "maxTriangles": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "maxMaterials": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        }
       }
     },
     "regions": {
       "type": "object",
-      "required": ["required", "excluded", "allowedBones"],
+      "required": [
+        "required",
+        "excluded",
+        "allowedBones"
+      ],
       "properties": {
-        "required": { "type": "array", "items": { "type": "string" } },
-        "excluded": { "type": "array", "items": { "type": "string" } },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excluded": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "allowedBones": {
           "type": "object",
-          "additionalProperties": { "type": "array", "items": { "type": "string" } }
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         }
       }
     },
     "gates": {
       "type": "object",
-      "required": ["uprightDegrees", "torsoRakeDegrees", "heightTolerance", "groundToleranceMetres",
-                   "farFieldDisplacement90Cm", "farFieldDisplacement150Cm", "flexion60DisplacementCm",
-                   "normalInversions90", "normalInversions150", "clavicleShare", "ankleAlongFootMax",
-                   "maxLimbReachHeight", "maxSpineReachHeight"],
-      "additionalProperties": { "type": ["number", "string"] }
+      "required": [
+        "uprightDegrees",
+        "torsoRakeDegrees",
+        "heightTolerance",
+        "groundToleranceMetres",
+        "farFieldDisplacement90Cm",
+        "farFieldDisplacement150Cm",
+        "flexion60DisplacementCm",
+        "normalInversions90",
+        "normalInversions150",
+        "clavicleShare",
+        "ankleAlongFootMax",
+        "maxLimbReachHeight",
+        "maxSpineReachHeight"
+      ],
+      "additionalProperties": {
+        "type": [
+          "number",
+          "string"
+        ]
+      }
     }
   }
 }

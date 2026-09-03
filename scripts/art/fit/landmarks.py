@@ -36,7 +36,11 @@ OUTER_CLUSTER_MINIMUM_GAP = 0.015
 SEAM_PAIR_COUNT = 32
 SOLE_BAND = 0.012
 HIP_LATERAL_LIMIT = 0.16
-WRIST_SEARCH = (0.6, 0.93)
+WRIST_SLICE_HALF = 0.008
+WRIST_SAMPLE_STEP = 0.0025
+FOREARM_SEARCH_START = 0.25
+PALM_JUMP_SPAN = 0.0167
+PALM_WIDTH_JUMP = 1.3
 
 
 class LandmarkError(RuntimeError):
@@ -182,13 +186,45 @@ def _hand_tip(points: np.ndarray, wrist: np.ndarray) -> np.ndarray:
     return wrist + unit * float(np.percentile(along, 90))
 
 
-def _wrist_from_arm(body: np.ndarray, shoulder: np.ndarray, elbow: np.ndarray, side: int, height: float):
-    """The wrist on a body whose hands are not separate: the forearm's narrowest section.
+def _perpendicular(direction: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    seed = np.array([0.0, 0.0, 1.0]) if abs(direction[2]) < 0.9 else np.array([1.0, 0.0, 0.0])
+    across = np.cross(direction, seed)
+    across = across / np.linalg.norm(across)
+    return across, np.cross(direction, across)
 
-    Points beyond the elbow along the upper arm's axis are binned by distance
-    along it; the bin with the smallest cross-section, past the mid-forearm and
-    before the hand widens, is the wrist. The hand tip is the far end of the
-    same run.
+
+def _section_widths(points: np.ndarray, run_along: np.ndarray, direction: np.ndarray,
+                    samples: np.ndarray, half: float) -> np.ndarray:
+    """How wide the limb is at each sample, measured about that slice's own centre.
+
+    Radius from the axis line reads a hand's offset from that line as width, and
+    a palm hanging off the forearm's axis is offset by more than it is wide: the
+    widest section then lands on the knuckles and the narrowest inside the palm.
+    """
+    across, up = _perpendicular(direction)
+    first, second = points @ across, points @ up
+    widths = np.full(len(samples), np.inf)
+    for at, sample in enumerate(samples):
+        sliced = np.abs(run_along - sample) <= half
+        if sliced.sum() < MINIMUM_SLICE_POINTS:
+            continue
+        one, two = first[sliced], second[sliced]
+        centre_one = (np.percentile(one, 10) + np.percentile(one, 90)) / 2
+        centre_two = (np.percentile(two, 10) + np.percentile(two, 90)) / 2
+        widths[at] = 2 * float(np.percentile(np.hypot(one - centre_one, two - centre_two), 90))
+    return widths
+
+
+def _wrist_from_arm(body: np.ndarray, shoulder: np.ndarray, elbow: np.ndarray, side: int, height: float):
+    """The wrist on a body whose hands are not separate: where the palm starts widening.
+
+    Points beyond the elbow along the upper arm's axis are sampled by distance
+    along it, and the wrist is the first section past the forearm's narrow run
+    that is more than a third wider than the narrowest section within three
+    centimetres behind it. The narrowest section on its own is not the wrist: a
+    forearm tapers gradually and its minimum wanders, while the palm's own
+    minimum sits at the knuckles, a hand below where the joint belongs. The hand
+    tip is the far end of the same run.
     """
     direction = elbow - shoulder
     length = float(np.linalg.norm(direction))
@@ -199,26 +235,31 @@ def _wrist_from_arm(body: np.ndarray, shoulder: np.ndarray, elbow: np.ndarray, s
     beyond = (along > length) & (body[:, 0] * side > 0) & (radial < height * 0.09)
     if beyond.sum() < MINIMUM_SLICE_POINTS * 4:
         raise LandmarkError("forearm run is under-sampled")
-    run_along, run_radial = along[beyond] - length, radial[beyond]
+    run_along, run_points = along[beyond] - length, body[beyond]
     reach = float(np.percentile(run_along, 99))
-    step = height * 0.01
-    bins = np.arange(0.0, reach, step)
-    widths = np.array([np.percentile(run_radial[(run_along >= start) & (run_along < start + step)], 85)
-                       if ((run_along >= start) & (run_along < start + step)).sum() >= MINIMUM_SLICE_POINTS else np.inf
-                       for start in bins])
-    window = (bins >= reach * WRIST_SEARCH[0]) & (bins <= reach * WRIST_SEARCH[1])
-    if not window.any() or not np.isfinite(widths[window]).any():
-        raise LandmarkError("no forearm section to read a wrist from")
-    at = int(np.argmin(np.where(window, widths, np.inf)))
-    wrist_along = bins[at] + step / 2
+    half = height * WRIST_SLICE_HALF
+    samples = np.arange(0.0, reach, height * WRIST_SAMPLE_STEP)
+    widths = _section_widths(run_points, run_along, direction, samples, half)
+    span, palm, narrowest = height * PALM_JUMP_SPAN, None, float("inf")
+    for at, sample in enumerate(samples):
+        if sample < reach * FOREARM_SEARCH_START or not np.isfinite(widths[at]):
+            continue
+        behind = (samples >= sample - span) & (samples <= sample) & np.isfinite(widths)
+        narrowest = float(np.min(widths[behind]))
+        if widths[at] > narrowest * PALM_WIDTH_JUMP:
+            palm = at
+            break
+    if palm is None:
+        raise LandmarkError("no wrist to read: the arm never widens into a palm past its forearm")
     slab = beyond.copy()
-    slab[beyond] = np.abs(run_along - wrist_along) <= step
+    slab[beyond] = np.abs(run_along - samples[palm]) <= half
     wrist = _surface_centre(body[slab])
     tip_slab = beyond.copy()
     tip_slab[beyond] = run_along >= reach - height * 0.02
     tip = _surface_centre(body[tip_slab]) if tip_slab.sum() >= MINIMUM_SLICE_POINTS else shoulder + direction * (length + reach)
     return wrist, tip, {"sampleCount": int(slab.sum()), "forearmReachMetres": round(reach, 6),
-                        "wristWidthMetres": round(float(widths[at]) * 2, 6)}
+                        "forearmWidthMetres": round(narrowest, 6),
+                        "wristWidthMetres": round(float(widths[palm]), 6)}
 
 
 def _sole(points: np.ndarray, side: int, floor: float, height: float) -> np.ndarray:
@@ -332,7 +373,7 @@ def fit(regions: dict[str, np.ndarray]) -> dict:
         for side, sign in (("L", 1), ("R", -1)):
             wrist, tip, detail = _wrist_from_arm(body, landmarks[f"shoulder_{side}"], landmarks[f"elbow_{side}"], sign, height)
             wrists[side], hands[side] = wrist, tip
-            wrist_detail[side] = {"method": "forearm_narrowest_section", **detail}
+            wrist_detail[side] = {"method": "forearm_run_palm_start", **detail}
             hand_detail[side] = {"method": "forearm_axis_extent", **detail}
     landmarks["wrist_L"], landmarks["wrist_R"], error = _mirror(wrists["L"], wrists["R"])
     for side in ("L", "R"):

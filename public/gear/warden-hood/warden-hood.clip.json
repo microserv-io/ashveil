@@ -1,0 +1,48 @@
+{
+  "schema": "ashveil.gear-clip.v1",
+  "body": "masculine-v3",
+  "piece": "warden-hood",
+  "slot": "head",
+  "hides": {
+    "Body": 1041,
+    "Facial_Feature_01": 80,
+    "Facial_Feature_02": 25,
+    "Facial_Feature_03": 17,
+    "Facial_Feature_04": 27,
+    "Head": 1206
+  },
+  "clip": {
+    "depth": 0.005,
+    "fraction": 0.002
+  },
+  "vertices": 4630,
+  "exempt": 0,
+  "poses": 201,
+  "cycles": {
+    "motion": {
+      "pose": "cleave",
+      "phase": 0.1875,
+      "maxDepth": 0.018675188513787886,
+      "count": 4,
+      "fraction": 0.0008639308855291577
+    },
+    "stress": {
+      "pose": "none",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    },
+    "advisory": {
+      "pose": "none",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    }
+  },
+  "gates": {
+    "clears_the_body_through_motion_cycles": true,
+    "clears_the_body_through_stress_poses": true
+  }
+}

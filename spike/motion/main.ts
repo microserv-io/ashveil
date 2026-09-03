@@ -1,6 +1,15 @@
 import '../../src/style.css'
 import * as THREE from 'three'
 import { disposeActorView, orientActorView, type ActorView } from '../../src/render/actorview'
+import {
+  applyBodyMasks,
+  applyGearMasks,
+  removePiece,
+  updateWornPieces,
+  viewMaterialsWith,
+  wearPiece,
+  type WornPiece,
+} from '../../src/render/gear'
 import { loadModels } from '../../src/render/models'
 import type { RigState } from '../../src/render/rig'
 import type { RigInput } from '../../src/render/riginput'
@@ -16,6 +25,7 @@ import {
   reviewBodyScale,
   type ReviewBodyDefinition,
 } from './body'
+import { loadReviewGear, REVIEW_GEAR } from './gear'
 
 /**
  * One body, the gameplay camera, and every knob the animation pipeline has.
@@ -34,12 +44,14 @@ const LEASH = 4.5
 const TURN_RATE = 2.6
 const TURN_DURATION = 0.8
 const PANEL_KEY = 'ashveil.motion.panel'
+const GEAR_KEY = 'ashveil.motion.gear.off'
 /** Below this the panel would cover the body, so it starts out of the way. */
 const NARROW_VIEWPORT = 640
 
 const sim = new Sim({ seed: SEED })
 await loadModels('models')
 const bodySources = await loadReviewBodies()
+const gearSources = await loadReviewGear()
 
 const host = new SceneHost(document.getElementById('stage')!)
 host.buildTerrain(sim.map)
@@ -60,6 +72,7 @@ const toggle = element<HTMLButtonElement>('panel-toggle')
 fill(bodySelect, bodies.map((entry) => entry.id))
 fill(state, ['idle', 'moving', 'dead', ...Object.keys(SKILLS)])
 state.value = 'moving'
+applyQuery()
 
 const input: RigInput = {
   state: 'moving',
@@ -86,7 +99,14 @@ let hitAge: number | null = null
 let castAt = 0
 let stepQueued = false
 let previous = performance.now()
+let worn: WornPiece[] = []
+let bodyMaterials = 0
+const wearing = readGearPreference()
+// Declared before the panel is built: a `const` below that call is still in its
+// temporal dead zone when the first checkbox is made.
+const gearBoxes = new Map<string, HTMLInputElement>()
 
+buildGearPanel()
 rebuild()
 recentre()
 
@@ -130,6 +150,8 @@ function frame(now: number): void {
   body.group.position.set(actor.pos.x, 0, actor.pos.y)
   orientActorView(body, actor)
   body.driver.update(input, delta)
+  // After the body's own pose: a drape hangs off a bone that has already moved.
+  updateWornPieces(worn, input, delta)
 
   host.followPlayer(actor.pos, wall)
   placeCamera()
@@ -235,6 +257,119 @@ function rebuild(): void {
   view = createReviewBodyView(actor, bodySources.get(chosen.definition.id)!, chosen.definition)
   bodyScale = reviewBodyScale(actor.radius)
   host.scene.add(view.group)
+  // The pieces belong to the reviewer's session, not to one body, so a rebuild
+  // puts back whatever was on.
+  worn = []
+  bodyMaterials = view.materials.length
+  rewear()
+}
+
+/**
+ * Gear rides the body's own skeleton, so wearing is attach-time work: bind the
+ * piece, hide the body under it, and hand the worn materials to the view so the
+ * hit flash and death fade cover them.
+ */
+function rewear(): void {
+  const body = view!
+  for (const piece of worn) removePiece(body.group, piece)
+  worn = REVIEW_GEAR.filter((entry) => wearing.has(entry.piece)).flatMap((entry) => {
+    const loaded = gearSources.get(entry.piece)
+    return loaded
+      ? [wearPiece(body.group, {
+        slot: entry.slot,
+        scene: loaded.scene,
+        covers: loaded.covers,
+        hides: loaded.hides,
+        drapes: loaded.drapes,
+        hidesPieces: loaded.hidesPieces,
+      })]
+      : []
+  })
+  applyBodyMasks(body.group, worn)
+  applyGearMasks(worn)
+  viewMaterialsWith(body, bodyMaterials, worn)
+  saveGear()
+}
+
+function buildGearPanel(): void {
+  element('gear-panel').hidden = REVIEW_GEAR.length === 0
+  element('gear').replaceChildren(
+    ...REVIEW_GEAR.map((entry) => {
+      const missing = !gearSources.has(entry.piece)
+      const label = document.createElement('label')
+      label.className = missing ? 'flex items-center gap-2 opacity-40' : 'flex items-center gap-2'
+      if (missing) label.title = 'this piece did not load; see the console'
+      const box = document.createElement('input')
+      box.type = 'checkbox'
+      box.disabled = missing
+      box.checked = !missing && wearing.has(entry.piece)
+      box.className = 'accent-ember'
+      box.addEventListener('change', () => {
+        if (box.checked) wearing.add(entry.piece)
+        else wearing.delete(entry.piece)
+        rewear()
+      })
+      const name = document.createElement('span')
+      name.textContent = `${entry.slot} · ${entry.piece}`
+      label.append(box, name)
+      gearBoxes.set(entry.piece, box)
+      return label
+    }),
+  )
+  element('gear-all').addEventListener('click', () => setGear(REVIEW_GEAR.map((entry) => entry.piece)))
+  element('gear-bare').addEventListener('click', () => setGear([]))
+}
+
+function setGear(pieces: readonly string[]): void {
+  wearing.clear()
+  for (const piece of pieces) if (gearSources.has(piece)) wearing.add(piece)
+  for (const [piece, box] of gearBoxes) box.checked = wearing.has(piece)
+  rewear()
+}
+
+/**
+ * The first chain of each draped piece, in degrees from hanging straight down. It
+ * is the one number that says whether the cloth is swinging, trailing or stuck
+ * against a clamp, and reading it beats guessing from a body forty pixels tall.
+ */
+function drapeLines(): string[] {
+  return worn.flatMap((piece) => {
+    const chain = piece.drapes[0]
+    if (!chain) return []
+    const swing = [...chain.state.swing].map((angle) => degrees(angle)).join(' ')
+    const side = [...chain.state.side].map((angle) => degrees(angle)).join(' ')
+    return [`${chain.name.padEnd(10).slice(0, 10)} swing ${swing} · side ${side}`]
+  })
+}
+
+function degrees(radians: number): string {
+  return ((radians * 180) / Math.PI).toFixed(1).padStart(6)
+}
+
+function wornSlots(): string {
+  return worn.length === 0 ? 'bare' : worn.map((piece) => piece.slot).join(' ')
+}
+
+function saveGear(): void {
+  try {
+    const off = REVIEW_GEAR.filter((entry) => !wearing.has(entry.piece)).map((entry) => entry.piece)
+    localStorage.setItem(GEAR_KEY, JSON.stringify(off))
+  } catch {}
+}
+
+/**
+ * Dressed unless the reviewer said otherwise, so the bare body is the special case.
+ * What is stored is what was taken off, not what was put on: a piece fitted since
+ * the reviewer last set this is worn, rather than hidden by a preference written
+ * before it existed.
+ */
+function readGearPreference(): Set<string> {
+  const off = new Set<string>()
+  try {
+    const stored = localStorage.getItem(GEAR_KEY)
+    if (stored) for (const piece of JSON.parse(stored) as string[]) off.add(piece)
+  } catch {}
+  return new Set(REVIEW_GEAR.filter((entry) => !off.has(entry.piece)).map((entry) => entry.piece))
 }
 
 function recentre(): void {
@@ -259,6 +394,8 @@ function describe(wall: number): string {
     'driver     procedural',
     `body       ${bodySelect.value}`,
     `bodyScale  ${bodyScale.toFixed(6)}`,
+    `gear       ${wornSlots()}`,
+    ...drapeLines(),
     `cast       ${castAt.toFixed(2)}s of ${CAST_LENGTH.toFixed(2)}`,
     `frame      ${(wall * 1000).toFixed(1)}ms`,
     '',
@@ -294,7 +431,25 @@ function showPanels(open: boolean): void {
   } catch {}
 }
 
+/**
+ * `?state=idle&distance=3&pitch=12&orbit=90&speed=2&time=0&panel=closed` sets the
+ * page up from the URL, so a screenshot or a phone can land on an exact view.
+ */
+function applyQuery(): void {
+  const query = new URLSearchParams(location.search)
+  const sliders: readonly (readonly [string, HTMLInputElement | HTMLSelectElement])[] = [
+    ['state', state], ['speed', speed], ['time', scale], ['distance', distance], ['pitch', pitch], ['orbit', orbit],
+  ]
+  for (const [key, control] of sliders) {
+    const value = query.get(key)
+    if (value !== null) control.value = value
+  }
+}
+
 function readPanelPreference(): boolean {
+  const query = new URLSearchParams(location.search).get('panel')
+  if (query === 'closed') return false
+  if (query === 'open') return true
   try {
     const stored = localStorage.getItem(PANEL_KEY)
     if (stored !== null) return stored === 'open'

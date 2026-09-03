@@ -4,7 +4,7 @@
   "additionalProperties": false,
   "required": ["schema", "family", "contractVersion", "body", "source", "canonicalHeight", "helpers",
                "bones", "landmarks", "footprint", "restSignatureSha256", "inverseBindSha256", "budget",
-               "gates", "reportFile"],
+               "gates", "masksFile", "slots", "reportFile"],
   "properties": {
     "schema": { "const": "ashveil.body-manifest.v1" },
     "family": { "type": "string", "pattern": "^[a-z]+\\.v[0-9]+$" },
@@ -45,6 +45,18 @@
       "additionalProperties": { "type": "integer", "minimum": 0 }
     },
     "gates": { "type": "object", "additionalProperties": { "type": "boolean" } },
+    "masksFile": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*\\.masks\\.json$" },
+    "slots": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["vertices"],
+        "properties": {
+          "vertices": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
     "reportFile": { "type": "string" }
   }
 }

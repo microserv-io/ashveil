@@ -1,0 +1,74 @@
+{
+  "schema": "ashveil.gear-clip.v1",
+  "body": "masculine-v3",
+  "piece": "warden-pauldrons",
+  "slot": "shoulders",
+  "hides": {
+    "Body": 80
+  },
+  "clip": {
+    "depth": 0.005,
+    "fraction": 0.002
+  },
+  "vertices": 4677,
+  "exempt": 2074,
+  "poses": 201,
+  "cycles": {
+    "motion": {
+      "pose": "none",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    },
+    "stress": {
+      "pose": "none",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    },
+    "advisory": {
+      "pose": "abduct150",
+      "phase": 0,
+      "maxDepth": 0.05976438801898574,
+      "count": 15,
+      "fraction": 0.003207184092366902,
+      "owned": 15,
+      "fixed": 0
+    }
+  },
+  "samples": {
+    "cleave@0.34375": {
+      "pose": "cleave",
+      "phase": 0.34375,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0,
+      "owned": 0,
+      "fixed": 0
+    },
+    "frost_nova@0.375": {
+      "pose": "frost_nova",
+      "phase": 0.375,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0,
+      "owned": 0,
+      "fixed": 0
+    },
+    "abduct90@0": {
+      "pose": "abduct90",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0,
+      "owned": 0,
+      "fixed": 0
+    }
+  },
+  "gates": {
+    "clears_the_body_through_motion_cycles": true,
+    "clears_the_body_through_stress_poses": true
+  }
+}

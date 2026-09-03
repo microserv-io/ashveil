@@ -57,6 +57,10 @@ Small dependency set on purpose.
   a named gate. `npm run art:profile -- --body <name>` generates its fixture and
   skeleton profile. See `docs/pipeline.md`; the frame and bone axis rules live in
   `scripts/art/fit/frame.py` and are worth reading before touching either.
+- `npm run art:gear -- --input <piece.glb> --slot <slot> --body <name> --piece <name>`
+  fits one piece to a fitted body into `public/gear/<piece>/`, and fails closed the
+  same way `art:fit` does, including a runtime clip gate for the whole motion set.
+  See `docs/pipeline.md`.
 - `npm run motion:dev` serves the motion review page on :5277, bound to every
   interface: one body at the gameplay camera with the driver, state, speed and
   time scale under your hand.
@@ -156,6 +160,9 @@ untested, or unmeasurable by this bot", and the third is the easiest one to miss
   every shader program, so one light attached to a projectile recompiles all of them
   mid-fight: that was an 85ms frame. Claim one from `LightPool` in
   `src/render/lights.ts` instead. `tests/frame_budget.test.ts` guards it.
+- **The look lives in `src/render/look.ts`.** Anything loaded outside `loadModels`
+  (review bodies, gear) goes through `stylise()` or renders PBR beside toon
+  neighbours; `tests/look.test.ts` guards the types.
 - **Every sim state needs a pose.** `POSE_SOURCES`'s
   `Readonly<Record<PoseClipName, PoseClipSource>>` type and the `SKILL_CLIPS` list
   pinned in `tests/procedural_poses.test.ts` guard skill coverage;

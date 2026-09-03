@@ -1,0 +1,365 @@
+{
+  "schema": "ashveil.gear-report.v1",
+  "family": "humanoid.v1",
+  "contractVersion": "1.2.0",
+  "body": "masculine-v3",
+  "slot": "chest",
+  "piece": "warden-tunic",
+  "covers": [
+    "chest",
+    "shoulders"
+  ],
+  "under": [
+    "warden-trousers"
+  ],
+  "referenceRegions": [
+    "chest",
+    "shoulders"
+  ],
+  "coverage": {
+    "reachMetres": 0.06,
+    "triangles": 7772,
+    "hangingTriangles": 0,
+    "hiddenVertices": {
+      "Body": 2394,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    },
+    "measuredVertices": {
+      "Body": 2394,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    },
+    "replacedVertices": {
+      "Body": 0,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    }
+  },
+  "replaces": [],
+  "source": {
+    "file": "warden-tunic-tripo.glb",
+    "sha256": "a2018aec6f2c34932ae14c87336cf3acb9c3d67c1eab9f4dba3f341265f17cd7"
+  },
+  "islands": {
+    "found": 23,
+    "kept": 5,
+    "grouped": {
+      "all": 5
+    },
+    "droppedTriangleCounts": [
+      36,
+      39,
+      39,
+      39,
+      39,
+      42,
+      42,
+      42,
+      78,
+      80,
+      86,
+      96,
+      96,
+      96,
+      96,
+      96,
+      140,
+      150
+    ],
+    "triangles": 7772
+  },
+  "alignment": {
+    "all": {
+      "scale": 0.621914,
+      "yawDegrees": 0,
+      "translation": [
+        -0.000006,
+        0.964817,
+        -0.019322
+      ],
+      "insideVerticesBeforeShrinkwrap": 2520,
+      "insideFractionBeforeShrinkwrap": 0.601145,
+      "deepInsideVerticesBeforeShrinkwrap": 1993,
+      "deepInsideFractionBeforeShrinkwrap": 0.475429,
+      "meanSurfaceDistanceMetres": 0.012012,
+      "insideVerticesByYaw": {
+        "0": 2520,
+        "180": 1764
+      },
+      "meanSurfaceDistanceByYaw": {
+        "0": 0.012012,
+        "180": 0.02839
+      },
+      "anchorResidualMetres": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "proxy": false,
+      "reference": [
+        "chest",
+        "shoulders"
+      ]
+    }
+  },
+  "facing": {
+    "pieceCentroidZ": -0.03394,
+    "regionCentroidZ": -0.027659,
+    "aheadOfRegionMetres": -0.006281
+  },
+  "regionEnclosed": {
+    "all": {
+      "regionVertices": 1786,
+      "withinPieceBox": 1786,
+      "insideVertices": 1559,
+      "insideFraction": 0.8729
+    }
+  },
+  "decimation": {
+    "trianglesBefore": 7772,
+    "trianglesAfter": 7772,
+    "ratio": 1
+  },
+  "shrinkwrap": {
+    "mode": "all",
+    "pieceVertices": 4192,
+    "outsidePasses": [
+      {
+        "movedVertices": 3464,
+        "movedFraction": 0.826336,
+        "carriedVertices": 2168,
+        "insideAfter": 89
+      },
+      {
+        "movedVertices": 856,
+        "movedFraction": 0.204198,
+        "carriedVertices": 1203,
+        "insideAfter": 3
+      },
+      {
+        "movedVertices": 276,
+        "movedFraction": 0.06584,
+        "carriedVertices": 563,
+        "insideAfter": 9
+      },
+      {
+        "movedVertices": 249,
+        "movedFraction": 0.059399,
+        "carriedVertices": 343,
+        "insideAfter": 5
+      },
+      {
+        "movedVertices": 247,
+        "movedFraction": 0.058922,
+        "carriedVertices": 228,
+        "insideAfter": 14
+      },
+      {
+        "movedVertices": 252,
+        "movedFraction": 0.060115,
+        "carriedVertices": 173,
+        "insideAfter": 4
+      },
+      {
+        "movedVertices": 239,
+        "movedFraction": 0.057013,
+        "carriedVertices": 144,
+        "insideAfter": 13
+      },
+      {
+        "movedVertices": 249,
+        "movedFraction": 0.059399,
+        "carriedVertices": 142,
+        "insideAfter": 4
+      }
+    ],
+    "wholeMovedVertices": 5832,
+    "hugSelectedVertices": 1138,
+    "hugMovedVertices": 906,
+    "shellRadius": 0.01,
+    "wholeMovedFraction": 1.391221,
+    "hugMovedFraction": 0.216126
+  },
+  "weights": {
+    "mode": "transfer",
+    "strippedGroups": {
+      "warden-tunic": [
+        "foot_L",
+        "foot_R",
+        "forearm_L",
+        "forearm_R",
+        "hand_L",
+        "hand_R",
+        "head",
+        "root",
+        "shin_L",
+        "shin_R",
+        "thigh_L",
+        "thigh_R",
+        "twist_upper_arm_L",
+        "twist_upper_arm_R"
+      ]
+    },
+    "orphanedVertices": {
+      "warden-tunic": 30
+    },
+    "band": {
+      "warden-tunic": {
+        "vertices": 4192,
+        "bandVertices": 2238,
+        "bandFraction": 0.533874,
+        "ceiling": 0.8,
+        "minPeakWeight": 0.305477,
+        "meanPeakWeight": 0.758351,
+        "bandHeightMetres": 0.598839,
+        "bandMinY": 0.966684,
+        "bandMaxY": 1.565523
+      }
+    }
+  },
+  "drapes": [],
+  "twoSided": null,
+  "rest": {
+    "maxRestRotationBefore": 0,
+    "maxRestRotationAfter": 0,
+    "joints": 24
+  },
+  "runtime": {
+    "bones": [
+      "root",
+      "pelvis",
+      "spine",
+      "chest",
+      "clavicle_L",
+      "shoulder_helper_L",
+      "upper_arm_L",
+      "forearm_L",
+      "hand_L",
+      "twist_upper_arm_L",
+      "clavicle_R",
+      "shoulder_helper_R",
+      "upper_arm_R",
+      "forearm_R",
+      "hand_R",
+      "twist_upper_arm_R",
+      "neck",
+      "head",
+      "thigh_L",
+      "shin_L",
+      "foot_L",
+      "thigh_R",
+      "shin_R",
+      "foot_R"
+    ],
+    "bodyBones": [
+      "root",
+      "pelvis",
+      "spine",
+      "chest",
+      "clavicle_L",
+      "shoulder_helper_L",
+      "upper_arm_L",
+      "forearm_L",
+      "hand_L",
+      "twist_upper_arm_L",
+      "clavicle_R",
+      "shoulder_helper_R",
+      "upper_arm_R",
+      "forearm_R",
+      "hand_R",
+      "twist_upper_arm_R",
+      "neck",
+      "head",
+      "thigh_L",
+      "shin_L",
+      "foot_L",
+      "thigh_R",
+      "shin_R",
+      "foot_R"
+    ],
+    "extraBones": [],
+    "extraBoneParents": {},
+    "inverseBindMaxAbsDifference": 1.79e-7,
+    "triangles": 7772,
+    "materials": 1,
+    "meshes": 1,
+    "sides": {
+      "L": 2,
+      "R": 3,
+      "islands": 5
+    },
+    "maxInfluencesPerVertex": 4,
+    "minWeightSum": 0.999999875,
+    "maxWeightSum": 1.000000119,
+    "influencingBones": [
+      "chest",
+      "clavicle_L",
+      "clavicle_R",
+      "neck",
+      "pelvis",
+      "shoulder_helper_L",
+      "shoulder_helper_R",
+      "spine",
+      "upper_arm_L",
+      "upper_arm_R"
+    ],
+    "hasUvs": true,
+    "textures": 1,
+    "maxRestRotation": 0,
+    "sourceHad": {
+      "uvs": true,
+      "textures": true
+    },
+    "bindClearance": {
+      "insideVertices": 2,
+      "disagreeingVertices": 41,
+      "maxPenetrationMetres": 0.003741253,
+      "deepestPoint": [
+        -0.017161,
+        0.986939,
+        0.103037
+      ]
+    }
+  },
+  "gates": {
+    "piece_joints_match_the_body": true,
+    "inverse_binds_match_the_body": true,
+    "at_most_four_influences_per_vertex": true,
+    "weights_sum_to_one": true,
+    "every_influence_is_an_allowed_bone": true,
+    "triangles_within_budget": true,
+    "materials_within_budget": true,
+    "uvs_survived_the_pipeline": true,
+    "textures_survived_the_pipeline": true,
+    "bones_rest_axis_aligned": true,
+    "piece_sits_off_the_skin_at_bind": true,
+    "piece_is_one_mesh": true,
+    "clears_the_body_through_motion_cycles": true,
+    "clears_the_body_through_stress_poses": true
+  },
+  "gatesPass": true,
+  "outputs": {
+    "glb": "warden-tunic.glb",
+    "manifest": "warden-tunic.manifest.json",
+    "report": "warden-tunic.report.json",
+    "review": "warden-tunic.review.png",
+    "sha256": "5a1442b8fa264ca49070c0de403e673916352881a119bbbdfb6101bd564beacb"
+  },
+  "review": {
+    "bodyVerticesInsideThePiece": {
+      "bind": 383,
+      "abduct90": 444,
+      "flex60": 403
+    }
+  }
+}
