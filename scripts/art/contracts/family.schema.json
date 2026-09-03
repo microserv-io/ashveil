@@ -711,6 +711,12 @@
                     "type": "integer",
                     "minimum": 1
                   },
+                  "radial": {
+                    "enum": [
+                      "enclose",
+                      "match"
+                    ]
+                  },
                   "band": {
                     "type": "array",
                     "minItems": 2,

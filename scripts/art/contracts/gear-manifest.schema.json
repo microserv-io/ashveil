@@ -422,7 +422,12 @@
             "radialFactorMin",
             "radialFactorMax",
             "radialFactorMean",
-            "centreShiftMaxMetres"
+            "centreShiftMaxMetres",
+            "radial",
+            "radialClampedLanes",
+            "sliceStations",
+            "sliceFactors",
+            "sliceRatios"
           ],
           "properties": {
             "stations": {
@@ -481,9 +486,47 @@
             "radialFactorMean": {
               "type": "number"
             },
+            "radial": {
+              "enum": [
+                "enclose",
+                "match"
+              ]
+            },
+            "radialClampedLanes": {
+              "type": "integer",
+              "minimum": 0
+            },
             "centreShiftMaxMetres": {
               "type": "number",
               "minimum": 0
+            },
+            "sliceStations": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "sliceFactors": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              }
+            },
+            "sliceRatios": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              }
             }
           }
         }

@@ -800,14 +800,14 @@
         {
           "bone": "forearm_L",
           "along": [
-            0.75,
+            0.7,
             1.0
           ]
         },
         {
           "bone": "forearm_R",
           "along": [
-            0.75,
+            0.7,
             1.0
           ]
         }
@@ -853,6 +853,7 @@
           },
           "sliceMetres": 0.02,
           "smooth": 3,
+          "radial": "match",
           "stretch": {
             "bone": {
               "L": "hand_L",
@@ -865,7 +866,7 @@
           }
         }
       },
-      "clearance": 0.01,
+      "clearance": 0.003,
       "layer": 1,
       "coverReach": 0.06,
       "hug": {

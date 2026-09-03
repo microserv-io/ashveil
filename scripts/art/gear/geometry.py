@@ -24,6 +24,9 @@ DEEP_INSIDE = 0.005
 OUTSIDE_PASSES = 8
 # Cross sections a limb band is measured as. Fewer and a cuff's own wobble is the axis.
 LIMB_SLICES = 8
+# How far a `match` slice may be resized. Wider and one bad cross section - a glove's
+# curled fingers against a flat hand - reshapes the piece instead of sizing it.
+MATCH_LIMITS = (0.85, 1.35)
 # What one region vertex left outside the piece costs the roll score, as metres of
 # mean distance. Enclosure is the question a glove is judged by, so it outweighs
 # hugging: a glove tight against the back of a hand the fingers hang out of is wrong.
@@ -404,6 +407,11 @@ def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: floa
     shrinkwrap argue with the result: a glove scaled to reach the wrist has fingers
     the wrong length, and growing it to cover them turns the cuff into a bell.
 
+    `radial` says what the widening is for. `enclose` never shrinks a slice, so the
+    piece ends up round whatever it holds; `match` sizes each slice to the body's own
+    cross section within a clamp, for a piece whose `replaces` already took the skin
+    away and which therefore has to be the limb's size rather than merely fit round it.
+
     So the piece is stretched piecewise along the limb axis until its own stations -
     fingertip, wrist, cuff - sit on the body's, and then widened slice by slice until
     each cross section clears the body it holds. The slice factors are smoothed along
@@ -448,6 +456,9 @@ def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: floa
     factors = np.ones((count, 2))
     middles = np.zeros((count, 2))
     shifts = np.zeros((count, 2))
+    match = tube.get("radial", "enclose") == "match"
+    ratios = np.ones((count, 2))
+    clamped = 0
     for index in range(count):
         chosen = (along >= edges[index]) & (along <= edges[index + 1])
         held = (body_along >= edges[index]) & (body_along <= edges[index + 1])
@@ -459,8 +470,14 @@ def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: floa
             continue
         theirs = skin_lanes[held]
         shifts[index] = (theirs.max(axis=0) + theirs.min(axis=0)) * 0.5 - middles[index]
-        factors[index] = np.maximum(1.0, (theirs.max(axis=0) - theirs.min(axis=0) + 2.0 * clearance)
-                                    / np.maximum(mine.max(axis=0) - mine.min(axis=0), 1e-9))
+        ratio = ((theirs.max(axis=0) - theirs.min(axis=0) + 2.0 * clearance)
+                 / np.maximum(mine.max(axis=0) - mine.min(axis=0), 1e-9))
+        ratios[index] = ratio
+        if match:
+            factors[index] = np.clip(ratio, *MATCH_LIMITS)
+            clamped += int(np.count_nonzero(factors[index] != ratio))
+        else:
+            factors[index] = np.maximum(1.0, ratio)
 
     smooth = max(1, int(tube.get("smooth", 3)))
     if smooth > 1 and count > 1:
@@ -493,7 +510,13 @@ def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: floa
     report["radialFactorMin"] = round(float(factors.min()), 6)
     report["radialFactorMax"] = round(float(factors.max()), 6)
     report["radialFactorMean"] = round(float(factors.mean()), 6)
+    report["radial"] = "match" if match else "enclose"
+    report["radialClampedLanes"] = clamped
     report["centreShiftMaxMetres"] = round(float(np.abs(shifts).max()), 6)
+    # Per slice, so a mass where the fingers should be can be read off the report.
+    report["sliceStations"] = [round(float(value), 6) for value in centres]
+    report["sliceFactors"] = [[round(float(value), 6) for value in slice_factor] for slice_factor in factors]
+    report["sliceRatios"] = [[round(float(value), 6) for value in slice_ratio] for slice_ratio in ratios]
     return origin + np.outer(along, axis) + radial, report
 
 

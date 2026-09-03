@@ -227,7 +227,8 @@ def _tube(rule: dict, side: str | None, loaded: dict, slots: list[str], landmark
         raise RuntimeError("tube gate: the axis landmarks are the same point")
     resolved = {"axis": [b - a for a, b in zip(origin, end)], "origin": origin,
                 "sliceMetres": float(tube.get("sliceMetres", 0.02)),
-                "smooth": int(tube.get("smooth", 3)), "clearance": clearance}
+                "smooth": int(tube.get("smooth", 3)), "clearance": clearance,
+                "radial": tube.get("radial", "enclose")}
     if "band" in tube:
         resolved["band"] = list(tube["band"])
         resolved["fade"] = float(tube.get("fade", 0.0))

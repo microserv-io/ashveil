@@ -426,7 +426,17 @@ measured about each slice's own centroid rather than about the axis, or a roll a
 that axis moves the station it finds. Across the axis it slices the piece every 2cm and
 **carries each slice onto the body's own cross section** before widening it until it
 clears by the slot's clearance, smoothing both over three slices because a factor that
-jumps between slices is a ridge in the silhouette. The carrying is what makes a long
+jumps between slices is a ridge in the silhouette. `tube.radial` says what the widening
+is for: `enclose` never shrinks a slice, so the piece ends up round whatever it holds,
+and `match` sizes each slice to the body's own cross section within [0.85, 1.35] and may
+shrink one. A slot whose `replaces` already takes the skin away wants `match` — the
+glove has to be the hand's size, not merely fit round it, and `enclose` plus a 1cm
+clearance read as mittens. `feet` stays `enclose`; `hands` matches at 3mm of clearance,
+because leather is skin-tight and the tunic's sleeves are too short to layer over a cuff.
+The report carries the factor and the raw ratio per slice, which is how the source is
+told from the fit: this glove's fingers ask for 0.77 at the tips and 1.66 at the palm,
+one curled mass where the hand tapers and thin where it is broad, and no per-slice
+scaling makes fingers out of that. The carrying is what makes a long
 cuff wearable: widening an off-centre slice about the axis only throws it further off,
 which stood the gauntlet's cuff 7cm clear of the arm and belled it out to reach back —
 the funnel the reviewer saw from the side. A boot bends at the ankle, so its foot and
@@ -439,9 +449,11 @@ region-rule shape as `region`, names the skin the piece stands in for: the hand 
 union of the coverage measured off the fitted piece and that replaced region, so a
 glove hides the whole hand even where it does not quite reach — the way an armoured
 game does it — and no fingertip pokes through as bare skin. `hands` replaces the lower
-quarter of the forearm as well, because a coverage ray cannot save a vertex whose own
+third of the forearm as well, because a coverage ray cannot save a vertex whose own
 normal points away from the garment: the arm stood 6mm proud of the cuff at the back of
-the wrist and read as a patch of skin through the leather. The two counts stay separate
+the wrist and read as a patch of skin through the leather. The band ends at 0.70 because
+the poke-through vertices stop at 0.744 and the skin above the cuff's rim starts at
+0.664 — a gap the boundary sits in, so no bare arm is hidden and no patch shows. The two counts stay separate
 in the report, because a replaced region hiding much more than the coverage means the
 piece is the wrong size and the tube fit is what answers that.
 
