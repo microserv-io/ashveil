@@ -4,13 +4,13 @@
   "piece": "warden-gloves",
   "slot": "hands",
   "hides": {
-    "Body": 3843
+    "Body": 4068
   },
   "clip": {
     "depth": 0.005,
     "fraction": 0.002
   },
-  "vertices": 4018,
+  "vertices": 3989,
   "poses": 201,
   "cycles": {
     "motion": {
@@ -28,9 +28,9 @@
       "fraction": 0
     },
     "advisory": {
-      "pose": "none",
+      "pose": "abduct150",
       "phase": 0,
-      "maxDepth": 0,
+      "maxDepth": 0.0026526041643937432,
       "count": 0,
       "fraction": 0
     }

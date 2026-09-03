@@ -152,14 +152,14 @@
       0.150707
     ],
     "wrist_L": [
-      0.431139,
-      0.821006,
-      -0.000669
+      0.406686,
+      0.935503,
+      0.010648
     ],
     "wrist_R": [
-      -0.431139,
-      0.821006,
-      -0.000669
+      -0.406686,
+      0.935503,
+      0.010648
     ]
   },
   "footprint": {
@@ -168,8 +168,8 @@
     "lift": 0.116272,
     "pitch": -0.006036
   },
-  "restSignatureSha256": "b01751bf6a374d99814ef83e1d05bf709045810357b697781fa2496541335032",
-  "inverseBindSha256": "c7cb6cd38cbbe1614935a3b4a07987d7358a0c0451b15149e1d3d25992658c4c",
+  "restSignatureSha256": "84795c90272dd908ac564ad9184d6ec613d290471bef7ea3ee0683c4915cea94",
+  "inverseBindSha256": "b2afc0d2d2d4c617df741f22f6e02f1a23b695aef1519db63946c90dff12b4fe",
   "budget": {
     "triangles": 17914,
     "materials": 1,
@@ -224,7 +224,7 @@
       "vertices": 0
     },
     "hands": {
-      "vertices": 3986
+      "vertices": 4079
     },
     "shoulders": {
       "vertices": 263

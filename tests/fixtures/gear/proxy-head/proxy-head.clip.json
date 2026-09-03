@@ -4,11 +4,11 @@
   "piece": "proxy-head",
   "slot": "head",
   "hides": {
-    "Body": 943,
+    "Body": 945,
     "Facial_Feature_01": 164,
     "Facial_Feature_02": 78,
     "Facial_Feature_03": 11,
-    "Head": 1161
+    "Head": 1162
   },
   "clip": {
     "depth": 0.005,

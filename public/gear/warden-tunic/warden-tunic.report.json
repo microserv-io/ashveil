@@ -132,18 +132,18 @@
     "pieceVertices": 4192,
     "outsidePasses": [
       {
-        "movedVertices": 3371,
-        "movedFraction": 0.804151,
-        "insideAfter": 81
+        "movedVertices": 3370,
+        "movedFraction": 0.803912,
+        "insideAfter": 80
       },
       {
-        "movedVertices": 694,
-        "movedFraction": 0.165553,
+        "movedVertices": 693,
+        "movedFraction": 0.165315,
         "insideAfter": 9
       },
       {
-        "movedVertices": 252,
-        "movedFraction": 0.060115,
+        "movedVertices": 251,
+        "movedFraction": 0.059876,
         "insideAfter": 13
       },
       {
@@ -172,10 +172,10 @@
         "insideAfter": 8
       }
     ],
-    "wholeMovedVertices": 5512,
+    "wholeMovedVertices": 5509,
     "hugSelectedVertices": 1145,
     "hugMovedVertices": 286,
-    "wholeMovedFraction": 1.314885,
+    "wholeMovedFraction": 1.31417,
     "hugMovedFraction": 0.068225
   },
   "weights": {
@@ -204,11 +204,11 @@
     "band": {
       "warden-tunic": {
         "vertices": 4192,
-        "bandVertices": 2269,
-        "bandFraction": 0.541269,
+        "bandVertices": 2264,
+        "bandFraction": 0.540076,
         "ceiling": 0.8,
         "minPeakWeight": 0.295446,
-        "meanPeakWeight": 0.756552,
+        "meanPeakWeight": 0.757067,
         "bandHeightMetres": 0.59964,
         "bandMinY": 0.965003,
         "bandMaxY": 1.564643
@@ -283,8 +283,8 @@
       "islands": 5
     },
     "maxInfluencesPerVertex": 4,
-    "minWeightSum": 0.999999874,
-    "maxWeightSum": 1.000000104,
+    "minWeightSum": 0.99999988,
+    "maxWeightSum": 1.000000119,
     "influencingBones": [
       "chest",
       "clavicle_L",
@@ -337,13 +337,13 @@
     "manifest": "warden-tunic.manifest.json",
     "report": "warden-tunic.report.json",
     "review": "warden-tunic.review.png",
-    "sha256": "4334ea4506fb87debee214e7f0c7c945afa2a22e3c9ca80dcd359f9d577ec4ec"
+    "sha256": "971abf66c680b4f3705b88e09daded25e04841e6869a323ea1b398496e6c82a3"
   },
   "review": {
     "bodyVerticesInsideThePiece": {
       "bind": 534,
-      "abduct90": 500,
-      "flex60": 524
+      "abduct90": 452,
+      "flex60": 520
     }
   }
 }

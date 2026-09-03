@@ -49,7 +49,7 @@
   ],
   "source": {
     "file": "proxy:feet",
-    "sha256": "28a5088916abf4069df26bf1b7461544ed6063e2a307d8f83061b0e296bea826"
+    "sha256": "9b72b23dc2a60c1784f4892da3da72635a530f0257ce459e77219068b74c0063"
   },
   "islands": {
     "found": 2,
@@ -368,7 +368,7 @@
     "manifest": "proxy-feet.manifest.json",
     "report": "proxy-feet.report.json",
     "review": "proxy-feet.review.png",
-    "sha256": "6119df1a64e02a73f917c6a6292a0e0004511086bb42c124a987b62e66880b3a"
+    "sha256": "bb512957c9a63216dfaa491fe7cf98415a769fbd01b69b4277b1d8e118899a88"
   },
   "review": {
     "bodyVerticesInsideThePiece": {

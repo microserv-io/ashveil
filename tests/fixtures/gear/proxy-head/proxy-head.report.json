@@ -15,20 +15,20 @@
   "coverage": {
     "reachMetres": 0.06,
     "hiddenVertices": {
-      "Body": 943,
+      "Body": 945,
       "Facial_Feature_01": 164,
       "Facial_Feature_02": 78,
       "Facial_Feature_03": 11,
       "Facial_Feature_04": 0,
-      "Head": 1161
+      "Head": 1162
     },
     "measuredVertices": {
-      "Body": 943,
+      "Body": 945,
       "Facial_Feature_01": 164,
       "Facial_Feature_02": 78,
       "Facial_Feature_03": 11,
       "Facial_Feature_04": 0,
-      "Head": 1161
+      "Head": 1162
     },
     "replacedVertices": {
       "Body": 0,
@@ -42,7 +42,7 @@
   "replaces": [],
   "source": {
     "file": "proxy:head",
-    "sha256": "28a5088916abf4069df26bf1b7461544ed6063e2a307d8f83061b0e296bea826"
+    "sha256": "9b72b23dc2a60c1784f4892da3da72635a530f0257ce459e77219068b74c0063"
   },
   "islands": {
     "found": 2,
@@ -95,8 +95,8 @@
     "all": {
       "regionVertices": 1236,
       "withinPieceBox": 1231,
-      "insideVertices": 825,
-      "insideFraction": 0.670187
+      "insideVertices": 829,
+      "insideFraction": 0.673436
     }
   },
   "decimation": {
@@ -113,20 +113,20 @@
         "insideAfter": 14
       },
       {
-        "movedVertices": 201,
-        "movedFraction": 0.309231,
+        "movedVertices": 195,
+        "movedFraction": 0.3,
         "insideAfter": 2
       },
       {
-        "movedVertices": 63,
-        "movedFraction": 0.096923,
+        "movedVertices": 56,
+        "movedFraction": 0.086154,
         "insideAfter": 0
       }
     ],
-    "wholeMovedVertices": 883,
+    "wholeMovedVertices": 870,
     "hugSelectedVertices": 0,
     "hugMovedVertices": 0,
-    "wholeMovedFraction": 1.358462,
+    "wholeMovedFraction": 1.338462,
     "hugMovedFraction": 0
   },
   "weights": {
@@ -280,13 +280,13 @@
     "manifest": "proxy-head.manifest.json",
     "report": "proxy-head.report.json",
     "review": "proxy-head.review.png",
-    "sha256": "0dfabd6da302efd713f849451ed321a9ea796b8c0ac69bee66ae37d700c5ce50"
+    "sha256": "00b4ec697db555b8f3d7e8ff17fb855549dffeb7d9c1593ef52c99c11adf2b16"
   },
   "review": {
     "bodyVerticesInsideThePiece": {
-      "bind": 913,
-      "abduct90": 913,
-      "flex60": 914
+      "bind": 836,
+      "abduct90": 836,
+      "flex60": 837
     }
   }
 }

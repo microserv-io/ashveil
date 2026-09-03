@@ -709,7 +709,7 @@
     "manifest": "warden-boots.manifest.json",
     "report": "warden-boots.report.json",
     "review": "warden-boots.review.png",
-    "sha256": "ad29ddeef8c53d0854bdbce46199997638a0be63cedcadc4a36c3f0b36dafbb9"
+    "sha256": "0dbfa7adc7106c83683e293f2e98c3b4d5202e78260c6c96076da995a0782164"
   },
   "review": {
     "bodyVerticesInsideThePiece": {

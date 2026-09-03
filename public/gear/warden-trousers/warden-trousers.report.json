@@ -279,7 +279,7 @@
     "manifest": "warden-trousers.manifest.json",
     "report": "warden-trousers.report.json",
     "review": "warden-trousers.review.png",
-    "sha256": "6b01226ddddf8516c198ca09fca768c492eb43b02d28ebbbb4213ba482572ef7"
+    "sha256": "82a524f99b583677ab102313c6368b37d5e2f5c3f410cc7b3e97e2c9955ebc34"
   },
   "review": {
     "bodyVerticesInsideThePiece": {

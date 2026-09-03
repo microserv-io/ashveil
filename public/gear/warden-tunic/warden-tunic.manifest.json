@@ -35,7 +35,7 @@
     "shin_R",
     "foot_R"
   ],
-  "inverseBindSha256": "ce74de82b83a051d3c3163fb757c9c33883c31964952cedde03585d4ee85deb1",
+  "inverseBindSha256": "7bb30fc3017f57a2906a3cb099d666f8cf5d5c8d68935958b0fc39eff1cd5263",
   "covers": [
     "chest",
     "shoulders"
@@ -43,6 +43,7 @@
   "under": [
     "warden-trousers"
   ],
+  "thumb": "+Z",
   "hides": {
     "Body": [
       391,

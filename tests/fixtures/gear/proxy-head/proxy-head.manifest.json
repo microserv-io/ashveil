@@ -7,7 +7,7 @@
   "piece": "proxy-head",
   "source": {
     "file": "proxy:head",
-    "sha256": "28a5088916abf4069df26bf1b7461544ed6063e2a307d8f83061b0e296bea826"
+    "sha256": "9b72b23dc2a60c1784f4892da3da72635a530f0257ce459e77219068b74c0063"
   },
   "bones": [
     "root",
@@ -35,7 +35,7 @@
     "shin_R",
     "foot_R"
   ],
-  "inverseBindSha256": "ce74de82b83a051d3c3163fb757c9c33883c31964952cedde03585d4ee85deb1",
+  "inverseBindSha256": "7bb30fc3017f57a2906a3cb099d666f8cf5d5c8d68935958b0fc39eff1cd5263",
   "covers": [
     "head"
   ],
@@ -869,6 +869,8 @@
       10498,
       10499,
       10500,
+      10501,
+      10502,
       10503,
       10504,
       10505,
@@ -2342,6 +2344,7 @@
       4043,
       4044,
       4045,
+      4046,
       4047,
       4048,
       4049,
