@@ -8,6 +8,20 @@
   "covers": [
     "feet"
   ],
+  "referenceRegions": [
+    "feet"
+  ],
+  "coverage": {
+    "reachMetres": 0.06,
+    "hiddenVertices": {
+      "Body": 1447,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    }
+  },
   "source": {
     "file": "proxy:feet",
     "sha256": "28a5088916abf4069df26bf1b7461544ed6063e2a307d8f83061b0e296bea826"
@@ -32,13 +46,27 @@
         0.001471
       ],
       "insideVerticesBeforeShrinkwrap": 67,
+      "insideFractionBeforeShrinkwrap": 0.146288,
+      "deepInsideVerticesBeforeShrinkwrap": 0,
+      "deepInsideFractionBeforeShrinkwrap": 0,
       "meanSurfaceDistanceMetres": 0.008238,
+      "insideVerticesByYaw": {
+        "0": 67,
+        "180": 141
+      },
+      "meanSurfaceDistanceByYaw": {
+        "0": 0.008238,
+        "180": 0.033374
+      },
       "anchorResidualMetres": {
         "X": 0,
         "Y": 0,
         "Z": 0
       },
-      "proxy": true
+      "proxy": true,
+      "reference": [
+        "feet"
+      ]
     },
     "R": {
       "scale": 0.906561,
@@ -49,13 +77,44 @@
         0.001474
       ],
       "insideVerticesBeforeShrinkwrap": 68,
+      "insideFractionBeforeShrinkwrap": 0.148472,
+      "deepInsideVerticesBeforeShrinkwrap": 0,
+      "deepInsideFractionBeforeShrinkwrap": 0,
       "meanSurfaceDistanceMetres": 0.008258,
+      "insideVerticesByYaw": {
+        "0": 68,
+        "180": 142
+      },
+      "meanSurfaceDistanceByYaw": {
+        "0": 0.008258,
+        "180": 0.033406
+      },
       "anchorResidualMetres": {
         "X": 0,
         "Y": 0,
         "Z": 0
       },
-      "proxy": true
+      "proxy": true,
+      "reference": [
+        "feet"
+      ]
+    }
+  },
+  "facing": {
+    "pieceCentroidZ": -0.007336,
+    "regionCentroidZ": -0.004082,
+    "aheadOfRegionMetres": -0.003254,
+    "toes": {
+      "L": {
+        "islandCentroidZ": -0.007347,
+        "ankleZ": -0.059648,
+        "aheadMetres": 0.052301
+      },
+      "R": {
+        "islandCentroidZ": -0.007324,
+        "ankleZ": -0.059648,
+        "aheadMetres": 0.052324
+      }
     }
   },
   "decimation": {
@@ -64,9 +123,19 @@
     "ratio": 1
   },
   "shrinkwrap": {
+    "pieceVertices": 916,
+    "outsidePasses": [
+      {
+        "movedVertices": 383,
+        "movedFraction": 0.418122,
+        "insideAfter": 0
+      }
+    ],
     "wholeMovedVertices": 383,
     "hugSelectedVertices": 142,
-    "hugMovedVertices": 82
+    "hugMovedVertices": 82,
+    "wholeMovedFraction": 0.418122,
+    "hugMovedFraction": 0.08952
   },
   "weights": {
     "mode": "transfer",
@@ -184,7 +253,11 @@
     "triangles": 1794,
     "materials": 0,
     "meshes": 1,
-    "islands": 2,
+    "sides": {
+      "L": 1,
+      "R": 1,
+      "islands": 2
+    },
     "maxInfluencesPerVertex": 2,
     "minWeightSum": 0.999999925,
     "maxWeightSum": 1.00000006,
@@ -203,7 +276,9 @@
     },
     "bindClearance": {
       "insideVertices": 0,
-      "maxPenetrationMetres": 0
+      "disagreeingVertices": 0,
+      "maxPenetrationMetres": 0,
+      "deepestPoint": null
     }
   },
   "gates": {
@@ -218,7 +293,8 @@
     "textures_survived_the_pipeline": true,
     "bones_rest_axis_aligned": true,
     "piece_sits_off_the_skin_at_bind": true,
-    "pair_has_two_islands": true,
+    "pair_has_both_sides": true,
+    "toes_point_forward": true,
     "clears_the_body_through_motion_cycles": true,
     "clears_the_body_through_stress_poses": true
   },
@@ -229,5 +305,12 @@
     "report": "proxy-feet.report.json",
     "review": "proxy-feet.review.png",
     "sha256": "c49788eab38a10095499247bc1eefc57cb3a3c89bcadd71b10443bf6d3625185"
+  },
+  "review": {
+    "bodyVerticesInsideThePiece": {
+      "bind": 77,
+      "abduct90": 77,
+      "flex60": 77
+    }
   }
 }

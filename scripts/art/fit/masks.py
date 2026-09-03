@@ -44,13 +44,22 @@ def resolve(body: Body, contract: dict, table: dict) -> dict:
                 candidates = dominant == body.index[rule["bone"]]
                 along = np.clip(((region["positions"] - start) @ segment) / length_squared, 0.0, 1.0)
                 lower, upper = rule.get("along", [0.0, 1.0])
-                members |= candidates & (along >= lower) & (along <= upper)
+                inside = candidates & (along >= lower) & (along <= upper)
+                # `forward` takes the back of a bone's skin without its front: a hood
+                # wraps the skull behind the ear line but never covers the face.
+                near, far = rule.get("forward", [-np.inf, np.inf])
+                depth = region["positions"][:, 2] - start[2]
+                members |= inside & (depth >= near) & (depth <= far)
             resolved[slot][region["name"]] = np.flatnonzero(members).astype(int).tolist()
     return resolved
 
 
+def _ordered(bound) -> bool:
+    return bound is None or (len(bound) == 2 and bound[0] < bound[1])
+
+
 def gates(resolved: dict, contract: dict, bones: set[str]) -> dict[str, bool]:
-    named = all(rule["bone"] in bones
+    named = all(rule["bone"] in bones and _ordered(rule.get("forward"))
                 for spec in contract["slots"].values() for rule in spec["region"])
     all_resolve = all(
         not spec["region"] or any(indices for indices in resolved[slot].values())

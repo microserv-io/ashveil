@@ -55,29 +55,35 @@ def by_name(loaded: dict) -> dict:
     return {obj.name: obj for obj in loaded["meshes"]}
 
 
-def region(loaded: dict, slot: str, pair: bool) -> dict[str, np.ndarray]:
+def region(loaded: dict, slots: list[str], pair: bool) -> dict[str, np.ndarray]:
+    """The body extents a piece aligns against: every region it covers, as one shape.
+
+    A garment is anchored by what it hides, not by the one slot it hangs from, so a
+    trouser that covers legs and waist reaches the natural waist rather than the hip.
+    """
     meshes = by_name(loaded)
-    resolved = loaded["masks"]["slots"].get(slot, {})
     sides: dict[str, list] = {"L": [], "R": []} if pair else {"all": []}
-    for mesh_name, indices in sorted(resolved.items()):
-        obj = meshes.get(mesh_name)
-        if obj is None:
-            raise BodyError(f"body gate: mask names missing mesh {mesh_name}")
-        groups = {group.index: group.name for group in obj.vertex_groups}
-        for index in indices:
-            vertex = obj.data.vertices[index]
-            point = runtime_from_blender(obj.matrix_world @ vertex.co)
-            if not pair:
-                sides["all"].append(point)
-                continue
-            dominant = max(vertex.groups, key=lambda element: element.weight, default=None)
-            bone = groups.get(dominant.group, "") if dominant else ""
-            side = "L" if bone.endswith("_L") else "R" if bone.endswith("_R") else ("L" if point[0] >= 0 else "R")
-            sides[side].append(point)
+    for slot in slots:
+        for mesh_name, indices in sorted(loaded["masks"]["slots"].get(slot, {}).items()):
+            obj = meshes.get(mesh_name)
+            if obj is None:
+                raise BodyError(f"body gate: mask names missing mesh {mesh_name}")
+            groups = {group.index: group.name for group in obj.vertex_groups}
+            for index in indices:
+                vertex = obj.data.vertices[index]
+                point = runtime_from_blender(obj.matrix_world @ vertex.co)
+                if not pair:
+                    sides["all"].append(point)
+                    continue
+                dominant = max(vertex.groups, key=lambda element: element.weight, default=None)
+                bone = groups.get(dominant.group, "") if dominant else ""
+                side = ("L" if bone.endswith("_L") else "R" if bone.endswith("_R")
+                        else ("L" if point[0] >= 0 else "R"))
+                sides[side].append(point)
     result = {side: np.array(points, dtype=np.float64) for side, points in sides.items()}
     if any(len(points) == 0 for points in result.values()):
         missing = ", ".join(side for side, points in result.items() if len(points) == 0)
-        raise BodyError(f"region gate: slot {slot} has no body vertices for {missing}")
+        raise BodyError(f"region gate: {', '.join(slots)} has no body vertices for {missing}")
     return result
 
 
@@ -105,10 +111,15 @@ def joined_target(loaded: dict):
     return target
 
 
-def hidden_vertices(loaded: dict, covers: list[str]) -> dict[str, set[int]]:
-    """Body vertices the worn regions hide, per mesh, as the runtime hides them."""
-    hidden: dict[str, set[int]] = {}
+def region_vertices(loaded: dict, covers: list[str]) -> dict[str, set[int]]:
+    """The slot regions a piece spans, per mesh.
+
+    Fitting still leans on them: the piece's own mask cannot exist until the piece
+    has been shrinkwrapped, so the regions are what "is this inside skin anyone can
+    see" means while it is being fitted. Nothing downstream masks by them.
+    """
+    spanned: dict[str, set[int]] = {}
     for slot in covers:
         for mesh_name, indices in loaded["masks"]["slots"].get(slot, {}).items():
-            hidden.setdefault(mesh_name, set()).update(indices)
-    return hidden
+            spanned.setdefault(mesh_name, set()).update(indices)
+    return spanned

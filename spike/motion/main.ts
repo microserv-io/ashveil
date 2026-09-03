@@ -3,11 +3,9 @@ import * as THREE from 'three'
 import { disposeActorView, orientActorView, type ActorView } from '../../src/render/actorview'
 import {
   applyBodyMasks,
-  coveredSlots,
   removePiece,
   viewMaterialsWith,
   wearPiece,
-  type BodyMasks,
   type WornPiece,
 } from '../../src/render/gear'
 import { loadModels } from '../../src/render/models'
@@ -25,7 +23,7 @@ import {
   reviewBodyScale,
   type ReviewBodyDefinition,
 } from './body'
-import { loadReviewGear, loadReviewMasks, REVIEW_GEAR } from './gear'
+import { loadReviewGear, REVIEW_GEAR } from './gear'
 
 /**
  * One body, the gameplay camera, and every knob the animation pipeline has.
@@ -52,8 +50,6 @@ const sim = new Sim({ seed: SEED })
 await loadModels('models')
 const bodySources = await loadReviewBodies()
 const gearSources = await loadReviewGear()
-// Fetched only when there is something to wear: the sidecar lands with the refit.
-const bodyMasks: BodyMasks | null = REVIEW_GEAR.length > 0 ? await loadReviewMasks() : null
 
 const host = new SceneHost(document.getElementById('stage')!)
 host.buildTerrain(sim.map)
@@ -273,9 +269,13 @@ function rewear(): void {
   for (const piece of worn) removePiece(body.group, piece)
   worn = REVIEW_GEAR.filter((entry) => wearing.has(entry.piece)).flatMap((entry) => {
     const loaded = gearSources.get(entry.piece)
-    return loaded ? [wearPiece(body.group, { slot: entry.slot, scene: loaded.scene, covers: loaded.covers })] : []
+    return loaded
+      ? [wearPiece(body.group, {
+        slot: entry.slot, scene: loaded.scene, covers: loaded.covers, hides: loaded.hides,
+      })]
+      : []
   })
-  if (bodyMasks) applyBodyMasks(body.group, bodyMasks, coveredSlots(worn))
+  applyBodyMasks(body.group, worn)
   viewMaterialsWith(body, bodyMaterials, worn)
   saveGear()
 }
@@ -284,11 +284,14 @@ function buildGearPanel(): void {
   element('gear-panel').hidden = REVIEW_GEAR.length === 0
   element('gear').replaceChildren(
     ...REVIEW_GEAR.map((entry) => {
+      const missing = !gearSources.has(entry.piece)
       const label = document.createElement('label')
-      label.className = 'flex items-center gap-2'
+      label.className = missing ? 'flex items-center gap-2 opacity-40' : 'flex items-center gap-2'
+      if (missing) label.title = 'this piece did not load; see the console'
       const box = document.createElement('input')
       box.type = 'checkbox'
-      box.checked = wearing.has(entry.piece)
+      box.disabled = missing
+      box.checked = !missing && wearing.has(entry.piece)
       box.className = 'accent-ember'
       box.addEventListener('change', () => {
         if (box.checked) wearing.add(entry.piece)
@@ -308,7 +311,7 @@ function buildGearPanel(): void {
 
 function setGear(pieces: readonly string[]): void {
   wearing.clear()
-  for (const piece of pieces) wearing.add(piece)
+  for (const piece of pieces) if (gearSources.has(piece)) wearing.add(piece)
   for (const [piece, box] of gearBoxes) box.checked = wearing.has(piece)
   rewear()
 }

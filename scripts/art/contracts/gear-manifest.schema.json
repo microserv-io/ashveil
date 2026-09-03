@@ -14,7 +14,7 @@
     "bones",
     "inverseBindSha256",
     "covers",
-    "maskBody",
+    "hides",
     "weights",
     "alignment",
     "budget",
@@ -97,8 +97,16 @@
         ]
       }
     },
-    "maskBody": {
-      "type": "boolean"
+    "hides": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "uniqueItems": true,
+        "items": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
     },
     "weights": {
       "enum": [
@@ -193,6 +201,40 @@
           "maxItems": 3,
           "items": {
             "type": "number"
+          }
+        },
+        "spanOverride": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "axis",
+            "from",
+            "to",
+            "metres",
+            "factor"
+          ],
+          "properties": {
+            "axis": {
+              "enum": [
+                "X",
+                "Y",
+                "Z"
+              ]
+            },
+            "from": {
+              "type": "string"
+            },
+            "to": {
+              "type": "string"
+            },
+            "metres": {
+              "type": "number",
+              "minimum": 0
+            },
+            "factor": {
+              "type": "number",
+              "minimum": 0
+            }
           }
         }
       }

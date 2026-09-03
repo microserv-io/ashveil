@@ -292,75 +292,130 @@ change to the shipped mesh.
 
 ```
 npm run art:gear -- --input <piece.glb> --slot <slot> --body <body> --piece <name> \
-  [--weights transfer|rigid] [--covers <slot,slot>] [--no-mask] [--outdir <dir>]
+  [--weights transfer|rigid] [--covers <slot,slot>] [--span AXIS:FROM:TO[:FACTOR]] \
+  [--yaw 0|180] [--no-mask] [--outdir <dir>]
 ```
 
 Writes `public/gear/<piece>/`: `<piece>.glb`, `<piece>.manifest.json`,
 `<piece>.report.json` (every measurement), `<piece>.review.png` (not committed). Same
 contract as `art:fit`: a failed gate deletes the GLB and exits non-zero named after
 it. `--input proxy:<slot>` builds a test piece from the body's own region instead of
-importing one (see "Proxy fixtures"). `--covers` names the slot regions the piece
-hides, its own slot by default: a short-sleeved tunic covers `chest,shoulders`, and
-both the bind gate and the clip gate stop counting what a covered region hides.
+importing one (see "Proxy fixtures"). Every flag has a contract default, so a piece
+that matches its slot needs none of them: `--covers` overrides the slot's
+`defaultCovers` (`legs` spans `legs,waist`, `chest` spans `chest,shoulders`, every
+other slot spans itself) and `--span` overrides a slot whose `align.span` names two
+landmarks. What `--covers` names is an alignment and fitting reference only — what a
+piece hides is measured off the fitted piece (see "Masking").
 
 Eight slots, three of them pairs: `feet`, `hands`, `shoulders` (two islands, one per
 side), and `legs`, `waist`, `chest`, `back`, `head` (one). `back` is the cloak: its
-contract region is empty, so it never masks body geometry.
+contract region is empty, so it aligns against the chest's via `referenceSlot`.
 
 A slot's region lives in `humanoid.v1.json`'s `slots` block as `{bone, along}` rules:
 a body vertex belongs to the slot when its dominant bone (largest skin weight) is
 named and its position along that bone's landmark segment, a 0-1 fraction, falls in
-`along` (default the whole bone). `fit/masks.py` resolves this once per body into
-`<body>.masks.json` — vertex indices per mesh, per slot — which the gear fitter and
-the runtime both read.
+`along` (default the whole bone). An optional `forward: [zMin, zMax]` bounds the rule
+in metres along runtime +Z, measured from the bone's head landmark, so a rule can take
+the back of a bone's skin without its front — a hood claims the skull behind the ear
+line but never the face. `fit/masks.py` resolves this once per body into
+`<body>.masks.json` — vertex indices per mesh, per slot — which the gear fitter reads
+to align and to fit. Nothing masks by it.
 
-**Alignment.** The piece is scaled uniformly so its extent along the region's
-`span.axis` matches the region's own extent times `factor`, then translated so each
-axis's anchor (piece min/centre/max onto body min/centre/max, plus a metres offset)
-lines up. Pairs align each island to its own side's region (`_L`/`_R` bones); `back`
-borrows the chest's extents via `referenceSlot`. Yaw is tried at 0 and 180 degrees
-about +Y, and the orientation with fewer piece vertices landing inside the body wins,
-ties broken by lower mean distance to the surface. Two shrinkwrap passes follow: the
-whole piece is pulled to `clearance` metres outside the body, then a `hug` vertex
-group — the bands of the piece's own span that should hug (a cuff, a collar, the
-belt) — is pulled onto the skin within `hug.reach` of it, smoothstepped at the edges.
+**Masking is computed per piece.** An authored region stops where the anatomy does
+and a garment does not: a waistband climbs above the waist, a sleeve stands off an
+upper arm no region claims. So after shrinkwrap and weights, at bind, the fitter
+measures which body vertices the fitted piece covers — a ray from the vertex along
+its own normal reaches the piece within the slot's `coverReach`, or the piece has
+swallowed the vertex whole — and writes them into the manifest as `hides`, vertex
+indices per body mesh. `--no-mask` writes an empty `hides`.
+
+**The rim rule.** A body triangle is dropped from the drawn body only when all three
+of its vertices are hidden. One or two hidden corners makes it a rim triangle: still
+drawn, but never counted by the bind gate or the clip gate, because skin the garment
+has already eaten is skin nothing can be seen clipping through.
+
+**Alignment.** The reference extents are the union of the regions the piece spans,
+per side for pairs, so a trouser that covers `legs,waist` reaches the natural waist
+rather than the hip crease; `back` borrows the chest's via `referenceSlot`, and a
+proxy is measured against the one region it was carved from. The piece is scaled
+uniformly so its extent along the reference's `span.axis` matches the reference's
+own extent times `factor`, then translated so each axis's anchor (piece
+min/centre/max onto body min/centre/max, plus a metres offset) lines up. A slot whose `align.span` carries `from` and `to`
+measures itself against those two landmarks instead, for a garment whose height the
+region cannot express: `head` is `Y:neck_base:head` at 1.08, so a hood with a mantle
+needs no flag. `--span AXIS:FROM:TO[:FACTOR]` overrides it. A proxy ignores both and
+keeps its own region's extent, because it is already that region's shell. Yaw is 0: every source is generated facing
++Z, so a piece that needs turning says `--yaw 180` rather than letting the fitter
+guess — it used to vote between the two by counting vertices inside the body, and
+that put the boots, the trousers, the tunic and the hood on backwards. Both counts
+stay in the report next to `facing`: how far ahead of its region the piece sits, and
+for a foot slot how far each island's centroid is ahead of that side's ankle. How much of the piece lands inside the body before any
+correction is reported two ways, by parity and by the part of it deeper than 5mm; a
+gate that grew the piece until the first number cleared was tried and removed,
+because a copy of the body pushed a centimetre and a half outward still reads 15%
+inside by parity and 0% deep, so the number does not separate a fitted piece from a
+buried one. Shrinkwrap follows: the whole piece is pulled
+to `clearance` metres outside the body, repeated up to eight times because one pass
+only moves a vertex to the nearest surface, which between a skull and its hair is the
+wrong one, and then a `hug` vertex group — the bands of the piece's
+own span that should hug (a cuff, a collar, the belt) — is pulled onto the skin
+within `hug.reach` of it, smoothstepped at the edges. A slot with nothing to hug
+leaves `hug.bands` empty: a hood pulled onto the scalp stops being a hood. The report
+carries what shrinkwrap moved as a fraction of the piece, because a pass that moves
+most of a piece is a reshaping and the alignment above it is what wants fixing.
 
 **Weights and export.** `transfer` copies the body's cleaned weights by nearest-face
 interpolation, keeps only the slot's `allowedBones` (a pair's side keeps only its own
 `_L`/`_R` bones plus unsuffixed ones), sends orphans to the nearest allowed bone
-segment, caps four influences and renormalises. `rigid` gives every vertex weight 1.0
-on one bone (per side for pairs). Either way the piece exports on the body's own
+segment, caps four influences and renormalises. A slot's list has to reach every bone
+the garment rides: `legs` includes `spine`, because a waistband weighted to the pelvis
+alone shears through the belly the moment the torso flexes forward. Since masks are
+computed, a slot's `region` now only sets alignment extents and carves proxies, so it
+is drawn tight to the anatomy rather than widened to cover a garment. `rigid` gives
+every vertex weight 1.0 on one bone (per side for pairs). Either way the piece exports on the body's own
 joint list with identical inverse binds, so the runtime binds it straight to the
 body's `Skeleton`.
 
-**Gates.** Blender-side (`scripts/art/gear/gate.py`), measured off the exported file:
-joints and inverse binds match the body, at most four influences summing to one,
-every influence an allowed bone, triangle and material budgets, UVs and textures
-surviving, rest axes identity, the piece clear of the skin at bind, one mesh (or two
-islands for a pair). Two clip gates (`scripts/art/gear/clip.ts`) run after:
+**Gates.** Blender-side (`scripts/art/gear/gate.py`), measured off the exported
+file: joints and inverse binds match the body, at most four influences summing to
+one, every influence an allowed bone, triangle and material budgets, UVs and
+textures surviving, rest axes identity, the piece clear of the skin at bind, toes
+ahead of the ankles for a foot slot (`toes_point_forward`), one
+mesh (or, for a pair, at least one island each side of the midline: a pauldron is
+plates plus a drape). The bind gate counts a vertex as inside only when ray parity and
+the nearest counted triangle's own normal agree: a head is a shell with sockets, and
+parity alone reads a point a centimetre off one as buried. Where the two disagree the
+vertex is no hit and the report counts it under `bindClearance.disagreeingVertices`,
+because a piece that racks them up sits where the body cannot be measured. Two clip
+gates (`scripts/art/gear/clip.ts`) run after:
 `clears_the_body_through_motion_cycles` and `clears_the_body_through_stress_poses`.
 Each skins the piece onto the body's own bones through 32 phases of walk, run,
 `cleave`, `firebolt`, `frost_nova`, `dead`, then bind, two abductions, two arm
 flexions, two spine twists, a torso flex and a hip-plus-knee flexion — the far ends
 of the rig, not anything an animation plays. 180-degree abduction is deliberately
-absent: linear skinning folds this body's own shoulder through itself there, so the
-pose would measure the body rather than the piece, and no skill raises an arm that
-far. A piece fails when more than the slot's `clip.fraction` of its vertices sit
-deeper than `clip.depth` inside the *visible* body — a masked triangle still tells a
-vertex which way is out, but never counts as a hit.
+absent and 150 is advisory: linear skinning folds this body's own shoulder through
+itself up there, so the pose measures the body rather than the piece, and no skill
+raises an arm past 90. An advisory pose is still walked and still written to
+`clip.json`, under `advisory`, but it gates nothing. A piece fails when more than the slot's `clip.fraction` of its vertices sit
+deeper than `clip.depth` inside the body the rim rule still counts — a hidden or rim
+triangle still tells a vertex which way is out, but never counts as a hit.
 
-**Proxy fixtures.** `--input proxy:feet` and `--input proxy:legs` carve a piece from
-the body's own masked region, offset outward along its vertex normals, so a fitter
-run needs no paid Tripo asset (alignment forced to `factor` 1.0, zero offsets — a
-proxy is already the body's own shape). They exist to prove the fitter reproduces
-byte for byte (`tests/fixtures/gear/proxy-{feet,legs}/`); the legs proxy declares
-`--covers legs,waist`, because a waistband sits in the waist region. They are fixtures,
-not production art, and the review page never lists them.
+**Proxy fixtures.** `--input proxy:feet` and `--input proxy:head` carve a piece from
+the body's own slot region, offset outward along its vertex normals, so a fitter run
+needs no paid Tripo asset (alignment forced to `factor` 1.0, zero offsets — a proxy is
+already the body's own shape). They exist to prove the fitter reproduces byte for byte
+(`tests/fixtures/gear/proxy-{feet,head}/`); the head proxy is the one whose `hides`
+spans five body meshes. A proxy is a region's shell, not a garment: `proxy:legs` has no
+waistband, so its top rim presses into the belly at 90 degrees of hip flexion and it
+fails the clip gate honestly — it only ever passed while `--covers legs,waist` masked
+that belly away. They are fixtures, not production art, and the review page never
+lists them.
 
 **Runtime and review.** `src/render/gear.ts`: a piece binds to the body's own
-`Skeleton` object as a sibling `SkinnedMesh`; `applyBodyMasks` drops body triangles
-whose three vertices all sit inside a worn slot's mask from the index, sharing every
-attribute by reference. Wearing a piece costs exactly one more draw call. The motion
+`Skeleton` object as a sibling `SkinnedMesh`; `applyBodyMasks` takes the union of the
+worn pieces' `hides` and drops from the index every body triangle whose three vertices
+are all in it, sharing every attribute by reference. The body sidecar is not a runtime
+file: the page reads each piece's own manifest. Wearing a piece costs exactly one more draw call. The motion
 review page's Gear panel (`spike/motion/gear.ts`) lists every fitted piece under
 `public/gear` — proxy fixtures excluded — with a checkbox each plus "Wear all" and
 "Bare".

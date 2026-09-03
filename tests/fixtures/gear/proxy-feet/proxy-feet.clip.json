@@ -3,10 +3,9 @@
   "body": "masculine-v3",
   "piece": "proxy-feet",
   "slot": "feet",
-  "maskBody": true,
-  "maskedSlots": [
-    "feet"
-  ],
+  "hides": {
+    "Body": 1447
+  },
   "clip": {
     "depth": 0.005,
     "fraction": 0.002
@@ -22,6 +21,13 @@
       "fraction": 0
     },
     "stress": {
+      "pose": "none",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    },
+    "advisory": {
       "pose": "none",
       "phase": 0,
       "maxDepth": 0,

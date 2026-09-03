@@ -9,8 +9,9 @@ const CLIP = join(ROOT, 'scripts', 'art', 'gear', 'clip.ts')
 const CLIP_ARGUMENT = join('scripts', 'art', 'gear', 'clip.ts')
 const BLENDER_CANDIDATES = ['/opt/homebrew/bin/blender', '/usr/local/bin/blender', 'blender']
 const FLAGS = new Set(['--no-mask'])
-const VALUES = new Set(['--input', '--slot', '--body', '--piece', '--weights', '--covers', '--outdir'])
+const VALUES = new Set(['--input', '--slot', '--body', '--piece', '--weights', '--covers', '--span', '--yaw', '--outdir'])
 const NAME = /^[a-z0-9][a-z0-9-]*$/
+const SPAN = /^[XYZ]:[a-z0-9_]+:[a-z0-9_]+(:[0-9]+(\.[0-9]+)?)?$/
 
 export class GearError extends Error {}
 
@@ -34,13 +35,22 @@ export function parseArgs(argv) {
   if (parsed.weights && !['transfer', 'rigid'].includes(parsed.weights)) {
     throw new GearError(`weight gate: unknown mode "${parsed.weights}"`)
   }
+  if (parsed.span && !SPAN.test(parsed.span)) {
+    throw new GearError(`span gate: "${parsed.span}" is not AXIS:FROM:TO[:FACTOR]`)
+  }
+  // Sources face +Z by contract, so a turned piece is told, never guessed.
+  if (parsed.yaw && !['0', '180'].includes(parsed.yaw)) {
+    throw new GearError(`yaw gate: "${parsed.yaw}" is not 0 or 180`)
+  }
   return parsed
 }
 
 export function resolvePlan(parsed, { root = ROOT, exists = existsSync } = {}) {
   const contract = JSON.parse(readFileSync(join(root, 'scripts', 'art', 'contracts', 'humanoid.v1.json'), 'utf8'))
   if (!contract.slots[parsed.slot]) throw new GearError(`slot gate: unknown slot "${parsed.slot}"`)
-  const covers = parsed.noMask ? [] : (parsed.covers ?? parsed.slot).split(',').map((name) => name.trim())
+  const covers = parsed.noMask
+    ? []
+    : (parsed.covers?.split(',') ?? contract.slots[parsed.slot].defaultCovers).map((name) => name.trim())
   for (const name of covers) {
     if (!contract.slots[name]) throw new GearError(`slot gate: unknown covered slot "${name}"`)
   }
@@ -76,6 +86,8 @@ export function blenderArgs(plan, runner = RUNNER) {
     '--outdir', plan.outdir,
     ...(plan.weights ? ['--weights', plan.weights] : []),
     ...(plan.covers.length > 0 ? ['--covers', plan.covers.join(',')] : []),
+    ...(plan.span ? ['--span', plan.span] : []),
+    ...(plan.yaw ? ['--yaw', plan.yaw] : []),
     ...(plan.noMask ? ['--no-mask'] : [])]
 }
 

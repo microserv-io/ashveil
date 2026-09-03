@@ -1,18 +1,21 @@
 {
   "schema": "ashveil.gear-clip.v1",
   "body": "masculine-v3",
-  "piece": "proxy-legs",
-  "slot": "legs",
-  "maskBody": true,
-  "maskedSlots": [
-    "legs",
-    "waist"
-  ],
+  "piece": "proxy-head",
+  "slot": "head",
+  "hides": {
+    "Body": 943,
+    "Facial_Feature_01": 163,
+    "Facial_Feature_02": 71,
+    "Facial_Feature_03": 2,
+    "Facial_Feature_04": 3,
+    "Head": 1124
+  },
   "clip": {
     "depth": 0.005,
     "fraction": 0.002
   },
-  "vertices": 4409,
+  "vertices": 3630,
   "poses": 201,
   "cycles": {
     "motion": {
@@ -23,6 +26,13 @@
       "fraction": 0
     },
     "stress": {
+      "pose": "none",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    },
+    "advisory": {
       "pose": "none",
       "phase": 0,
       "maxDepth": 0,

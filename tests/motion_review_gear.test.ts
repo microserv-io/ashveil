@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { GEAR_SLOTS, type GearSlot } from '../src/render/gear'
-import { gearPath, loadReviewMasks, MASCULINE_V3_MASKS, REVIEW_GEAR } from '../spike/motion/gear'
+import { gearPath, REVIEW_GEAR } from '../spike/motion/gear'
 
 /**
  * The review page only lists pieces the pipeline has already passed, so opening it
@@ -15,6 +15,7 @@ const PUBLIC = join(import.meta.dirname, '..', 'public')
 interface GearManifest {
   slot: string
   gates: Record<string, boolean>
+  hides: Record<string, number[]>
 }
 
 function manifestOf(piece: string): GearManifest {
@@ -46,11 +47,14 @@ describe('the motion review gear list', () => {
     expect(slots).toEqual([...new Set(slots)])
   })
 
-  it('serves the body masks from the body’s own directory', () => {
-    expect(MASCULINE_V3_MASKS).toBe('/bodies/masculine-v3/masculine-v3.masks.json')
-  })
-
-  it('leaves the page usable when the masks sidecar is not there yet', async () => {
-    await expect(loadReviewMasks('/bodies/nothing-here.masks.json')).resolves.toBeNull()
+  /** Masking is per piece now, so a listed piece carries its own body vertices. */
+  it('carries the body vertices each piece hides in its own manifest', () => {
+    for (const entry of REVIEW_GEAR) {
+      const hides = manifestOf(entry.piece).hides
+      expect(hides, entry.piece).toBeTypeOf('object')
+      for (const [mesh, indices] of Object.entries(hides)) {
+        expect(Array.isArray(indices), `${entry.piece} hides ${mesh}`).toBe(true)
+      }
+    }
   })
 })

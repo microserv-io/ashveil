@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
@@ -7,7 +7,6 @@ import {
   forEachClipPose,
   loadClipBody,
   loadClipPiece,
-  maskedSlots,
   matchJoints,
   measureClip,
   type BodySurface,
@@ -15,7 +14,6 @@ import {
   type ClipPiece,
 } from '../scripts/art/gear/clip'
 import { measurePenetration, skinVertices } from '../scripts/art/gear/penetration'
-import type { GearSlot } from '../src/render/gear'
 import { createPose } from '../src/render/procedural/pose'
 import type { GlbSkinnedMesh } from '../scripts/art/glb'
 
@@ -40,14 +38,20 @@ const OFFSET = 0.01
 const PHASES = 32
 /** Two gaits and four clips. */
 const MOTION_CYCLES = 6
-/** Bind, two abductions, two arm flexions, two twists, a torso flex and a hip flex. */
-const STRESS_POSES = 9
+/** Bind, one abduction, two arm flexions, two twists, a torso flex and a hip flex. */
+const STRESS_POSES = 8
+/** Abduction past 90: measured, reported, and gating nothing. */
+const ADVISORY_POSES = 1
 /** The body's own skin, the one closed mesh on it; the head is a shell with sockets. */
 const SKIN = 'Body'
 
 const body = loadClipBody(BODY)
 const limits = clipLimits('chest')
 const skin = body.meshes.find((mesh) => mesh.name === SKIN)!
+/** A real mask to measure with: the chest region the body sidecar resolved. */
+const CHEST: Record<string, number[]> = JSON.parse(
+  readFileSync(join(import.meta.dirname, '..', 'public', 'bodies', BODY, `${BODY}.masks.json`), 'utf8'),
+).slots.chest
 /** The gate against one mesh of the body, so the reference is that mesh alone. */
 const skinBody: ClipBody = { ...body, meshes: [skin] }
 
@@ -61,10 +65,10 @@ function shellPiece(metres: number, jointNames = body.jointNames): ClipPiece {
   return {
     name: `shell${metres}`,
     slot: 'chest',
-    // The shell covers the whole mesh, so hiding a slot under it would hide the
-    // very triangles the measurement needs.
+    // The shell covers the whole mesh, so hiding any of it would hide the very
+    // triangles the measurement needs.
     covers: [],
-    maskBody: false,
+    hides: {},
     body: body.name,
     jointNames,
     meshes: [shell(metres)],
@@ -112,7 +116,7 @@ describe('the clipping gate against the body itself', () => {
   it('walks every motion cycle and every stress pose', () => {
     const seen: string[] = []
     forEachClipPose(body.geometry, createPose(), (group, name) => seen.push(`${group}/${name}`))
-    expect(seen).toHaveLength(PHASES * MOTION_CYCLES + STRESS_POSES)
+    expect(seen).toHaveLength(PHASES * MOTION_CYCLES + STRESS_POSES + ADVISORY_POSES)
     expect(new Set(seen)).toEqual(
       new Set([
         'motion/walk',
@@ -123,7 +127,7 @@ describe('the clipping gate against the body itself', () => {
         'motion/dead',
         'stress/bind',
         'stress/abduct90',
-        'stress/abduct150',
+        'advisory/abduct150',
         'stress/armflex60',
         'stress/armflex90',
         'stress/twist45',
@@ -132,13 +136,25 @@ describe('the clipping gate against the body itself', () => {
         'stress/hipflex90',
       ]),
     )
-    expect(outward.poses).toBe(PHASES * MOTION_CYCLES + STRESS_POSES)
+    expect(outward.poses).toBe(PHASES * MOTION_CYCLES + STRESS_POSES + ADVISORY_POSES)
   })
 
   it('leaves the arm overhead out: at 180 the body folds through its own shoulder', () => {
     const seen: string[] = []
     forEachClipPose(body.geometry, createPose(), (_group, name) => seen.push(name))
     expect(seen, 'linear skinning there measures the body, not the piece').not.toContain('abduct180')
+  })
+
+  /** No skill abducts an arm past 90, so 150 is reported and gates nothing. */
+  it('measures abduction past 90 as advisory rather than gating on it', () => {
+    const groups = new Map<string, string>()
+    forEachClipPose(body.geometry, createPose(), (group, name) => groups.set(name, group))
+    expect(groups.get('abduct90')).toBe('stress')
+    expect(groups.get('abduct150')).toBe('advisory')
+    expect(Object.keys(outward.cycles).sort()).toEqual(['advisory', 'motion', 'stress'])
+    expect(Object.keys(outward.gates)).toEqual([
+      'clears_the_body_through_motion_cycles', 'clears_the_body_through_stress_poses',
+    ])
   })
 
   it('finds nothing at all when the shell is moved clear of the body', () => {
@@ -168,24 +184,33 @@ describe('the clipping gate against the body itself', () => {
     expect(inside.gates.clears_the_body_through_stress_poses).toBe(false)
   })
 
-  it('records what the piece hid, and hides nothing without a masks sidecar', () => {
+  it('records the mask it measured with, per body mesh', () => {
     expect(outward.schema).toBe('ashveil.gear-clip.v1')
     expect(outward.body).toBe(BODY)
-    expect(outward.maskedSlots, 'this shell wears maskBody false').toEqual([])
+    expect(outward.hides, 'this shell hides nothing').toEqual({})
 
-    const masking: ClipPiece = { ...shellPiece(OFFSET), covers: ['chest'], maskBody: true }
-    expect(maskedSlots(skinBody, masking)).toEqual(body.hasMasks ? ['chest'] : [])
-    expect(maskedSlots({ ...skinBody, hasMasks: false, masks: { slots: {} } }, masking)).toEqual([])
+    const masked = measureClip(skinBody, { ...shellPiece(OFFSET), hides: CHEST }, limits)
+    expect(masked.hides[SKIN]).toBe(CHEST[SKIN]!.length)
   })
 
-  it.skipIf(!body.hasMasks)('flags the triangles a worn slot hides, and keeps them to measure by', () => {
-    const whole = bodySurface(skinBody, new Set<GearSlot>())
-    const covered = bodySurface(skinBody, new Set<GearSlot>(['chest']))
+  /**
+   * The rim rule: the game drops a triangle only when all three of its vertices are
+   * hidden, but one hidden corner is enough to stop the gate counting it. Skin the
+   * garment already ate is skin nothing can be seen clipping through.
+   */
+  it('stops counting a triangle at its first hidden vertex', () => {
+    const whole = bodySurface(skinBody, {})
+    const covered = bodySurface(skinBody, CHEST)
     expect(covered.indices).toHaveLength(whole.indices.length)
-    expect(covered.visible.filter((flag) => flag === 1)).toHaveLength(
-      whole.visible.filter((flag) => flag === 1).length - hiddenTriangles(covered),
-    )
+    expect(hiddenTriangles(whole)).toBe(0)
     expect(hiddenTriangles(covered), 'the chest mask covers whole triangles').toBeGreaterThan(0)
+
+    const hidden = new Set(CHEST[SKIN] ?? [])
+    let all = 0
+    for (let at = 0; at < skin.indices.length; at += 3) {
+      if (hidden.has(skin.indices[at]!) && hidden.has(skin.indices[at + 1]!) && hidden.has(skin.indices[at + 2]!)) all++
+    }
+    expect(hiddenTriangles(covered), 'the rim is uncounted too').toBeGreaterThan(all)
   })
 
   /**
@@ -193,9 +218,8 @@ describe('the clipping gate against the body itself', () => {
    * surface alone put the nearest triangle at the rim of the mask, centimetres away
    * and facing anywhere, which read a piece resting on the chest as buried in it.
    */
-  it.skipIf(!body.hasMasks)('never reads deeper for hiding the body under the piece', () => {
-    const masked = measureClip(skinBody, { ...shellPiece(OFFSET), covers: ['chest'], maskBody: true }, limits)
-    expect(masked.maskedSlots).toEqual(['chest'])
+  it('never reads deeper for hiding the body under the piece', () => {
+    const masked = measureClip(skinBody, { ...shellPiece(OFFSET), covers: ['chest'], hides: CHEST }, limits)
     expect(masked.cycles.motion.fraction, `worst at ${masked.cycles.motion.pose}`)
       .toBeLessThanOrEqual(outward.cycles.motion.fraction)
     expect(masked.cycles.stress.fraction, `worst at ${masked.cycles.stress.pose}`)
@@ -224,12 +248,13 @@ describe('the clipping gate against the body itself', () => {
  * Python half of the slice.
  */
 /**
- * Past the 14cm of shin the feet mask hides, and past the legs waistband: inside a
- * hidden region nothing shows, so a shallower push measures no penetration at all.
+ * Past every band the piece itself hides — 14cm of shin for the boots, the skull for
+ * the hood — because inside its own mask a sunk piece measures nothing at all.
  */
-const SUNK = 0.08
+const SUNK = 0.12
 
-describe.each(['proxy-feet', 'proxy-legs'])('%s', (fixture) => {
+describe.each([{ fixture: 'proxy-feet', shove: SUNK }, { fixture: 'proxy-head', shove: -SUNK }])(
+  '$fixture', ({ fixture, shove }) => {
   const dir = join(FIXTURES, fixture)
   const missing = !existsSync(dir)
 
@@ -242,9 +267,9 @@ describe.each(['proxy-feet', 'proxy-legs'])('%s', (fixture) => {
   })
 
   /** The gate has to fail something, or passing the fitted piece proves nothing. */
-  it.skipIf(missing)(`fails once the same piece is pushed ${SUNK * 100}cm up into the body`, () => {
+  it.skipIf(missing)(`fails once the same piece is pushed ${Math.abs(shove) * 100}cm into the body`, () => {
     const piece = loadClipPiece(dir)
-    const result = measureClip(body, moved(piece, SUNK), clipLimits(piece.slot))
+    const result = measureClip(body, moved(piece, shove), clipLimits(piece.slot))
     expect(result.cycles.motion.maxDepth).toBeGreaterThan(clipLimits(piece.slot).depth)
     expect(result.gates.clears_the_body_through_motion_cycles).toBe(false)
   })

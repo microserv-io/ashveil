@@ -319,6 +319,9 @@
   "slots": {
     "feet": {
       "pair": true,
+      "defaultCovers": [
+          "feet"
+      ],
       "region": [
         {
           "bone": "foot_L"
@@ -365,6 +368,7 @@
         }
       },
       "clearance": 0.006,
+      "coverReach": 0.06,
       "hug": {
         "bands": [
           [
@@ -399,6 +403,10 @@
     },
     "legs": {
       "pair": false,
+      "defaultCovers": [
+          "legs",
+          "waist"
+      ],
       "region": [
         {
           "bone": "pelvis",
@@ -451,7 +459,8 @@
           }
         }
       },
-      "clearance": 0.008,
+      "clearance": 0.012,
+      "coverReach": 0.06,
       "hug": {
         "bands": [
           [
@@ -470,6 +479,7 @@
         "mode": "transfer",
         "allowedBones": [
           "pelvis",
+          "spine",
           "thigh_L",
           "shin_L",
           "thigh_R",
@@ -488,6 +498,9 @@
     },
     "waist": {
       "pair": false,
+      "defaultCovers": [
+          "waist"
+      ],
       "region": [
         {
           "bone": "pelvis",
@@ -500,7 +513,7 @@
           "bone": "spine",
           "along": [
             0.0,
-            0.25
+            0.35
           ]
         }
       ],
@@ -528,6 +541,7 @@
         }
       },
       "clearance": 0.03,
+      "coverReach": 0.06,
       "hug": {
         "bands": [
           [
@@ -535,7 +549,7 @@
             1.0
           ]
         ],
-        "reach": 0.05,
+        "reach": 0.02,
         "fade": 0.08
       },
       "weights": {
@@ -559,11 +573,15 @@
     },
     "chest": {
       "pair": false,
+      "defaultCovers": [
+          "chest",
+          "shoulders"
+      ],
       "region": [
         {
           "bone": "spine",
           "along": [
-            0.25,
+            0.35,
             1.0
           ]
         },
@@ -601,6 +619,7 @@
         }
       },
       "clearance": 0.012,
+      "coverReach": 0.06,
       "hug": {
         "bands": [
           [
@@ -638,6 +657,9 @@
     },
     "back": {
       "pair": false,
+      "defaultCovers": [
+          "back"
+      ],
       "region": [],
       "align": {
         "referenceSlot": "chest",
@@ -664,13 +686,9 @@
         }
       },
       "clearance": 0.03,
+      "coverReach": 0.06,
       "hug": {
-        "bands": [
-          [
-            0.9,
-            1.0
-          ]
-        ],
+        "bands": [],
         "reach": 0.04,
         "fade": 0.08
       },
@@ -701,6 +719,9 @@
     },
     "hands": {
       "pair": true,
+      "defaultCovers": [
+          "hands"
+      ],
       "region": [
         {
           "bone": "hand_L"
@@ -747,6 +768,7 @@
         }
       },
       "clearance": 0.006,
+      "coverReach": 0.06,
       "hug": {
         "bands": [
           [
@@ -781,6 +803,9 @@
     },
     "shoulders": {
       "pair": true,
+      "defaultCovers": [
+          "shoulders"
+      ],
       "region": [
         {
           "bone": "shoulder_helper_L"
@@ -827,20 +852,15 @@
         }
       },
       "clearance": 0.02,
+      "coverReach": 0.06,
       "hug": {
-        "bands": [
-          [
-            0.7,
-            1.0
-          ]
-        ],
+        "bands": [],
         "reach": 0.02,
         "fade": 0.08
       },
       "weights": {
         "mode": "transfer",
         "allowedBones": [
-          "chest",
           "clavicle_L",
           "shoulder_helper_L",
           "upper_arm_L",
@@ -864,19 +884,46 @@
     },
     "head": {
       "pair": false,
+      "defaultCovers": [
+          "head"
+      ],
       "region": [
         {
           "bone": "head",
           "along": [
             0.66,
             1.0
+          ],
+          "forward": [
+            -1.0,
+            0.075
+          ]
+        },
+        {
+          "bone": "head",
+          "along": [
+            0.0,
+            0.66
+          ],
+          "forward": [
+            -1.0,
+            -0.02
+          ]
+        },
+        {
+          "bone": "neck",
+          "along": [
+            0.0,
+            1.0
           ]
         }
       ],
       "align": {
         "span": {
-          "axis": "X",
-          "factor": 1.12
+          "axis": "Y",
+          "from": "neck_base",
+          "to": "head",
+          "factor": 1.08
         },
         "anchors": {
           "X": {
@@ -897,13 +944,9 @@
         }
       },
       "clearance": 0.01,
+      "coverReach": 0.06,
       "hug": {
-        "bands": [
-          [
-            0.4,
-            1.0
-          ]
-        ],
+        "bands": [],
         "reach": 0.03,
         "fade": 0.08
       },

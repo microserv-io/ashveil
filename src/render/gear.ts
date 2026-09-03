@@ -14,43 +14,25 @@ export const GEAR_SLOTS = ['feet', 'legs', 'waist', 'chest', 'back', 'hands', 's
 
 export type GearSlot = (typeof GEAR_SLOTS)[number]
 
-/** Which body vertices a slot covers, per skinned mesh node name. */
-export interface BodyMasks {
-  slots: Partial<Record<GearSlot, Record<string, number[]>>>
-}
+/** The body vertices one piece hides, per skinned mesh node name. */
+export type GearHides = Readonly<Record<string, readonly number[]>>
 
 /** A loaded piece GLB, before it is bound to any particular body. */
 export interface GearPieceSource {
   slot: GearSlot
   scene: THREE.Object3D
-  /** The slot regions this piece hides; a sleeve covers more than its own slot. */
+  /** The slot regions this piece spans, for reference; masking is `hides`. */
   covers: readonly GearSlot[]
+  /** Measured off the fitted piece by the fitter, never derived from the slot. */
+  hides: GearHides
 }
 
 export interface WornPiece {
   slot: GearSlot
   covers: readonly GearSlot[]
+  hides: GearHides
   mesh: THREE.SkinnedMesh
   material: THREE.MeshStandardMaterial
-}
-
-/** What to hide with a set of pieces on: every region any of them covers. */
-export function coveredSlots(worn: readonly WornPiece[]): Set<GearSlot> {
-  return new Set(worn.flatMap((piece) => [...piece.covers]))
-}
-
-export async function loadBodyMasks(url: string): Promise<BodyMasks> {
-  const response = await fetch(url)
-  if (!response.ok) throw new Error(`gear: ${url} answered ${response.status}`)
-  const raw = (await response.json()) as { slots?: unknown }
-  if (!raw || typeof raw !== 'object' || !raw.slots || typeof raw.slots !== 'object') {
-    throw new Error(`gear: ${url} has no "slots" object`)
-  }
-  for (const [slot, meshes] of Object.entries(raw.slots as Record<string, unknown>)) {
-    if (!GEAR_SLOTS.includes(slot as GearSlot)) throw new Error(`gear: ${url} names unknown slot "${slot}"`)
-    if (!meshes || typeof meshes !== 'object') throw new Error(`gear: ${url} slot "${slot}" is not an object`)
-  }
-  return raw as BodyMasks
 }
 
 export function skinnedMeshesOf(root: THREE.Object3D): THREE.SkinnedMesh[] {
@@ -86,7 +68,7 @@ export function wearPiece(body: THREE.Object3D, source: GearPieceSource): WornPi
   // A sibling, so the piece carries the same world transform the bind matrix assumes.
   ;(host.parent ?? body).add(mesh)
   mesh.bind(host.skeleton, host.bindMatrix)
-  return { slot: source.slot, covers: source.covers, mesh, material }
+  return { slot: source.slot, covers: source.covers, hides: source.hides, mesh, material }
 }
 
 export function removePiece(_body: THREE.Object3D, worn: WornPiece): void {
@@ -95,17 +77,18 @@ export function removePiece(_body: THREE.Object3D, worn: WornPiece): void {
 }
 
 /**
- * Hides the body under the worn slots by dropping the triangles whose three
- * vertices are all masked. The attributes are the originals, shared by reference:
+ * Hides the body under the worn pieces by dropping the triangles whose three
+ * vertices are all hidden. A triangle with one or two hidden vertices is a rim
+ * triangle and stays drawn. The attributes are the originals, shared by reference:
  * only the index differs, so a masked body costs one small buffer and no re-skin.
  * Nothing built here may ever be disposed: disposing a geometry frees the buffers
  * of its attributes, and these are the unmasked body's.
  */
-export function applyBodyMasks(body: THREE.Object3D, masks: BodyMasks, worn: ReadonlySet<GearSlot>): void {
+export function applyBodyMasks(body: THREE.Object3D, worn: readonly Pick<WornPiece, 'hides'>[]): void {
   for (const mesh of skinnedMeshesOf(body)) {
     const base = BASE_GEOMETRY.get(mesh) ?? mesh.geometry
     BASE_GEOMETRY.set(mesh, base)
-    const hidden = maskedVertices(masks, worn, mesh.name)
+    const hidden = hiddenVertices(worn, mesh.name)
     mesh.geometry = hidden === null ? base : withoutMaskedTriangles(base, hidden)
   }
 }
@@ -129,10 +112,11 @@ export function viewMaterialsWith(view: ActorView, bodyMaterials: number, worn: 
 /** The unmasked geometry, so taking a piece off restores the body it covered. */
 const BASE_GEOMETRY = new WeakMap<THREE.SkinnedMesh, THREE.BufferGeometry>()
 
-function maskedVertices(masks: BodyMasks, worn: ReadonlySet<GearSlot>, mesh: string): Set<number> | null {
+/** The union of what every worn piece hides on one mesh, or null for nothing at all. */
+function hiddenVertices(worn: readonly Pick<WornPiece, 'hides'>[], mesh: string): Set<number> | null {
   const hidden = new Set<number>()
-  for (const slot of worn) {
-    for (const vertex of masks.slots[slot]?.[mesh] ?? []) hidden.add(vertex)
+  for (const piece of worn) {
+    for (const vertex of piece.hides[mesh] ?? []) hidden.add(vertex)
   }
   return hidden.size === 0 ? null : hidden
 }

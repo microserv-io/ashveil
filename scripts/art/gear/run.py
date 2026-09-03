@@ -27,6 +27,8 @@ def parse(argv: list[str]):
     parser.add_argument("--piece", required=True)
     parser.add_argument("--weights", choices=("transfer", "rigid"))
     parser.add_argument("--covers")
+    parser.add_argument("--span")
+    parser.add_argument("--yaw", choices=("0", "180"), default="0")
     parser.add_argument("--no-mask", action="store_true")
     parser.add_argument("--outdir", required=True)
     return parser.parse_args(argv)
@@ -47,8 +49,8 @@ def _source(args, loaded: dict) -> tuple[list, dict, dict]:
     }
 
 
-def _manifest(args, contract: dict, source: dict, covers: list[str], mode: str, alignment: dict,
-              measured: dict, gates_table: dict, piece_path: str) -> dict:
+def _manifest(args, contract: dict, source: dict, covers: list[str], hides: dict, mode: str,
+              alignment: dict, measured: dict, gates_table: dict, piece_path: str) -> dict:
     glb = Glb(piece_path)
     skin = glb.json["skins"][0]
     inverse = glb.accessor(skin["inverseBindMatrices"])
@@ -63,7 +65,7 @@ def _manifest(args, contract: dict, source: dict, covers: list[str], mode: str, 
         "bones": [glb.json["nodes"][node]["name"] for node in skin["joints"]],
         "inverseBindSha256": exporter.sha256_array(inverse),
         "covers": covers,
-        "maskBody": any(contract["slots"][name]["region"] for name in covers),
+        "hides": hides,
         "weights": mode,
         "alignment": alignment,
         "budget": {
@@ -78,14 +80,57 @@ def _manifest(args, contract: dict, source: dict, covers: list[str], mode: str, 
 
 
 def _covers(args, contract: dict) -> list[str]:
-    """The slot regions this piece hides, which a sleeve makes wider than its own slot."""
+    """The slot regions this piece spans, which a sleeve makes wider than its own slot.
+
+    Alignment reference only: what the piece hides is measured off the fitted piece.
+    """
     if args.no_mask:
         return []
-    names = [name.strip() for name in args.covers.split(",")] if args.covers else [args.slot]
+    names = ([name.strip() for name in args.covers.split(",")] if args.covers
+             else list(contract["slots"][args.slot]["defaultCovers"]))
     for name in names:
         if name not in contract["slots"]:
             raise RuntimeError(f"slot gate: unknown covered slot \"{name}\"")
     return list(dict.fromkeys(names))
+
+
+def _landmark_span(axis: str, start: str, end: str, factor: float, landmarks: dict) -> dict:
+    """The distance between two body landmarks along one axis, as the piece's target extent."""
+    if axis not in ("X", "Y", "Z"):
+        raise RuntimeError(f"span gate: \"{axis}\" is not an axis")
+    for name in (start, end):
+        if name not in landmarks:
+            raise RuntimeError(f"span gate: the body has no landmark \"{name}\"")
+    at = {"X": 0, "Y": 1, "Z": 2}[axis]
+    metres = abs(float(landmarks[end][at]) - float(landmarks[start][at]))
+    if metres <= 1e-9:
+        raise RuntimeError(f"span gate: {start} and {end} are the same point along {axis}")
+    return {"axis": axis, "from": start, "to": end, "metres": metres, "factor": factor}
+
+
+def _span(args, landmarks: dict) -> dict | None:
+    """`AXIS:FROM:TO[:FACTOR]`: measure the piece against two landmarks, not the region."""
+    if not args.span:
+        return None
+    parts = args.span.split(":")
+    if len(parts) not in (3, 4):
+        raise RuntimeError(f"span gate: \"{args.span}\" is not AXIS:FROM:TO[:FACTOR]")
+    return _landmark_span(parts[0], parts[1], parts[2],
+                          float(parts[3]) if len(parts) == 4 else 1.0, landmarks)
+
+
+def _slot_span(slot: dict, landmarks: dict) -> dict | None:
+    """A slot whose span names two landmarks measures itself, so a hood needs no flag.
+
+    A proxy is skipped by the caller: it is the region's own shell, and measuring it
+    against anything but that region stretches the body's shape out of itself.
+    """
+    rule = slot["align"]["span"]
+    if ("from" in rule) != ("to" in rule):
+        raise RuntimeError("span gate: a slot span names both \"from\" and \"to\" or neither")
+    if "from" not in rule:
+        return None
+    return _landmark_span(rule["axis"], rule["from"], rule["to"], float(rule["factor"]), landmarks)
 
 
 def _alignment_rule(rule: dict, proxy: bool) -> dict:
@@ -109,27 +154,39 @@ def run(args) -> dict:
     loaded = body.load(ROOT, args.body)
     covers = _covers(args, contract)
     target = body.joined_target(loaded)
-    surface = geometry.Surface(loaded["meshes"], body.hidden_vertices(loaded, covers))
+    surface = geometry.Surface(loaded["meshes"], body.region_vertices(loaded, covers))
     objects, source_had, source = _source(args, loaded)
     objects, island_report = piece.islands(objects, slot["pair"], args.piece)
 
-    reference_name = slot["align"].get("referenceSlot", args.slot)
-    reference = body.region(loaded, reference_name, slot["pair"])
     proxy = args.input.startswith("proxy:")
+    span = _span(args, loaded["manifest"]["landmarks"]) or (
+        None if proxy else _slot_span(slot, loaded["manifest"]["landmarks"]))
+    named = slot["align"].get("referenceSlot")
+    # A proxy is the shell of one region, so it is measured against that region;
+    # a garment is measured against everything it covers.
+    reference_slots = ([args.input.split(":", 1)[1]] if proxy
+                       else [named] if named else (covers or [args.slot]))
+    reference = body.region(loaded, reference_slots, slot["pair"])
     rule = _alignment_rule(slot["align"], proxy)
     alignment_report = {}
     for at, obj in enumerate(objects):
         side = ("L", "R")[at] if slot["pair"] else "all"
         measured_side = geometry.align(obj, reference[side], rule, surface,
-                                       side if slot["pair"] else None)
+                                       side if slot["pair"] else None, span, int(args.yaw))
         measured_side["proxy"] = proxy
+        measured_side["reference"] = reference_slots
         alignment_report[side] = measured_side
+    faces = geometry.facing(objects, reference, slot, contract, loaded["manifest"]["landmarks"])
     decimation = geometry.decimate(objects, slot["budget"]["maxTriangles"])
-    shrinkwrap = geometry.shrinkwrap(objects, target, slot)
-    outside = geometry.outside_measure(objects, surface)
+    shrinkwrap = geometry.shrinkwrap(objects, target, slot, surface, span)
     mode = args.weights or slot["weights"]["mode"]
     weight_report = weights.apply(objects, target, loaded["armature"], slot, mode, slot["pair"])
     fitted = piece.join(objects, args.piece)
+
+    hides = ({} if args.no_mask
+             else geometry.coverage(fitted, loaded["meshes"], float(slot["coverReach"])))
+    hidden = {name: set(indices) for name, indices in hides.items()}
+    outside = geometry.outside_measure([fitted], geometry.Surface(loaded["meshes"], hidden))
 
     out = Path(args.outdir)
     out.mkdir(parents=True, exist_ok=True)
@@ -137,13 +194,13 @@ def run(args) -> dict:
     exporter.write_glb(glb_path, {args.piece: fitted}, loaded["armature"])
     rest = exporter.finish(glb_path)
     measured = gate.measure(glb_path, str(loaded["path"]), contract, source_had, outside)
-    gates_table = gate.gates(measured, slot)
-    alignment = ({side: {key: value for key, value in report.items()
-                         if key in ("scale", "yawDegrees", "translation")}
+    gates_table = gate.gates(measured, slot, faces)
+    kept = ("scale", "yawDegrees", "translation", "spanOverride")
+    alignment = ({side: {key: value for key, value in report.items() if key in kept}
                   for side, report in alignment_report.items()}
                  if slot["pair"] else
                  {key: value for key, value in alignment_report["all"].items()
-                  if key in ("scale", "yawDegrees", "translation")})
+                  if key in kept})
     report = {
         "schema": "ashveil.gear-report.v1",
         "family": contract["family"],
@@ -152,9 +209,14 @@ def run(args) -> dict:
         "slot": args.slot,
         "piece": args.piece,
         "covers": covers,
+        "referenceRegions": reference_slots,
+        "coverage": {"reachMetres": float(slot["coverReach"]),
+                     "hiddenVertices": {mesh.name: len(hides.get(mesh.name, []))
+                                        for mesh in loaded["meshes"]}},
         "source": source,
         "islands": island_report,
         "alignment": alignment_report,
+        "facing": faces,
         "decimation": decimation,
         "shrinkwrap": shrinkwrap,
         "weights": weight_report,
@@ -175,14 +237,17 @@ def run(args) -> dict:
         os.remove(glb_path)
         gate.check(gates_table)
 
-    manifest = _manifest(args, contract, source, covers, mode, alignment, measured, gates_table, glb_path)
+    manifest = _manifest(args, contract, source, covers, hides, mode, alignment, measured,
+                         gates_table, glb_path)
     exporter.write_json(str(out / f"{args.piece}.manifest.json"), manifest)
     scratch = tempfile.mkdtemp(prefix="ashveil-gear-review-")
     try:
-        review.sheet(str(loaded["path"]), glb_path, contract,
-                     str(out / f"{args.piece}.review.png"), scratch)
+        report["review"] = {"bodyVerticesInsideThePiece": review.sheet(
+            str(loaded["path"]), glb_path, contract, str(out / f"{args.piece}.review.png"),
+            scratch, hidden)}
     finally:
         shutil.rmtree(scratch, ignore_errors=True)
+    exporter.write_json(str(out / f"{args.piece}.report.json"), report)
     return report
 
 

@@ -9,8 +9,7 @@ import {
   skinnedMeshesOf,
   viewMaterialsWith,
   wearPiece,
-  type BodyMasks,
-  type GearSlot,
+  type WornPiece,
 } from '../src/render/gear'
 
 /**
@@ -87,8 +86,9 @@ function maskBand(body: TestBody, low: number, high: number): number[] {
   return masked
 }
 
-function masksFor(slot: GearSlot, vertices: number[]): BodyMasks {
-  return { slots: { [slot]: { [BODY_MESH]: vertices } } }
+/** Masking reads nothing off a worn piece but its `hides`, so a stand-in needs no mesh. */
+function masksFor(vertices: number[], mesh = BODY_MESH): Pick<WornPiece, 'hides'>[] {
+  return [{ hides: { [mesh]: vertices } }]
 }
 
 function indexCount(mesh: THREE.SkinnedMesh): number {
@@ -98,7 +98,7 @@ function indexCount(mesh: THREE.SkinnedMesh): number {
 describe('wearing a piece on a fitted body', () => {
   it('binds the piece to the body’s own Skeleton object', () => {
     const body = buildBody()
-    const worn = wearPiece(body.root, { slot: 'chest', scene: buildPiece(), covers: ['chest'] })
+    const worn = wearPiece(body.root, { slot: 'chest', scene: buildPiece(), covers: ['chest'], hides: {} })
 
     expect(worn.mesh.skeleton).toBe(body.meshes[0]!.skeleton)
     expect(worn.mesh.parent).toBe(body.meshes[0]!.parent)
@@ -109,7 +109,7 @@ describe('wearing a piece on a fitted body', () => {
     const body = buildBody()
     const source = buildPiece()
     const piece = skinnedMeshesOf(source)[0]!
-    const worn = wearPiece(body.root, { slot: 'chest', scene: source, covers: ['chest'] })
+    const worn = wearPiece(body.root, { slot: 'chest', scene: source, covers: ['chest'], hides: {} })
 
     expect(worn.mesh.geometry).toBe(piece.geometry)
     expect(worn.material).not.toBe(piece.material)
@@ -117,7 +117,7 @@ describe('wearing a piece on a fitted body', () => {
 
   it('names the bone when the piece’s joints are out of order', () => {
     const body = buildBody()
-    expect(() => wearPiece(body.root, { slot: 'chest', scene: buildPiece(true), covers: ['chest'] }))
+    expect(() => wearPiece(body.root, { slot: 'chest', scene: buildPiece(true), covers: ['chest'], hides: {} }))
       .toThrow(/chest bone 1 is "spine", the body has "pelvis"/)
   })
 
@@ -125,7 +125,7 @@ describe('wearing a piece on a fitted body', () => {
     const body = buildBody()
     const scene = buildPiece()
     scene.add(skinnedMeshesOf(buildPiece())[0]!)
-    expect(() => wearPiece(body.root, { slot: 'chest', scene, covers: ['chest'] }))
+    expect(() => wearPiece(body.root, { slot: 'chest', scene, covers: ['chest'], hides: {} }))
       .toThrow(/chest piece is 2 meshes/)
   })
 
@@ -133,9 +133,9 @@ describe('wearing a piece on a fitted body', () => {
     const body = buildBody()
     const before = skinnedMeshesOf(body.root).length
 
-    const chest = wearPiece(body.root, { slot: 'chest', scene: buildPiece(), covers: ['chest'] })
+    const chest = wearPiece(body.root, { slot: 'chest', scene: buildPiece(), covers: ['chest'], hides: {} })
     expect(skinnedMeshesOf(body.root)).toHaveLength(before + 1)
-    const legs = wearPiece(body.root, { slot: 'legs', scene: buildPiece(), covers: ['legs'] })
+    const legs = wearPiece(body.root, { slot: 'legs', scene: buildPiece(), covers: ['legs'], hides: {} })
     expect(skinnedMeshesOf(body.root)).toHaveLength(before + 2)
 
     removePiece(body.root, chest)
@@ -159,7 +159,7 @@ describe('masking the body under a worn slot', () => {
     }
     expect(expected, 'the band must actually cover whole triangles').toBeGreaterThan(0)
 
-    applyBodyMasks(body.root, masksFor('chest', masked), new Set<GearSlot>(['chest']))
+    applyBodyMasks(body.root, masksFor(masked))
     expect(indexCount(mesh)).toBe(original - expected)
   })
 
@@ -167,10 +167,10 @@ describe('masking the body under a worn slot', () => {
     const body = buildBody()
     const mesh = body.meshes.find((entry) => entry.name === BODY_MESH)!
     const original = mesh.geometry
-    const masks = masksFor('chest', maskBand(body, 0.4, 1.1))
+    const masks = masksFor(maskBand(body, 0.4, 1.1))
 
-    applyBodyMasks(body.root, masks, new Set<GearSlot>(['chest']))
-    applyBodyMasks(body.root, masks, new Set<GearSlot>())
+    applyBodyMasks(body.root, masks)
+    applyBodyMasks(body.root, [])
     expect(mesh.geometry).toBe(original)
     expect(indexCount(mesh)).toBe(original.getIndex()!.count)
   })
@@ -180,20 +180,45 @@ describe('masking the body under a worn slot', () => {
     const mesh = body.meshes.find((entry) => entry.name === BODY_MESH)!
     const original = mesh.geometry
 
-    applyBodyMasks(body.root, masksFor('chest', maskBand(body, 0.4, 1.1)), new Set<GearSlot>(['chest']))
+    applyBodyMasks(body.root, masksFor(maskBand(body, 0.4, 1.1)))
     expect(mesh.geometry).not.toBe(original)
     for (const name of ['position', 'normal', 'skinIndex', 'skinWeight']) {
       expect(mesh.geometry.getAttribute(name), name).toBe(original.getAttribute(name))
     }
   })
 
-  it('leaves a mesh no worn slot covers untouched', () => {
+  it('leaves a mesh no worn piece hides untouched', () => {
     const body = buildBody()
     const head = body.meshes.find((entry) => entry.name === 'Head')!
     const original = head.geometry
 
-    applyBodyMasks(body.root, masksFor('chest', maskBand(body, 0.4, 1.1)), new Set<GearSlot>(['chest']))
+    applyBodyMasks(body.root, masksFor(maskBand(body, 0.4, 1.1)))
     expect(head.geometry).toBe(original)
+  })
+
+  /** Two pieces over one mesh hide the union, not whichever was applied last. */
+  it('takes the union of what every worn piece hides', () => {
+    const body = buildBody()
+    const mesh = body.meshes.find((entry) => entry.name === BODY_MESH)!
+    const lower = maskBand(body, 0.4, 0.75)
+    const upper = maskBand(body, 0.75, 1.1)
+
+    applyBodyMasks(body.root, [...masksFor(lower), ...masksFor(upper)])
+    const together = indexCount(mesh)
+    applyBodyMasks(body.root, masksFor(upper))
+    expect(together).toBeLessThan(indexCount(mesh))
+  })
+
+  /** The rim rule: one or two hidden corners is a rim triangle, and it stays drawn. */
+  it('keeps a triangle only some of whose vertices are hidden', () => {
+    const body = buildBody()
+    const mesh = body.meshes.find((entry) => entry.name === BODY_MESH)!
+    const indices = body.source.find((entry) => entry.name === BODY_MESH)!.indices
+    const first = [indices[0]!, indices[1]!]
+    const whole = indexCount(mesh)
+
+    applyBodyMasks(body.root, masksFor(first))
+    expect(indexCount(mesh)).toBe(whole)
   })
 
   /** A multi-material mesh draws its groups: leave those behind and it draws garbage. */
@@ -205,7 +230,7 @@ describe('masking the body under a worn slot', () => {
     mesh.geometry.addGroup(0, split, 0)
     mesh.geometry.addGroup(split, whole - split, 1)
 
-    applyBodyMasks(body.root, masksFor('chest', maskBand(body, 0.4, 1.1)), new Set<GearSlot>(['chest']))
+    applyBodyMasks(body.root, masksFor(maskBand(body, 0.4, 1.1)))
     const groups = mesh.geometry.groups
     expect(groups.map((group) => group.materialIndex)).toEqual([0, 1])
     expect(groups[0]!.start).toBe(0)
@@ -229,7 +254,7 @@ describe('handing the worn materials to the view', () => {
   it('replaces the gear entries rather than growing the arrays on a re-wear', () => {
     const body = buildBody()
     const view = fakeView([new THREE.MeshStandardMaterial()])
-    const chest = wearPiece(body.root, { slot: 'chest', scene: buildPiece(), covers: ['chest'] })
+    const chest = wearPiece(body.root, { slot: 'chest', scene: buildPiece(), covers: ['chest'], hides: {} })
 
     viewMaterialsWith(view, 1, [chest])
     viewMaterialsWith(view, 1, [chest])

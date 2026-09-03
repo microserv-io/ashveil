@@ -7,6 +7,8 @@ export interface GearPlan {
   piece: string
   weights?: 'transfer' | 'rigid'
   covers: string[]
+  span?: string
+  yaw?: '0' | '180'
   noMask: boolean
   outdir: string
 }

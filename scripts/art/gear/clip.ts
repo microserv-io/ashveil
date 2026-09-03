@@ -10,7 +10,7 @@ import { createPose, resetPose, setJointAxisAngle, type Pose } from '../../../sr
 import { writeClipPose } from '../../../src/render/procedural/poses'
 import { MASCULINE_PROFILE } from '../../../src/render/profiles/masculine'
 import { bindSkeleton } from '../../../src/render/semanticskeleton'
-import { GEAR_SLOTS, type BodyMasks, type GearSlot } from '../../../src/render/gear'
+import { GEAR_SLOTS, type GearSlot } from '../../../src/render/gear'
 import { loadGlbSkeleton, readGlb, type GlbSkinnedMesh } from '../glb'
 import { measurePenetration, skinVertices } from './penetration'
 
@@ -21,7 +21,8 @@ import { measurePenetration, skinVertices } from './penetration'
  * degrees of abduction or through a thigh at a run, and neither is visible in a
  * review sheet of three static poses. So the piece is skinned onto the body's own
  * skeleton through every motion cycle and every stress pose the rig can reach, and
- * measured against the body that is still visible under it.
+ * measured against the body that is still visible under it. Poses past what gameplay
+ * asks for are measured and reported under `advisory`, and gate nothing.
  *
  * `node --import tsx scripts/art/gear/clip.ts --piece public/gear/<piece>`
  */
@@ -34,7 +35,7 @@ const CONTRACT = join(ROOT, 'scripts', 'art', 'contracts', 'humanoid.v1.json')
 /** How many samples one cycle is walked at. */
 const PHASES = 32
 
-export type ClipGroup = 'motion' | 'stress'
+export type ClipGroup = 'motion' | 'stress' | 'advisory'
 
 export interface ClipLimits {
   readonly depth: number
@@ -56,8 +57,8 @@ export interface ClipResult {
   readonly body: string
   readonly piece: string
   readonly slot: GearSlot
-  readonly maskBody: boolean
-  readonly maskedSlots: readonly GearSlot[]
+  /** How many body vertices the piece hides, per mesh: the mask it was measured with. */
+  readonly hides: Readonly<Record<string, number>>
   readonly clip: ClipLimits
   readonly vertices: number
   readonly poses: number
@@ -75,9 +76,6 @@ export interface ClipBody {
   readonly meshes: readonly GlbSkinnedMesh[]
   readonly jointNames: readonly string[]
   readonly inverseBinds: Float32Array
-  /** Empty when the body has no masks sidecar yet; the piece then hides nothing. */
-  readonly masks: BodyMasks
-  readonly hasMasks: boolean
   apply(pose: Pose): void
   /** Bone world matrices times inverse binds, flattened, valid until the next `apply`. */
   readonly skinMatrices: Float32Array
@@ -86,9 +84,10 @@ export interface ClipBody {
 export interface ClipPiece {
   readonly name: string
   readonly slot: GearSlot
-  /** The slot regions this piece hides: its own by default, a sleeve's more. */
+  /** The slot regions this piece spans, for reference: masking is `hides`. */
   readonly covers: readonly GearSlot[]
-  readonly maskBody: boolean
+  /** The body vertices this piece covers, per mesh, measured off the fitted piece. */
+  readonly hides: Readonly<Record<string, readonly number[]>>
   readonly body: string
   readonly jointNames: readonly string[]
   readonly meshes: readonly GlbSkinnedMesh[]
@@ -104,9 +103,6 @@ export function loadClipBody(name: string, dir = join(BODIES, name)): ClipBody {
     return found
   })
 
-  const masksPath = join(dir, `${name}.masks.json`)
-  const hasMasks = existsSync(masksPath)
-  const masks: BodyMasks = hasMasks ? JSON.parse(readFileSync(masksPath, 'utf8')) : { slots: {} }
   const skinMatrices = new Float32Array(bones.length * 16)
   const scratch = new THREE.Matrix4()
 
@@ -117,8 +113,6 @@ export function loadClipBody(name: string, dir = join(BODIES, name)): ClipBody {
     meshes: glb.meshes,
     jointNames: glb.skin.jointNames,
     inverseBinds: glb.skin.inverseBinds,
-    masks,
-    hasMasks,
     skinMatrices,
     apply(pose: Pose): void {
       skeleton.apply(pose)
@@ -138,7 +132,7 @@ export function loadClipPiece(dir: string, name = basename(dir)): ClipPiece {
     slot?: string
     body?: string
     covers?: string[]
-    maskBody?: boolean
+    hides?: Record<string, number[]>
     piece?: string
   }
   if (!manifest.slot || !GEAR_SLOTS.includes(manifest.slot as GearSlot)) {
@@ -150,7 +144,7 @@ export function loadClipPiece(dir: string, name = basename(dir)): ClipPiece {
     name: manifest.piece ?? name,
     slot: manifest.slot as GearSlot,
     covers: matchCovers(manifest.covers ?? [manifest.slot], manifestPath),
-    maskBody: manifest.maskBody !== false,
+    hides: matchHides(manifest.hides, manifestPath),
     body: manifest.body,
     jointNames: glb.skin.jointNames,
     meshes: glb.meshes,
@@ -192,16 +186,25 @@ export function matchCovers(covers: readonly (string | undefined)[], where: stri
   })
 }
 
-/** Which slots the gate hides while measuring one piece: everything it covers. */
-export function maskedSlots(body: ClipBody, piece: ClipPiece): GearSlot[] {
-  return piece.maskBody && body.hasMasks ? [...piece.covers] : []
+/** The mask is per mesh vertex lists, and a manifest without one hides nothing. */
+export function matchHides(
+  hides: Record<string, number[]> | undefined,
+  where: string,
+): Record<string, number[]> {
+  if (hides === undefined) return {}
+  if (hides === null || typeof hides !== 'object' || Array.isArray(hides)) {
+    throw new ClipError(`clip gate: ${where} has a "hides" that is not an object`)
+  }
+  for (const [mesh, indices] of Object.entries(hides)) {
+    if (!Array.isArray(indices)) throw new ClipError(`clip gate: ${where} hides "${mesh}" is not an array`)
+  }
+  return hides
 }
 
 export function measureClip(body: ClipBody, piece: ClipPiece, limits: ClipLimits): ClipResult {
   matchJoints(piece, body)
 
-  const hidden = maskedSlots(body, piece)
-  const surface = bodySurface(body, new Set(hidden))
+  const surface = bodySurface(body, piece.hides)
   const worn = mergeVertices(piece.meshes)
   const bodyPoints = new Float32Array(surface.positions.length)
   const piecePoints = new Float32Array(worn.positions.length)
@@ -210,6 +213,7 @@ export function measureClip(body: ClipBody, piece: ClipPiece, limits: ClipLimits
   const worst: Record<ClipGroup, ClipWorst> = {
     motion: empty('none'),
     stress: empty('none'),
+    advisory: empty('none'),
   }
 
   let poses = 0
@@ -235,8 +239,7 @@ export function measureClip(body: ClipBody, piece: ClipPiece, limits: ClipLimits
     body: body.name,
     piece: piece.name,
     slot: piece.slot,
-    maskBody: piece.maskBody,
-    maskedSlots: hidden,
+    hides: Object.fromEntries(Object.entries(piece.hides).map(([mesh, list]) => [mesh, list.length])),
     clip: limits,
     vertices,
     poses,
@@ -261,22 +264,25 @@ export interface BodySurface extends MergedMesh {
 }
 
 /**
- * Every body mesh in one array, with the triangles the worn slots hide flagged
- * rather than dropped. The hidden ones still answer which way is out for a piece
- * resting on them; `penetration.ts` is what refuses to count them.
+ * Every body mesh in one array, with the triangles the piece covers flagged rather
+ * than dropped. The hidden ones still answer which way is out for a piece resting
+ * on them; `penetration.ts` is what refuses to count them.
+ *
+ * The rim rule: the game drops a triangle only when all three vertices are hidden,
+ * but one hidden corner is enough to stop it counting here. A rim triangle is half
+ * under the garment, and skin the garment already ate cannot be clipped through.
  */
-export function bodySurface(body: ClipBody, worn: ReadonlySet<GearSlot>): BodySurface {
+export function bodySurface(body: ClipBody, hides: Readonly<Record<string, readonly number[]>>): BodySurface {
   const merged = mergeVertices(body.meshes)
   const visible = new Uint8Array(merged.indices.length / 3).fill(1)
   let triangle = 0
   for (const mesh of body.meshes) {
-    const hidden = new Set<number>()
-    for (const slot of worn) for (const vertex of body.masks.slots[slot]?.[mesh.name] ?? []) hidden.add(vertex)
+    const hidden = new Set<number>(hides[mesh.name] ?? [])
     for (let at = 0; at < mesh.indices.length; at += 3, triangle++) {
       const a = mesh.indices[at]!
       const b = mesh.indices[at + 1]!
       const c = mesh.indices[at + 2]!
-      if (hidden.has(a) && hidden.has(b) && hidden.has(c)) visible[triangle] = 0
+      if (hidden.has(a) || hidden.has(b) || hidden.has(c)) visible[triangle] = 0
     }
   }
   return { ...merged, visible }
@@ -346,12 +352,15 @@ export function forEachClipPose(
   // Overhead is deliberately absent: linear skinning folds this body's own shoulder
   // through itself at 180, so the pose measures the body, not the piece, and no
   // gameplay motion raises an arm that far.
+  // 150 is advisory for the same reason 180 is absent: no gameplay motion abducts an
+  // arm past 90, and this body's own shoulder skin folds through itself up there, so
+  // what the measurement reads is the body rather than the piece.
   for (const degrees of [90, 150]) {
     resetPose(pose)
     // Positive about +Z raises the left arm outward; the right side mirrors it.
     setJointAxisAngle(pose, Joint.ShoulderL, 0, 0, 1, (LEFT * degrees * Math.PI) / 180)
     setJointAxisAngle(pose, Joint.ShoulderR, 0, 0, 1, (RIGHT * degrees * Math.PI) / 180)
-    visit('stress', `abduct${degrees}`, 0)
+    visit(degrees > 90 ? 'advisory' : 'stress', `abduct${degrees}`, 0)
   }
 
   for (const degrees of [60, 90]) {

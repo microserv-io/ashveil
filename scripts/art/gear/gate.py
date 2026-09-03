@@ -6,16 +6,15 @@ from fit.glb import Glb, rest_orientations
 from fit.skin import Body
 
 
-def _islands(region: dict) -> int:
-    """How many loose shapes the exported surface is.
+def _islands(region: dict) -> dict[int, list[int]]:
+    """The loose shapes of the exported surface, each as its welded vertex ids.
 
     The exporter splits a vertex per distinct normal or UV, so index connectivity
     counts one island per triangle; welding by position first counts surfaces.
     """
-    _, welded = np.unique(region["positions"], axis=0, return_inverse=True)
-    triangles = welded.reshape(-1)[region["triangles"]]
-    vertices = sorted(set(int(index) for index in triangles.ravel()))
-    parent = {index: index for index in vertices}
+    welded = np.unique(region["positions"], axis=0, return_inverse=True)[1].reshape(-1)
+    triangles = welded[region["triangles"]]
+    parent = {int(index): int(index) for index in np.unique(triangles)}
 
     def root(index: int) -> int:
         while parent[index] != index:
@@ -29,7 +28,24 @@ def _islands(region: dict) -> int:
             other = root(int(index))
             if first != other:
                 parent[other] = first
-    return len({root(index) for index in vertices})
+
+    grouped: dict[int, list[int]] = {}
+    for index in parent:
+        grouped.setdefault(root(index), []).append(index)
+    # The welded id is the first vertex sharing that position, so it indexes positions.
+    order = np.unique(region["positions"], axis=0, return_index=True)[1]
+    return {key: [int(order[index]) for index in members] for key, members in grouped.items()}
+
+
+def _sides(piece) -> dict:
+    """How many islands sit each side of the midline, in the runtime frame (+X is left)."""
+    counted = {"L": 0, "R": 0, "islands": 0}
+    for region in piece.regions:
+        for members in _islands(region).values():
+            counted["islands"] += 1
+            centre = float(np.mean([region["positions"][index][0] for index in members]))
+            counted["L" if centre >= 0.0 else "R"] += 1
+    return counted
 
 
 def measure(piece_path: str, body_path: str, contract: dict, source_had: dict, outside: dict) -> dict:
@@ -52,7 +68,7 @@ def measure(piece_path: str, body_path: str, contract: dict, source_had: dict, o
         "triangles": int(triangles),
         "materials": len(document.get("materials", [])),
         "meshes": len(piece.regions),
-        "islands": sum(_islands(region) for region in piece.regions),
+        "sides": _sides(piece),
         "maxInfluencesPerVertex": int(influences.max(initial=0)),
         "minWeightSum": round(float(sums.min(initial=1.0)), 9),
         "maxWeightSum": round(float(sums.max(initial=1.0)), 9),
@@ -66,7 +82,7 @@ def measure(piece_path: str, body_path: str, contract: dict, source_had: dict, o
     }
 
 
-def gates(measured: dict, slot: dict) -> dict:
+def gates(measured: dict, slot: dict, facing: dict | None = None) -> dict:
     allowed = set(slot["weights"]["allowedBones"])
     result = {
         "piece_joints_match_the_body": measured["bones"] == measured["bodyBones"],
@@ -84,9 +100,13 @@ def gates(measured: dict, slot: dict) -> dict:
             measured["bindClearance"]["maxPenetrationMetres"] <= slot["clip"]["depth"],
     }
     if slot["pair"]:
-        result["pair_has_two_islands"] = measured["islands"] == 2
+        # A pauldron is plates plus a cloth drape, so a side is any number of shells.
+        result["pair_has_both_sides"] = measured["sides"]["L"] > 0 and measured["sides"]["R"] > 0
     else:
         result["piece_is_one_mesh"] = measured["meshes"] == 1
+    toes = (facing or {}).get("toes")
+    if toes:
+        result["toes_point_forward"] = all(side["aheadMetres"] > 0.0 for side in toes.values())
     return result
 
 

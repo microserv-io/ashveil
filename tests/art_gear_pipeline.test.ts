@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
-import { mergeClip, parseArgs, resolvePlan } from '../scripts/art/gear.mjs'
+import { blenderArgs, mergeClip, parseArgs, resolvePlan } from '../scripts/art/gear.mjs'
 import { validate } from '../scripts/art/schema.mjs'
 
 const ROOT = join(import.meta.dirname, '..')
@@ -13,11 +13,19 @@ const BLENDER = process.env.ASHVEIL_BLENDER ?? '/opt/homebrew/bin/blender'
 const BODY = 'masculine-v3'
 const BODY_DIR = join(ROOT, 'public', 'bodies', BODY)
 const GEAR_SCHEMA = JSON.parse(readFileSync(join(ROOT, 'scripts', 'art', 'contracts', 'gear-manifest.schema.json'), 'utf8'))
-const FIXTURES = [
-  { piece: 'proxy-feet', slot: 'feet', pair: true, covers: undefined },
-  // Trousers reach the natural waist, so the waistband sits in the waist region.
-  { piece: 'proxy-legs', slot: 'legs', pair: false, covers: ['legs', 'waist'] },
-] as const
+interface Fixture {
+  readonly piece: string
+  readonly slot: string
+  readonly pair: boolean
+  readonly covers?: readonly string[]
+  /** Whether the slot wears feet, and so is held to the toe check. */
+  readonly toes?: boolean
+}
+const FIXTURES: readonly Fixture[] = [
+  { piece: 'proxy-feet', slot: 'feet', pair: true, toes: true },
+  // A hood eats six body meshes, so it is the one that proves `hides` is per mesh.
+  { piece: 'proxy-head', slot: 'head', pair: false },
+]
 const ARTEFACTS = ['glb', 'manifest.json', 'report.json', 'clip.json'] as const
 const CLIP_GATES = ['clears_the_body_through_stress_poses', 'clears_the_body_through_motion_cycles'] as const
 const runnable = existsSync(BLENDER)
@@ -62,11 +70,23 @@ describe('the gear wrapper', () => {
     ]))).toThrow(/slot gate: unknown covered slot "sleeves"/)
   })
 
-  it('covers its own slot unless told otherwise, and nothing at all with --no-mask', () => {
+  it('takes the slot’s defaultCovers unless told otherwise, and nothing at all with --no-mask', () => {
     const base = ['--input', 'proxy:chest', '--slot', 'chest', '--body', BODY, '--piece', 'proxy-chest']
-    expect(resolvePlan(parseArgs(base)).covers).toEqual(['chest'])
-    expect(resolvePlan(parseArgs([...base, '--covers', 'chest,shoulders'])).covers).toEqual(['chest', 'shoulders'])
+    // A tunic has sleeves, so the chest slot spans the shoulders without a flag.
+    expect(resolvePlan(parseArgs(base)).covers).toEqual(['chest', 'shoulders'])
+    expect(resolvePlan(parseArgs([...base, '--covers', 'chest'])).covers).toEqual(['chest'])
     expect(resolvePlan(parseArgs([...base, '--no-mask'])).covers).toEqual([])
+    const feet = ['--input', 'proxy:feet', '--slot', 'feet', '--body', BODY, '--piece', 'proxy-feet']
+    expect(resolvePlan(parseArgs(feet)).covers).toEqual(['feet'])
+  })
+
+  /** A source faces +Z by contract; a turned piece is told, and the fitter never votes. */
+  it('takes only a yaw the contract can mean, and passes it on when given', () => {
+    const base = ['--input', 'proxy:feet', '--slot', 'feet', '--body', BODY, '--piece', 'proxy-feet']
+    expect(() => resolvePlan(parseArgs([...base, '--yaw', '90'])))
+      .toThrow(/yaw gate: "90" is not 0 or 180/)
+    expect(blenderArgs(resolvePlan(parseArgs(base)))).not.toContain('--yaw')
+    expect(blenderArgs(resolvePlan(parseArgs([...base, '--yaw', '180'])))).toContain('180')
   })
 
   it('refuses an outdir the clip gate could not find the piece in', () => {
@@ -107,7 +127,11 @@ describe.skipIf(!runnable)('the gear fitter, end to end', () => {
       expect(manifest.slot).toBe(fixture.slot)
       expect(manifest.body).toBe(BODY)
       expect(manifest.covers).toEqual(fixture.covers ?? [fixture.slot])
-      expect(manifest.gates[fixture.pair ? 'pair_has_two_islands' : 'piece_is_one_mesh']).toBe(true)
+      // The mask is measured off the fitted piece, so a piece that hides nothing
+      // never hid the body it was fitted over.
+      expect(Object.values(manifest.hides).flat().length, 'hides').toBeGreaterThan(0)
+      expect(manifest.gates[fixture.pair ? 'pair_has_both_sides' : 'piece_is_one_mesh']).toBe(true)
+      expect(manifest.gates.toes_point_forward, 'toes').toBe(fixture.toes ? true : undefined)
       for (const gate of CLIP_GATES) expect(manifest.gates[gate], gate).toBe(true)
       expect(Object.entries(manifest.gates).filter(([, passed]) => !passed)).toEqual([])
       expect(Object.keys(manifest.alignment).sort()).toEqual(

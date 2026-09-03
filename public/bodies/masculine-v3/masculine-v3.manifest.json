@@ -215,10 +215,10 @@
       "vertices": 1280
     },
     "waist": {
-      "vertices": 150
+      "vertices": 253
     },
     "chest": {
-      "vertices": 1626
+      "vertices": 1523
     },
     "back": {
       "vertices": 0
@@ -230,7 +230,7 @@
       "vertices": 263
     },
     "head": {
-      "vertices": 999
+      "vertices": 1236
     }
   }
 }
