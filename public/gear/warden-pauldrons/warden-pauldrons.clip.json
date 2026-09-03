@@ -1,0 +1,42 @@
+{
+  "schema": "ashveil.gear-clip.v1",
+  "body": "masculine-v3",
+  "piece": "warden-pauldrons",
+  "slot": "shoulders",
+  "hides": {
+    "Body": 160
+  },
+  "clip": {
+    "depth": 0.005,
+    "fraction": 0.002
+  },
+  "vertices": 4677,
+  "poses": 201,
+  "cycles": {
+    "motion": {
+      "pose": "run",
+      "phase": 0.15625,
+      "maxDepth": 0.020889580231174223,
+      "count": 334,
+      "fraction": 0.07141329912336968
+    },
+    "stress": {
+      "pose": "abduct90",
+      "phase": 0,
+      "maxDepth": 0.027565510424680934,
+      "count": 6,
+      "fraction": 0.0012828736369467607
+    },
+    "advisory": {
+      "pose": "abduct150",
+      "phase": 0,
+      "maxDepth": 0.006872703317821561,
+      "count": 6,
+      "fraction": 0.0012828736369467607
+    }
+  },
+  "gates": {
+    "clears_the_body_through_motion_cycles": false,
+    "clears_the_body_through_stress_poses": true
+  }
+}

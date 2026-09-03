@@ -1,0 +1,42 @@
+{
+  "schema": "ashveil.gear-clip.v1",
+  "body": "masculine-v3",
+  "piece": "warden-boots",
+  "slot": "feet",
+  "hides": {
+    "Body": 1507
+  },
+  "clip": {
+    "depth": 0.005,
+    "fraction": 0.002
+  },
+  "vertices": 6332,
+  "poses": 201,
+  "cycles": {
+    "motion": {
+      "pose": "none",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    },
+    "stress": {
+      "pose": "none",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    },
+    "advisory": {
+      "pose": "none",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    }
+  },
+  "gates": {
+    "clears_the_body_through_motion_cycles": true,
+    "clears_the_body_through_stress_poses": true
+  }
+}
