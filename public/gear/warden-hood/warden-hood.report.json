@@ -86,6 +86,14 @@
     "regionCentroidZ": -0.011305,
     "aheadOfRegionMetres": -0.013791
   },
+  "regionEnclosed": {
+    "all": {
+      "regionVertices": 1236,
+      "withinPieceBox": 1236,
+      "insideVertices": 624,
+      "insideFraction": 0.504854
+    }
+  },
   "decimation": {
     "trianglesBefore": 9967,
     "trianglesAfter": 4999,

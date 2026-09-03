@@ -39,6 +39,7 @@
   "covers": [
     "feet"
   ],
+  "under": [],
   "hides": {
     "Body": [
       110,

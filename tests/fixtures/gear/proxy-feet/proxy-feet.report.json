@@ -118,6 +118,20 @@
       }
     }
   },
+  "regionEnclosed": {
+    "L": {
+      "regionVertices": 763,
+      "withinPieceBox": 753,
+      "insideVertices": 742,
+      "insideFraction": 0.985392
+    },
+    "R": {
+      "regionVertices": 769,
+      "withinPieceBox": 759,
+      "insideVertices": 747,
+      "insideFraction": 0.98419
+    }
+  },
   "decimation": {
     "trianglesBefore": 1794,
     "trianglesAfter": 1794,

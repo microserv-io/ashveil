@@ -55,11 +55,17 @@ def by_name(loaded: dict) -> dict:
     return {obj.name: obj for obj in loaded["meshes"]}
 
 
-def region(loaded: dict, slots: list[str], pair: bool) -> dict[str, np.ndarray]:
+def region(loaded: dict, slots: list[str], pair: bool,
+           bones: dict[str, str] | None = None) -> dict[str, np.ndarray]:
     """The body extents a piece aligns against: every region it covers, as one shape.
 
     A garment is anchored by what it hides, not by the one slot it hangs from, so a
     trouser that covers legs and waist reaches the natural waist rather than the hip.
+
+    `bones` narrows it to the skin one bone owns, per side. A slot's region reaches
+    further up the limb than the garment does on purpose - `hands` is four fifths
+    forearm - so a measurement about whether the hand is in the glove has to ask
+    about the hand.
     """
     meshes = by_name(loaded)
     sides: dict[str, list] = {"L": [], "R": []} if pair else {"all": []}
@@ -79,11 +85,14 @@ def region(loaded: dict, slots: list[str], pair: bool) -> dict[str, np.ndarray]:
                 bone = groups.get(dominant.group, "") if dominant else ""
                 side = ("L" if bone.endswith("_L") else "R" if bone.endswith("_R")
                         else ("L" if point[0] >= 0 else "R"))
+                if bones and bone != bones.get(side):
+                    continue
                 sides[side].append(point)
     result = {side: np.array(points, dtype=np.float64) for side, points in sides.items()}
     if any(len(points) == 0 for points in result.values()):
         missing = ", ".join(side for side, points in result.items() if len(points) == 0)
-        raise BodyError(f"region gate: {', '.join(slots)} has no body vertices for {missing}")
+        named = f" on {sorted(set(bones.values()))}" if bones else ""
+        raise BodyError(f"region gate: {', '.join(slots)} has no body vertices{named} for {missing}")
     return result
 
 

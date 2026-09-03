@@ -782,6 +782,22 @@
             "body": "centre",
             "offset": 0.0
           }
+        },
+        "roll": {
+          "bone": {
+            "L": "forearm_L",
+            "R": "forearm_R"
+          },
+          "stepDegrees": 10
+        },
+        "enclose": {
+          "bone": {
+            "L": "hand_L",
+            "R": "hand_R"
+          },
+          "fraction": 0.98,
+          "step": 0.02,
+          "maxGrow": 1.05
         }
       },
       "clearance": 0.01,

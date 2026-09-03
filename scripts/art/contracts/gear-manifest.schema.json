@@ -309,6 +309,153 @@
               "minimum": 0
             }
           }
+        },
+        "roll": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "bone",
+            "scoredRegionVertices",
+            "stepDegrees",
+            "chosenDegrees",
+            "candidates",
+            "best",
+            "secondBest",
+            "atZero"
+          ],
+          "properties": {
+            "bone": {
+              "type": "string"
+            },
+            "scoredRegionVertices": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "stepDegrees": {
+              "type": "number"
+            },
+            "chosenDegrees": {
+              "type": "number"
+            },
+            "candidates": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "best": {
+              "$ref": "#/$defs/rollCandidate"
+            },
+            "secondBest": {
+              "$ref": "#/$defs/rollCandidate"
+            },
+            "atZero": {
+              "$ref": "#/$defs/rollCandidate"
+            }
+          }
+        },
+        "enclose": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "bone",
+            "fraction",
+            "step",
+            "maxGrow",
+            "scoredRegionVertices",
+            "chosenScale",
+            "insideFractionAtOne",
+            "insideFractionChosen",
+            "reachedTarget",
+            "steps"
+          ],
+          "properties": {
+            "bone": {
+              "type": "string"
+            },
+            "fraction": {
+              "type": "number"
+            },
+            "step": {
+              "type": "number"
+            },
+            "maxGrow": {
+              "type": "number"
+            },
+            "scoredRegionVertices": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "chosenScale": {
+              "type": "number",
+              "minimum": 1
+            },
+            "insideFractionAtOne": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "insideFractionChosen": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "reachedTarget": {
+              "type": "boolean"
+            },
+            "steps": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/encloseStep"
+              }
+            }
+          }
+        }
+      }
+    },
+    "rollCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "degrees",
+        "meanDistanceMetres",
+        "outsideFraction",
+        "score"
+      ],
+      "properties": {
+        "degrees": {
+          "type": "number"
+        },
+        "meanDistanceMetres": {
+          "type": "number",
+          "minimum": 0
+        },
+        "outsideFraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "encloseStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scale",
+        "insideFraction"
+      ],
+      "properties": {
+        "scale": {
+          "type": "number",
+          "minimum": 1
+        },
+        "insideFraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
         }
       }
     }

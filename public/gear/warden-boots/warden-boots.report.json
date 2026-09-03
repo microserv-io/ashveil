@@ -8,6 +8,7 @@
   "covers": [
     "feet"
   ],
+  "under": [],
   "referenceRegions": [
     "feet"
   ],
@@ -178,6 +179,20 @@
         "ankleZ": -0.059648,
         "aheadMetres": 0.035268
       }
+    }
+  },
+  "regionEnclosed": {
+    "L": {
+      "regionVertices": 763,
+      "withinPieceBox": 763,
+      "insideVertices": 675,
+      "insideFraction": 0.884666
+    },
+    "R": {
+      "regionVertices": 769,
+      "withinPieceBox": 769,
+      "insideVertices": 690,
+      "insideFraction": 0.897269
     }
   },
   "decimation": {

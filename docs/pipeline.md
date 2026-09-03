@@ -382,6 +382,29 @@ much for the shrinkwrap to correct). A slot earns a `limb` from a measurement, n
 from the shape of its name. The report records the correction angle, and a proxy
 skips it, being already carved off these bones.
 
+**Roll and enclosure.** Two more alignment steps a slot can ask for, both born of the
+same thing: a Tripo source is built from a concept drawn in whatever pose read best on
+the page, not in the body's rest pose. `align.roll: {bone, stepDegrees}` turns the
+island about that bone through a full circle and keeps the angle that fits best,
+scored on the region the piece reaches: mean distance from region vertices to the
+piece surface, plus a penalty per region vertex left outside the shell by ray parity,
+because a glove is judged by whether the hand is in it rather than by how close it
+passes. The gloves' concept was drawn back-of-hand to the viewer, so the fitted pair
+was rolled a quarter turn off a hand that hangs palm to thigh and the fingers came out
+through the palm; the search moves the score from 76 to 59 and lands on 260 and 100
+degrees, mirrored, with the neighbouring step second. `align.enclose: {bone, fraction,
+step, maxGrow}` then grows the island about its anchored end until that bone's skin is
+inside the piece, re-anchoring each step and recording every one. Both are measured
+against one bone's own skin, never the whole slot region: `hands` is four fifths
+forearm, and asking a glove to contain the forearm is asking the wrong question.
+
+**`regionEnclosed`** is the report line these produced and the one to read first on a
+new piece: the fraction of the region inside the fitted shell. The set reads boots
+0.885, trousers 0.899, tunic 0.877, hood 0.505 (a hood is open at the face) — and the
+gloves 0.40, which is the piece the reviewer rejected. No gate catches this, because
+every gate asks whether the piece clears the body and a garment sitting beside a limb
+clears it perfectly.
+
 **Weights and export.** `transfer` copies the body's cleaned weights by nearest-face
 interpolation, keeps only the slot's `allowedBones` (a pair's side keeps only its own
 `_L`/`_R` bones plus unsuffixed ones), sends orphans to the nearest allowed bone

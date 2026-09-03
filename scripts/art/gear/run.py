@@ -145,9 +145,51 @@ def _alignment_rule(rule: dict, proxy: bool) -> dict:
     """
     if not proxy:
         return rule
-    return {key: value for key, value in rule.items() if key != "limb"} | {
+    return {key: value for key, value in rule.items()
+            if key not in ("limb", "roll", "enclose")} | {
         "span": {**rule["span"], "factor": 1.0},
         "anchors": {axis: {**anchor, "offset": 0.0} for axis, anchor in rule["anchors"].items()}}
+
+
+def _bone_line(named, side: str | None, contract: dict, landmarks: dict) -> tuple[str, list, list]:
+    """A bone as a point and a direction, from the contract's own head and tail landmarks."""
+    bone = named[side] if isinstance(named, dict) else named
+    spec = next((entry for entry in contract["bones"] if entry["name"] == bone), None)
+    if spec is None:
+        raise RuntimeError(f"bone gate: the family has no bone \"{bone}\"")
+    for name in (spec["head"], spec["tail"]):
+        if name not in landmarks:
+            raise RuntimeError(f"bone gate: {bone} has no landmark \"{name}\"")
+    head = [float(value) for value in landmarks[spec["head"]]]
+    tail = [float(value) for value in landmarks[spec["tail"]]]
+    if all(abs(a - b) < 1e-9 for a, b in zip(head, tail)):
+        raise RuntimeError(f"bone gate: {bone} has no length between {spec['head']} and {spec['tail']}")
+    return bone, head, tail
+
+
+def _roll(rule: dict, side: str | None, contract: dict, landmarks: dict) -> dict | None:
+    """The bone a piece is turned about to find which way round it goes."""
+    roll = rule.get("roll")
+    if not roll:
+        return None
+    bone, head, tail = _bone_line(roll["bone"], side, contract, landmarks)
+    return {"bone": bone, "direction": [a - b for a, b in zip(head, tail)],
+            "stepDegrees": float(roll["stepDegrees"])}
+
+
+def _enclose(rule: dict, side: str | None, loaded: dict, slots: list[str]) -> dict | None:
+    """Grow until the region is inside the piece: a glove has to hold the whole hand."""
+    settings = rule.get("enclose")
+    if not settings:
+        return None
+    resolved = {key: value for key, value in settings.items() if key != "bone"}
+    named = settings.get("bone")
+    if named:
+        bones = named if isinstance(named, dict) else {"all": named}
+        held = body.region(loaded, slots, side is not None, bones)
+        resolved["bone"] = bones[side] if side else bones["all"]
+        resolved["region"] = held[side or "all"]
+    return resolved
 
 
 def _limb(rule: dict, side: str | None, contract: dict, landmarks: dict) -> dict | None:
@@ -165,18 +207,7 @@ def _limb(rule: dict, side: str | None, contract: dict, landmarks: dict) -> dict
     limb = rule.get("limb")
     if not limb:
         return None
-    named = limb["bone"]
-    bone = named[side] if isinstance(named, dict) else named
-    spec = next((entry for entry in contract["bones"] if entry["name"] == bone), None)
-    if spec is None:
-        raise RuntimeError(f"limb gate: the family has no bone \"{bone}\"")
-    for name in (spec["head"], spec["tail"]):
-        if name not in landmarks:
-            raise RuntimeError(f"limb gate: {bone} has no landmark \"{name}\"")
-    head = [float(value) for value in landmarks[spec["head"]]]
-    tail = [float(value) for value in landmarks[spec["tail"]]]
-    if all(abs(a - b) < 1e-9 for a, b in zip(head, tail)):
-        raise RuntimeError(f"limb gate: {bone} has no length between {spec['head']} and {spec['tail']}")
+    bone, head, tail = _bone_line(limb["bone"], side, contract, landmarks)
     return {"bone": bone, "joint": tail, "direction": [a - b for a, b in zip(head, tail)],
             "band": list(limb["band"]), "fade": float(limb["fade"])}
 
@@ -210,10 +241,12 @@ def run(args) -> dict:
     alignment_report = {}
     for at, obj in enumerate(objects):
         side = ("L", "R")[at] if slot["pair"] else "all"
-        limb = _limb(rule, side if slot["pair"] else None, contract,
-                     loaded["manifest"]["landmarks"])
-        measured_side = geometry.align(obj, reference[side], rule, surface,
-                                       side if slot["pair"] else None, span, int(args.yaw), limb)
+        chosen = side if slot["pair"] else None
+        landmarks = loaded["manifest"]["landmarks"]
+        measured_side = geometry.align(obj, reference[side], rule, surface, chosen, span,
+                                       int(args.yaw), _limb(rule, chosen, contract, landmarks),
+                                       _roll(rule, chosen, contract, landmarks),
+                                       _enclose(rule, chosen, loaded, reference_slots))
         measured_side["proxy"] = proxy
         measured_side["reference"] = reference_slots
         alignment_report[side] = measured_side
@@ -224,6 +257,7 @@ def run(args) -> dict:
     weight_report = weights.apply(objects, target, loaded["armature"], slot, mode, slot["pair"])
     fitted = piece.join(objects, args.piece)
 
+    enclosed = geometry.enclosure(fitted, reference)
     hides = ({} if args.no_mask
              else geometry.coverage(fitted, loaded["meshes"], float(slot["coverReach"])))
     hidden = {name: set(indices) for name, indices in hides.items()}
@@ -236,7 +270,8 @@ def run(args) -> dict:
     rest = exporter.finish(glb_path)
     measured = gate.measure(glb_path, str(loaded["path"]), contract, source_had, outside)
     gates_table = gate.gates(measured, slot, faces)
-    kept = ("scale", "yawDegrees", "translation", "spanOverride", "limb")
+    kept = ("scale", "yawDegrees", "translation", "spanOverride", "limb", "roll", "enclose")
+    # The region it grew against is thousands of points, and the manifest is a contract.
     alignment = ({side: {key: value for key, value in report.items() if key in kept}
                   for side, report in alignment_report.items()}
                  if slot["pair"] else
@@ -259,6 +294,7 @@ def run(args) -> dict:
         "islands": island_report,
         "alignment": alignment_report,
         "facing": faces,
+        "regionEnclosed": enclosed,
         "decimation": decimation,
         "shrinkwrap": shrinkwrap,
         "weights": weight_report,

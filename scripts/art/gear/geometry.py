@@ -24,6 +24,12 @@ DEEP_INSIDE = 0.005
 OUTSIDE_PASSES = 8
 # Cross sections a limb band is measured as. Fewer and a cuff's own wobble is the axis.
 LIMB_SLICES = 8
+# What one region vertex left outside the piece costs the roll score, as metres of
+# mean distance. Enclosure is the question a glove is judged by, so it outweighs
+# hugging: a glove tight against the back of a hand the fingers hang out of is wrong.
+ROLL_OUTSIDE_PENALTY = 0.05
+# A region vertex the piece's shell cannot answer for at all, as a distance.
+ROLL_MISS_METRES = 1.0
 
 
 def _runtime_points(obj) -> np.ndarray:
@@ -137,6 +143,168 @@ def _scale(original: np.ndarray, region_bounds, rule: dict, span: dict | None) -
     return target_extent * factor / extent
 
 
+def _triangles(obj) -> list[tuple[int, int, int]]:
+    faces = []
+    for face in obj.data.polygons:
+        corners = list(face.vertices)
+        faces.extend((corners[0], corners[at], corners[at + 1]) for at in range(1, len(corners) - 1))
+    return faces
+
+
+def _turn_about(points: np.ndarray, axis: np.ndarray, pivot: np.ndarray, angle: float) -> np.ndarray:
+    relative = points - pivot
+    cosine, sine = math.cos(angle), math.sin(angle)
+    return (pivot + relative * cosine + np.cross(np.broadcast_to(axis, relative.shape), relative) * sine
+            + np.outer(relative @ axis, axis) * (1.0 - cosine))
+
+
+def _encloses(tree: BVHTree, point: np.ndarray) -> bool:
+    """Ray parity against a piece shell: is this body vertex inside the garment?"""
+    odd = 0
+    for direction in RAY_AXES:
+        crossings = 0
+        at = Vector((float(point[0]), float(point[1]), float(point[2])))
+        while crossings <= RAY_HIT_LIMIT:
+            hit, _, _, _ = tree.ray_cast(at, direction)
+            if hit is None:
+                break
+            crossings += 1
+            at = hit + direction * RAY_STEP
+        if crossings % 2 == 1:
+            odd += 1
+    return odd >= 2
+
+
+def _roll(points: np.ndarray, obj, reference: np.ndarray, roll: dict,
+          anchor, step: float) -> tuple[np.ndarray, dict]:
+    """Turn the piece about its bone until it wraps the region the way a glove does.
+
+    A source is modelled in whatever pose the concept was drawn in, and a glove drawn
+    back-of-hand to the viewer arrives rolled a quarter turn off a hand that hangs
+    palm to thigh: the fingers come out through the palm. Nothing in scale or the
+    anchors can see that - the bounding box is nearly the same either way - so the
+    roll is searched for rather than assumed, and scored on the only thing that
+    distinguishes it, whether the piece ends up around the region or beside it.
+
+    The piece stays put and the region is carried into its frame instead, so one
+    shell serves every candidate rather than one per angle.
+    """
+    axis = np.array(roll["direction"], dtype=np.float64)
+    axis = axis / np.linalg.norm(axis)
+    # A slot's region runs further up the limb than the piece does - `hands` reaches
+    # mid forearm - and region vertices the piece never reaches score the same at
+    # every angle while burying the difference between them. The span is taken once,
+    # off the unrolled piece, so no candidate can improve itself by covering less.
+    span = _within_span(points, reference, axis)
+    centre = span.mean(axis=0)
+    tree = BVHTree.FromPolygons([tuple(float(value) for value in point) for point in points],
+                                _triangles(obj), all_triangles=True)
+
+    scored = []
+    for degrees in range(0, 360, max(1, int(round(step)))):
+        angle = math.radians(degrees)
+        moved = _turn_about(points, axis, centre, angle)
+        shift = anchor(moved)
+        # Rolling the piece and measuring the region against it is the same as
+        # carrying the region the other way and measuring against the piece as built.
+        carried = _turn_about(span - shift, axis, centre, -angle)
+        distances = []
+        outside = 0
+        for point in carried:
+            nearest, _, _, distance = tree.find_nearest(Vector((float(point[0]), float(point[1]), float(point[2]))))
+            distances.append(float(distance) if nearest is not None else ROLL_MISS_METRES)
+            if not _encloses(tree, point):
+                outside += 1
+        fraction = outside / max(1, len(carried))
+        scored.append({"degrees": degrees,
+                       "meanDistanceMetres": round(float(np.mean(distances)), 6),
+                       "outsideFraction": round(fraction, 6),
+                       "score": round(float(np.mean(distances)) + fraction * ROLL_OUTSIDE_PENALTY, 6)})
+
+    order = sorted(scored, key=lambda entry: (entry["score"], entry["degrees"]))
+    best, second = order[0], order[1]
+    at_zero = next(entry for entry in scored if entry["degrees"] == 0)
+    angle = math.radians(best["degrees"])
+    rolled = _turn_about(points, axis, centre, angle)
+    rolled = rolled + anchor(rolled)
+    return rolled, {
+        "bone": roll["bone"],
+        "scoredRegionVertices": int(len(span)),
+        "stepDegrees": float(step),
+        "chosenDegrees": best["degrees"],
+        "candidates": len(scored),
+        "best": best,
+        "secondBest": second,
+        "atZero": at_zero,
+    }
+
+
+def _reached(points: np.ndarray, reference: np.ndarray) -> np.ndarray:
+    """The region a piece could hold: its vertices inside the piece's own box."""
+    low, high = points.min(axis=0), points.max(axis=0)
+    chosen = reference[np.all((reference >= low) & (reference <= high), axis=1)]
+    return chosen if len(chosen) >= 8 else reference
+
+
+def _enclose(points: np.ndarray, obj, reference: np.ndarray, settings: dict,
+             anchor) -> tuple[np.ndarray, dict]:
+    """Grow the piece until the region is inside it, or until the ceiling says stop.
+
+    A glove scaled to the region's extent along one axis can end up shorter than the
+    hand, because its cuff spends the budget the fingers needed. What is measured is
+    the body region inside the piece shell, which for a closed garment around a limb
+    is a well posed question - the reverse of growing a piece until its own vertices
+    leave the body, which is not, since a shell one centimetre off the skin still
+    reads as inside by parity.
+
+    Uniform growth about the anchored end, so the fingertips stay put and the cuff
+    travels. One shell answers every step: scaling the piece by k is the same as
+    dividing the region by k.
+    """
+    target = float(settings["fraction"])
+    step = float(settings["step"])
+    ceiling = float(settings["maxGrow"])
+    tree = BVHTree.FromPolygons([tuple(float(value) for value in point) for point in points],
+                                _triangles(obj), all_triangles=True)
+    chosen = settings.get("region")
+    chosen = reference if chosen is None else np.asarray(chosen, dtype=np.float64)
+
+    grow = 1.0
+    steps = []
+    placed = points
+    while True:
+        moved = points * grow
+        shift = anchor(moved)
+        carried = (chosen - shift) / grow
+        inside = sum(1 for point in carried if _encloses(tree, point))
+        fraction = inside / max(1, len(chosen))
+        steps.append({"scale": round(grow, 6), "insideFraction": round(fraction, 6)})
+        placed = moved + shift
+        if fraction >= target or grow * (1.0 + step) > ceiling:
+            break
+        grow *= 1.0 + step
+    return placed, {
+        "bone": settings.get("bone", ""),
+        "fraction": target,
+        "step": step,
+        "maxGrow": ceiling,
+        "scoredRegionVertices": int(len(chosen)),
+        "chosenScale": steps[-1]["scale"],
+        "insideFractionAtOne": steps[0]["insideFraction"],
+        "insideFractionChosen": steps[-1]["insideFraction"],
+        "reachedTarget": steps[-1]["insideFraction"] >= target,
+        "steps": steps,
+    }
+
+
+def _within_span(points: np.ndarray, reference: np.ndarray, axis: np.ndarray) -> np.ndarray:
+    """The region a piece reaches: its vertices between the piece's own ends along a bone."""
+    along = points @ axis
+    reach = reference @ axis
+    chosen = reference[(reach >= float(along.min())) & (reach <= float(along.max()))]
+    return chosen if len(chosen) >= 8 else reference
+
+
 def _straighten(points: np.ndarray, limb: dict) -> tuple[np.ndarray, dict]:
     """Swing the piece's limb section onto the bone that carries it.
 
@@ -206,7 +374,8 @@ def _straighten(points: np.ndarray, limb: dict) -> tuple[np.ndarray, dict]:
 
 
 def align(obj, reference: np.ndarray, rule: dict, surface: Surface, side: str | None = None,
-          span: dict | None = None, yaw: int = 0, limb: dict | None = None) -> dict:
+          span: dict | None = None, yaw: int = 0, limb: dict | None = None,
+          roll: dict | None = None, enclose: dict | None = None) -> dict:
     """Place the piece on the region it covers, at the yaw the caller asked for.
 
     The fitter used to vote between 0 and 180 by counting vertices inside the body,
@@ -253,6 +422,17 @@ def align(obj, reference: np.ndarray, rule: dict, surface: Surface, side: str | 
 
     candidates = {turn: place(turn, scale) for turn in (0, 180)}
     inside, mean, points, translation, deep = candidates[yaw]
+    rolled = None
+    grown = None
+    if roll:
+        points, rolled = _roll(points, obj, reference, roll, anchor, float(roll["stepDegrees"]))
+    if enclose:
+        points, grown = _enclose(points, obj, reference, enclose, anchor)
+    if roll or enclose:
+        distances = [surface.measure(point) for point in points]
+        inside = sum(1 for is_inside, _ in distances if is_inside)
+        mean = sum(distance for _, distance in distances) / max(1, len(distances))
+        deep = sum(1 for is_inside, depth in distances if is_inside and depth > DEEP_INSIDE)
     inverse = obj.matrix_world.inverted()
     for vertex, point in zip(obj.data.vertices, points):
         vertex.co = inverse @ Vector(blender_from_runtime(point))
@@ -288,6 +468,10 @@ def align(obj, reference: np.ndarray, rule: dict, surface: Surface, side: str | 
                                     "metres": round(span["metres"], 6), "factor": span["factor"]}
     if limb:
         measured["limb"] = turned[yaw]
+    if rolled:
+        measured["roll"] = rolled
+    if grown:
+        measured["enclose"] = grown
     return measured
 
 
@@ -409,10 +593,7 @@ def coverage(piece, meshes: list, reach: float) -> dict[str, list[int]]:
     `reach`, or when the garment has swallowed it whole.
     """
     points = [tuple(piece.matrix_world @ vertex.co) for vertex in piece.data.vertices]
-    faces: list[tuple[int, int, int]] = []
-    for face in piece.data.polygons:
-        corners = list(face.vertices)
-        faces.extend((corners[0], corners[at], corners[at + 1]) for at in range(1, len(corners) - 1))
+    faces = _triangles(piece)
     if not faces:
         raise RuntimeError("coverage gate: the fitted piece has no faces")
     tree = BVHTree.FromPolygons(points, faces, all_triangles=True)
@@ -437,6 +618,30 @@ def coverage(piece, meshes: list, reach: float) -> dict[str, list[int]]:
         if found:
             covered[obj.name] = found
     return covered
+
+
+def enclosure(piece, reference: dict[str, np.ndarray]) -> dict:
+    """How much of the region the fitted piece actually contains, per side.
+
+    A glove is judged by whether the hand is in it. Alignment can put a piece
+    against a region rather than around it and every gate still passes, so the
+    fraction is measured off the fitted piece and reported: near 1.0 is worn, and
+    a half is a piece the body is hanging out of.
+
+    Measured over the region inside the piece's own box, because a slot's region
+    reaches past the garment on purpose - `hands` runs to mid forearm - and counting
+    skin no glove was ever going to hold would answer a different question.
+    """
+    shell = Surface([piece])
+    box = _runtime_points(piece)
+    found = {}
+    for side, points in reference.items():
+        within = _reached(box, points)
+        inside = sum(1 for point in within if shell.measure(point)[0])
+        found[side] = {"regionVertices": len(points), "withinPieceBox": len(within),
+                       "insideVertices": inside,
+                       "insideFraction": round(inside / max(1, len(within)), 6)}
+    return found
 
 
 def facing(objects: list, reference: dict, slot: dict, contract: dict, landmarks: dict) -> dict:

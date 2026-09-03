@@ -509,6 +509,98 @@
                     "minimum": 0
                   }
                 }
+              },
+              "roll": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "bone",
+                  "stepDegrees"
+                ],
+                "properties": {
+                  "bone": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_]+$"
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "L",
+                          "R"
+                        ],
+                        "properties": {
+                          "L": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          },
+                          "R": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "stepDegrees": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 180
+                  }
+                }
+              },
+              "enclose": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "fraction",
+                  "step",
+                  "maxGrow"
+                ],
+                "properties": {
+                  "bone": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_]+$"
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "L",
+                          "R"
+                        ],
+                        "properties": {
+                          "L": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          },
+                          "R": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "fraction": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 1
+                  },
+                  "step": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 1
+                  },
+                  "maxGrow": {
+                    "type": "number",
+                    "minimum": 1
+                  }
+                }
               }
             }
           },
