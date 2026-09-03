@@ -40,7 +40,7 @@ export class SceneHost {
 
   constructor(canvasParent: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' })
-    // The painterly look wants the authored colours back untouched.
+    // Three's defaults, pinned: the look is tuned for authored colours with no curve on top.
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
     this.renderer.toneMapping = THREE.NoToneMapping
     this.renderer.setPixelRatio(Math.min(globalThis.devicePixelRatio ?? 1, 2))

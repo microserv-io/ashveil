@@ -5,10 +5,10 @@ export const LOOK = {
   /** Hemisphere fill: warm cream from above, cool violet-grey from the floor. */
   skyLight: 0xfff3e0,
   groundLight: 0x8c86a6,
-  fillIntensity: 1.6,
+  fillIntensity: 2,
   keyColour: 0xffe9cf,
-  keyIntensity: 1.1,
-  /** Shadows are a tone shift, not a hole: three r166+ `LightShadow.intensity`. */
+  keyIntensity: 1.2,
+  /** Shadows are a tone shift, not a hole. */
   shadowIntensity: 0.45,
   rimColour: 0x7fa6ff,
   rimIntensity: 0.25,
@@ -23,12 +23,12 @@ export type BodyMaterial = THREE.MeshToonMaterial
 
 let sharedRamp: THREE.DataTexture | null = null
 
-const SATURATION: number = LOOK.saturation
-const SATURATION_LITERAL = Number.isInteger(SATURATION) ? `${SATURATION}.0` : `${SATURATION}`
+/** Fixed digits keep it a GLSL float literal whatever the value. */
+const SATURATION_LITERAL = LOOK.saturation.toFixed(3)
 const PROGRAM_CACHE_KEY = `ashveil-toon-saturation-${SATURATION_LITERAL}`
 
+/** One shared function: three keys its program cache on this, so a closure per material would compile one program each. */
 const applySaturation: THREE.Material['onBeforeCompile'] = (shader) => {
-  if (SATURATION === 1) return
   shader.fragmentShader = shader.fragmentShader.replace(
     '#include <map_fragment>',
     `#include <map_fragment>
@@ -41,6 +41,7 @@ const toonProgramCacheKey = (): string => PROGRAM_CACHE_KEY
 function configureMaterial(material: BodyMaterial): BodyMaterial {
   material.onBeforeCompile = applySaturation
   material.customProgramCacheKey = toonProgramCacheKey
+  // Material.copy carries neither hook, and spawnModel clones every material per actor.
   material.clone = cloneBodyMaterial
   return material
 }
@@ -89,13 +90,19 @@ export function toonMaterial(source: THREE.MeshStandardMaterial): BodyMaterial {
   return configureMaterial(material)
 }
 
+/** A glTF material shared by several primitives stays one material after conversion. */
+const converted = new WeakMap<THREE.MeshStandardMaterial, BodyMaterial>()
+
 export function stylise<T extends THREE.Object3D>(root: T): T {
   root.traverse((child) => {
     if (!(child instanceof THREE.Mesh)) return
 
     const replace = (material: THREE.Material): THREE.Material => {
       if (!(material instanceof THREE.MeshStandardMaterial)) return material
+      const known = converted.get(material)
+      if (known) return known
       const replacement = toonMaterial(material)
+      converted.set(material, replacement)
       material.dispose()
       return replacement
     }

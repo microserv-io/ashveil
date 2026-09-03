@@ -122,6 +122,16 @@ describe('the painterly look', () => {
     expect(clone.customProgramCacheKey()).toBe(firstMaterial.customProgramCacheKey())
   })
 
+  it('maps a source material shared by two meshes to one toon material', () => {
+    const shared = new THREE.MeshStandardMaterial()
+    const first = new THREE.Mesh(new THREE.BoxGeometry(), shared)
+    const second = new THREE.Mesh(new THREE.BoxGeometry(), shared)
+
+    stylise(new THREE.Group().add(first, second))
+
+    expect(meshMaterial(first)).toBe(meshMaterial(second))
+  })
+
   it('disposes the material it replaces', () => {
     const source = new THREE.MeshStandardMaterial()
     const dispose = vi.spyOn(source, 'dispose')
