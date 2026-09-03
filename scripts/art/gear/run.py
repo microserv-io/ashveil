@@ -15,7 +15,7 @@ from fit import export as exporter  # noqa: E402
 from fit import masks as body_masks  # noqa: E402
 from fit.glb import Glb  # noqa: E402
 from fit.skin import Body  # noqa: E402
-from gear import body, gate, geometry, piece, review, weights  # noqa: E402
+from gear import body, drape, gate, geometry, paint, piece, review, weights  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
 CONTRACT_PATH = ROOT / "scripts" / "art" / "contracts" / "humanoid.v1.json"
@@ -32,8 +32,10 @@ def parse(argv: list[str]):
     parser.add_argument("--span")
     parser.add_argument("--yaw", choices=("0", "180"), default="0")
     parser.add_argument("--under")
+    parser.add_argument("--drape", action="append", default=[])
     parser.add_argument("--thumb", choices=("+Z", "-Z", "inward", "outward"), default="+Z")
     parser.add_argument("--no-mask", action="store_true")
+    parser.add_argument("--two-sided", action="store_true")
     parser.add_argument("--outdir", required=True)
     return parser.parse_args(argv)
 
@@ -41,7 +43,8 @@ def parse(argv: list[str]):
 def _source(args, loaded: dict) -> tuple[list, dict, dict]:
     if args.input.startswith("proxy:"):
         source_slot = args.input.split(":", 1)[1]
-        objects, source_had = piece.proxy(loaded, source_slot)
+        objects, source_had = (piece.shape(loaded, source_slot) if source_slot in piece.SHAPES
+                               else piece.proxy(loaded, source_slot))
         return objects, source_had, {
             "file": args.input,
             "sha256": exporter.sha256_file(str(loaded["path"])),
@@ -54,11 +57,12 @@ def _source(args, loaded: dict) -> tuple[list, dict, dict]:
 
 
 def _manifest(args, contract: dict, source: dict, covers: list[str], under: list[str], hides: dict,
-              mode: str, alignment: dict, measured: dict, gates_table: dict, piece_path: str) -> dict:
+              mode: str, alignment: dict, measured: dict, gates_table: dict, piece_path: str,
+              drapes: list[dict], two_sided: bool) -> dict:
     glb = Glb(piece_path)
     skin = glb.json["skins"][0]
     inverse = glb.accessor(skin["inverseBindMatrices"])
-    return {
+    manifest = {
         "schema": "ashveil.gear-manifest.v1",
         "family": contract["family"],
         "contractVersion": contract["version"],
@@ -70,6 +74,11 @@ def _manifest(args, contract: dict, source: dict, covers: list[str], under: list
         "inverseBindSha256": exporter.sha256_array(inverse),
         "covers": covers,
         "under": under,
+        # Gear never masks gear here, but the runtime layers pieces and has to know
+        # that a slot which only ever hangs behind one cannot take it off the draw.
+        "hidesPieces": bool(contract["slots"][args.slot].get("hidesPieces", True)),
+        "twoSided": two_sided,
+        "drapes": drapes,
         "thumb": args.thumb,
         "hides": hides,
         "weights": mode,
@@ -83,6 +92,12 @@ def _manifest(args, contract: dict, source: dict, covers: list[str], under: list
         "gates": gates_table,
         "reportFile": f"{args.piece}.report.json",
     }
+    # A piece with no hanging cloth says nothing about drapes rather than saying none.
+    if not drapes:
+        del manifest["drapes"]
+    if not two_sided:
+        del manifest["twoSided"]
+    return manifest
 
 
 def _covers(args, contract: dict) -> list[str]:
@@ -228,7 +243,8 @@ def _tube(rule: dict, side: str | None, loaded: dict, slots: list[str], landmark
     resolved = {"axis": [b - a for a, b in zip(origin, end)], "origin": origin,
                 "sliceMetres": float(tube.get("sliceMetres", 0.02)),
                 "smooth": int(tube.get("smooth", 3)), "clearance": clearance,
-                "radial": tube.get("radial", "enclose")}
+                "radial": tube.get("radial", "enclose"), "centre": tube.get("centre", "none"),
+                "radialKnots": list(tube.get("radialKnots", []))}
     if "band" in tube:
         resolved["band"] = list(tube["band"])
         resolved["fade"] = float(tube.get("fade", 0.0))
@@ -279,23 +295,66 @@ def _limb(rule: dict, side: str | None, contract: dict, landmarks: dict) -> dict
             "band": list(limb["band"]), "fade": float(limb["fade"])}
 
 
+def _drapes(args, slot: dict) -> list[dict]:
+    """The hanging bands this piece carries, one declaration per island pair.
+
+    The bone a drape hangs from has to be one the slot may weight to, or the piece
+    would ship an influence the runtime binds by a name the body never sends.
+    """
+    specs = [drape.parse(spec) for spec in (args.drape or [])]
+    allowed = set(slot["weights"]["allowedBones"])
+    for spec in specs:
+        for side in ("L", "R") if slot["pair"] else (None,):
+            bone = drape.sided(spec, side)["attachBone"]
+            if bone not in allowed:
+                raise RuntimeError(f"drape gate: {bone} is not a bone the {args.slot} slot weights to")
+    return specs
+
+
+def _under_clearance(names: list[str], body_name: str, slot_name: str,
+                     contract: dict) -> float:
+    outer = contract["slots"][slot_name]
+    for name in names:
+        path = ROOT / "public" / "gear" / name / f"{name}.manifest.json"
+        manifest = json.loads(path.read_text())
+        inner = contract["slots"].get(manifest.get("slot"))
+        if inner is None:
+            raise RuntimeError(f"under gate: {name} names unknown slot \"{manifest.get('slot')}\"")
+        if manifest.get("body") != body_name:
+            raise RuntimeError(f"under gate: {name} fits {manifest.get('body')}, not {body_name}")
+        if inner["layer"] >= outer["layer"]:
+            raise RuntimeError(f"under gate: {name} ({manifest['slot']}, layer {inner['layer']}) "
+                               f"is not below {slot_name} (layer {outer['layer']})")
+    return float(outer["clearance"])
+
+
 def run(args) -> dict:
     contract = json.loads(CONTRACT_PATH.read_text())
     if args.slot not in contract["slots"]:
         raise RuntimeError(f"slot gate: unknown slot \"{args.slot}\"")
     slot = contract["slots"][args.slot]
+    drape_specs = _drapes(args, slot)
     loaded = body.load(ROOT, args.body)
     covers = _covers(args, contract)
     worn_under = [name.strip() for name in args.under.split(",") if name.strip()] if args.under else []
+    layer_clearance = _under_clearance(worn_under, args.body, args.slot, contract)
     beneath = piece.under(ROOT, worn_under)
     # What a piece is worn over is body as far as fitting goes: it is pushed out of
     # those shells too. Coverage stays body-only - gear never masks gear here.
+    targets = [body.joined_target(loaded)]
+    targets.extend(body.joined_meshes(
+        [mesh for mesh in beneath if mesh.name.startswith(f"under-{name}-")],
+        f"GearFitSurface-{name}") for name in worn_under)
     target = body.joined_target(loaded, beneath)
-    surface = geometry.Surface(loaded["meshes"] + beneath, body.region_vertices(loaded, covers))
+    body_surface = geometry.Surface(loaded["meshes"], body.region_vertices(loaded, covers))
+    layer_surface = geometry.Surface(beneath) if beneath else None
+    surface = geometry.SurfaceUnion([body_surface, layer_surface]) if layer_surface else body_surface
     objects, source_had, source = _source(args, loaded)
     objects, island_report = piece.islands(objects, slot["pair"], args.piece)
 
-    proxy = args.input.startswith("proxy:")
+    # A shape the fitter builds is not a shell of the body, so it is measured and
+    # grown like the garment it stands in for rather than left at the region's size.
+    proxy = args.input.startswith("proxy:") and args.input.split(":", 1)[1] not in piece.SHAPES
     span = _span(args, loaded["manifest"]["landmarks"]) or (
         None if proxy else _slot_span(slot, loaded["manifest"]["landmarks"]))
     named = slot["align"].get("referenceSlot")
@@ -322,20 +381,50 @@ def run(args) -> dict:
         alignment_report[side] = measured_side
     faces = geometry.facing(objects, reference, slot, contract, loaded["manifest"]["landmarks"])
     decimation = geometry.decimate(objects, slot["budget"]["maxTriangles"])
-    shrinkwrap = geometry.shrinkwrap(objects, target, slot, surface, span)
-    mode = args.weights or slot["weights"]["mode"]
-    weight_report = weights.apply(objects, target, loaded["armature"], slot, mode, slot["pair"])
-    fitted = piece.join(objects, args.piece)
-
-    enclosed = geometry.enclosure(fitted, reference)
-    covered = ({} if args.no_mask
-               else geometry.coverage(fitted, loaded["meshes"], float(slot["coverReach"])))
     # A glove replaces the hand rather than covering it, so the skin it stands in for
     # goes whether the garment reaches it or not: a fingertip the glove is a little
     # short of is still a gloved finger, not a bare one poking through.
     replaced = ({} if args.no_mask or not slot["replaces"]
                 else body_masks.resolve_rules(Body(Glb(str(loaded["path"])), contract), contract,
                                               loaded["manifest"]["landmarks"], slot["replaces"]))
+    shrinkwrap = geometry.shrinkwrap(objects, targets, slot, surface, span,
+                                     body.replaced_tree(loaded, replaced))
+    if beneath and slot["align"].get("layerSeat"):
+        for at, obj in enumerate(objects):
+            side = ("L", "R")[at] if slot["pair"] else "all"
+            alignment_report[side]["layerSeat"] = geometry.layer_seat(
+                obj, layer_surface, slot["align"]["layerSeat"], layer_clearance)
+        shrinkwrap["layerSeatPasses"] = geometry.finish_layer_seat(objects, targets, slot, surface)
+    mode = args.weights or slot["weights"]["mode"]
+    weight_report = weights.apply(objects, target, loaded["armature"], slot, mode, slot["pair"])
+    drapes, drape_report = [], []
+    collider_proxies = drape.collider_proxies(loaded["meshes"], loaded["armature"]) if drape_specs else []
+    body_anchors = drape.body_anchors(loaded["meshes"]) if drape_specs else None
+    for at, obj in enumerate(objects):
+        object_drapes = []
+        for spec in drape_specs:
+            block, measured_drape = drape.build(obj, drape.sided(spec, ("L", "R")[at] if slot["pair"] else None),
+                                                loaded["armature"], surface)
+            block["colliders"] = collider_proxies
+            drapes.append(block)
+            object_drapes.append(block)
+            drape_report.append(measured_drape)
+        if drape_specs:
+            drape.tidy(obj)
+            for block in object_drapes:
+                block["supports"] = drape.surface_supports(obj, block["bones"], body_anchors)
+    fitted = piece.join(objects, args.piece)
+    # Told, not guessed: a source whose two faces were painted from each other reads as
+    # shards, and no measurement of a texture can say whether that was the artist's idea.
+    painted = paint.apply(fitted, loaded["armature"]) if args.two_sided else None
+
+    enclosed = geometry.enclosure(fitted, reference)
+    # Cloth that swings hides nothing: what a drape covers at bind is skin the game
+    # draws the moment it swings, so only the fixed part of a piece may mask the body.
+    hanging = {name for block in drapes for name in block["bones"]}
+    covered, coverage_report = (({}, {}) if args.no_mask
+                                else geometry.coverage(fitted, loaded["meshes"],
+                                                       float(slot["coverReach"]), hanging))
     # Sorted, because a set of mesh names iterates in a different order every process
     # and the fitter has to write the same bytes twice.
     union = {name: sorted(set(covered.get(name, [])) | set(replaced.get(name, [])))
@@ -348,10 +437,14 @@ def run(args) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     glb_path = str(out / f"{args.piece}.glb")
     exporter.write_glb(glb_path, {args.piece: fitted}, loaded["armature"])
+    if drapes:
+        drape.order_joints(glb_path, loaded["manifest"]["bones"],
+                           [name for block in drapes for name in block["bones"]])
     rest = exporter.finish(glb_path)
     measured = gate.measure(glb_path, str(loaded["path"]), contract, source_had, outside)
-    gates_table = gate.gates(measured, slot, faces)
-    kept = ("scale", "yawDegrees", "translation", "spanOverride", "limb", "roll", "tube", "enclose")
+    gates_table = gate.gates(measured, slot, faces, drapes)
+    kept = ("scale", "yawDegrees", "translation", "spanOverride", "limb", "roll", "tube", "enclose",
+            "layerSeat")
     # The region it grew against is thousands of points, and the manifest is a contract.
     alignment = ({side: {key: value for key, value in report.items() if key in kept}
                   for side, report in alignment_report.items()}
@@ -368,7 +461,7 @@ def run(args) -> dict:
         "covers": covers,
         "under": worn_under,
         "referenceRegions": reference_slots,
-        "coverage": {"reachMetres": float(slot["coverReach"]),
+        "coverage": {"reachMetres": float(slot["coverReach"]), **coverage_report,
                      "hiddenVertices": {mesh.name: len(hides.get(mesh.name, []))
                                         for mesh in loaded["meshes"]},
                      "measuredVertices": {mesh.name: len(covered.get(mesh.name, []))
@@ -384,6 +477,8 @@ def run(args) -> dict:
         "decimation": decimation,
         "shrinkwrap": shrinkwrap,
         "weights": weight_report,
+        "drapes": drape_report,
+        "twoSided": painted,
         "rest": rest,
         "runtime": measured,
         "gates": gates_table,
@@ -402,13 +497,13 @@ def run(args) -> dict:
         gate.check(gates_table)
 
     manifest = _manifest(args, contract, source, covers, worn_under, hides, mode, alignment,
-                         measured, gates_table, glb_path)
+                         measured, gates_table, glb_path, drapes, bool(args.two_sided))
     exporter.write_json(str(out / f"{args.piece}.manifest.json"), manifest)
     scratch = tempfile.mkdtemp(prefix="ashveil-gear-review-")
     try:
         report["review"] = {"bodyVerticesInsideThePiece": review.sheet(
             str(loaded["path"]), glb_path, contract, str(out / f"{args.piece}.review.png"),
-            scratch, hidden)}
+            scratch, hidden, drapes)}
     finally:
         shutil.rmtree(scratch, ignore_errors=True)
     exporter.write_json(str(out / f"{args.piece}.report.json"), report)

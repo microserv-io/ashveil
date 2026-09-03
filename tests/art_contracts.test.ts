@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { GEAR_SLOTS, SLOT_LAYERS } from '../src/render/gear'
+import { DRAPE_LIMBS } from '../src/render/drapecollide'
+import { GEAR_SLOTS, SLOT_CLEARANCES, SLOT_LAYERS } from '../src/render/gear'
 import { validate } from '../scripts/art/schema.mjs'
 
 const ROOT = join(import.meta.dirname, '..')
@@ -61,6 +62,22 @@ describe('the family contract', () => {
     expect(Object.keys(HUMANOID.slots).sort()).toEqual([...GEAR_SLOTS].sort())
     for (const [slot, rule] of Object.entries(HUMANOID.slots) as [string, { layer: number }][]) {
       expect(SLOT_LAYERS[slot as keyof typeof SLOT_LAYERS], slot).toBe(rule.layer)
+    }
+  })
+
+  it('is the clearance table a drape holds itself off a limb by', () => {
+    for (const [slot, rule] of Object.entries(HUMANOID.slots) as [string, { clearance: number }][]) {
+      expect(SLOT_CLEARANCES[slot as keyof typeof SLOT_CLEARANCES], slot).toBe(rule.clearance)
+    }
+  })
+
+  /** A capsule named after a bone the family has not is a capsule that never forms. */
+  it('names only bones the family has for the limbs a drape is pushed off', () => {
+    const bones = new Set((HUMANOID.bones as { name: string }[]).map((bone) => bone.name))
+    for (const limb of DRAPE_LIMBS) {
+      expect(bones, `${limb.from} -> ${limb.to}`).toContain(limb.from)
+      expect(bones).toContain(limb.to)
+      expect(limb.radius).toBeGreaterThan(0)
     }
   })
 

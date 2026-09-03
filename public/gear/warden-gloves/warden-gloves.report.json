@@ -14,8 +14,10 @@
   ],
   "coverage": {
     "reachMetres": 0.06,
+    "triangles": 3997,
+    "hangingTriangles": 0,
     "hiddenVertices": {
-      "Body": 4068,
+      "Body": 4070,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -23,7 +25,7 @@
       "Head": 0
     },
     "measuredVertices": {
-      "Body": 2682,
+      "Body": 1119,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -84,11 +86,11 @@
         0.751213,
         0.019499
       ],
-      "insideVerticesBeforeShrinkwrap": 1008,
-      "insideFractionBeforeShrinkwrap": 0.384146,
-      "deepInsideVerticesBeforeShrinkwrap": 474,
-      "deepInsideFractionBeforeShrinkwrap": 0.18064,
-      "meanSurfaceDistanceMetres": 0.008144,
+      "insideVerticesBeforeShrinkwrap": 281,
+      "insideFractionBeforeShrinkwrap": 0.107088,
+      "deepInsideVerticesBeforeShrinkwrap": 146,
+      "deepInsideFractionBeforeShrinkwrap": 0.05564,
+      "meanSurfaceDistanceMetres": 0.026422,
       "insideVerticesByYaw": {
         "0": 166,
         "180": 384
@@ -98,9 +100,9 @@
         "180": 0.020127
       },
       "anchorResidualMetres": {
-        "X": 0.011400051,
-        "Y": 0.004767279,
-        "Z": 0.024823807
+        "X": 0.003012597,
+        "Y": 0.008357026,
+        "Z": 0.019669328
       },
       "roll": {
         "bone": "forearm_L",
@@ -173,14 +175,33 @@
         "smooth": 3,
         "radialFactorMin": 0.85,
         "radialFactorMax": 1.35,
-        "radialFactorMean": 1.134217,
+        "radialFactorMean": 1.1,
         "radial": "match",
-        "radialClampedLanes": 5,
-        "centreShiftMaxMetres": 0.068707,
-        "knotStations": [
+        "radialClampedLanes": 4,
+        "centre": "cuff",
+        "centreShiftMaxMetres": 0.075151,
+        "centreStations": [
           -0.105382,
           0,
           0.184982
+        ],
+        "centreKnotShifts": [
+          [
+            0.002521,
+            -0.012957
+          ],
+          [
+            0.002521,
+            -0.012957
+          ],
+          [
+            0.002521,
+            -0.012957
+          ]
+        ],
+        "knotStations": [
+          -0.105382,
+          0.092491
         ],
         "knotFactors": [
           [
@@ -190,10 +211,6 @@
           [
             1.35,
             1.35
-          ],
-          [
-            1.35,
-            1.0553
           ]
         ],
         "sliceStations": [
@@ -289,11 +306,11 @@
         0.751213,
         0.019547
       ],
-      "insideVerticesBeforeShrinkwrap": 1029,
-      "insideFractionBeforeShrinkwrap": 0.392299,
-      "deepInsideVerticesBeforeShrinkwrap": 455,
-      "deepInsideFractionBeforeShrinkwrap": 0.173465,
-      "meanSurfaceDistanceMetres": 0.008285,
+      "insideVerticesBeforeShrinkwrap": 317,
+      "insideFractionBeforeShrinkwrap": 0.120854,
+      "deepInsideVerticesBeforeShrinkwrap": 152,
+      "deepInsideFractionBeforeShrinkwrap": 0.057949,
+      "meanSurfaceDistanceMetres": 0.021938,
       "insideVerticesByYaw": {
         "0": 166,
         "180": 384
@@ -303,9 +320,9 @@
         "180": 0.020125
       },
       "anchorResidualMetres": {
-        "X": 0.011375402,
-        "Y": 0.004860108,
-        "Z": 0.027430083
+        "X": 0.002876069,
+        "Y": 0.008002175,
+        "Z": 0.006121773
       },
       "roll": {
         "bone": "forearm_R",
@@ -378,14 +395,33 @@
         "smooth": 3,
         "radialFactorMin": 0.85,
         "radialFactorMax": 1.35,
-        "radialFactorMean": 1.139486,
+        "radialFactorMean": 1.067467,
         "radial": "match",
-        "radialClampedLanes": 4,
-        "centreShiftMaxMetres": 0.068708,
-        "knotStations": [
+        "radialClampedLanes": 2,
+        "centre": "cuff",
+        "centreShiftMaxMetres": 0.079064,
+        "centreStations": [
           -0.105379,
           0,
           0.184985
+        ],
+        "centreKnotShifts": [
+          [
+            -0.002518,
+            -0.00264
+          ],
+          [
+            -0.002518,
+            -0.00264
+          ],
+          [
+            -0.002518,
+            -0.00264
+          ]
+        ],
+        "knotStations": [
+          -0.105379,
+          0.092492
         ],
         "knotFactors": [
           [
@@ -394,11 +430,7 @@
           ],
           [
             1.35,
-            1.35
-          ],
-          [
-            1.35,
-            1.0554
+            1.188352
           ]
         ],
         "sliceStations": [
@@ -488,43 +520,46 @@
     }
   },
   "facing": {
-    "pieceCentroidZ": 0.002868,
+    "pieceCentroidZ": 0.051366,
     "regionCentroidZ": 0.012303,
-    "aheadOfRegionMetres": -0.009435
+    "aheadOfRegionMetres": 0.039063
   },
   "regionEnclosed": {
     "L": {
       "regionVertices": 2053,
-      "withinPieceBox": 1997,
-      "insideVertices": 1130,
-      "insideFraction": 0.565849
+      "withinPieceBox": 2034,
+      "insideVertices": 379,
+      "insideFraction": 0.186332
     },
     "R": {
       "regionVertices": 2026,
-      "withinPieceBox": 1968,
-      "insideVertices": 1150,
-      "insideFraction": 0.58435
+      "withinPieceBox": 2006,
+      "insideVertices": 352,
+      "insideFraction": 0.175474
     }
   },
   "decimation": {
     "trianglesBefore": 10141,
-    "trianglesAfter": 3999,
+    "trianglesAfter": 3997,
     "ratio": 0.394438
   },
   "shrinkwrap": {
-    "pieceVertices": 2094,
+    "mode": "unreplaced",
+    "pieceVertices": 2101,
     "outsidePasses": [
       {
-        "movedVertices": 985,
-        "movedFraction": 0.470392,
+        "movedVertices": 376,
+        "movedFraction": 0.178962,
+        "carriedVertices": 0,
         "insideAfter": 0
       }
     ],
-    "wholeMovedVertices": 985,
-    "hugSelectedVertices": 593,
-    "hugMovedVertices": 456,
-    "wholeMovedFraction": 0.470392,
-    "hugMovedFraction": 0.217765
+    "wholeMovedVertices": 376,
+    "hugSelectedVertices": 616,
+    "hugMovedVertices": 592,
+    "shellRadius": 0,
+    "wholeMovedFraction": 0.178962,
+    "hugMovedFraction": 0.281771
   },
   "weights": {
     "mode": "stiff",
@@ -581,30 +616,32 @@
     "orphanedVertices": {},
     "band": {
       "warden-gloves_L": {
-        "vertices": 1047,
-        "bandVertices": 46,
-        "bandFraction": 0.043935,
+        "vertices": 1050,
+        "bandVertices": 26,
+        "bandFraction": 0.024762,
         "ceiling": 0.8,
-        "minPeakWeight": 0.500496,
-        "meanPeakWeight": 0.978511,
-        "bandHeightMetres": 0.03635,
-        "bandMinY": 0.924369,
-        "bandMaxY": 0.960719
+        "minPeakWeight": 0.516119,
+        "meanPeakWeight": 0.988357,
+        "bandHeightMetres": 0.037831,
+        "bandMinY": 0.935074,
+        "bandMaxY": 0.972905
       },
       "warden-gloves_R": {
-        "vertices": 1047,
-        "bandVertices": 49,
-        "bandFraction": 0.0468,
+        "vertices": 1051,
+        "bandVertices": 19,
+        "bandFraction": 0.018078,
         "ceiling": 0.8,
-        "minPeakWeight": 0.516393,
-        "meanPeakWeight": 0.978724,
-        "bandHeightMetres": 0.038609,
-        "bandMinY": 0.922246,
-        "bandMaxY": 0.960854
+        "minPeakWeight": 0.505299,
+        "meanPeakWeight": 0.988587,
+        "bandHeightMetres": 0.03497,
+        "bandMinY": 0.933409,
+        "bandMaxY": 0.968379
       }
     },
     "stiffness": 3
   },
+  "drapes": [],
+  "twoSided": null,
   "rest": {
     "maxRestRotationBefore": 0,
     "maxRestRotationAfter": 0,
@@ -663,8 +700,10 @@
       "shin_R",
       "foot_R"
     ],
+    "extraBones": [],
+    "extraBoneParents": {},
     "inverseBindMaxAbsDifference": 1.79e-7,
-    "triangles": 3999,
+    "triangles": 3997,
     "materials": 1,
     "meshes": 1,
     "sides": {
@@ -717,13 +756,13 @@
     "manifest": "warden-gloves.manifest.json",
     "report": "warden-gloves.report.json",
     "review": "warden-gloves.review.png",
-    "sha256": "ab9aeed22e76b960ee862b94bc107de1e82bf1ae4e52a7f4957be01cd6de7063"
+    "sha256": "204fee206edc5e2966f32f6eff11f99312dd72aac8e5ab2f9ea344637f3c4da3"
   },
   "review": {
     "bodyVerticesInsideThePiece": {
-      "bind": 21,
-      "abduct90": 21,
-      "flex60": 22
+      "bind": 29,
+      "abduct90": 38,
+      "flex60": 31
     }
   }
 }

@@ -96,9 +96,25 @@ def region(loaded: dict, slots: list[str], pair: bool,
     return result
 
 
-def joined_target(loaded: dict, extra: list | None = None):
+def replaced_tree(loaded: dict, replaced: dict[str, list[int]]):
+    """The skin a slot stands in for, as a nearest-point lookup in Blender space."""
+    from mathutils.kdtree import KDTree
+
+    meshes = by_name(loaded)
+    points = [meshes[name].matrix_world @ meshes[name].data.vertices[index].co
+              for name, indices in sorted(replaced.items()) if name in meshes for index in indices]
+    if not points:
+        return None
+    tree = KDTree(len(points))
+    for at, point in enumerate(points):
+        tree.insert(point, at)
+    tree.balance()
+    return tree
+
+
+def joined_meshes(sources: list, name: str = "GearFitSurface"):
     copies = []
-    for source in list(loaded["meshes"]) + list(extra or []):
+    for source in sources:
         copy = source.copy()
         copy.data = source.data.copy()
         copy.animation_data_clear()
@@ -111,13 +127,17 @@ def joined_target(loaded: dict, extra: list | None = None):
     bpy.context.view_layer.objects.active = copies[0]
     bpy.ops.object.join()
     target = copies[0]
-    target.name = "GearFitSurface"
+    target.name = name
     target.parent = None
     target.hide_render = True
     # A runtime GLB is seam-split, so the join has thousands of boundary edges and
     # is not a closed volume until the seams are welded; a ray cannot count into one.
     normalise._merge_seams(target)
     return target
+
+
+def joined_target(loaded: dict, extra: list | None = None):
+    return joined_meshes(list(loaded["meshes"]) + list(extra or []))
 
 
 def region_vertices(loaded: dict, covers: list[str]) -> dict[str, set[int]]:

@@ -8,10 +8,12 @@ export interface GearPlan {
   weights?: 'transfer' | 'stiff' | 'rigid'
   covers: string[]
   under: string[]
+  drapes: string[]
   thumb?: '+Z' | '-Z' | 'inward' | 'outward'
   span?: string
   yaw?: '0' | '180'
   noMask: boolean
+  twoSided: boolean
   outdir: string
 }
 

@@ -14,6 +14,8 @@
   ],
   "coverage": {
     "reachMetres": 0.06,
+    "triangles": 1794,
+    "hangingTriangles": 0,
     "hiddenVertices": {
       "Body": 1489,
       "Facial_Feature_01": 0,
@@ -162,19 +164,34 @@
     "ratio": 1
   },
   "shrinkwrap": {
+    "mode": "all",
     "pieceVertices": 916,
     "outsidePasses": [
       {
-        "movedVertices": 700,
-        "movedFraction": 0.764192,
+        "movedVertices": 702,
+        "movedFraction": 0.766376,
+        "carriedVertices": 125,
+        "insideAfter": 0
+      },
+      {
+        "movedVertices": 59,
+        "movedFraction": 0.06441,
+        "carriedVertices": 48,
+        "insideAfter": 0
+      },
+      {
+        "movedVertices": 0,
+        "movedFraction": 0,
+        "carriedVertices": 0,
         "insideAfter": 0
       }
     ],
-    "wholeMovedVertices": 700,
-    "hugSelectedVertices": 134,
-    "hugMovedVertices": 56,
-    "wholeMovedFraction": 0.764192,
-    "hugMovedFraction": 0.061135
+    "wholeMovedVertices": 761,
+    "hugSelectedVertices": 128,
+    "hugMovedVertices": 59,
+    "shellRadius": 0.01,
+    "wholeMovedFraction": 0.830786,
+    "hugMovedFraction": 0.06441
   },
   "weights": {
     "mode": "stiff",
@@ -236,7 +253,7 @@
         "bandFraction": 0.078603,
         "ceiling": 0.8,
         "minPeakWeight": 0.503311,
-        "meanPeakWeight": 0.957652,
+        "meanPeakWeight": 0.957653,
         "bandHeightMetres": 0.075995,
         "bandMinY": 0.047372,
         "bandMaxY": 0.123368
@@ -247,7 +264,7 @@
         "bandFraction": 0.076419,
         "ceiling": 0.8,
         "minPeakWeight": 0.509663,
-        "meanPeakWeight": 0.959036,
+        "meanPeakWeight": 0.959052,
         "bandHeightMetres": 0.075995,
         "bandMinY": 0.047373,
         "bandMaxY": 0.123368
@@ -255,6 +272,8 @@
     },
     "stiffness": 3
   },
+  "drapes": [],
+  "twoSided": null,
   "rest": {
     "maxRestRotationBefore": 0,
     "maxRestRotationAfter": 0,
@@ -313,6 +332,8 @@
       "shin_R",
       "foot_R"
     ],
+    "extraBones": [],
+    "extraBoneParents": {},
     "inverseBindMaxAbsDifference": 1.79e-7,
     "triangles": 1794,
     "materials": 0,
@@ -368,7 +389,7 @@
     "manifest": "proxy-feet.manifest.json",
     "report": "proxy-feet.report.json",
     "review": "proxy-feet.review.png",
-    "sha256": "bb512957c9a63216dfaa491fe7cf98415a769fbd01b69b4277b1d8e118899a88"
+    "sha256": "db1883f3830d7b0d7987894d7588303d36cd7056d60867b5a0b20b63d47951f2"
   },
   "review": {
     "bodyVerticesInsideThePiece": {

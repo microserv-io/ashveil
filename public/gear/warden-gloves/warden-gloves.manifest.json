@@ -40,6 +40,7 @@
     "hands"
   ],
   "under": [],
+  "hidesPieces": true,
   "thumb": "inward",
   "hides": {
     "Body": [
@@ -1857,6 +1858,8 @@
       3310,
       3311,
       3312,
+      3313,
+      3314,
       3317,
       3318,
       3319,
@@ -4194,14 +4197,33 @@
         "smooth": 3,
         "radialFactorMin": 0.85,
         "radialFactorMax": 1.35,
-        "radialFactorMean": 1.134217,
+        "radialFactorMean": 1.1,
         "radial": "match",
-        "radialClampedLanes": 5,
-        "centreShiftMaxMetres": 0.068707,
-        "knotStations": [
+        "radialClampedLanes": 4,
+        "centre": "cuff",
+        "centreShiftMaxMetres": 0.075151,
+        "centreStations": [
           -0.105382,
           0,
           0.184982
+        ],
+        "centreKnotShifts": [
+          [
+            0.002521,
+            -0.012957
+          ],
+          [
+            0.002521,
+            -0.012957
+          ],
+          [
+            0.002521,
+            -0.012957
+          ]
+        ],
+        "knotStations": [
+          -0.105382,
+          0.092491
         ],
         "knotFactors": [
           [
@@ -4211,10 +4233,6 @@
           [
             1.35,
             1.35
-          ],
-          [
-            1.35,
-            1.0553
           ]
         ],
         "sliceStations": [
@@ -4377,14 +4395,33 @@
         "smooth": 3,
         "radialFactorMin": 0.85,
         "radialFactorMax": 1.35,
-        "radialFactorMean": 1.139486,
+        "radialFactorMean": 1.067467,
         "radial": "match",
-        "radialClampedLanes": 4,
-        "centreShiftMaxMetres": 0.068708,
-        "knotStations": [
+        "radialClampedLanes": 2,
+        "centre": "cuff",
+        "centreShiftMaxMetres": 0.079064,
+        "centreStations": [
           -0.105379,
           0,
           0.184985
+        ],
+        "centreKnotShifts": [
+          [
+            -0.002518,
+            -0.00264
+          ],
+          [
+            -0.002518,
+            -0.00264
+          ],
+          [
+            -0.002518,
+            -0.00264
+          ]
+        ],
+        "knotStations": [
+          -0.105379,
+          0.092492
         ],
         "knotFactors": [
           [
@@ -4393,11 +4430,7 @@
           ],
           [
             1.35,
-            1.35
-          ],
-          [
-            1.35,
-            1.0554
+            1.188352
           ]
         ],
         "sliceStations": [
@@ -4483,7 +4516,7 @@
     }
   },
   "budget": {
-    "triangles": 3999,
+    "triangles": 3997,
     "materials": 1,
     "meshes": 1,
     "maxInfluencesPerVertex": 2

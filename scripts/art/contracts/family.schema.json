@@ -500,6 +500,58 @@
                   }
                 }
               },
+              "layerSeat": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "axis",
+                  "direction",
+                  "step",
+                  "maximum",
+                  "depth",
+                  "band"
+                ],
+                "properties": {
+                  "axis": {
+                    "enum": [
+                      "X",
+                      "Y",
+                      "Z"
+                    ]
+                  },
+                  "direction": {
+                    "enum": [
+                      -1,
+                      1
+                    ]
+                  },
+                  "step": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 0.01
+                  },
+                  "maximum": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 0.1
+                  },
+                  "depth": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.01
+                  },
+                  "band": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  }
+                }
+              },
               "limb": {
                 "type": "object",
                 "additionalProperties": false,
@@ -717,6 +769,21 @@
                       "match"
                     ]
                   },
+                  "centre": {
+                    "enum": [
+                      "limb",
+                      "cuff",
+                      "none"
+                    ]
+                  },
+                  "radialKnots": {
+                    "type": "array",
+                    "minItems": 2,
+                    "items": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  },
                   "band": {
                     "type": "array",
                     "minItems": 2,
@@ -800,6 +867,20 @@
           "clearance": {
             "type": "number",
             "minimum": 0
+          },
+          "hidesPieces": {
+            "type": "boolean"
+          },
+          "shellRadius": {
+            "type": "number",
+            "minimum": 0
+          },
+          "shrinkwrap": {
+            "enum": [
+              "all",
+              "unreplaced",
+              "none"
+            ]
           },
           "layer": {
             "type": "integer",

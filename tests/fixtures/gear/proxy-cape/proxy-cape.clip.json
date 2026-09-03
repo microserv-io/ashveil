@@ -1,0 +1,74 @@
+{
+  "schema": "ashveil.gear-clip.v1",
+  "body": "masculine-v3",
+  "piece": "proxy-cape",
+  "slot": "back",
+  "hides": {},
+  "clip": {
+    "depth": 0.008,
+    "fraction": 0.005
+  },
+  "vertices": 2080,
+  "exempt": 1870,
+  "poses": 201,
+  "cycles": {
+    "motion": {
+      "pose": "run",
+      "phase": 0.75,
+      "maxDepth": 0.023717185663288728,
+      "count": 3,
+      "fraction": 0.0014423076923076924,
+      "owned": 3,
+      "fixed": 0
+    },
+    "stress": {
+      "pose": "armflex90",
+      "phase": 0,
+      "maxDepth": 0.006819614825942847,
+      "count": 0,
+      "fraction": 0,
+      "owned": 0,
+      "fixed": 0
+    },
+    "advisory": {
+      "pose": "none",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    }
+  },
+  "samples": {
+    "cleave@0.34375": {
+      "pose": "cleave",
+      "phase": 0.34375,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0,
+      "owned": 0,
+      "fixed": 0
+    },
+    "frost_nova@0.375": {
+      "pose": "frost_nova",
+      "phase": 0.375,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0,
+      "owned": 0,
+      "fixed": 0
+    },
+    "abduct90@0": {
+      "pose": "abduct90",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0,
+      "owned": 0,
+      "fixed": 0
+    }
+  },
+  "gates": {
+    "clears_the_body_through_motion_cycles": true,
+    "clears_the_body_through_stress_poses": true
+  }
+}

@@ -7,12 +7,20 @@ import numpy as np
 from mathutils import Vector
 
 from mathutils.bvhtree import BVHTree
+from mathutils.kdtree import KDTree
 
 from fit.frame import blender_from_runtime, rounded, runtime_from_blender
 
 
 AXIS = {"X": 0, "Y": 1, "Z": 2}
 HUG_GROUP = "GearHug"
+WRAP_GROUP = "GearWrap"
+# How far from the replaced skin the outside pass reaches full strength.
+REPLACED_FADE = 0.03
+# The thickness a garment's two walls are carried out together across. Wider carries a
+# cape's collar and a hood's crown into the skin past their own clip depth; a slot whose
+# piece is thicker than this says so.
+SHELL_RADIUS = 0.01
 RAY_AXES = (Vector((1.0, 0.0, 0.0)), Vector((0.0, 1.0, 0.0)), Vector((0.0, 0.0, 1.0)))
 # Step past each hit before casting on, or the ray re-hits the face it just left.
 RAY_STEP = 1e-5
@@ -141,6 +149,35 @@ class Surface:
 
     def penetration(self, point: np.ndarray) -> float:
         return self.probe(point)[0]
+
+    def nearest(self, point: np.ndarray) -> np.ndarray:
+        """The closest point on the body to a runtime-frame point, in the runtime frame."""
+        hit, _, _, _ = self.every.find_nearest(Vector(blender_from_runtime(point)))
+        if hit is None:
+            raise RuntimeError("surface gate: the body has no nearest point")
+        return np.array(runtime_from_blender(hit), dtype=np.float64)
+
+
+class SurfaceUnion:
+    """A geometric union measured without parity cancellation between nested shells."""
+
+    def __init__(self, surfaces: list[Surface]) -> None:
+        self.surfaces = surfaces
+
+    def measure(self, point: np.ndarray) -> tuple[bool, float]:
+        measured = [surface.measure(point) for surface in self.surfaces]
+        return any(inside for inside, _ in measured), min(distance for _, distance in measured)
+
+    def probe(self, point: np.ndarray) -> tuple[float, bool]:
+        measured = [surface.probe(point) for surface in self.surfaces]
+        return max(depth for depth, _ in measured), any(split for _, split in measured)
+
+    def penetration(self, point: np.ndarray) -> float:
+        return self.probe(point)[0]
+
+    def nearest(self, point: np.ndarray) -> np.ndarray:
+        candidates = [surface.nearest(point) for surface in self.surfaces]
+        return min(candidates, key=lambda candidate: float(np.linalg.norm(point - candidate)))
 
 
 def _scale(original: np.ndarray, region_bounds, rule: dict, span: dict | None) -> float:
@@ -423,30 +460,34 @@ def _reach(section: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return kept.min(axis=0), kept.max(axis=0)
 
 
-def _profile(knots: list[float], centres: np.ndarray, ratios: np.ndarray,
-             measured: np.ndarray, match: bool) -> tuple[np.ndarray, int]:
-    """One radial factor per station, per lane, and a straight line between them.
+def _knotted(knots: list[float], centres: np.ndarray, values: np.ndarray, measured: np.ndarray,
+             rest: float) -> np.ndarray:
+    """One value per station, per lane: the median of the slices around that station.
 
-    A factor per slice makes a ripple: neighbouring cross sections of a source differ
+    A value per slice makes a ripple: neighbouring cross sections of a source differ
     by more than the body does, so the piece came out corrugated, rings of different
     girth down the cuff and worse in motion. The stations are where a garment actually
-    changes girth - fingertip, wrist, cuff - so the profile is knotted there, each knot
-    the median of the ratios around it, and the surface between two knots is a cone.
+    changes - fingertip, wrist, cuff - so the profile is knotted there and the surface
+    between two knots is a cone.
     """
-    profile = np.ones((len(knots), 2))
-    clamped = 0
+    profile = np.full((len(knots), values.shape[1]), rest)
     for at, station in enumerate(knots):
         near = measured & (np.abs(centres - station) <= KNOT_REACH)
         if int(near.sum()) < KNOT_SLICES and measured.any():
             order = np.argsort(np.where(measured, np.abs(centres - station), np.inf))
             near = np.zeros(len(centres), dtype=bool)
             near[order[:min(KNOT_SLICES, int(measured.sum()))]] = True
-        if not near.any():
-            continue
-        asked = np.median(ratios[near], axis=0)
-        profile[at] = np.clip(asked, *MATCH_LIMITS) if match else np.maximum(1.0, asked)
-        clamped += int(np.count_nonzero(profile[at] != asked))
-    return profile, clamped
+        if near.any():
+            profile[at] = np.median(values[near], axis=0)
+    return profile
+
+
+def _profile(knots: list[float], centres: np.ndarray, ratios: np.ndarray,
+             measured: np.ndarray, match: bool) -> tuple[np.ndarray, int]:
+    """One radial factor per station, and what the clamp had to hold back."""
+    asked = _knotted(knots, centres, ratios, measured, 1.0)
+    profile = np.clip(asked, *MATCH_LIMITS) if match else np.maximum(1.0, asked)
+    return profile, int(np.count_nonzero(profile != asked))
 
 
 def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: float) -> tuple[np.ndarray, dict]:
@@ -530,10 +571,8 @@ def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: floa
     if smooth > 1 and count > 1:
         pad = smooth // 2
         kernel = np.ones(smooth) / smooth
-        middles, shifts = (
-            np.stack([np.convolve(np.pad(strip, ((pad, pad), (0, 0)), mode="edge")[:, lane], kernel,
-                                  mode="valid")[:count] for lane in range(2)], axis=1)
-            for strip in (middles, shifts))
+        middles = np.stack([np.convolve(np.pad(middles, ((pad, pad), (0, 0)), mode="edge")[:, lane],
+                                        kernel, mode="valid")[:count] for lane in range(2)], axis=1)
 
     weight = np.ones(len(points))
     band = tube.get("band")
@@ -545,17 +584,40 @@ def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: floa
             knots = [low + float(edge) * (high - low) for edge in band]
     if not knots:
         knots = [low, high]
-    profile, clamped = _profile(knots, centres, ratios, measured, match)
+    # Where the girth is measured, in station space: 0 is the first station, 1 the
+    # second, 1.5 half way between the second and third. A piece whose skin the slot
+    # replaces has to keep its own proportions rather than take the body's per station
+    # - the glove's own fingertip ratio fattened the thumb - so its hand is one factor
+    # measured at the palm and its cuff another, with a straight line between them.
+    # The carry never uses these knots: it is where the piece sits, not its shape.
+    asked = tube.get("radialKnots")
+    girth = ([float(np.interp(value, np.arange(len(knots), dtype=np.float64), knots))
+              for value in asked] if asked else list(knots))
+    profile, clamped = _profile(girth, centres, ratios, measured, match)
+    # A shaft carried onto the limb slice by slice follows the body's own wandering
+    # centroid and kinks, so the carry is knotted at the stations like the girth is,
+    # and a slot whose piece is not open at one end does not need carrying at all.
+    # `cuff` carries the island rigidly on the first station instead: a hand's own
+    # centre sits toward the thumb of the wrist's, so a per-station carry deflected
+    # the glove's hand toward the pinky and kinked the wrist line.
+    centring = tube.get("centre", "none")
+    carried = (_knotted(knots, centres, shifts, measured, 0.0) if centring in ("limb", "cuff")
+               else np.zeros((len(knots), 2)))
+    if centring == "cuff":
+        carried = np.repeat(carried[:1], len(knots), axis=0)
 
     def sampled(strip: np.ndarray) -> np.ndarray:
         return np.stack([np.interp(along, centres, strip[:, lane]) for lane in range(2)], axis=1)
 
-    widened = np.stack([np.interp(along, knots, profile[:, lane]) for lane in range(2)], axis=1)
+    def knotted(stations: list[float], strip: np.ndarray) -> np.ndarray:
+        return np.stack([np.interp(along, stations, strip[:, lane]) for lane in range(2)], axis=1)
+
+    widened = knotted(girth, profile)
     scaled = 1.0 + (widened - 1.0) * weight[:, None]
     # Widened about the slice's own centre and carried onto the limb's, because
     # scaling an off-centre cuff about the axis only throws it further off.
     middle = sampled(middles)
-    placed_lanes = (lanes - middle) * scaled + middle + sampled(shifts) * weight[:, None]
+    placed_lanes = (lanes - middle) * scaled + middle + knotted(knots, carried) * weight[:, None]
     radial = np.outer(placed_lanes[:, 0], across) + np.outer(placed_lanes[:, 1], up)
     report["slices"] = count
     report["sliceMetres"] = step
@@ -565,8 +627,11 @@ def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: floa
     report["radialFactorMean"] = round(float(profile.mean()), 6)
     report["radial"] = "match" if match else "enclose"
     report["radialClampedLanes"] = clamped
+    report["centre"] = centring
     report["centreShiftMaxMetres"] = round(float(np.abs(shifts).max()), 6)
-    report["knotStations"] = [round(float(value), 6) for value in knots]
+    report["centreStations"] = [round(float(value), 6) for value in knots]
+    report["centreKnotShifts"] = [[round(float(value), 6) for value in knot] for knot in carried]
+    report["knotStations"] = [round(float(value), 6) for value in girth]
     report["knotFactors"] = [[round(float(value), 6) for value in knot] for knot in profile]
     # The ratios the body asked for, per slice: how the source's own shape reads.
     report["sliceStations"] = [round(float(value), 6) for value in centres]
@@ -773,7 +838,50 @@ def decimate(objects: list, maximum: int) -> dict:
     return {"trianglesBefore": before, "trianglesAfter": after, "ratio": round(ratio, 6)}
 
 
-def _apply_shrinkwrap(obj, target, clearance: float, vertex_group: str = "", outside_surface: bool = False) -> int:
+def _clearance(target, obj, point) -> float:
+    """How far a point on the piece stands off the surface it is being pushed out of."""
+    local = target.matrix_world.inverted() @ (obj.matrix_world @ point)
+    found, hit, _, _ = target.closest_point_on_mesh(local)
+    return float((local - hit).length) if found else float("inf")
+
+
+def _dilate(obj, target, before: list, radius: float) -> int:
+    """Carry each wall of a garment out with the wall beside it.
+
+    A cape is cloth with two sides a few millimetres apart, and the correction is a
+    nearest-point projection: the inside wall is deep in the body and lands on the skin
+    plus the clearance, the outside wall was already clear and does not move, and the
+    two end up in the same place. The shell is then flat, the walls interleave, and the
+    piece reads as shards of its own lining. So a vertex takes the largest displacement
+    of any vertex within the fabric's own thickness of it, which moves both walls of a
+    fold together and leaves the thickness where the artist put it.
+    """
+    displacement = [vertex.co - old for old, vertex in zip(before, obj.data.vertices)]
+    reach = [move.length for move in displacement]
+    if max(reach, default=0.0) <= 1e-7:
+        return 0
+    tree = KDTree(len(before))
+    for at, point in enumerate(before):
+        tree.insert(point, at)
+    tree.balance()
+    carried = 0
+    for at, vertex in enumerate(obj.data.vertices):
+        found, longest = -1, reach[at]
+        for _, other, _ in tree.find_range(before[at], radius):
+            if reach[other] > longest + 1e-9:
+                found, longest = other, reach[other]
+        # Never carry a wall into the skin: the neighbour's push is the right length
+        # and only roughly the right direction, and a fold's far side can take it inwards.
+        if found >= 0:
+            carried_to = before[at] + displacement[found]
+            if _clearance(target, obj, carried_to) >= _clearance(target, obj, vertex.co):
+                vertex.co = carried_to
+                carried += 1
+    return carried
+
+
+def _apply_shrinkwrap(obj, target, clearance: float, vertex_group: str = "",
+                      outside_surface: bool = False, shell: float = 0.0) -> tuple[int, int]:
     before = [vertex.co.copy() for vertex in obj.data.vertices]
     bpy.context.view_layer.objects.active = obj
     modifier = obj.modifiers.new("Gear surface clearance", "SHRINKWRAP")
@@ -783,7 +891,9 @@ def _apply_shrinkwrap(obj, target, clearance: float, vertex_group: str = "", out
     modifier.offset = clearance
     modifier.vertex_group = vertex_group
     bpy.ops.object.modifier_apply(modifier=modifier.name)
-    return sum(1 for old, vertex in zip(before, obj.data.vertices) if (old - vertex.co).length > 1e-7)
+    carried = _dilate(obj, target, before, shell) if shell > 0.0 else 0
+    moved = sum(1 for old, vertex in zip(before, obj.data.vertices) if (old - vertex.co).length > 1e-7)
+    return moved, carried
 
 
 def _band_weight(value: float, bands: list, fade: float) -> float:
@@ -800,20 +910,60 @@ def _band_weight(value: float, bands: list, fade: float) -> float:
     return best
 
 
-def shrinkwrap(objects: list, target, slot: dict, surface: Surface, span: dict | None = None) -> dict:
+def _unreplaced(obj, replaced: KDTree) -> list[float]:
+    """How much of the correction a vertex takes, by its distance from replaced skin.
+
+    A glove is not worn over the hand, it replaces it: wrapping the piece onto skin
+    nobody will see only makes the glove take the hand's shape - a fat thumb, a
+    crumpled pinky edge - instead of keeping its own at the hand's size, which the
+    tube fit already gave it. Its cuff is worn over a real forearm and still has to
+    clear it, so the correction fades in over the last 3cm before that skin ends.
+    """
+    shares = []
+    group = obj.vertex_groups.get(WRAP_GROUP) or obj.vertex_groups.new(name=WRAP_GROUP)
+    for vertex in obj.data.vertices:
+        _, _, distance = replaced.find(obj.matrix_world @ vertex.co)
+        reach = min(1.0, float(distance) / REPLACED_FADE)
+        shares.append(reach * reach * (3.0 - 2.0 * reach))
+        group.add([vertex.index], shares[-1], "REPLACE")
+    return shares
+
+
+def shrinkwrap(objects: list, targets: list, slot: dict, surface: Surface, span: dict | None = None,
+               replaced: KDTree | None = None) -> dict:
     clearance = float(slot["clearance"])
     total = max(1, sum(len(obj.data.vertices) for obj in objects))
-    report = {"pieceVertices": total, "outsidePasses": [], "wholeMovedVertices": 0,
+    mode = slot.get("shrinkwrap", "all")
+    report = {"mode": mode, "pieceVertices": total, "outsidePasses": [], "wholeMovedVertices": 0,
               "hugSelectedVertices": 0, "hugMovedVertices": 0}
+    if mode == "none" or (mode == "unreplaced" and replaced is None):
+        report["wholeMovedFraction"] = 0.0
+        report["hugMovedFraction"] = 0.0
+        return report
+    shares = {obj: _unreplaced(obj, replaced) for obj in objects} if mode == "unreplaced" else {}
+    limited = WRAP_GROUP if mode == "unreplaced" else ""
+    # A faded correction is not dilated either: carrying it across the fade is the same
+    # as never having faded it, and the shape the fade protects is the point of it.
+    shell = 0.0 if shares else float(slot.get("shellRadius", SHELL_RADIUS))
+    report["shellRadius"] = shell
     for _ in range(OUTSIDE_PASSES):
-        moved = sum(_apply_shrinkwrap(obj, target, clearance) for obj in objects)
+        passes = [_apply_shrinkwrap(obj, target, clearance, limited, shell=shell)
+                  for target in targets for obj in objects]
+        moved = sum(count for count, _ in passes)
+        carried = sum(count for _, count in passes)
         inside = sum(1 for obj in objects for point in _runtime_points(obj)
                      if surface.penetration(point) > 0.0)
         report["outsidePasses"].append({"movedVertices": moved,
                                         "movedFraction": round(moved / total, 6),
+                                        "carriedVertices": carried,
                                         "insideAfter": inside})
         report["wholeMovedVertices"] += moved
-        if inside == 0:
+        # Done when the pass stops moving the piece, not when the region says it is
+        # clear: the region a piece covers is generous, so a piece can be outside it
+        # and still inside skin it does not hide, which is what the bind gate measures.
+        # A weighted pass is the exception - repeating it converges on the unweighted
+        # correction and erases the fade - so a faded one is applied once.
+        if moved == 0 or shares:
             break
 
     for obj in objects:
@@ -824,20 +974,30 @@ def shrinkwrap(objects: list, target, slot: dict, surface: Surface, span: dict |
         group = obj.vertex_groups.get(HUG_GROUP) or obj.vertex_groups.new(name=HUG_GROUP)
         selected = []
         for vertex, point in zip(obj.data.vertices, points):
-            local = target.matrix_world.inverted() @ (obj.matrix_world @ vertex.co)
-            found, hit, _, _ = target.closest_point_on_mesh(local)
-            distance = float((local - hit).length) if found else float("inf")
+            distances = []
+            for target in targets:
+                local = target.matrix_world.inverted() @ (obj.matrix_world @ vertex.co)
+                found, hit, _, _ = target.closest_point_on_mesh(local)
+                distances.append(float((local - hit).length) if found else float("inf"))
+            distance = min(distances)
             fraction = float((point[axis] - low) / extent)
-            weight = _band_weight(fraction, slot["hug"]["bands"], float(slot["hug"]["fade"]))
+            weight = (_band_weight(fraction, slot["hug"]["bands"], float(slot["hug"]["fade"]))
+                      * (shares[obj][vertex.index] if obj in shares else 1.0))
             if distance <= float(slot["hug"]["reach"]) and weight > 0:
                 group.add([vertex.index], weight, "REPLACE")
                 selected.append(vertex.index)
         report["hugSelectedVertices"] += len(selected)
         if selected:
-            report["hugMovedVertices"] += _apply_shrinkwrap(obj, target, clearance, HUG_GROUP, True)
+            report["hugMovedVertices"] += sum(
+                _apply_shrinkwrap(obj, target, clearance, HUG_GROUP, True)[0]
+                for target in targets)
         # Vertex groups live on the mesh datablock, which modifier_apply replaces:
         # the group has to be looked up again by name or the pointer dangles.
         stale = obj.vertex_groups.get(HUG_GROUP)
+        if stale is not None:
+            obj.vertex_groups.remove(stale)
+    for obj in objects:
+        stale = obj.vertex_groups.get(WRAP_GROUP)
         if stale is not None:
             obj.vertex_groups.remove(stale)
     # Shrinkwrap is a correction, not a reshaping: a pass that moves most of a piece
@@ -845,6 +1005,100 @@ def shrinkwrap(objects: list, target, slot: dict, surface: Surface, span: dict |
     report["wholeMovedFraction"] = round(report["wholeMovedVertices"] / total, 6)
     report["hugMovedFraction"] = round(report["hugMovedVertices"] / total, 6)
     return report
+
+
+def layer_seat(obj, surface: Surface, rule: dict, clearance: float) -> dict:
+    """Find the smallest bounded translation that seats an outer layer above its target."""
+    axis = AXIS[rule["axis"]]
+    direction = float(rule["direction"])
+    step = float(rule["step"])
+    maximum = float(rule["maximum"])
+    target_depth = float(rule["depth"])
+    points = _runtime_points(obj)
+    low, high = float(points[:, axis].min()), float(points[:, axis].max())
+    band_low, band_high = (low + float(fraction) * (high - low) for fraction in rule["band"])
+    selected = points[(points[:, axis] >= band_low) & (points[:, axis] <= band_high)]
+    if len(selected) == 0:
+        raise RuntimeError(f"layer seat gate: {obj.name} has no vertices in its seating band")
+
+    def measured(offset: float) -> dict:
+        shifted = selected.copy()
+        shifted[:, axis] += direction * offset
+        depths = [surface.penetration(point) for point in shifted]
+        separations = [float(np.linalg.norm(point - surface.nearest(point)))
+                       for point in shifted]
+        return {"insideVertices": sum(depth > 0.0 for depth in depths),
+                "maxPenetrationMetres": max(depths, default=0.0),
+                "minimumClearanceMetres": min(separations, default=float("inf"))}
+
+    before = measured(0.0)
+    chosen = 0.0
+    after = before
+    best = None
+    best_offset = 0.0
+    steps = int(math.floor(maximum / step + 1e-9))
+    if steps < 1:
+        raise RuntimeError(
+            f"layer seat gate: {obj.name} maximum {maximum:.6f}m is smaller than "
+            f"its {step:.6f}m step")
+    for at in range(1, steps + 1):
+        offset = min(maximum, at * step)
+        candidate = measured(offset)
+        chosen, after = offset, candidate
+        candidate_score = max(candidate["maxPenetrationMetres"] - target_depth,
+                              clearance - candidate["minimumClearanceMetres"], 0.0)
+        best_score = (float("inf") if best is None else
+                      max(best["maxPenetrationMetres"] - target_depth,
+                          clearance - best["minimumClearanceMetres"], 0.0))
+        best_inside = float("inf") if best is None else best["insideVertices"]
+        if (candidate_score, candidate["insideVertices"], offset) < (
+                best_score, best_inside, best_offset):
+            best, best_offset = candidate, offset
+        if (candidate["maxPenetrationMetres"] <= target_depth
+                and candidate["minimumClearanceMetres"] >= clearance - 1e-6):
+            break
+    else:
+        if (best is not None and best["maxPenetrationMetres"] <= target_depth
+                and best["minimumClearanceMetres"] >= clearance - 1e-6):
+            chosen, after = best_offset, best
+        else:
+            raise RuntimeError(
+                f"layer seat gate: {obj.name} best penetration is "
+                f"{best['maxPenetrationMetres']:.6f}m penetration and "
+                f"{best['minimumClearanceMetres']:.6f}m clearance at {best_offset:.6f}m, outside "
+                f"the {target_depth:.6f}m/{clearance:.6f}m targets in the bounded "
+                f"{maximum:.6f}m search")
+
+    inverse = obj.matrix_world.inverted()
+    shifted = np.zeros(3)
+    shifted[axis] = direction * chosen
+    for vertex, point in zip(obj.data.vertices, points + shifted):
+        vertex.co = inverse @ Vector(blender_from_runtime(point))
+    obj.data.update()
+    return {"axis": rule["axis"], "direction": int(direction), "band": list(rule["band"]),
+            "selectedVertices": len(selected), "stepMetres": step,
+            "maximumMetres": maximum, "targetDepthMetres": target_depth,
+            "clearanceMetres": clearance,
+            "translationMetres": rounded(shifted),
+            "before": {"insideVertices": before["insideVertices"],
+                       "maxPenetrationMetres": round(before["maxPenetrationMetres"], 9),
+                       "minimumClearanceMetres": round(before["minimumClearanceMetres"], 9)},
+            "after": {"insideVertices": after["insideVertices"],
+                      "maxPenetrationMetres": round(after["maxPenetrationMetres"], 9),
+                      "minimumClearanceMetres": round(after["minimumClearanceMetres"], 9)}}
+
+
+def finish_layer_seat(objects: list, targets: list, slot: dict, surface: Surface) -> list[dict]:
+    """Restore union clearance after seating translated an already-fitted cap."""
+    passes = []
+    for _ in range(OUTSIDE_PASSES):
+        corrected = [_apply_shrinkwrap(obj, target, float(slot["clearance"]), shell=0.0)
+                     for target in targets for obj in objects]
+        outside = outside_measure(objects, surface)
+        passes.append({"movedVertices": sum(moved for moved, _ in corrected), **outside})
+        if outside["maxPenetrationMetres"] <= float(slot["clip"]["depth"]):
+            break
+    return passes
 
 
 def outside_measure(objects: list, surface: Surface) -> dict:
@@ -867,7 +1121,41 @@ def outside_measure(objects: list, surface: Surface) -> dict:
     }
 
 
-def coverage(piece, meshes: list, reach: float) -> dict[str, list[int]]:
+def _fixed_faces(piece, hanging: set[str]) -> tuple[list[tuple[int, int, int]], int]:
+    """The triangles of a piece that stay where they were fitted.
+
+    Cloth on a drape chain swings off the body, and whatever it covered at bind is
+    then bare skin the game has to draw, so only the fixed part of a piece may hide
+    any. A triangle goes if any corner of it is a drape's, the same rim rule the body
+    uses for its own hidden faces.
+    """
+    faces = _triangles(piece)
+    if not hanging:
+        return faces, 0
+    named = {group.index: group.name for group in piece.vertex_groups}
+    swung = set()
+    for vertex in piece.data.vertices:
+        held = max(vertex.groups, key=lambda element: element.weight, default=None)
+        if held is not None and named.get(held.group, "") in hanging:
+            swung.add(vertex.index)
+    kept = [face for face in faces if not any(corner in swung for corner in face)]
+    return kept, len(faces) - len(kept)
+
+
+def _shell(piece, faces: list[tuple[int, int, int]]):
+    """The piece as an object carrying only the faces given, for the inside test."""
+    mesh = bpy.data.meshes.new(f"{piece.name}-fixed")
+    mesh.from_pydata([tuple(vertex.co) for vertex in piece.data.vertices], [],
+                     [tuple(face) for face in faces])
+    mesh.update()
+    obj = bpy.data.objects.new(mesh.name, mesh)
+    obj.matrix_world = piece.matrix_world.copy()
+    bpy.context.scene.collection.objects.link(obj)
+    return obj
+
+
+def coverage(piece, meshes: list, reach: float,
+             hanging: set[str] | None = None) -> tuple[dict[str, list[int]], dict]:
     """The body vertices a fitted piece covers at bind, per mesh.
 
     Authored slot regions stop where the anatomy does, and a garment does not: a
@@ -877,11 +1165,14 @@ def coverage(piece, meshes: list, reach: float) -> dict[str, list[int]]:
     `reach`, or when the garment has swallowed it whole.
     """
     points = [tuple(piece.matrix_world @ vertex.co) for vertex in piece.data.vertices]
-    faces = _triangles(piece)
+    faces, swung = _fixed_faces(piece, hanging or set())
+    report = {"triangles": len(_triangles(piece)), "hangingTriangles": swung}
     if not faces:
-        raise RuntimeError("coverage gate: the fitted piece has no faces")
+        # A piece that is all hanging cloth hides nothing, and has no shell to ask.
+        return {}, report
     tree = BVHTree.FromPolygons(points, faces, all_triangles=True)
-    shell = Surface([piece])
+    fixed = _shell(piece, faces)
+    shell = Surface([fixed])
     box = np.array(points, dtype=np.float64)
     low, high = box.min(axis=0) - reach, box.max(axis=0) + reach
 
@@ -901,7 +1192,8 @@ def coverage(piece, meshes: list, reach: float) -> dict[str, list[int]]:
                 found.append(vertex.index)
         if found:
             covered[obj.name] = found
-    return covered
+    bpy.data.objects.remove(fixed, do_unlink=True)
+    return covered, report
 
 
 def enclosure(piece, reference: dict[str, np.ndarray]) -> dict:

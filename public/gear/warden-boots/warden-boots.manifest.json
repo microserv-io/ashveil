@@ -40,6 +40,7 @@
     "feet"
   ],
   "under": [],
+  "hidesPieces": true,
   "thumb": "+Z",
   "hides": {
     "Body": [
@@ -1895,7 +1896,22 @@
         "radialFactorMean": 1.021899,
         "radial": "enclose",
         "radialClampedLanes": 2,
-        "centreShiftMaxMetres": 0.042,
+        "centre": "none",
+        "centreShiftMaxMetres": 0.076177,
+        "centreStations": [
+          0.025185,
+          0.300245
+        ],
+        "centreKnotShifts": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
         "knotStations": [
           0.025185,
           0.300245
@@ -2068,7 +2084,22 @@
         "radialFactorMean": 1.011115,
         "radial": "enclose",
         "radialClampedLanes": 3,
-        "centreShiftMaxMetres": 0.041954,
+        "centre": "none",
+        "centreShiftMaxMetres": 0.07609,
+        "centreStations": [
+          0.025096,
+          0.299974
+        ],
+        "centreKnotShifts": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
         "knotStations": [
           0.025096,
           0.299974
@@ -2201,7 +2232,7 @@
     }
   },
   "budget": {
-    "triangles": 5999,
+    "triangles": 5998,
     "materials": 1,
     "meshes": 1,
     "maxInfluencesPerVertex": 2

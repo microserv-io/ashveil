@@ -37,6 +37,8 @@ export interface Penetration {
   readonly maxDepth: number
   /** How many piece vertices are deeper inside than the slot's `clip.depth`. */
   readonly over: number
+  readonly ownedOver?: number
+  readonly fixedOver?: number
 }
 
 /** Linear-blend skinning, column-major matrices as glTF and Three.js both store them. */
@@ -67,7 +69,8 @@ export function skinVertices(mesh: SkinnedVertices, matrices: Float32Array, out:
  * Every piece vertex against the body it is worn on. `visible` is one flag per
  * triangle: a hidden triangle still answers "which way is out", it just cannot be
  * penetrated. `depth` is the threshold the slot's contract sets: anything deeper
- * than it counts against the gate.
+ * than it counts against the gate. `exempt` flags piece vertices the caller has
+ * ruled out of this pose entirely, and they are not searched at all.
  */
 export function measurePenetration(
   body: Float32Array,
@@ -75,18 +78,27 @@ export function measurePenetration(
   visible: Uint8Array,
   piece: Float32Array,
   depth: number,
+  exempt: Uint8Array | null = null,
+  partition: Uint8Array | null = null,
 ): Penetration {
   buildTriangleGrid(body, triangles, boundsOf(piece), REACH)
   let maxDepth = 0
   let over = 0
+  let ownedOver = 0
+  let fixedOver = 0
 
   for (let vertex = 0; vertex < piece.length / 3; vertex++) {
+    if (exempt !== null && exempt[vertex] === 1) continue
     const found = depthBehindNearest(
       body, triangles, visible, piece[vertex * 3]!, piece[vertex * 3 + 1]!, piece[vertex * 3 + 2]!, REACH,
     )
     if (found <= 0) continue
     if (found > maxDepth) maxDepth = found
-    if (found > depth) over++
+    if (found > depth) {
+      over++
+      if (partition !== null && partition[vertex] === 1) ownedOver++
+      else fixedOver++
+    }
   }
-  return { maxDepth, over }
+  return partition === null ? { maxDepth, over } : { maxDepth, over, ownedOver, fixedOver }
 }

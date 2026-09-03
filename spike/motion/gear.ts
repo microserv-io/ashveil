@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { GEAR_SLOTS, type GearHides, type GearSlot } from '../../src/render/gear'
+import { GEAR_SLOTS, type DrapeDefinition, type GearHides, type GearSlot } from '../../src/render/gear'
 import { stylise } from '../../src/render/look'
 
 /**
@@ -23,6 +23,8 @@ export const REVIEW_GEAR: readonly ReviewGearPiece[] = [
   { slot: 'hands', piece: 'warden-gloves', path: gearPath('warden-gloves') },
   { slot: 'chest', piece: 'warden-tunic', path: gearPath('warden-tunic') },
   { slot: 'head', piece: 'warden-hood', path: gearPath('warden-hood') },
+  { slot: 'waist', piece: 'warden-belt', path: gearPath('warden-belt') },
+  { slot: 'shoulders', piece: 'warden-pauldrons', path: gearPath('warden-pauldrons') },
 ]
 
 /** A piece with its manifest read: what to bind, and the body it hides. */
@@ -30,6 +32,8 @@ export interface LoadedGearPiece {
   readonly scene: THREE.Object3D
   readonly covers: readonly GearSlot[]
   readonly hides: GearHides
+  readonly drapes: readonly DrapeDefinition[]
+  readonly hidesPieces: boolean | undefined
 }
 
 /** Where `npm run art:gear` puts a piece, and so where the page fetches it. */
@@ -46,7 +50,9 @@ export async function loadGearManifest(piece: string): Promise<Omit<LoadedGearPi
   const url = gearManifestPath(piece)
   const response = await fetch(url)
   if (!response.ok) throw new Error(`gear: ${url} answered ${response.status}`)
-  const manifest = (await response.json()) as { covers?: unknown; hides?: unknown }
+  const manifest = (await response.json()) as {
+    covers?: unknown; hides?: unknown; drapes?: unknown; hidesPieces?: unknown
+  }
   if (!Array.isArray(manifest.covers)) throw new Error(`gear: ${url} has no "covers" array`)
   for (const slot of manifest.covers) {
     if (!GEAR_SLOTS.includes(slot as GearSlot)) throw new Error(`gear: ${url} names unknown covered slot "${slot}"`)
@@ -58,7 +64,24 @@ export async function loadGearManifest(piece: string): Promise<Omit<LoadedGearPi
   for (const [mesh, indices] of Object.entries(hides)) {
     if (!Array.isArray(indices)) throw new Error(`gear: ${url} hides "${mesh}" is not an array`)
   }
-  return { covers: manifest.covers as GearSlot[], hides: hides as GearHides }
+  return {
+    covers: manifest.covers as GearSlot[],
+    hides: hides as GearHides,
+    drapes: drapesOf(manifest.drapes, url),
+    hidesPieces: typeof manifest.hidesPieces === 'boolean' ? manifest.hidesPieces : undefined,
+  }
+}
+
+/** A piece with no hanging cloth has no `drapes` at all, and that is the common case. */
+function drapesOf(drapes: unknown, url: string): readonly DrapeDefinition[] {
+  if (drapes === undefined) return []
+  if (!Array.isArray(drapes)) throw new Error(`gear: ${url} has a "drapes" that is not an array`)
+  for (const drape of drapes as DrapeDefinition[]) {
+    if (!drape.attachBone || !Array.isArray(drape.bones) || !Array.isArray(drape.toward)) {
+      throw new Error(`gear: ${url} drape "${drape.name}" is missing an attach bone, its bones or its toward`)
+    }
+  }
+  return drapes as DrapeDefinition[]
 }
 
 /**

@@ -106,6 +106,149 @@
         "pattern": "^[a-z0-9][a-z0-9-]*$"
       }
     },
+    "hidesPieces": {
+      "type": "boolean"
+    },
+    "twoSided": {
+      "const": true
+    },
+    "drapes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "attachBone",
+          "bones",
+          "segmentLength",
+          "restDegrees",
+          "root",
+          "toward"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "attachBone": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]+$"
+          },
+          "bones": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 6,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^drape_[a-z][a-z0-9_]*_[1-6]$"
+            }
+          },
+          "segmentLength": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "restDegrees": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 45
+          },
+          "root": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number"
+            }
+          },
+          "toward": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number"
+            }
+          },
+          "supports": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 144,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["segment", "terms", "bodyTerms", "normal", "clearance"],
+              "properties": {
+                "segment": { "type": "integer", "minimum": 0, "maximum": 5 },
+                "terms": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 12,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["joint", "weight", "position"],
+                    "properties": {
+                      "joint": { "type": "string", "pattern": "^[A-Za-z0-9_]+$" },
+                      "weight": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+                      "position": {
+                        "type": "array",
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "items": { "type": "number" }
+                      }
+                    }
+                  }
+                },
+                "bodyTerms": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["joint", "weight", "position"],
+                    "properties": {
+                      "joint": { "type": "string", "pattern": "^[A-Za-z0-9_]+$" },
+                      "weight": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+                      "position": {
+                        "type": "array",
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "items": { "type": "number" }
+                      }
+                    }
+                  }
+                },
+                "normal": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": { "type": "number" }
+                },
+                "clearance": { "type": "number", "minimum": 0 }
+              }
+            }
+          },
+          "colliders": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 16,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["from", "to", "radius"],
+              "properties": {
+                "from": { "type": "string", "pattern": "^[A-Za-z0-9_]+$" },
+                "to": { "type": "string", "pattern": "^[A-Za-z0-9_]+$" },
+                "radius": { "type": "number", "exclusiveMinimum": 0 }
+              }
+            }
+          }
+        }
+      }
+    },
     "hides": {
       "type": "object",
       "additionalProperties": {
@@ -219,6 +362,82 @@
           "maxItems": 3,
           "items": {
             "type": "number"
+          }
+        },
+        "layerSeat": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "axis",
+            "direction",
+            "band",
+            "selectedVertices",
+            "stepMetres",
+            "maximumMetres",
+            "targetDepthMetres",
+            "clearanceMetres",
+            "translationMetres",
+            "before",
+            "after"
+          ],
+          "properties": {
+            "axis": {
+              "enum": [
+                "X",
+                "Y",
+                "Z"
+              ]
+            },
+            "direction": {
+              "enum": [
+                -1,
+                1
+              ]
+            },
+            "band": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "selectedVertices": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "stepMetres": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "maximumMetres": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "targetDepthMetres": {
+              "type": "number",
+              "minimum": 0
+            },
+            "clearanceMetres": {
+              "type": "number",
+              "minimum": 0
+            },
+            "translationMetres": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "number"
+              }
+            },
+            "before": {
+              "$ref": "#/$defs/layerSeatMeasurement"
+            },
+            "after": {
+              "$ref": "#/$defs/layerSeatMeasurement"
+            }
           }
         },
         "spanOverride": {
@@ -587,6 +806,29 @@
           "type": "number",
           "minimum": 0,
           "maximum": 1
+        }
+      }
+    },
+    "layerSeatMeasurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "insideVertices",
+        "maxPenetrationMetres",
+        "minimumClearanceMetres"
+      ],
+      "properties": {
+        "insideVertices": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxPenetrationMetres": {
+          "type": "number",
+          "minimum": 0
+        },
+        "minimumClearanceMetres": {
+          "type": "number",
+          "minimum": 0
         }
       }
     }

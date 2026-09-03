@@ -11,6 +11,7 @@
     "fraction": 0.002
   },
   "vertices": 4844,
+  "exempt": 0,
   "poses": 201,
   "cycles": {
     "motion": {

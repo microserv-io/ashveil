@@ -20,11 +20,16 @@ interface Fixture {
   readonly covers?: readonly string[]
   /** Whether the slot wears feet, and so is held to the toe check. */
   readonly toes?: boolean
+  /** `name:bone:from:to[:segments]`, for a piece whose cloth hangs and swings. */
+  readonly drape?: string
+  readonly source?: string
 }
 const FIXTURES: readonly Fixture[] = [
   { piece: 'proxy-feet', slot: 'feet', pair: true, toes: true },
   // A hood eats six body meshes, so it is the one that proves `hides` is per mesh.
   { piece: 'proxy-head', slot: 'head', pair: false },
+  // A body shell has no tail to hang, so the drape fixture is a sheet the fitter builds.
+  { piece: 'proxy-cape', slot: 'back', pair: false, source: 'cape', drape: 'cape:chest:0.0:0.95:3' },
 ]
 const ARTEFACTS = ['glb', 'manifest.json', 'report.json', 'clip.json'] as const
 const CLIP_GATES = ['clears_the_body_through_stress_poses', 'clears_the_body_through_motion_cycles'] as const
@@ -89,11 +94,35 @@ describe('the gear wrapper', () => {
     expect(blenderArgs(resolvePlan(parseArgs([...base, '--yaw', '180'])))).toContain('180')
   })
 
+  it('refuses a drape that is not name:bone:from:to[:segments], and takes repeats', () => {
+    const base = ['--input', 'proxy:cape', '--slot', 'back', '--body', BODY, '--piece', 'proxy-cape']
+    expect(() => parseArgs([...base, '--drape', 'sash:pelvis:0.0']))
+      .toThrow(/drape gate: "sash:pelvis:0.0" is not name:bone:from:to\[:segments\]/)
+    expect(() => parseArgs([...base, '--drape', 'sash:pelvis:0.0:0.8:9']))
+      .toThrow(/drape gate/)
+    expect(() => parseArgs([...base, '--drape', 'sash:pelvis:0.0:0.8', '--drape', 'sash:chest:0.0:0.8']))
+      .toThrow(/drape gate: two drapes share a name/)
+    const plan = resolvePlan(parseArgs([...base,
+      '--drape', 'cape:chest:0.0:0.95:3', '--drape', 'hem:pelvis:0.0:0.4']))
+    expect(plan.drapes).toEqual(['cape:chest:0.0:0.95:3', 'hem:pelvis:0.0:0.4'])
+    expect(blenderArgs(plan).join(' ')).toContain('--drape cape:chest:0.0:0.95:3 --drape hem:pelvis:0.0:0.4')
+  })
+
   it('refuses an outdir the clip gate could not find the piece in', () => {
     expect(() => resolvePlan(parseArgs([
       '--input', 'proxy:chest', '--slot', 'chest', '--body', BODY, '--piece', 'proxy-chest',
       '--outdir', 'tests/fixtures/gear/somewhere-else',
     ]))).toThrow(/argument gate: --outdir .* is not named after the piece "proxy-chest"/)
+  })
+
+  it('fits a new shoulder piece only over a lower layer on the same body', () => {
+    const base = [
+      '--input', 'proxy:shoulders', '--slot', 'shoulders', '--body', BODY,
+      '--piece', 'new-shoulders',
+    ]
+    expect(resolvePlan(parseArgs([...base, '--under', 'warden-tunic'])).under).toEqual(['warden-tunic'])
+    expect(() => resolvePlan(parseArgs([...base, '--under', 'warden-pauldrons'])))
+      .toThrow(/warden-pauldrons \(shoulders, layer 3\) is not below shoulders \(layer 3\)/)
   })
 
   it('merges the clip gates into the manifest and the report', () => {
@@ -116,8 +145,10 @@ describe.skipIf(!runnable)('the gear fitter, end to end', () => {
     it(`reproduces ${fixture.piece} byte for byte and passes every gate`, { timeout: 300_000 }, () => {
       const outdir = outdirFor(fixture.piece)
       const result = spawnSync(process.execPath, [WRAPPER,
-        '--input', `proxy:${fixture.slot}`, '--slot', fixture.slot, '--body', BODY, '--piece', fixture.piece,
+        '--input', `proxy:${fixture.source ?? fixture.slot}`, '--slot', fixture.slot,
+        '--body', BODY, '--piece', fixture.piece,
         ...(fixture.covers ? ['--covers', fixture.covers.join(',')] : []),
+        ...(fixture.drape ? ['--drape', fixture.drape] : []),
         '--outdir', outdir,
       ], { cwd: ROOT, encoding: 'utf8' })
       expect(result.status, result.stderr + result.stdout).toBe(0)
@@ -127,15 +158,38 @@ describe.skipIf(!runnable)('the gear fitter, end to end', () => {
       expect(manifest.slot).toBe(fixture.slot)
       expect(manifest.body).toBe(BODY)
       expect(manifest.covers).toEqual(fixture.covers ?? [fixture.slot])
-      // The mask is measured off the fitted piece, so a piece that hides nothing
-      // never hid the body it was fitted over.
-      expect(Object.values(manifest.hides).flat().length, 'hides').toBeGreaterThan(0)
+      const hidden = Object.values(manifest.hides).flat().length
+      if (fixture.drape) expect(hidden, 'hides').toBe(0)
+      else expect(hidden, 'hides').toBeGreaterThan(0)
       expect(manifest.gates[fixture.pair ? 'pair_has_both_sides' : 'piece_is_one_mesh']).toBe(true)
       expect(manifest.gates.toes_point_forward, 'toes').toBe(fixture.toes ? true : undefined)
       for (const gate of CLIP_GATES) expect(manifest.gates[gate], gate).toBe(true)
       expect(Object.entries(manifest.gates).filter(([, passed]) => !passed)).toEqual([])
       expect(Object.keys(manifest.alignment).sort()).toEqual(
         fixture.pair ? ['L', 'R'] : ['scale', 'translation', 'yawDegrees'])
+      // A drape ships its own bones, appended to the body's list in the body's order,
+      // each parented where the declaration said and none of them weighted to nothing.
+      const body = JSON.parse(readFileSync(join(BODY_DIR, `${BODY}.manifest.json`), 'utf8'))
+      if (!fixture.drape) {
+        expect(manifest.drapes, 'drapes').toBe(undefined)
+        expect(manifest.bones).toEqual(body.bones)
+      } else {
+        const [name, attachBone, , , segments] = fixture.drape.split(':')
+        expect(manifest.drapes).toHaveLength(1)
+        expect(manifest.drapes[0].name).toBe(name)
+        expect(manifest.drapes[0].attachBone).toBe(attachBone)
+        expect(manifest.drapes[0].bones).toEqual(
+          Array.from({ length: Number(segments) }, (_, at) => `drape_${name}_${at + 1}`))
+        expect(manifest.drapes[0].segmentLength).toBeGreaterThan(0)
+        expect(manifest.drapes[0].supports.length).toBeGreaterThan(0)
+        expect(manifest.drapes[0].supports.every((support: { terms: unknown[] }) => support.terms.length <= 12)).toBe(true)
+        expect(manifest.drapes[0].colliders.some((collider: { from: string; to: string }) =>
+          collider.from === 'chest' && collider.to === 'neck')).toBe(true)
+        expect(manifest.drapes[0].colliders.some((collider: { from: string }) =>
+          collider.from === 'clavicle_L')).toBe(true)
+        expect(manifest.bones.slice(0, body.bones.length)).toEqual(body.bones)
+        expect(manifest.bones.slice(body.bones.length)).toEqual(manifest.drapes[0].bones)
+      }
 
       for (const extension of ARTEFACTS) {
         const committed = join(ROOT, 'tests', 'fixtures', 'gear', fixture.piece, `${fixture.piece}.${extension}`)

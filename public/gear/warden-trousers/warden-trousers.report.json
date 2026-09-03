@@ -16,6 +16,8 @@
   ],
   "coverage": {
     "reachMetres": 0.06,
+    "triangles": 6000,
+    "hangingTriangles": 0,
     "hiddenVertices": {
       "Body": 1407,
       "Facial_Feature_01": 0,
@@ -112,19 +114,34 @@
     "ratio": 0.611185
   },
   "shrinkwrap": {
+    "mode": "all",
     "pieceVertices": 3028,
     "outsidePasses": [
       {
-        "movedVertices": 1593,
-        "movedFraction": 0.52609,
+        "movedVertices": 1642,
+        "movedFraction": 0.542272,
+        "carriedVertices": 529,
+        "insideAfter": 0
+      },
+      {
+        "movedVertices": 52,
+        "movedFraction": 0.017173,
+        "carriedVertices": 209,
+        "insideAfter": 0
+      },
+      {
+        "movedVertices": 0,
+        "movedFraction": 0,
+        "carriedVertices": 0,
         "insideAfter": 0
       }
     ],
-    "wholeMovedVertices": 1593,
-    "hugSelectedVertices": 1123,
-    "hugMovedVertices": 357,
-    "wholeMovedFraction": 0.52609,
-    "hugMovedFraction": 0.1179
+    "wholeMovedVertices": 1694,
+    "hugSelectedVertices": 1118,
+    "hugMovedVertices": 625,
+    "shellRadius": 0.01,
+    "wholeMovedFraction": 0.559445,
+    "hugMovedFraction": 0.206407
   },
   "weights": {
     "mode": "transfer",
@@ -158,13 +175,15 @@
         "bandFraction": 0.31572,
         "ceiling": 0.8,
         "minPeakWeight": 0.466463,
-        "meanPeakWeight": 0.86413,
-        "bandHeightMetres": 0.58966,
+        "meanPeakWeight": 0.864115,
+        "bandHeightMetres": 0.589659,
         "bandMinY": 0.467475,
-        "bandMaxY": 1.057135
+        "bandMaxY": 1.057134
       }
     }
   },
+  "drapes": [],
+  "twoSided": null,
   "rest": {
     "maxRestRotationBefore": 0,
     "maxRestRotationAfter": 0,
@@ -223,6 +242,8 @@
       "shin_R",
       "foot_R"
     ],
+    "extraBones": [],
+    "extraBoneParents": {},
     "inverseBindMaxAbsDifference": 1.79e-7,
     "triangles": 6000,
     "materials": 1,
@@ -279,13 +300,13 @@
     "manifest": "warden-trousers.manifest.json",
     "report": "warden-trousers.report.json",
     "review": "warden-trousers.review.png",
-    "sha256": "82a524f99b583677ab102313c6368b37d5e2f5c3f410cc7b3e97e2c9955ebc34"
+    "sha256": "107ab858df1853c0c22b1c1fbc019e1a91b6d99614f78df8f48912ed75fffd50"
   },
   "review": {
     "bodyVerticesInsideThePiece": {
-      "bind": 223,
-      "abduct90": 223,
-      "flex60": 223
+      "bind": 163,
+      "abduct90": 163,
+      "flex60": 163
     }
   }
 }

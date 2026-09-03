@@ -60,10 +60,20 @@ def measure(piece_path: str, body_path: str, contract: dict, source_had: dict, o
     document = piece_glb.json
     has_uv = any("TEXCOORD_0" in primitive["attributes"]
                  for mesh in document["meshes"] for primitive in mesh["primitives"])
-    inverse_difference = float(np.abs(piece.inverse_bind - body.inverse_bind).max())
+    # A drape's bones are appended to the body's, so the body's half is what has to
+    # match: the extras are its own and are recorded instead.
+    shared = len(body.names)
+    inverse_difference = (float(np.abs(piece.inverse_bind[:shared] - body.inverse_bind).max())
+                          if len(piece.names) >= shared else float(shared))
+    nodes = piece_glb.json["nodes"]
+    above = piece_glb.parents()
+    extra = {nodes[node].get("name"): nodes[above[node]].get("name") if node in above else None
+             for node in piece_glb.json["skins"][0]["joints"][shared:]}
     return {
         "bones": piece.names,
         "bodyBones": body.names,
+        "extraBones": list(extra),
+        "extraBoneParents": extra,
         "inverseBindMaxAbsDifference": round(inverse_difference, 9),
         "triangles": int(triangles),
         "materials": len(document.get("materials", [])),
@@ -82,10 +92,20 @@ def measure(piece_path: str, body_path: str, contract: dict, source_had: dict, o
     }
 
 
-def gates(measured: dict, slot: dict, facing: dict | None = None) -> dict:
-    allowed = set(slot["weights"]["allowedBones"])
+def gates(measured: dict, slot: dict, facing: dict | None = None,
+          drapes: list[dict] | None = None) -> dict:
+    drapes = drapes or []
+    declared = [name for drape in drapes for name in drape["bones"]]
+    shared = len(measured["bodyBones"])
+    allowed = set(slot["weights"]["allowedBones"]) | set(declared)
     result = {
-        "piece_joints_match_the_body": measured["bones"] == measured["bodyBones"],
+        # A piece may add bones of its own for hanging cloth, and only those: the body's
+        # joints come first in the body's order, then every declared drape bone, each
+        # parented where it was declared.
+        "piece_joints_match_the_body":
+            measured["bones"][:shared] == measured["bodyBones"]
+            and measured["extraBones"] == declared
+            and measured["extraBoneParents"] == _declared_parents(drapes),
         "inverse_binds_match_the_body": measured["inverseBindMaxAbsDifference"] < 1e-5,
         "at_most_four_influences_per_vertex": measured["maxInfluencesPerVertex"] <= 4,
         "weights_sum_to_one": abs(measured["minWeightSum"] - 1.0) <= 1e-5
@@ -108,6 +128,16 @@ def gates(measured: dict, slot: dict, facing: dict | None = None) -> dict:
     if toes:
         result["toes_point_forward"] = all(side["aheadMetres"] > 0.0 for side in toes.values())
     return result
+
+
+def _declared_parents(drapes: list[dict]) -> dict[str, str]:
+    declared: dict[str, str] = {}
+    for drape in drapes:
+        above = drape["attachBone"]
+        for name in drape["bones"]:
+            declared[name] = above
+            above = name
+    return declared
 
 
 def check(table: dict) -> None:

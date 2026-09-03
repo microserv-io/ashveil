@@ -8,19 +8,27 @@ const RUNNER = join(ROOT, 'scripts', 'art', 'gear', 'run.py')
 const CLIP = join(ROOT, 'scripts', 'art', 'gear', 'clip.ts')
 const CLIP_ARGUMENT = join('scripts', 'art', 'gear', 'clip.ts')
 const BLENDER_CANDIDATES = ['/opt/homebrew/bin/blender', '/usr/local/bin/blender', 'blender']
-const FLAGS = new Set(['--no-mask'])
+const FLAGS = new Set(['--no-mask', '--two-sided'])
 const VALUES = new Set(['--input', '--slot', '--body', '--piece', '--weights', '--covers', '--span', '--yaw', '--under', '--thumb', '--outdir'])
+const REPEATED = new Set(['--drape'])
+const SHAPES = new Set(['cape'])
 const NAME = /^[a-z0-9][a-z0-9-]*$/
 const SPAN = /^[XYZ]:[a-z0-9_]+:[a-z0-9_]+(:[0-9]+(\.[0-9]+)?)?$/
+// name:attachBone:from:to[:segments[:restDegrees]], the band that hangs and swings.
+const DRAPE = /^[a-z][a-z0-9_]*:[A-Za-z0-9_]+:[01](\.[0-9]+)?:[01](\.[0-9]+)?(:[1-6](:[0-9]+(\.[0-9]+)?)?)?$/
 
 export class GearError extends Error {}
 
 export function parseArgs(argv) {
-  const parsed = { noMask: false }
+  const parsed = { noMask: false, twoSided: false, drapes: [] }
   for (let at = 0; at < argv.length; at++) {
     const flag = argv[at]
-    if (FLAGS.has(flag)) parsed.noMask = true
-    else if (VALUES.has(flag)) {
+    if (FLAGS.has(flag)) parsed[flag === '--no-mask' ? 'noMask' : 'twoSided'] = true
+    else if (REPEATED.has(flag)) {
+      const value = argv[++at]
+      if (value === undefined) throw new GearError(`argument gate: ${flag} needs a value`)
+      parsed.drapes.push(value)
+    } else if (VALUES.has(flag)) {
       const value = argv[++at]
       if (value === undefined) throw new GearError(`argument gate: ${flag} needs a value`)
       parsed[flag.slice(2)] = value
@@ -47,6 +55,15 @@ export function parseArgs(argv) {
   if (parsed.yaw && !['0', '180'].includes(parsed.yaw)) {
     throw new GearError(`yaw gate: "${parsed.yaw}" is not 0 or 180`)
   }
+  for (const drape of parsed.drapes) {
+    if (!DRAPE.test(drape)) {
+      throw new GearError(`drape gate: "${drape}" is not name:bone:from:to[:segments]`)
+    }
+  }
+  const named = parsed.drapes.map((drape) => drape.split(':')[0])
+  if (new Set(named).size !== named.length) {
+    throw new GearError(`drape gate: two drapes share a name in ${named.join(', ')}`)
+  }
   return parsed
 }
 
@@ -62,9 +79,13 @@ export function resolvePlan(parsed, { root = ROOT, exists = existsSync } = {}) {
   const proxy = parsed.input.startsWith('proxy:')
   if (proxy) {
     const sourceSlot = parsed.input.slice('proxy:'.length)
-    if (!contract.slots[sourceSlot]) throw new GearError(`slot gate: unknown proxy slot "${sourceSlot}"`)
-    if (contract.slots[parsed.slot].pair && !contract.slots[sourceSlot].pair) {
-      throw new GearError(`pair gate: ${parsed.input} is not a pair`)
+    // A named shape is built by the fitter rather than carved off the body, for a
+    // fixture no region can stand in for: a cape has to hang off something.
+    if (!SHAPES.has(sourceSlot)) {
+      if (!contract.slots[sourceSlot]) throw new GearError(`slot gate: unknown proxy slot "${sourceSlot}"`)
+      if (contract.slots[parsed.slot].pair && !contract.slots[sourceSlot].pair) {
+        throw new GearError(`pair gate: ${parsed.input} is not a pair`)
+      }
     }
   } else {
     const input = resolve(root, parsed.input)
@@ -86,6 +107,19 @@ export function resolvePlan(parsed, { root = ROOT, exists = existsSync } = {}) {
       const path = join(root, 'public', 'gear', name, `${name}.${suffix}`)
       if (!exists(path)) throw new GearError(`under gate: no fitted piece at ${path}`)
     }
+    const manifestPath = join(root, 'public', 'gear', name, `${name}.manifest.json`)
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+    const inner = contract.slots[manifest.slot]
+    if (!inner) throw new GearError(`under gate: ${name} names unknown slot "${manifest.slot}"`)
+    if (manifest.body !== parsed.body) {
+      throw new GearError(`under gate: ${name} fits ${manifest.body}, not ${parsed.body}`)
+    }
+    if (inner.layer >= contract.slots[parsed.slot].layer) {
+      throw new GearError(
+        `under gate: ${name} (${manifest.slot}, layer ${inner.layer}) is not below ` +
+        `${parsed.slot} (layer ${contract.slots[parsed.slot].layer})`,
+      )
+    }
   }
   const outdir = parsed.outdir ? resolve(root, parsed.outdir) : join(root, 'public', 'gear', parsed.piece)
   // The clip gate is handed the directory and reads the piece out of its name,
@@ -105,8 +139,10 @@ export function blenderArgs(plan, runner = RUNNER) {
     ...(plan.span ? ['--span', plan.span] : []),
     ...(plan.yaw ? ['--yaw', plan.yaw] : []),
     ...(plan.under.length > 0 ? ['--under', plan.under.join(',')] : []),
+    ...plan.drapes.flatMap((drape) => ['--drape', drape]),
     ...(plan.thumb ? ['--thumb', plan.thumb] : []),
-    ...(plan.noMask ? ['--no-mask'] : [])]
+    ...(plan.noMask ? ['--no-mask'] : []),
+    ...(plan.twoSided ? ['--two-sided'] : [])]
 }
 
 function findBlender(exists = existsSync) {

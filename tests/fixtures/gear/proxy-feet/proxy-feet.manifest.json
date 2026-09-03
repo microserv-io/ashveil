@@ -40,6 +40,7 @@
     "feet"
   ],
   "under": [],
+  "hidesPieces": true,
   "thumb": "+Z",
   "hides": {
     "Body": [

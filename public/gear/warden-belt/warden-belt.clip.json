@@ -1,0 +1,43 @@
+{
+  "schema": "ashveil.gear-clip.v1",
+  "body": "masculine-v3",
+  "piece": "warden-belt",
+  "slot": "waist",
+  "hides": {
+    "Body": 218
+  },
+  "clip": {
+    "depth": 0.005,
+    "fraction": 0.002
+  },
+  "vertices": 5411,
+  "exempt": 190,
+  "poses": 201,
+  "cycles": {
+    "motion": {
+      "pose": "none",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    },
+    "stress": {
+      "pose": "hipflex90",
+      "phase": 0,
+      "maxDepth": 0.0064493585500280766,
+      "count": 2,
+      "fraction": 0.00036961744594344855
+    },
+    "advisory": {
+      "pose": "none",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    }
+  },
+  "gates": {
+    "clears_the_body_through_motion_cycles": true,
+    "clears_the_body_through_stress_poses": true
+  }
+}

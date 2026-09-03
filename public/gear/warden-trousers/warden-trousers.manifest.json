@@ -41,6 +41,7 @@
     "waist"
   ],
   "under": [],
+  "hidesPieces": true,
   "thumb": "+Z",
   "hides": {
     "Body": [

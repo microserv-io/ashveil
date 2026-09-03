@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 import bpy
+import numpy as np
 
 from fit import normalise
-from fit.frame import runtime_from_blender
+from fit.frame import blender_from_runtime, runtime_from_blender
 
 DEBRIS_FRACTION = 0.02
+# A shape the fitter builds itself, for a fixture no region of the body can stand in
+# for: `proxy:<slot>` is a shell carved off the body, and a cape hangs off it instead.
+SHAPES = {"cape": {"reference": "chest", "width": 0.22, "height": 0.6, "spacing": 0.01,
+                   "behind": 0.03, "yoke": 0.03, "yokeRows": 4, "neck": 0.09, "neckFade": 0.06}}
 
 
 class PieceError(RuntimeError):
@@ -72,6 +77,69 @@ def import_file(path: str) -> tuple[list, dict]:
         if obj.type != "MESH" and obj.name in bpy.data.objects:
             bpy.data.objects.remove(obj, do_unlink=True)
     return meshes, source_had
+
+
+def _region_points(loaded: dict, slot: str) -> np.ndarray:
+    meshes = {obj.name: obj for obj in loaded["meshes"]}
+    points = [runtime_from_blender(meshes[name].matrix_world @ meshes[name].data.vertices[index].co)
+              for name, indices in sorted(loaded["masks"]["slots"].get(slot, {}).items())
+              if name in meshes for index in indices]
+    if not points:
+        raise PieceError(f"region gate: the body has no {slot} region to build a shape against")
+    return np.array(points, dtype=np.float64)
+
+
+def _yoke_depth(offset: float, settings: dict) -> float:
+    """How far forward the yoke reaches at one column, and nothing at the neck.
+
+    A yoke that crosses the midline crosses the neck with it, so the shoulders carry
+    the whole of it and the middle keeps a lip that only says which way is forward.
+    """
+    inner, fade = float(settings["neck"]), float(settings["neckFade"])
+    reach = min(1.0, max(0.0, (abs(offset) - inner) / max(fade, 1e-9)))
+    return float(settings["yoke"]) * max(0.05, reach * reach * (3.0 - 2.0 * reach))
+
+
+def shape(loaded: dict, name: str) -> tuple[list, dict]:
+    """A cape as a yoke over the shoulders and a sheet hanging behind them.
+
+    A drape fixture cannot be a proxy: a shell carved off the body has no tail to
+    hang, and `back` carves nothing at all. A sheet the fitter builds itself is the
+    smallest thing that has one, and it is the same bytes on every machine. It needs
+    the yoke because a `back` piece is anchored by its front: a sheet with no depth
+    would be placed in front of the chest and hang down the body it should hang off.
+    """
+    settings = SHAPES[name]
+    region = _region_points(loaded, settings["reference"])
+    step = float(settings["spacing"])
+    columns = max(2, int(round(float(settings["width"]) / step)) + 1)
+    sheet = max(2, int(round(float(settings["height"]) / step)) + 1)
+    yoke = int(settings["yokeRows"])
+    middle = float((region[:, 0].min() + region[:, 0].max()) * 0.5)
+    top = float(region[:, 1].max())
+    back = float(region[:, 2].min()) - float(settings["behind"])
+    offsets = [(column - (columns - 1) * 0.5) * step for column in range(columns)]
+    depths = [_yoke_depth(offset, settings) for offset in offsets]
+    vertices = []
+    for row in range(yoke + sheet):
+        forward = max(0, yoke - row) / yoke
+        for column, offset in enumerate(offsets):
+            vertices.append(blender_from_runtime(
+                (middle + offset, top - max(0, row - yoke) * step, back + depths[column] * forward)))
+    rows = yoke + sheet
+    faces = []
+    for row in range(rows - 1):
+        for column in range(columns - 1):
+            first = row * columns + column
+            # Wound so the sheet's own normals face away from the body it hangs behind.
+            faces.append((first, first + 1, first + columns + 1))
+            faces.append((first, first + columns + 1, first + columns))
+    mesh = bpy.data.meshes.new(f"shape-{name}")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(mesh.name, mesh)
+    bpy.context.scene.collection.objects.link(obj)
+    return [obj], {"uvs": False, "textures": False}
 
 
 def proxy(loaded: dict, source_slot: str) -> tuple[list, dict]:

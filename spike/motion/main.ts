@@ -5,6 +5,7 @@ import {
   applyBodyMasks,
   applyGearMasks,
   removePiece,
+  updateWornPieces,
   viewMaterialsWith,
   wearPiece,
   type WornPiece,
@@ -149,6 +150,8 @@ function frame(now: number): void {
   body.group.position.set(actor.pos.x, 0, actor.pos.y)
   orientActorView(body, actor)
   body.driver.update(input, delta)
+  // After the body's own pose: a drape hangs off a bone that has already moved.
+  updateWornPieces(worn, input, delta)
 
   host.followPlayer(actor.pos, wall)
   placeCamera()
@@ -273,7 +276,12 @@ function rewear(): void {
     const loaded = gearSources.get(entry.piece)
     return loaded
       ? [wearPiece(body.group, {
-        slot: entry.slot, scene: loaded.scene, covers: loaded.covers, hides: loaded.hides,
+        slot: entry.slot,
+        scene: loaded.scene,
+        covers: loaded.covers,
+        hides: loaded.hides,
+        drapes: loaded.drapes,
+        hidesPieces: loaded.hidesPieces,
       })]
       : []
   })
@@ -317,6 +325,25 @@ function setGear(pieces: readonly string[]): void {
   for (const piece of pieces) if (gearSources.has(piece)) wearing.add(piece)
   for (const [piece, box] of gearBoxes) box.checked = wearing.has(piece)
   rewear()
+}
+
+/**
+ * The first chain of each draped piece, in degrees from hanging straight down. It
+ * is the one number that says whether the cloth is swinging, trailing or stuck
+ * against a clamp, and reading it beats guessing from a body forty pixels tall.
+ */
+function drapeLines(): string[] {
+  return worn.flatMap((piece) => {
+    const chain = piece.drapes[0]
+    if (!chain) return []
+    const swing = [...chain.state.swing].map((angle) => degrees(angle)).join(' ')
+    const side = [...chain.state.side].map((angle) => degrees(angle)).join(' ')
+    return [`${chain.name.padEnd(10).slice(0, 10)} swing ${swing} · side ${side}`]
+  })
+}
+
+function degrees(radians: number): string {
+  return ((radians * 180) / Math.PI).toFixed(1).padStart(6)
 }
 
 function wornSlots(): string {
@@ -368,6 +395,7 @@ function describe(wall: number): string {
     `body       ${bodySelect.value}`,
     `bodyScale  ${bodyScale.toFixed(6)}`,
     `gear       ${wornSlots()}`,
+    ...drapeLines(),
     `cast       ${castAt.toFixed(2)}s of ${CAST_LENGTH.toFixed(2)}`,
     `frame      ${(wall * 1000).toFixed(1)}ms`,
     '',

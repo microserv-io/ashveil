@@ -19,6 +19,22 @@ POSES = ("bind", "abduct90", "flex60")
 SWALLOW_REACH = 0.05
 
 
+def _with_drapes(pose: dict, drapes: list[dict]) -> dict:
+    """A drape bone rides its attach bone: the sheet poses a joint globally, not a chain.
+
+    Without this a pauldron's cloth stays where the bind pose left it while the arm
+    the plate is on swings away, and the sheet shows a tear the runtime never has.
+    """
+    carried = dict(pose)
+    for drape in drapes:
+        moved = pose.get(drape["attachBone"])
+        if moved is None:
+            continue
+        for name in drape["bones"]:
+            carried[name] = moved
+    return carried
+
+
 def _posed(skinned: Body, pose: dict) -> list:
     matrices = skinned.skin_matrices(pose)
     moved = []
@@ -81,7 +97,8 @@ def _scene(body: Body, piece: Body, body_points: list, piece_points: list,
 
 
 def sheet(body_path: str, piece_path: str, contract: dict, out_path: str, scratch: str,
-          hidden: dict[str, set[int]] | None = None) -> dict[str, int]:
+          hidden: dict[str, set[int]] | None = None,
+          drapes: list[dict] | None = None) -> dict[str, int]:
     """The sheet shows what the game shows, and counts the skin the piece ate."""
     hidden = hidden or {}
     body = Body(Glb(body_path), contract)
@@ -91,7 +108,7 @@ def sheet(body_path: str, piece_path: str, contract: dict, out_path: str, scratc
     swallowed = {}
     for pose_name in POSES:
         body_points = _posed(body, poses[pose_name])
-        piece_points = _posed(piece, poses[pose_name])
+        piece_points = _posed(piece, _with_drapes(poses[pose_name], drapes or []))
         swallowed[pose_name] = _swallowed(body, body_points, piece_points, piece, hidden)
         row = []
         for view, (eye, target) in VIEWS.items():

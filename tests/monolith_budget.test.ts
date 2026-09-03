@@ -36,13 +36,29 @@ const BUDGETS: Readonly<Record<string, number>> = {
   // All of it runs on attach; the frame path only sees the extra draw call. Down
   // from 180 since the masking moved to gearcover.ts, which is where the layer
   // table's own reader lives too.
-  'src/render/gear.ts': 165,
+  // Raised once for the drape: a slot's clearance table and the wiring that hands a
+  // piece's chain, and what it may hide, to the modules that own each.
+  'src/render/gear.ts': 200,
+  // Hanging cloth, in four: the pendulum, the capsules it is pushed out of, the
+  // bind-time binding onto a real skeleton, and the frame path that drives them.
+  // The collision left drape.ts when it outgrew it, which is why that one came down.
+  // The other three were raised once each, when gravity and the capsules landed: a
+  // chain that hangs by gravity needs its rest line and its limbs read every step.
+  'src/render/drape.ts': 220,
+  'src/render/drapecollide.ts': 175,
+  'src/render/drapebones.ts': 290,
+  'src/render/drapestep.ts': 160,
+  // Exact fitted surface supports are a separate solver because their LBS evaluator
+  // and bounded angular search share no coordinator state with the pendulum.
+  'src/render/drapesurface.ts': 340,
   // Which mesh covers which, and the triangle grid the answer is searched with.
   // Most of it is the search: Ericson's closest point, Moller-Trumbore, ray parity
   // and the uniform grid the fitter's clip gate shares. Raised once when parity
   // replaced a normal ray that hid triangles a viewer could still find an angle on;
   // splitting the grid out would split the scratch arrays three readers share.
-  'src/render/gearcover.ts': 620,
+  // Raised once more when a drape's own triangles had to be kept out of the
+  // covering surface: cloth that swings cannot be trusted to keep covering.
+  'src/render/gearcover.ts': 665,
   'src/render/skeletonbones.ts': 60,
   'src/render/riginput.ts': 100,
   // The procedural pose generator. `clips.ts` is the pose table and so exempt;

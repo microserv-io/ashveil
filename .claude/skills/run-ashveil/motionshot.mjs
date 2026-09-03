@@ -16,8 +16,7 @@ await page.goto(URL, { waitUntil: 'load' })
 await page.waitForFunction(() => document.querySelector('canvas') !== null, null, { timeout: 30000 })
 await page.waitForTimeout(3000)
 
-async function shot(name, { driver, state, speed }) {
-  await page.selectOption('#driver', driver)
+async function shot(name, { state, speed }) {
   await page.selectOption('#state', state)
   await page.evaluate((value) => {
     const input = document.getElementById('speed')
@@ -30,10 +29,9 @@ async function shot(name, { driver, state, speed }) {
   console.log(`wrote ${OUT}/${name}.png`)
 }
 
-await shot('procedural-walk', { driver: 'procedural', state: 'moving', speed: 1.6 })
-await shot('procedural-run', { driver: 'procedural', state: 'moving', speed: 5.5 })
-await shot('procedural-idle', { driver: 'procedural', state: 'idle', speed: 0 })
-await shot('clip-run', { driver: 'clip', state: 'moving', speed: 5.5 })
+await shot('procedural-walk', { state: 'moving', speed: 1.6 })
+await shot('procedural-run', { state: 'moving', speed: 5.5 })
+await shot('procedural-idle', { state: 'idle', speed: 0 })
 
 if (errors.length) {
   console.error(`FAIL console errors:\n${errors.join('\n')}`)

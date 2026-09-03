@@ -4,13 +4,14 @@
   "piece": "warden-tunic",
   "slot": "chest",
   "hides": {
-    "Body": 2399
+    "Body": 2394
   },
   "clip": {
     "depth": 0.005,
     "fraction": 0.002
   },
-  "vertices": 6756,
+  "vertices": 6760,
+  "exempt": 0,
   "poses": 201,
   "cycles": {
     "motion": {
@@ -31,8 +32,8 @@
       "pose": "abduct150",
       "phase": 0,
       "maxDepth": 0.024633353628574647,
-      "count": 161,
-      "fraction": 0.023830669034931914
+      "count": 163,
+      "fraction": 0.024112426035502958
     }
   },
   "gates": {

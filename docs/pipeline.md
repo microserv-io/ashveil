@@ -424,7 +424,7 @@ fingertip, the narrowest cross section, cuff — land on the body's, which lets 
 lengthen or shorten without dragging the cuff with them. The narrowest cross section is
 measured about each slice's own centroid rather than about the axis, or a roll about
 that axis moves the station it finds. Across the axis it slices the piece every 2cm and
-**carries each slice onto the body's own cross section** before widening it until it
+**carries the piece onto the body's own cross section** before widening it until it
 clears by the slot's clearance. **The widening is a profile, not a factor per slice.**
 A factor per slice ripples: neighbouring cross sections of a source differ by more than
 the body does, and the piece came out corrugated, faint rings of different girth down
@@ -440,6 +440,23 @@ thumb, or the 305 forearm-weighted vertices this body carries 10cm in front of i
 which widened the glove's palm to palm-plus-spur. A percentile per lane cannot see that
 one — it is a sixth of the section and all of it at one end.
 
+**A piece that replaces the skin under it keeps its own shape.** `slot.shrinkwrap` says
+how much of the correction that skin gets: `all` everywhere by default, and `unreplaced`
+for `hands`, where the outside pass and the hug fade out over the last 3cm before the
+skin the glove stands in for. A glove is not worn over a hand, it replaces it, so
+wrapping it onto skin nobody sees only gives the glove the hand's shape — a fat thumb
+and a crumpled pinky edge — instead of its own at the hand's size, which the tube fit
+already gave it. The cuff is worn over a real forearm and is still corrected onto it,
+which is what the fade is for; and `piece_sits_off_the_skin_at_bind` measures against
+skin the piece does not hide, so the replaced hand never enters the gate either way.
+
+`tube.radialKnots` says where the girth is measured, in station space: `0` is the first
+station, `1` the second, `1.5` half way between the second and third. `hands` measures at
+`[0.0, 1.5]` — the cuff and the palm — so its hand is one factor and its cuff another,
+with a straight line between them. A factor per station let the fingertips ask for their
+own ratio, and the glove's curled source fingers against a flat hand fattened the thumb.
+The carry never uses these knots: it is where the piece sits, not what shape it is.
+
 `tube.radial` says what the widening is for: `enclose` never shrinks a knot, so the piece
 ends up round whatever it holds, and `match` sizes it to the body's own cross section
 within [0.85, 1.35] and may shrink one. A slot whose `replaces` already takes the skin
@@ -450,9 +467,122 @@ to layer over a cuff. The report carries the knot factors and the raw ratio per 
 which is how the source is told from the fit. The carrying is what makes a long
 cuff wearable: widening an off-centre slice about the axis only throws it further off,
 which stood the gauntlet's cuff 7cm clear of the arm and belled it out to reach back —
-the funnel the reviewer saw from the side. A boot bends at the ankle, so its foot and
+the funnel the reviewer saw from the side. **`tube.centre` says how a piece is carried**:
+`none` everywhere by default, `limb` for a shaft that has to follow a bone along its
+length, and `cuff` for `hands` — one rigid shift for the whole island, measured at the
+cuff station, which centres the cuff on the forearm and moves the hand with it. A shift
+per slice follows the body's own wandering centroid rather than the limb — 4.2cm of it
+down this shin — and the boot's shaft came out kinked and crumpled instead of straight.
+Knotting it at the stations fixed that and left a smaller one: a hand's own cross section
+is centred toward the thumb of the wrist's, so the glove's hand was carried a few
+millimetres to the pinky side of its cuff and the wrist line had a visible kink in it.
+A piece whose skin the slot replaces is one object at the body's size; where it sits is a
+property of the whole of it, not of each station. A boot bends at the ankle, so its foot and
 its shaft are two axes and only the shaft is tubed: `feet` carries the axis and a band
 above the ankle and no station stretch, and the foot is left as the source drew it.
+
+**The outside correction runs to a fixed point.** It used to stop as soon as the piece
+was clear of the region it covers, and a region is generous: the pauldron was outside the
+`shoulders` region after one pass and still 7.3mm inside the trapezius skin it does not
+hide, which is the skin `piece_sits_off_the_skin_at_bind` measures against. So the loop
+now ends when a pass stops moving the piece, up to eight passes, and the per-pass counts
+stay in the report. **A weighted pass is applied once**, because repeating a correction
+faded to a fraction converges on the unfaded one and erases the fade.
+
+**Drapes: the cloth that hangs.** A sash below a belt band, the cloth under a pauldron,
+everything below a cape's yoke — none of it is skin over a bone, and weighting it to one
+makes it a plate. `--drape name:attachBone:from:to[:segments[:restDegrees]]`, repeatable, gives that
+band its own short chain of bones: `from` and `to` are fractions of the island's own Y
+extent after alignment, so `sash:pelvis:0.0:0.58:2` hangs the lower 58 percent of the
+belt off the pelvis in two segments. For a pair the drape is declared once for the left
+island and the fitter swaps `_L` for `_R` and names the drapes `<name>_L` and `<name>_R`.
+
+The chain's root is the centroid of the vertices in the 1.5cm ring below the `to` line,
+and it runs from there to the band's own bottom, split into equal bones
+`drape_<name>_<n>` parented under the attach bone and then each under the one above.
+Inside the band a vertex hangs between the two chain joints it lies between, a rope with
+two influences; across the 3cm below the `to` line those weights blend into the body
+weights the transfer gave it, so the root does not tear, and above the line nothing
+changes. The exported skin is **the body's joints in the body's order, then the drape
+bones appended** — the runtime binds the piece to the body's skeleton by index and adds
+the extras under the attach bone — and `piece_joints_match_the_body` is the gate that
+says so: the first N joints are the body's, every extra is a declared drape bone, and
+each is parented where it was declared. The manifest carries a `drapes` block per chain:
+its bones, the segment length, the root at bind and `toward`, the horizontal direction
+from the root to the nearest skin, which is the way a swing would carry the cloth into
+the body and therefore the way the runtime clamps it hardest. The review sheet renders
+the chain at rest; motion is the clip gate's job.
+
+The centreline is not the collision shape. The fitter samples every draped triangle at
+its vertices, edge midpoints and centroid, then deterministically reduces those samples
+to at most 24 supports per segment by farthest-point coverage. Each support retains up to
+12 exact LBS terms: a term carries its source vertex position, joint and barycentric
+weight, so adjacent chain weights and the body-to-drape fade deform exactly as the
+rendered triangle does. The manifest schema enforces both bounds. This is why a wide
+triangle cannot cross the body merely because its corners or the chain down its middle
+remain clear.
+
+Collision geometry is body-specific too. A fitted manifest carries capsule radii measured
+from the target body's weighted skin for the torso, chest-to-neck shoulder shelf,
+clavicles, arms and legs, plus a nearest fitted-body LBS anchor for each surface support.
+There are no masculine-v3 thickness constants in the frame path. `bindDrapes` turns the
+manifest into fixed typed arrays once; `stepDrapeChain` then uses bounded deterministic
+coordinate descent over both swing axes, re-skinning descendant supports after every
+candidate. A fitted drape with surface supports does not also collide its invisible
+centreline: doing both drove short pauldron chains to their cone limit and visibly warped
+the flap even though its surface was already clear. Legacy definitions without supports
+keep centreline collision. Runtime and the clip gate call the same function, and the frame
+path allocates nothing.
+
+Shoulder plates keep the body's transferred clavicle, shoulder-helper and upper-arm blend.
+Sharpening that blend into `stiff` weights made the plates move differently from the skin
+under frost nova even while their hanging skirt cleared; the shoulders slot therefore uses
+`transfer`, while the skirt's drape weights are still laid over that body blend below its
+seam.
+
+**The correction moves a garment's two walls together.** A cape is cloth with two
+sides a few millimetres apart, and the outside pass is a nearest-point projection: the
+inner wall starts deep in the body and lands on the skin plus the clearance, the outer
+wall was already clear and does not move, and the two end up in the same place. The
+shell is then flat, the walls interleave, and the piece renders as shards of its own
+lining — which is what it looked like, and no repaint of the texture could have fixed
+it, because the source's own texture was already right. So a vertex takes the largest
+displacement of any vertex within `slot.shellRadius` of it (1cm by default, 0 disables),
+provided that carrying it does not bring it closer to the skin than its own projection
+did. A wall rides out with the wall beside it and the fabric keeps its thickness. Wider
+is not better: at 2cm the carry walks a hood's crown 5.7mm and a cape's collar 8.7mm
+into the skin, past what those slots allow, so a piece thicker than a centimetre asks
+for it by name. The per-pass count of carried vertices is in the report.
+
+**Cloth that swings hides nothing.** Body coverage is measured off the *fixed* part of a
+piece only: every triangle with a corner weighted mostly to a `drape_` bone is left out of
+both the ray test and the swallow test, because whatever a drape covers at bind is skin the
+game has to draw the moment it swings. On this cape that is 4292 of 6000 triangles, and its
+`hides` fell from 1778 body vertices to 434 — the yoke's own footprint, which is the part
+that never moves. The report carries both counts. `slot.hidesPieces` says the same thing
+one layer up, for the runtime rather than the body: `back` is `false`, because a cape hangs
+behind everything and can never take a piece under it off the draw. It rides in the manifest.
+
+**Rest tilt.** The last field of `--drape` is `restDegrees`, how far off the body the chain
+hangs at rest: a cape that hangs plumb sits on the seat and a sash on the thigh, and neither
+needs motion to show it. The chain is hung that far from `toward` about the root, and the
+band is turned with it — by the whole angle at the hem and none of it at the top, because a
+band that rings the body has sides off the hinge and turning those rigidly lifts them into
+the shoulders it hangs from. The hem lands where the chain's tip does either way. It suits a
+band that hangs to one side. The current pauldron, belt and cape all ship at 0 degrees:
+the cape's tilt walks its hem into free space behind the legs where the ray test cannot
+answer over an open garment shell, and the belt's sash tilts into the tunic's skirt. A
+piece can enable the tilt once the garment beneath it provides a closed surface.
+
+**Two-sided cloth.** `--two-sided` repaints a piece whose lining and outer face were baked
+from each other: each triangle is called outer or inner by its own normal against the
+horizontal direction from the spine axis, the two dyes are found by clustering the covered
+texels in hue, the outside takes whichever it is mostly painted in and the lining takes the
+other, and every texel a side owns is set to that dye at its own brightness so the baked
+folds survive. Texels no triangle covers are left alone. It is opt-in and recorded in the
+manifest, and it is not what fixes a shell whose two walls have been flattened into each
+other by the outside pass — that reads as shards of both colours no matter what the texture
+says, and the fix belongs upstream of the paint.
 
 **Replacing rather than covering.** A slot's `replaces`, written in the same
 region-rule shape as `region`, names the skin the piece stands in for: the hand for
@@ -510,12 +640,14 @@ raises an arm past 90. An advisory pose is still walked and still written to
 deeper than `clip.depth` inside the body the rim rule still counts — a hidden or rim
 triangle still tells a vertex which way is out, but never counts as a hit.
 
-**Proxy fixtures.** `--input proxy:feet` and `--input proxy:head` carve a piece from
+**Proxy fixtures.** `--input proxy:feet`, `proxy:head` and `proxy:cape` build a piece from
 the body's own slot region, offset outward along its vertex normals, so a fitter run
 needs no paid Tripo asset (alignment forced to `factor` 1.0, zero offsets — a proxy is
 already the body's own shape). They exist to prove the fitter reproduces byte for byte
-(`tests/fixtures/gear/proxy-{feet,head}/`); the head proxy is the one whose `hides`
-spans five body meshes. A proxy is a region's shell, not a garment: `proxy:legs` has no
+(`tests/fixtures/gear/proxy-{feet,head,cape}/`); the head proxy is the one whose `hides`
+spans five body meshes. `proxy:cape` builds a narrow back-only yoke and sheet, then proves
+surface-supported drapes reproduce and clear every motion without masking the body.
+A proxy is a region's shell, not a garment: `proxy:legs` has no
 waistband, so its top rim presses into the belly at 90 degrees of hip flexion and it
 fails the clip gate honestly — it only ever passed while `--covers legs,waist` masked
 that belly away. They are fixtures, not production art, and the review page never
@@ -529,6 +661,8 @@ always further out than what it covers, and `tests/art_contracts.test.ts` refuse
 contract where a higher layer sits closer in. The ladder is ceilinged by what the
 pieces carry: above 0.016 the hood loses `clears_the_body_through_motion_cycles`,
 because a mantle pushed off the skin stops hiding the shoulder it is measured against.
+Shoulders deliberately share headgear's tier above chest: a tunic can never mask a
+pauldron, while a pauldron may mask chest geometry underneath it.
 `--under <piece,...>` names the fitted pieces this one is worn over: their shells
 join the body in the surface the shrinkwrap pushes out of and the bind gate measures
 against, so a hood is fitted around a tunic collar rather than through it, and the
@@ -536,6 +670,20 @@ manifest records what it was fitted over. Coverage stays body-only — gear neve
 gear at fit time, because which pieces are worn together is a runtime question. It
 follows that a set is fitted from the skin outward: trousers, then the tunic under
 which they sit, then the hood.
+
+Shoulders use the same command for every set; the asset names are inputs, not fitter
+rules:
+
+```bash
+npm run art:gear -- --input <shoulders.glb> --slot shoulders --body <body> \
+  --piece <name> --under <chest-piece> --drape <name>:upper_arm_L:<from>:<to>:<segments>
+```
+
+The fitter refuses an under-piece from another body or the same/higher layer, measures
+the smallest upward cap seat that clears the lower shell, and records both the dependency
+and the per-side measurement in the manifest. The cap keeps its transferred clavicle,
+shoulder-helper and upper-arm weights; only the declared hanging band receives drape
+weights, so choosing its attach bone never rewrites the fixed plate.
 
 `node --import tsx scripts/art/gear/clip.ts --set <dir> --set <dir>` skins a worn set
 through bind, walk and run and counts the vertices of a higher-layer piece more than

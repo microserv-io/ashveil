@@ -16,21 +16,23 @@
   ],
   "coverage": {
     "reachMetres": 0.06,
+    "triangles": 4999,
+    "hangingTriangles": 0,
     "hiddenVertices": {
-      "Body": 1058,
-      "Facial_Feature_01": 102,
-      "Facial_Feature_02": 27,
-      "Facial_Feature_03": 12,
-      "Facial_Feature_04": 24,
-      "Head": 1240
+      "Body": 1041,
+      "Facial_Feature_01": 80,
+      "Facial_Feature_02": 25,
+      "Facial_Feature_03": 17,
+      "Facial_Feature_04": 27,
+      "Head": 1206
     },
     "measuredVertices": {
-      "Body": 1058,
-      "Facial_Feature_01": 102,
-      "Facial_Feature_02": 27,
-      "Facial_Feature_03": 12,
-      "Facial_Feature_04": 24,
-      "Head": 1240
+      "Body": 1041,
+      "Facial_Feature_01": 80,
+      "Facial_Feature_02": 25,
+      "Facial_Feature_03": 17,
+      "Facial_Feature_04": 27,
+      "Head": 1206
     },
     "replacedVertices": {
       "Body": 0,
@@ -67,18 +69,18 @@
         1.450391,
         -0.035949
       ],
-      "insideVerticesBeforeShrinkwrap": 1324,
-      "insideFractionBeforeShrinkwrap": 0.260733,
-      "deepInsideVerticesBeforeShrinkwrap": 978,
-      "deepInsideFractionBeforeShrinkwrap": 0.192596,
-      "meanSurfaceDistanceMetres": 0.021433,
+      "insideVerticesBeforeShrinkwrap": 1341,
+      "insideFractionBeforeShrinkwrap": 0.26408,
+      "deepInsideVerticesBeforeShrinkwrap": 979,
+      "deepInsideFractionBeforeShrinkwrap": 0.192792,
+      "meanSurfaceDistanceMetres": 0.02141,
       "insideVerticesByYaw": {
-        "0": 1324,
-        "180": 986
+        "0": 1341,
+        "180": 984
       },
       "meanSurfaceDistanceByYaw": {
-        "0": 0.021433,
-        "180": 0.022827
+        "0": 0.02141,
+        "180": 0.022713
       },
       "anchorResidualMetres": {
         "X": 0,
@@ -106,9 +108,9 @@
   "regionEnclosed": {
     "all": {
       "regionVertices": 1236,
-      "withinPieceBox": 1236,
-      "insideVertices": 625,
-      "insideFraction": 0.505663
+      "withinPieceBox": 1234,
+      "insideVertices": 615,
+      "insideFraction": 0.498379
     }
   },
   "decimation": {
@@ -117,53 +119,63 @@
     "ratio": 0.501655
   },
   "shrinkwrap": {
+    "mode": "all",
     "pieceVertices": 2581,
     "outsidePasses": [
       {
-        "movedVertices": 1346,
-        "movedFraction": 0.521503,
-        "insideAfter": 67
+        "movedVertices": 1432,
+        "movedFraction": 0.554824,
+        "carriedVertices": 845,
+        "insideAfter": 58
       },
       {
-        "movedVertices": 541,
-        "movedFraction": 0.209609,
-        "insideAfter": 10
-      },
-      {
-        "movedVertices": 320,
-        "movedFraction": 0.123983,
-        "insideAfter": 12
-      },
-      {
-        "movedVertices": 241,
-        "movedFraction": 0.093375,
+        "movedVertices": 615,
+        "movedFraction": 0.23828,
+        "carriedVertices": 529,
         "insideAfter": 6
       },
       {
-        "movedVertices": 193,
-        "movedFraction": 0.074777,
-        "insideAfter": 5
+        "movedVertices": 399,
+        "movedFraction": 0.154591,
+        "carriedVertices": 371,
+        "insideAfter": 6
       },
       {
-        "movedVertices": 173,
-        "movedFraction": 0.067028,
-        "insideAfter": 3
-      },
-      {
-        "movedVertices": 161,
-        "movedFraction": 0.062379,
-        "insideAfter": 3
-      },
-      {
-        "movedVertices": 154,
-        "movedFraction": 0.059667,
+        "movedVertices": 230,
+        "movedFraction": 0.089113,
+        "carriedVertices": 236,
         "insideAfter": 1
+      },
+      {
+        "movedVertices": 172,
+        "movedFraction": 0.066641,
+        "carriedVertices": 184,
+        "insideAfter": 4
+      },
+      {
+        "movedVertices": 136,
+        "movedFraction": 0.052693,
+        "carriedVertices": 173,
+        "insideAfter": 1
+      },
+      {
+        "movedVertices": 117,
+        "movedFraction": 0.045331,
+        "carriedVertices": 132,
+        "insideAfter": 2
+      },
+      {
+        "movedVertices": 110,
+        "movedFraction": 0.042619,
+        "carriedVertices": 124,
+        "insideAfter": 0
       }
     ],
-    "wholeMovedVertices": 3129,
+    "wholeMovedVertices": 3211,
     "hugSelectedVertices": 0,
     "hugMovedVertices": 0,
-    "wholeMovedFraction": 1.212321,
+    "shellRadius": 0.01,
+    "wholeMovedFraction": 1.244091,
     "hugMovedFraction": 0
   },
   "weights": {
@@ -201,12 +213,14 @@
         "bandVertices": 0,
         "bandFraction": 0,
         "ceiling": 0.8,
-        "minPeakWeight": 0.993747,
-        "meanPeakWeight": 0.999984
+        "minPeakWeight": 0.991587,
+        "meanPeakWeight": 0.999981
       }
     },
     "stiffness": 3
   },
+  "drapes": [],
+  "twoSided": null,
   "rest": {
     "maxRestRotationBefore": 0,
     "maxRestRotationAfter": 0,
@@ -265,6 +279,8 @@
       "shin_R",
       "foot_R"
     ],
+    "extraBones": [],
+    "extraBoneParents": {},
     "inverseBindMaxAbsDifference": 1.79e-7,
     "triangles": 4999,
     "materials": 1,
@@ -290,7 +306,7 @@
     },
     "bindClearance": {
       "insideVertices": 0,
-      "disagreeingVertices": 124,
+      "disagreeingVertices": 79,
       "maxPenetrationMetres": 0,
       "deepestPoint": null
     }
@@ -317,13 +333,13 @@
     "manifest": "warden-hood.manifest.json",
     "report": "warden-hood.report.json",
     "review": "warden-hood.review.png",
-    "sha256": "3802a4c605dc4c5e71fa2cbaaaf9d7b133d84b64ba3224e8a6f00a00431967bf"
+    "sha256": "a7508961d978b28f0de6e89f31218dc185dfa5d665a90e29eb2499e7e73f71cb"
   },
   "review": {
     "bodyVerticesInsideThePiece": {
-      "bind": 498,
-      "abduct90": 496,
-      "flex60": 498
+      "bind": 410,
+      "abduct90": 410,
+      "flex60": 407
     }
   }
 }

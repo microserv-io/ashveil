@@ -341,6 +341,19 @@ export interface LayeredMesh {
   /** The slot's layer: a higher one is worn over a lower one and hides it. */
   readonly layer: number
   readonly mesh: THREE.SkinnedMesh
+  /**
+   * False for a piece that covers nothing below it however it is layered. Hiding
+   * asks whether a point is inside the piece above, and a cape is a sheet rather
+   * than a solid: it reads as enclosing the tunic's whole back, cuts it away, and
+   * then swings off to show the hole through its own lining.
+   */
+  readonly hidesPieces?: boolean
+  /**
+   * Where this piece's drape bones start in its skin, if it has any. Cloth that
+   * swings cannot be trusted to keep covering what was behind it a frame ago, so
+   * its triangles are left out of the covering surface even when the rest hides.
+   */
+  readonly drapeJoints?: number
 }
 
 /**
@@ -356,9 +369,8 @@ export function applyPieceMasks(worn: readonly LayeredMesh[]): void {
     const inner = attributesOf(base)
     for (const other of worn) {
       if (other.layer <= wear.layer || other.mesh === wear.mesh) continue
-      for (const vertex of coveredVertices(inner, attributesOf(baseGeometryOf(other.mesh)))) {
-        covered.add(vertex)
-      }
+      if (other.hidesPieces === false) continue
+      for (const vertex of coveredVertices(inner, coveringOf(other))) covered.add(vertex)
     }
     wear.mesh.geometry = covered.size === 0 ? base : maskedGeometry(base, covered)
   }
@@ -432,6 +444,38 @@ const span = new Int32Array(6)
 const AABB = new Float64Array(6)
 const CLOSEST = new Float32Array(3)
 const ATTRIBUTES = new WeakMap<THREE.BufferGeometry, CoveringMesh & CoveredMesh>()
+
+/**
+ * The surface a piece covers with. Everything but its drape: a triangle a chain
+ * carries is somewhere else by the next frame, so what it happened to be over when
+ * the pieces were put on is not a hole anyone should cut.
+ */
+function coveringOf(piece: LayeredMesh): CoveringMesh {
+  const base = baseGeometryOf(piece.mesh)
+  const whole = attributesOf(base)
+  if (piece.drapeJoints === undefined) return whole
+  const cached = SETTLED.get(base)
+  if (cached) return cached
+  const skin = base.getAttribute('skinIndex')
+  const kept: number[] = []
+  for (let at = 0; at < whole.indices.length; at += 3) {
+    if (!swings(skin, whole.indices, at, piece.drapeJoints)) kept.push(...whole.indices.subarray(at, at + 3))
+  }
+  const settled = { positions: whole.positions, indices: new Uint32Array(kept) }
+  SETTLED.set(base, settled)
+  return settled
+}
+
+/** A triangle swings when any corner carries any influence from the chain. */
+function swings(skin: THREE.BufferAttribute | THREE.InterleavedBufferAttribute, indices: Uint32Array, at: number, from: number): boolean {
+  for (let corner = 0; corner < 3; corner++) {
+    const vertex = indices[at + corner]!
+    for (let lane = 0; lane < 4; lane++) if (skin.getComponent(vertex, lane) >= from) return true
+  }
+  return false
+}
+
+const SETTLED = new WeakMap<THREE.BufferGeometry, CoveringMesh>()
 
 function attributesOf(geometry: THREE.BufferGeometry): CoveringMesh & CoveredMesh {
   const cached = ATTRIBUTES.get(geometry)

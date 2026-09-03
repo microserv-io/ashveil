@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import { applyPieceMasks, coveredVertices, COVER_DEPTH } from '../src/render/gearcover'
+import { SLOT_LAYERS } from '../src/render/gear'
 
 /**
  * Piece over piece: the hiding the fitter cannot bake, because which pieces are
@@ -104,5 +105,26 @@ describe('hiding a worn piece under the pieces over it', () => {
 
     applyPieceMasks([{ layer: 3, mesh: inner }, { layer: 3, mesh: outer }])
     expect(triangles(inner)).toBe(whole)
+  })
+
+  it('layers shoulders above chest at the same tier as headgear', () => {
+    expect(SLOT_LAYERS.shoulders).toBe(SLOT_LAYERS.head)
+    expect(SLOT_LAYERS.shoulders).toBeGreaterThan(SLOT_LAYERS.chest)
+
+    const shoulderInsideChest = meshOf(shell(0.05))
+    applyPieceMasks([
+      { layer: SLOT_LAYERS.chest, mesh: meshOf(shell(0.08)) },
+      { layer: SLOT_LAYERS.shoulders, mesh: shoulderInsideChest },
+    ])
+    expect(triangles(shoulderInsideChest), 'chest cannot hide shoulders').toBeGreaterThan(0)
+
+    const chestInsideShoulder = meshOf(shell(0.05))
+    const shoulder = meshOf(shell(0.08))
+    applyPieceMasks([
+      { layer: SLOT_LAYERS.chest, mesh: chestInsideShoulder },
+      { layer: SLOT_LAYERS.shoulders, mesh: shoulder },
+    ])
+    expect(triangles(chestInsideShoulder), 'shoulders hide lower layers').toBe(0)
+    expect(triangles(shoulder)).toBeGreaterThan(0)
   })
 })

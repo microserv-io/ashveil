@@ -18,8 +18,10 @@
   ],
   "coverage": {
     "reachMetres": 0.06,
+    "triangles": 7772,
+    "hangingTriangles": 0,
     "hiddenVertices": {
-      "Body": 2399,
+      "Body": 2394,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -27,7 +29,7 @@
       "Head": 0
     },
     "measuredVertices": {
-      "Body": 2399,
+      "Body": 2394,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -85,17 +87,17 @@
         0.964817,
         -0.019322
       ],
-      "insideVerticesBeforeShrinkwrap": 2519,
-      "insideFractionBeforeShrinkwrap": 0.600906,
+      "insideVerticesBeforeShrinkwrap": 2520,
+      "insideFractionBeforeShrinkwrap": 0.601145,
       "deepInsideVerticesBeforeShrinkwrap": 1993,
       "deepInsideFractionBeforeShrinkwrap": 0.475429,
-      "meanSurfaceDistanceMetres": 0.012015,
+      "meanSurfaceDistanceMetres": 0.012012,
       "insideVerticesByYaw": {
-        "0": 2519,
+        "0": 2520,
         "180": 1764
       },
       "meanSurfaceDistanceByYaw": {
-        "0": 0.012015,
+        "0": 0.012012,
         "180": 0.02839
       },
       "anchorResidualMetres": {
@@ -119,8 +121,8 @@
     "all": {
       "regionVertices": 1786,
       "withinPieceBox": 1786,
-      "insideVertices": 1567,
-      "insideFraction": 0.87738
+      "insideVertices": 1559,
+      "insideFraction": 0.8729
     }
   },
   "decimation": {
@@ -129,54 +131,64 @@
     "ratio": 1
   },
   "shrinkwrap": {
+    "mode": "all",
     "pieceVertices": 4192,
     "outsidePasses": [
       {
-        "movedVertices": 3370,
-        "movedFraction": 0.803912,
-        "insideAfter": 80
+        "movedVertices": 3464,
+        "movedFraction": 0.826336,
+        "carriedVertices": 2168,
+        "insideAfter": 89
       },
       {
-        "movedVertices": 693,
-        "movedFraction": 0.165315,
+        "movedVertices": 856,
+        "movedFraction": 0.204198,
+        "carriedVertices": 1203,
+        "insideAfter": 3
+      },
+      {
+        "movedVertices": 276,
+        "movedFraction": 0.06584,
+        "carriedVertices": 563,
         "insideAfter": 9
       },
       {
-        "movedVertices": 251,
-        "movedFraction": 0.059876,
-        "insideAfter": 13
-      },
-      {
-        "movedVertices": 243,
-        "movedFraction": 0.057968,
-        "insideAfter": 7
-      },
-      {
-        "movedVertices": 240,
-        "movedFraction": 0.057252,
-        "insideAfter": 16
-      },
-      {
-        "movedVertices": 238,
-        "movedFraction": 0.056775,
+        "movedVertices": 249,
+        "movedFraction": 0.059399,
+        "carriedVertices": 343,
         "insideAfter": 5
       },
       {
-        "movedVertices": 238,
-        "movedFraction": 0.056775,
-        "insideAfter": 16
+        "movedVertices": 247,
+        "movedFraction": 0.058922,
+        "carriedVertices": 228,
+        "insideAfter": 14
       },
       {
-        "movedVertices": 236,
-        "movedFraction": 0.056298,
-        "insideAfter": 8
+        "movedVertices": 252,
+        "movedFraction": 0.060115,
+        "carriedVertices": 173,
+        "insideAfter": 4
+      },
+      {
+        "movedVertices": 239,
+        "movedFraction": 0.057013,
+        "carriedVertices": 144,
+        "insideAfter": 13
+      },
+      {
+        "movedVertices": 249,
+        "movedFraction": 0.059399,
+        "carriedVertices": 142,
+        "insideAfter": 4
       }
     ],
-    "wholeMovedVertices": 5509,
-    "hugSelectedVertices": 1145,
-    "hugMovedVertices": 286,
-    "wholeMovedFraction": 1.31417,
-    "hugMovedFraction": 0.068225
+    "wholeMovedVertices": 5832,
+    "hugSelectedVertices": 1138,
+    "hugMovedVertices": 906,
+    "shellRadius": 0.01,
+    "wholeMovedFraction": 1.391221,
+    "hugMovedFraction": 0.216126
   },
   "weights": {
     "mode": "transfer",
@@ -204,17 +216,19 @@
     "band": {
       "warden-tunic": {
         "vertices": 4192,
-        "bandVertices": 2264,
-        "bandFraction": 0.540076,
+        "bandVertices": 2238,
+        "bandFraction": 0.533874,
         "ceiling": 0.8,
-        "minPeakWeight": 0.295446,
-        "meanPeakWeight": 0.757067,
-        "bandHeightMetres": 0.59964,
-        "bandMinY": 0.965003,
-        "bandMaxY": 1.564643
+        "minPeakWeight": 0.305477,
+        "meanPeakWeight": 0.758351,
+        "bandHeightMetres": 0.598839,
+        "bandMinY": 0.966684,
+        "bandMaxY": 1.565523
       }
     }
   },
+  "drapes": [],
+  "twoSided": null,
   "rest": {
     "maxRestRotationBefore": 0,
     "maxRestRotationAfter": 0,
@@ -273,17 +287,19 @@
       "shin_R",
       "foot_R"
     ],
+    "extraBones": [],
+    "extraBoneParents": {},
     "inverseBindMaxAbsDifference": 1.79e-7,
     "triangles": 7772,
     "materials": 1,
     "meshes": 1,
     "sides": {
-      "L": 3,
-      "R": 2,
+      "L": 2,
+      "R": 3,
       "islands": 5
     },
     "maxInfluencesPerVertex": 4,
-    "minWeightSum": 0.99999988,
+    "minWeightSum": 0.999999875,
     "maxWeightSum": 1.000000119,
     "influencingBones": [
       "chest",
@@ -305,13 +321,13 @@
       "textures": true
     },
     "bindClearance": {
-      "insideVertices": 7,
+      "insideVertices": 2,
       "disagreeingVertices": 41,
-      "maxPenetrationMetres": 0.004093339,
+      "maxPenetrationMetres": 0.003741253,
       "deepestPoint": [
-        -0.158208,
-        1.017385,
-        0.039185
+        -0.017161,
+        0.986939,
+        0.103037
       ]
     }
   },
@@ -337,13 +353,13 @@
     "manifest": "warden-tunic.manifest.json",
     "report": "warden-tunic.report.json",
     "review": "warden-tunic.review.png",
-    "sha256": "971abf66c680b4f3705b88e09daded25e04841e6869a323ea1b398496e6c82a3"
+    "sha256": "5a1442b8fa264ca49070c0de403e673916352881a119bbbdfb6101bd564beacb"
   },
   "review": {
     "bodyVerticesInsideThePiece": {
-      "bind": 534,
-      "abduct90": 452,
-      "flex60": 520
+      "bind": 383,
+      "abduct90": 444,
+      "flex60": 403
     }
   }
 }
