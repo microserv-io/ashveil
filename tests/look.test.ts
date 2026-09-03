@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import * as THREE from 'three'
 import { describe, expect, it, vi } from 'vitest'
-import { isBodyMaterial, LOOK, stylise, toonRamp } from '../src/render/look'
+import { isBodyMaterial, LOOK, rampAt, stylise, toonRamp } from '../src/render/look'
 
 function meshMaterial(mesh: THREE.Mesh): THREE.Material {
   if (Array.isArray(mesh.material)) throw new Error('expected one material')
@@ -10,21 +10,32 @@ function meshMaterial(mesh: THREE.Mesh): THREE.Material {
 }
 
 describe('the painterly look', () => {
-  it('uses one nearest-filtered ascending toon ramp', () => {
+  it('uses one linear-filtered ramp that rises through the tiers without a hard step', () => {
     const ramp = toonRamp()
     if (!ramp.image.data) throw new Error('expected ramp texels')
     const texels = Array.from(ramp.image.data)
 
     expect(toonRamp()).toBe(ramp)
-    expect(ramp.image.width).toBe(LOOK.ramp.length)
+    expect(ramp.image.width).toBe(LOOK.rampTexels)
     expect(ramp.image.height).toBe(1)
-    expect(ramp.minFilter).toBe(THREE.NearestFilter)
-    expect(ramp.magFilter).toBe(THREE.NearestFilter)
+    expect(ramp.minFilter).toBe(THREE.LinearFilter)
+    expect(ramp.magFilter).toBe(THREE.LinearFilter)
     expect(ramp.generateMipmaps).toBe(false)
     expect(ramp.colorSpace).toBe(THREE.NoColorSpace)
-    expect(texels).toEqual(LOOK.ramp.map((step) => Math.round(step * 255)))
+    expect(texels[0]).toBe(Math.round(LOOK.ramp[0] * 255))
     expect(texels.at(-1)).toBe(255)
-    expect(texels.every((step, index) => index === 0 || step > texels[index - 1]!)).toBe(true)
+    expect(texels.every((step, index) => index === 0 || step >= texels[index - 1]!)).toBe(true)
+    // A hand-over spread over its softness window bounds how far neighbouring texels may jump.
+    const largestTier = Math.max(...LOOK.ramp.map((tier, index) => (index === 0 ? 0 : tier - LOOK.ramp[index - 1]!)))
+    const texelsPerHandover = LOOK.rampSoftness * LOOK.rampTexels
+    const largestStep = Math.max(...texels.map((step, index) => (index === 0 ? 0 : step - texels[index - 1]!)))
+    expect(largestStep).toBeLessThan((largestTier * 255 * 2) / texelsPerHandover)
+  })
+
+  it('holds each tier flat between hand-overs', () => {
+    expect(rampAt(0)).toBeCloseTo(LOOK.ramp[0], 6)
+    expect(rampAt((LOOK.rampEdges[0] + LOOK.rampEdges[1]) / 2)).toBeCloseTo(LOOK.ramp[1], 6)
+    expect(rampAt(1)).toBeCloseTo(LOOK.ramp[2], 6)
   })
 
   it('converts physical materials while preserving authored surface properties', () => {
