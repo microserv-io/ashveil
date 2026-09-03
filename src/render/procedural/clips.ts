@@ -109,13 +109,14 @@ const CAST_L: Vec3 = [-0.06, -0.26, 0.78]
 const CAST_BALL: PoseKey = {
   at: 0.2,
   torso: [
-    { joint: Joint.Chest, yaw: -0.3, pitch: 0.14 },
-    { joint: Joint.Spine, yaw: -0.15, pitch: 0.06 },
-    { joint: Joint.Pelvis, yaw: -0.06 },
+    { joint: Joint.Chest, yaw: -0.15, pitch: 0.14 },
+    { joint: Joint.Spine, yaw: -0.08, pitch: 0.06 },
+    { joint: Joint.Pelvis, yaw: -0.03 },
     { joint: Joint.Head, pitch: 0.16 },
   ],
-  handR: [-0.16, -0.74, 0.4],
-  handL: [-0.38, -0.72, 0.46],
+  // The turn carries the right shoulder back, so its hand is stated further forward to level the pair.
+  handR: [-0.02, -0.56, 0.58],
+  handL: [-0.34, -0.56, 0.5],
   poleR: [-0.8, -0.3, -0.5],
   poleL: [0.8, -0.2, -0.5],
   offset: [0, -0.04, -0.01],
@@ -127,7 +128,7 @@ const CAST_BALL: PoseKey = {
  */
 const CAST: PoseClipSource = {
   planted: true,
-  gather: { radius: 0.12, period: 0.7, until: 0.4 },
+  gather: { radius: 0.08, period: 0.7, until: 0.4 },
   keys: [
     { at: 0, handL: DRAW_BACK_L, handR: DRAW_BACK_R },
     CAST_BALL,
