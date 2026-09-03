@@ -38,6 +38,17 @@ diffuseColor.rgb = mix( vec3( dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.072
 
 const toonProgramCacheKey = (): string => PROGRAM_CACHE_KEY
 
+function configureMaterial(material: BodyMaterial): BodyMaterial {
+  material.onBeforeCompile = applySaturation
+  material.customProgramCacheKey = toonProgramCacheKey
+  material.clone = cloneBodyMaterial
+  return material
+}
+
+function cloneBodyMaterial<T extends BodyMaterial>(this: T): T {
+  return configureMaterial(new THREE.MeshToonMaterial().copy(this)) as T
+}
+
 export function toonRamp(): THREE.DataTexture {
   if (sharedRamp) return sharedRamp
 
@@ -75,9 +86,7 @@ export function toonMaterial(source: THREE.MeshStandardMaterial): BodyMaterial {
   })
   material.color.copy(source.color)
   material.emissive.copy(source.emissive)
-  material.onBeforeCompile = applySaturation
-  material.customProgramCacheKey = toonProgramCacheKey
-  return material
+  return configureMaterial(material)
 }
 
 export function stylise<T extends THREE.Object3D>(root: T): T {

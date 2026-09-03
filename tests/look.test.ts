@@ -115,6 +115,11 @@ describe('the painterly look', () => {
     expect(firstMaterial.onBeforeCompile).toBe(secondMaterial.onBeforeCompile)
     expect(firstMaterial.customProgramCacheKey()).toBe(secondMaterial.customProgramCacheKey())
     expect(firstMaterial.customProgramCacheKey()).toContain(String(LOOK.saturation))
+
+    const clone = firstMaterial.clone()
+    expect(clone.gradientMap).toBe(firstMaterial.gradientMap)
+    expect(clone.onBeforeCompile).toBe(firstMaterial.onBeforeCompile)
+    expect(clone.customProgramCacheKey()).toBe(firstMaterial.customProgramCacheKey())
   })
 
   it('disposes the material it replaces', () => {
