@@ -87,9 +87,9 @@ def region(loaded: dict, slots: list[str], pair: bool) -> dict[str, np.ndarray]:
     return result
 
 
-def joined_target(loaded: dict):
+def joined_target(loaded: dict, extra: list | None = None):
     copies = []
-    for source in loaded["meshes"]:
+    for source in list(loaded["meshes"]) + list(extra or []):
         copy = source.copy()
         copy.data = source.data.copy()
         copy.animation_data_clear()

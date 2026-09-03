@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { GEAR_SLOTS, type GearHides, type GearSlot } from '../../src/render/gear'
+import { stylise } from '../../src/render/look'
 
 /**
  * The pieces the review page can put on the body.
@@ -19,6 +20,7 @@ export interface ReviewGearPiece {
 export const REVIEW_GEAR: readonly ReviewGearPiece[] = [
   { slot: 'feet', piece: 'warden-boots', path: gearPath('warden-boots') },
   { slot: 'legs', piece: 'warden-trousers', path: gearPath('warden-trousers') },
+  { slot: 'hands', piece: 'warden-gloves', path: gearPath('warden-gloves') },
   { slot: 'chest', piece: 'warden-tunic', path: gearPath('warden-tunic') },
   { slot: 'head', piece: 'warden-hood', path: gearPath('warden-hood') },
 ]
@@ -72,7 +74,8 @@ export async function loadReviewGear(
   const loaded = await Promise.all(pieces.map(async (entry) => {
     try {
       const [gltf, manifest] = await Promise.all([loader.loadAsync(entry.path), loadGearManifest(entry.piece)])
-      return [entry.piece, { scene: gltf.scene, ...manifest }] as const
+      // Converted once here, so every actor wearing the piece clones one toon material.
+      return [entry.piece, { scene: stylise(gltf.scene), ...manifest }] as const
     } catch (error) {
       console.warn(`gear: ${entry.piece} did not load, wearing it is off`, error)
       return null

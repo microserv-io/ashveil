@@ -5,11 +5,10 @@
   "slot": "head",
   "hides": {
     "Body": 943,
-    "Facial_Feature_01": 163,
-    "Facial_Feature_02": 71,
-    "Facial_Feature_03": 2,
-    "Facial_Feature_04": 3,
-    "Head": 1124
+    "Facial_Feature_01": 164,
+    "Facial_Feature_02": 78,
+    "Facial_Feature_03": 11,
+    "Head": 1161
   },
   "clip": {
     "depth": 0.005,

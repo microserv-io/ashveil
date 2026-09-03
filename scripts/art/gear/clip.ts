@@ -392,6 +392,105 @@ export function forEachClipPose(
   visit('stress', 'hipflex90', 0)
 }
 
+/** Deeper than this two pieces are overlapping rather than resting on each other. */
+export const SET_DEPTH = 0.003
+
+export interface SetPair {
+  readonly outer: string
+  readonly inner: string
+  readonly count: number
+  readonly maxDepth: number
+}
+
+export interface SetOverlap {
+  readonly schema: 'ashveil.gear-set.v1'
+  readonly body: string
+  readonly depth: number
+  /** Every piece in the set with the layer its slot wears at. */
+  readonly layers: Readonly<Record<string, number>>
+  /** The worst overlap each ordered pair reached, per motion. */
+  readonly worst: Readonly<Record<string, readonly SetPair[]>>
+}
+
+export function slotLayers(contract = CONTRACT): Record<string, number> {
+  const parsed = JSON.parse(readFileSync(contract, 'utf8')) as {
+    slots?: Record<string, { layer?: number }>
+  }
+  const layers: Record<string, number> = {}
+  for (const [slot, rule] of Object.entries(parsed.slots ?? {})) {
+    if (typeof rule.layer !== 'number') throw new ClipError(`set gate: slot "${slot}" has no layer`)
+    layers[slot] = rule.layer
+  }
+  return layers
+}
+
+/**
+ * Advisory only: how far the pieces of a worn set reach into each other.
+ *
+ * Every piece is fitted against the bare body, so nothing in the per-piece gate can
+ * see a tunic hem inside a waistband. Layering answers it by clearance - an outer
+ * slot stands further off the skin than what it covers - and this is the reading
+ * that says whether the ordering closed the overlap. It gates nothing: a cloak
+ * resting on a pauldron is a set that works, not a set that failed.
+ */
+export function measureSet(body: ClipBody, pieces: readonly ClipPiece[]): SetOverlap {
+  const layers = slotLayers()
+  for (const piece of pieces) matchJoints(piece, body)
+  const worn = pieces.map((piece) => {
+    const merged = mergeVertices(piece.meshes)
+    return {
+      piece,
+      layer: layers[piece.slot]!,
+      merged,
+      visible: new Uint8Array(merged.indices.length / 3).fill(1),
+      points: new Float32Array(merged.positions.length),
+    }
+  })
+  const pose = createPose()
+  const state = createGaitState()
+  const drive = createGaitDrive()
+  const worst: Record<string, SetPair[]> = {}
+
+  const visit = (motion: string): void => {
+    body.apply(pose)
+    for (const wear of worn) skinVertices(wear.merged, body.skinMatrices, wear.points)
+    const found = worst[motion] ?? (worst[motion] = [])
+    for (const outer of worn) {
+      for (const inner of worn) {
+        if (outer.layer <= inner.layer) continue
+        const measured = measurePenetration(
+          inner.points, inner.merged.indices, inner.visible, outer.points, SET_DEPTH,
+        )
+        const at = found.findIndex((pair) => pair.outer === outer.piece.name && pair.inner === inner.piece.name)
+        const pair = { outer: outer.piece.name, inner: inner.piece.name, ...measured }
+        const entry = { outer: pair.outer, inner: pair.inner, count: pair.over, maxDepth: pair.maxDepth }
+        if (at < 0) found.push(entry)
+        else if (entry.count > found[at]!.count) found[at] = entry
+      }
+    }
+  }
+
+  resetPose(pose)
+  visit('bind')
+  for (const [motion, speed] of [['walk', 1.6], ['run', 5.0]] as const) {
+    for (let sample = 0; sample < PHASES; sample++) {
+      const phase = sample / PHASES
+      drive.speed = speed
+      drive.phase = phase
+      drive.time = phase / speed
+      writeLocomotion(body.geometry, drive, state, pose)
+      visit(motion)
+    }
+  }
+  return {
+    schema: 'ashveil.gear-set.v1',
+    body: body.name,
+    depth: SET_DEPTH,
+    layers: Object.fromEntries(worn.map((wear) => [wear.piece.name, wear.layer])),
+    worst,
+  }
+}
+
 export function runClipGate(dir: string): ClipResult {
   const piece = loadClipPiece(dir)
   const body = loadClipBody(piece.body)
@@ -400,13 +499,28 @@ export function runClipGate(dir: string): ClipResult {
   return result
 }
 
+/** The set the review page can wear: every fitted piece under `public/gear`. */
+export function runSetAdvisory(dirs: readonly string[]): SetOverlap {
+  const pieces = dirs.map((dir) => loadClipPiece(dir))
+  if (pieces.length === 0) throw new ClipError('set gate: no fitted piece to measure')
+  const bodies = [...new Set(pieces.map((piece) => piece.body))]
+  if (bodies.length !== 1) throw new ClipError(`set gate: the set is fitted to ${bodies.join(', ')}`)
+  return measureSet(loadClipBody(bodies[0]!), pieces)
+}
+
 function main(argv: readonly string[]): number {
   let dir: string | null = null
+  const set: string[] = []
   for (let at = 0; at < argv.length; at++) {
     if (argv[at] === '--piece') dir = argv[++at] ?? null
+    else if (argv[at] === '--set') set.push(argv[++at] ?? '')
     else throw new ClipError(`argument gate: unknown argument "${argv[at]}"`)
   }
-  if (!dir) throw new ClipError('argument gate: --piece <dir> is required')
+  if (set.length > 0) {
+    process.stdout.write(`${JSON.stringify(runSetAdvisory(set), null, 2)}\n`)
+    return 0
+  }
+  if (!dir) throw new ClipError('argument gate: --piece <dir> or --set <dir> is required')
 
   const result = runClipGate(dir)
   process.stdout.write(`${JSON.stringify(result.gates)}\n`)

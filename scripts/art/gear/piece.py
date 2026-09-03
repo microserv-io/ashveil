@@ -106,6 +106,44 @@ def proxy(loaded: dict, source_slot: str) -> tuple[list, dict]:
     return created, {"uvs": False, "textures": False}
 
 
+def under(root, names: list[str]) -> list:
+    """The fitted pieces this one is worn over, as plain meshes to fit against.
+
+    A piece is fitted to the bare body, so nothing stops a hood's mantle landing
+    inside a tunic collar. Naming what it goes over puts those shells in the
+    surface the shrinkwrap pushes out of and the bind gate measures against; the
+    armature comes with them and is dropped, since both files share the body's
+    bind pose and only the rest geometry is wanted.
+    """
+    meshes = []
+    for name in names:
+        path = root / "public" / "gear" / name / f"{name}.glb"
+        if not path.exists():
+            raise PieceError(f"under gate: no fitted piece at {path}")
+        before = set(bpy.context.scene.objects)
+        bpy.ops.import_scene.gltf(filepath=str(path))
+        added = [obj for obj in bpy.context.scene.objects if obj not in before]
+        for obj in added:
+            if obj.type != "MESH":
+                continue
+            for modifier in list(obj.modifiers):
+                obj.modifiers.remove(modifier)
+            world = obj.matrix_world.copy()
+            obj.parent = None
+            obj.matrix_world = world
+            _select([obj])
+            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+            obj.name = f"under-{name}-{obj.name}"
+            obj.hide_render = True
+            meshes.append(obj)
+        for obj in added:
+            if obj.type != "MESH" and obj.name in bpy.data.objects:
+                bpy.data.objects.remove(obj, do_unlink=True)
+    if names and not meshes:
+        raise PieceError(f"under gate: {', '.join(names)} contain no mesh")
+    return meshes
+
+
 def _centroid_x(obj) -> float:
     vertices = obj.data.vertices
     if not vertices:

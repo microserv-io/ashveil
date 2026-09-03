@@ -1,5 +1,7 @@
 import * as THREE from 'three'
 import type { ActorView } from './actorview'
+import { applyPieceMasks, baseGeometryOf, maskedGeometry } from './gearcover'
+import { isBodyMaterial, type BodyMaterial } from './look'
 
 /**
  * Gear on a fitted body: a second skinned mesh driven by the body's own `Skeleton`,
@@ -13,6 +15,15 @@ import type { ActorView } from './actorview'
 export const GEAR_SLOTS = ['feet', 'legs', 'waist', 'chest', 'back', 'hands', 'shoulders', 'head'] as const
 
 export type GearSlot = (typeof GEAR_SLOTS)[number]
+
+/**
+ * What a slot is worn over. A higher layer stands further off the skin and hides
+ * the pieces below it; `tests/art_contracts.test.ts` holds this to the contract's
+ * own `layer`, which is what the fitter's clearances are ordered by.
+ */
+export const SLOT_LAYERS: Readonly<Record<GearSlot, number>> = {
+  legs: 1, hands: 1, feet: 2, chest: 2, head: 3, shoulders: 3, waist: 4, back: 5,
+}
 
 /** The body vertices one piece hides, per skinned mesh node name. */
 export type GearHides = Readonly<Record<string, readonly number[]>>
@@ -32,7 +43,7 @@ export interface WornPiece {
   covers: readonly GearSlot[]
   hides: GearHides
   mesh: THREE.SkinnedMesh
-  material: THREE.MeshStandardMaterial
+  material: BodyMaterial
 }
 
 export function skinnedMeshesOf(root: THREE.Object3D): THREE.SkinnedMesh[] {
@@ -45,7 +56,11 @@ export function skinnedMeshesOf(root: THREE.Object3D): THREE.SkinnedMesh[] {
 
 /**
  * Geometry is shared across every actor wearing the piece; only the material is
- * cloned, because hit flash and death fade tint per actor.
+ * cloned, because hit flash and death fade tint per actor. The piece arrives already
+ * stylised, so gear shades on the body's own ramp and compiles to the one program;
+ * converting here instead would give each actor's piece a material the loader never
+ * shared, and a piece that slipped through raw would light differently from the skin
+ * under it without anything saying so.
  */
 export function wearPiece(body: THREE.Object3D, source: GearPieceSource): WornPiece {
   const host = skinnedMeshesOf(body)[0]
@@ -58,7 +73,11 @@ export function wearPiece(body: THREE.Object3D, source: GearPieceSource): WornPi
   if (meshes.length > 1) throw new Error(`gear: ${source.slot} piece is ${meshes.length} meshes, expected one`)
   matchBones(source.slot, piece.skeleton, host.skeleton)
 
-  const material = (piece.material as THREE.MeshStandardMaterial).clone()
+  const shading = piece.material as THREE.Material
+  if (!isBodyMaterial(shading)) {
+    throw new Error(`gear: ${source.slot} was not stylised; load the piece through look.stylise`)
+  }
+  const material = shading.clone()
   const mesh = new THREE.SkinnedMesh(piece.geometry, material)
   mesh.name = piece.name
   mesh.castShadow = host.castShadow
@@ -86,11 +105,19 @@ export function removePiece(_body: THREE.Object3D, worn: WornPiece): void {
  */
 export function applyBodyMasks(body: THREE.Object3D, worn: readonly Pick<WornPiece, 'hides'>[]): void {
   for (const mesh of skinnedMeshesOf(body)) {
-    const base = BASE_GEOMETRY.get(mesh) ?? mesh.geometry
-    BASE_GEOMETRY.set(mesh, base)
+    const base = baseGeometryOf(mesh)
     const hidden = hiddenVertices(worn, mesh.name)
-    mesh.geometry = hidden === null ? base : withoutMaskedTriangles(base, hidden)
+    mesh.geometry = hidden === null ? base : maskedGeometry(base, hidden)
   }
+}
+
+/**
+ * Hides each worn piece under the pieces worn over it. The body's mask is measured
+ * by the fitter and shipped; this one cannot be, because which pieces are worn
+ * together is only known here.
+ */
+export function applyGearMasks(worn: readonly WornPiece[]): void {
+  applyPieceMasks(worn.map((piece) => ({ layer: SLOT_LAYERS[piece.slot], mesh: piece.mesh })))
 }
 
 /**
@@ -109,9 +136,6 @@ export function viewMaterialsWith(view: ActorView, bodyMaterials: number, worn: 
   }
 }
 
-/** The unmasked geometry, so taking a piece off restores the body it covered. */
-const BASE_GEOMETRY = new WeakMap<THREE.SkinnedMesh, THREE.BufferGeometry>()
-
 /** The union of what every worn piece hides on one mesh, or null for nothing at all. */
 function hiddenVertices(worn: readonly Pick<WornPiece, 'hides'>[], mesh: string): Set<number> | null {
   const hidden = new Set<number>()
@@ -119,41 +143,6 @@ function hiddenVertices(worn: readonly Pick<WornPiece, 'hides'>[], mesh: string)
     for (const vertex of piece.hides[mesh] ?? []) hidden.add(vertex)
   }
   return hidden.size === 0 ? null : hidden
-}
-
-function withoutMaskedTriangles(base: THREE.BufferGeometry, hidden: ReadonlySet<number>): THREE.BufferGeometry {
-  const index = base.getIndex()
-  if (!index) return base
-  const kept: number[] = []
-  // A multi-material mesh draws its groups, not its index, so dropping triangles
-  // without moving the group boundaries with them would draw the wrong ones.
-  const ranges = base.groups.length > 0 ? base.groups : [{ start: 0, count: index.count, materialIndex: 0 }]
-  const regrouped = ranges.map((range) => {
-    const from = kept.length
-    const until = Math.min(index.count, range.start + range.count)
-    for (let at = range.start; at + 2 < until; at += 3) {
-      const a = index.getX(at)
-      const b = index.getX(at + 1)
-      const c = index.getX(at + 2)
-      if (hidden.has(a) && hidden.has(b) && hidden.has(c)) continue
-      kept.push(a, b, c)
-    }
-    return { start: from, count: kept.length - from, materialIndex: range.materialIndex ?? 0 }
-  })
-  if (kept.length === index.count) return base
-
-  const geometry = new THREE.BufferGeometry()
-  for (const [name, attribute] of Object.entries(base.attributes)) {
-    geometry.setAttribute(name, attribute as THREE.BufferAttribute)
-  }
-  geometry.setIndex(kept)
-  if (base.groups.length > 0) {
-    for (const group of regrouped) geometry.addGroup(group.start, group.count, group.materialIndex)
-  }
-  // The masked body is a subset, so the original bounds still contain it.
-  geometry.boundingBox = base.boundingBox
-  geometry.boundingSphere = base.boundingSphere
-  return geometry
 }
 
 function matchBones(slot: GearSlot, piece: THREE.Skeleton, body: THREE.Skeleton): void {

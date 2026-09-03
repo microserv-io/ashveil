@@ -5,8 +5,9 @@ export interface GearPlan {
   slot: string
   body: string
   piece: string
-  weights?: 'transfer' | 'rigid'
+  weights?: 'transfer' | 'stiff' | 'rigid'
   covers: string[]
+  under: string[]
   span?: string
   yaw?: '0' | '180'
   noMask: boolean

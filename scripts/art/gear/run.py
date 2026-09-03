@@ -25,10 +25,11 @@ def parse(argv: list[str]):
     parser.add_argument("--slot", required=True)
     parser.add_argument("--body", required=True)
     parser.add_argument("--piece", required=True)
-    parser.add_argument("--weights", choices=("transfer", "rigid"))
+    parser.add_argument("--weights", choices=("transfer", "stiff", "rigid"))
     parser.add_argument("--covers")
     parser.add_argument("--span")
     parser.add_argument("--yaw", choices=("0", "180"), default="0")
+    parser.add_argument("--under")
     parser.add_argument("--no-mask", action="store_true")
     parser.add_argument("--outdir", required=True)
     return parser.parse_args(argv)
@@ -49,8 +50,8 @@ def _source(args, loaded: dict) -> tuple[list, dict, dict]:
     }
 
 
-def _manifest(args, contract: dict, source: dict, covers: list[str], hides: dict, mode: str,
-              alignment: dict, measured: dict, gates_table: dict, piece_path: str) -> dict:
+def _manifest(args, contract: dict, source: dict, covers: list[str], under: list[str], hides: dict,
+              mode: str, alignment: dict, measured: dict, gates_table: dict, piece_path: str) -> dict:
     glb = Glb(piece_path)
     skin = glb.json["skins"][0]
     inverse = glb.accessor(skin["inverseBindMatrices"])
@@ -65,6 +66,7 @@ def _manifest(args, contract: dict, source: dict, covers: list[str], hides: dict
         "bones": [glb.json["nodes"][node]["name"] for node in skin["joints"]],
         "inverseBindSha256": exporter.sha256_array(inverse),
         "covers": covers,
+        "under": under,
         "hides": hides,
         "weights": mode,
         "alignment": alignment,
@@ -137,13 +139,46 @@ def _alignment_rule(rule: dict, proxy: bool) -> dict:
     """A slot's growth factor and offsets describe a garment worn over the skin.
 
     A proxy is already the body's own shell, so applying them inflates it into
-    the limbs the body swings; at 1.0 it stays the shape it was carved from.
+    the limbs the body swings; at 1.0 it stays the shape it was carved from. The
+    limb swing goes with them: a shell carved off this body already lies on its
+    bones, and turning it onto them again only moves it off.
     """
     if not proxy:
         return rule
-    return {**rule,
-            "span": {**rule["span"], "factor": 1.0},
-            "anchors": {axis: {**anchor, "offset": 0.0} for axis, anchor in rule["anchors"].items()}}
+    return {key: value for key, value in rule.items() if key != "limb"} | {
+        "span": {**rule["span"], "factor": 1.0},
+        "anchors": {axis: {**anchor, "offset": 0.0} for axis, anchor in rule["anchors"].items()}}
+
+
+def _limb(rule: dict, side: str | None, contract: dict, landmarks: dict) -> dict | None:
+    """The bone a slot's limb section is swung onto, as a line through two landmarks.
+
+    The runtime file carries identity bone rest orientations by design, so an
+    imported armature has no direction to read: the contract's own head and tail
+    landmarks are where a bone still points.
+
+    A bone points at its child, so tail to head runs up the limb away from the
+    extremity the piece hangs off - the ankle to the knee, the wrist to the elbow.
+    The band is a fraction along that, so 1.0 is always the cuff and 0.0 the toe or
+    the fingertip, whichever slot is being fitted.
+    """
+    limb = rule.get("limb")
+    if not limb:
+        return None
+    named = limb["bone"]
+    bone = named[side] if isinstance(named, dict) else named
+    spec = next((entry for entry in contract["bones"] if entry["name"] == bone), None)
+    if spec is None:
+        raise RuntimeError(f"limb gate: the family has no bone \"{bone}\"")
+    for name in (spec["head"], spec["tail"]):
+        if name not in landmarks:
+            raise RuntimeError(f"limb gate: {bone} has no landmark \"{name}\"")
+    head = [float(value) for value in landmarks[spec["head"]]]
+    tail = [float(value) for value in landmarks[spec["tail"]]]
+    if all(abs(a - b) < 1e-9 for a, b in zip(head, tail)):
+        raise RuntimeError(f"limb gate: {bone} has no length between {spec['head']} and {spec['tail']}")
+    return {"bone": bone, "joint": tail, "direction": [a - b for a, b in zip(head, tail)],
+            "band": list(limb["band"]), "fade": float(limb["fade"])}
 
 
 def run(args) -> dict:
@@ -153,8 +188,12 @@ def run(args) -> dict:
     slot = contract["slots"][args.slot]
     loaded = body.load(ROOT, args.body)
     covers = _covers(args, contract)
-    target = body.joined_target(loaded)
-    surface = geometry.Surface(loaded["meshes"], body.region_vertices(loaded, covers))
+    worn_under = [name.strip() for name in args.under.split(",") if name.strip()] if args.under else []
+    beneath = piece.under(ROOT, worn_under)
+    # What a piece is worn over is body as far as fitting goes: it is pushed out of
+    # those shells too. Coverage stays body-only - gear never masks gear here.
+    target = body.joined_target(loaded, beneath)
+    surface = geometry.Surface(loaded["meshes"] + beneath, body.region_vertices(loaded, covers))
     objects, source_had, source = _source(args, loaded)
     objects, island_report = piece.islands(objects, slot["pair"], args.piece)
 
@@ -171,8 +210,10 @@ def run(args) -> dict:
     alignment_report = {}
     for at, obj in enumerate(objects):
         side = ("L", "R")[at] if slot["pair"] else "all"
+        limb = _limb(rule, side if slot["pair"] else None, contract,
+                     loaded["manifest"]["landmarks"])
         measured_side = geometry.align(obj, reference[side], rule, surface,
-                                       side if slot["pair"] else None, span, int(args.yaw))
+                                       side if slot["pair"] else None, span, int(args.yaw), limb)
         measured_side["proxy"] = proxy
         measured_side["reference"] = reference_slots
         alignment_report[side] = measured_side
@@ -186,7 +227,7 @@ def run(args) -> dict:
     hides = ({} if args.no_mask
              else geometry.coverage(fitted, loaded["meshes"], float(slot["coverReach"])))
     hidden = {name: set(indices) for name, indices in hides.items()}
-    outside = geometry.outside_measure([fitted], geometry.Surface(loaded["meshes"], hidden))
+    outside = geometry.outside_measure([fitted], geometry.Surface(loaded["meshes"] + beneath, hidden))
 
     out = Path(args.outdir)
     out.mkdir(parents=True, exist_ok=True)
@@ -195,7 +236,7 @@ def run(args) -> dict:
     rest = exporter.finish(glb_path)
     measured = gate.measure(glb_path, str(loaded["path"]), contract, source_had, outside)
     gates_table = gate.gates(measured, slot, faces)
-    kept = ("scale", "yawDegrees", "translation", "spanOverride")
+    kept = ("scale", "yawDegrees", "translation", "spanOverride", "limb")
     alignment = ({side: {key: value for key, value in report.items() if key in kept}
                   for side, report in alignment_report.items()}
                  if slot["pair"] else
@@ -209,6 +250,7 @@ def run(args) -> dict:
         "slot": args.slot,
         "piece": args.piece,
         "covers": covers,
+        "under": worn_under,
         "referenceRegions": reference_slots,
         "coverage": {"reachMetres": float(slot["coverReach"]),
                      "hiddenVertices": {mesh.name: len(hides.get(mesh.name, []))
@@ -237,8 +279,8 @@ def run(args) -> dict:
         os.remove(glb_path)
         gate.check(gates_table)
 
-    manifest = _manifest(args, contract, source, covers, hides, mode, alignment, measured,
-                         gates_table, glb_path)
+    manifest = _manifest(args, contract, source, covers, worn_under, hides, mode, alignment,
+                         measured, gates_table, glb_path)
     exporter.write_json(str(out / f"{args.piece}.manifest.json"), manifest)
     scratch = tempfile.mkdtemp(prefix="ashveil-gear-review-")
     try:

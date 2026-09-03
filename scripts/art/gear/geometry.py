@@ -22,6 +22,8 @@ DEEP_INSIDE = 0.005
 # One pass only moves a vertex to the nearest surface, which for a sleeve buried in an
 # arm is the torso, so it takes several to walk out of overlapping shells.
 OUTSIDE_PASSES = 8
+# Cross sections a limb band is measured as. Fewer and a cuff's own wobble is the axis.
+LIMB_SLICES = 8
 
 
 def _runtime_points(obj) -> np.ndarray:
@@ -121,8 +123,90 @@ class Surface:
         return self.probe(point)[0]
 
 
+def _scale(original: np.ndarray, region_bounds, rule: dict, span: dict | None) -> float:
+    """How much the source grows to sit on the region it covers."""
+    factor = float(span["factor"] if span else rule["span"]["factor"])
+    span_axis = AXIS[span["axis"] if span else rule["span"]["axis"]]
+    extent = float(original[:, span_axis].max() - original[:, span_axis].min())
+    # A slot's span measures the region it sits on; an override measures the piece
+    # against two landmarks instead, for a garment the region has no extent for.
+    target_extent = (span["metres"] if span
+                     else float(region_bounds[1][span_axis] - region_bounds[0][span_axis]))
+    if extent <= 1e-9 or target_extent <= 1e-9:
+        raise RuntimeError("alignment gate: the piece or body reference has zero span")
+    return target_extent * factor / extent
+
+
+def _straighten(points: np.ndarray, limb: dict) -> tuple[np.ndarray, dict]:
+    """Swing the piece's limb section onto the bone that carries it.
+
+    A source is modelled standing on its own: this boot's shaft rises vertically,
+    and this body's shin leans 5.9 degrees inward, so the shaft stood 4.8cm off the
+    calf and the outside pass wrapped it onto the leg rather than correcting it.
+    The band is turned and seated onto the bone line, faded to nothing below, so
+    the part the anchors placed - a boot's sole on the ground - never moves.
+
+    A turn alone is not enough and measurably worse: the misalignment is a 1.9cm
+    offset at the ankle as well as a lean, and rotating without seating leaves the
+    shaft leaning correctly through the wrong place.
+    """
+    direction = np.array(limb["direction"], dtype=np.float64)
+    direction = direction / np.linalg.norm(direction)
+    band = [float(value) for value in limb["band"]]
+    along = points @ direction
+    low, high = float(along.min()), float(along.max())
+    fraction = (along - low) / max(high - low, 1e-9)
+    chosen = (fraction >= band[0]) & (fraction <= band[1])
+    edges = np.linspace(float(along[chosen].min()), float(along[chosen].max()), LIMB_SLICES + 1) \
+        if int(chosen.sum()) else np.zeros(LIMB_SLICES + 1)
+    centroids = []
+    for at in range(LIMB_SLICES):
+        below = along <= edges[at + 1] if at == LIMB_SLICES - 1 else along < edges[at + 1]
+        cross = chosen & (along >= edges[at]) & below
+        if int(cross.sum()) >= 4:
+            centroids.append(points[cross].mean(axis=0))
+    if len(centroids) < 2:
+        raise RuntimeError(f"limb gate: band {band} on {limb['bone']} has no cross sections to "
+                           "measure an axis from")
+    bottom, top = centroids[0], centroids[-1]
+    axis = top - bottom
+    length = float(np.linalg.norm(axis))
+    if length <= 1e-9:
+        raise RuntimeError(f"limb gate: band {band} on {limb['bone']} has no extent")
+    axis = axis / length
+    if float(axis @ direction) < 0.0:
+        direction = -direction
+
+    weight = np.array([_band_weight(value, [band], float(limb["fade"])) for value in fraction])
+    angle = math.acos(float(np.clip(axis @ direction, -1.0, 1.0)))
+    turn = np.cross(axis, direction)
+    scale = float(np.linalg.norm(turn))
+    moved = points
+    if scale > 1e-9 and angle > 1e-6:
+        turn = turn / scale
+        relative = moved - bottom
+        turned = (angle * weight)[:, None]
+        cosine, sine = np.cos(turned), np.sin(turned)
+        moved = bottom + (relative * cosine
+                          + np.cross(np.broadcast_to(turn, relative.shape), relative) * sine
+                          + np.outer(relative @ turn, turn) * (1.0 - cosine))
+    joint = np.array(limb["joint"], dtype=np.float64)
+    seat = joint + direction * float((bottom - joint) @ direction) - bottom
+    moved = moved + weight[:, None] * seat
+    return moved, {
+        "bone": limb["bone"],
+        "band": band,
+        "fade": float(limb["fade"]),
+        "correctionDegrees": round(math.degrees(angle), 4),
+        "seatMetres": rounded(seat),
+        "pieceAxis": rounded(axis),
+        "boneDirection": rounded(direction),
+        "bandVertices": int(chosen.sum()),
+    }
+
+
 def align(obj, reference: np.ndarray, rule: dict, surface: Surface, side: str | None = None,
-          span: dict | None = None, yaw: int = 0) -> dict:
+          span: dict | None = None, yaw: int = 0, limb: dict | None = None) -> dict:
     """Place the piece on the region it covers, at the yaw the caller asked for.
 
     The fitter used to vote between 0 and 180 by counting vertices inside the body,
@@ -133,16 +217,21 @@ def align(obj, reference: np.ndarray, rule: dict, surface: Surface, side: str | 
     """
     original = _runtime_points(obj)
     region_bounds = (reference.min(axis=0), reference.max(axis=0))
-    span_axis = AXIS[span["axis"] if span else rule["span"]["axis"]]
-    extent = float(original[:, span_axis].max() - original[:, span_axis].min())
-    # A slot's span measures the region it sits on; an override measures the piece
-    # against two landmarks instead, for a garment the region has no extent for.
-    target_extent = (span["metres"] if span
-                     else float(region_bounds[1][span_axis] - region_bounds[0][span_axis]))
-    factor = float(span["factor"] if span else rule["span"]["factor"])
-    if extent <= 1e-9 or target_extent <= 1e-9:
-        raise RuntimeError("alignment gate: the piece or body reference has zero span")
-    scale = target_extent * factor / extent
+    scale = _scale(original, region_bounds, rule, span)
+
+    def anchor(points: np.ndarray) -> np.ndarray:
+        piece_bounds = (points.min(axis=0), points.max(axis=0))
+        translation = np.zeros(3)
+        for axis_name, rules in rule["anchors"].items():
+            axis = AXIS[axis_name]
+            offset = float(rules["offset"])
+            if side and axis_name == "X":
+                offset *= 1.0 if side == "L" else -1.0
+            translation[axis] = (_value(region_bounds, rules["body"], axis) + offset
+                                 - _value(piece_bounds, rules["piece"], axis))
+        return translation
+
+    turned: dict = {}
 
     def place(turn: int, at: float) -> tuple[int, float, np.ndarray, np.ndarray]:
         points = original.copy()
@@ -150,16 +239,12 @@ def align(obj, reference: np.ndarray, rule: dict, surface: Surface, side: str | 
             points[:, 0] *= -1.0
             points[:, 2] *= -1.0
         points *= at
-        piece_bounds = (points.min(axis=0), points.max(axis=0))
-        translation = np.zeros(3)
-        for axis_name, anchor in rule["anchors"].items():
-            axis = AXIS[axis_name]
-            offset = float(anchor["offset"])
-            if side and axis_name == "X":
-                offset *= 1.0 if side == "L" else -1.0
-            translation[axis] = (_value(region_bounds, anchor["body"], axis) + offset
-                                 - _value(piece_bounds, anchor["piece"], axis))
+        translation = anchor(points)
         points += translation
+        if limb:
+            # The band fades to nothing before the anchored end, so the anchors that
+            # placed the piece still hold and re-applying them would undo the swing.
+            points, turned[turn] = _straighten(points, limb)
         distances = [surface.measure(point) for point in points]
         return (sum(1 for is_inside, _ in distances if is_inside),
                 sum(distance for _, distance in distances) / max(1, len(distances)),
@@ -201,6 +286,8 @@ def align(obj, reference: np.ndarray, rule: dict, surface: Surface, side: str | 
     if span:
         measured["spanOverride"] = {"axis": span["axis"], "from": span["from"], "to": span["to"],
                                     "metres": round(span["metres"], 6), "factor": span["factor"]}
+    if limb:
+        measured["limb"] = turned[yaw]
     return measured
 
 

@@ -8,13 +8,14 @@
   "covers": [
     "feet"
   ],
+  "under": [],
   "referenceRegions": [
     "feet"
   ],
   "coverage": {
     "reachMetres": 0.06,
     "hiddenVertices": {
-      "Body": 1447,
+      "Body": 1489,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -126,19 +127,19 @@
     "pieceVertices": 916,
     "outsidePasses": [
       {
-        "movedVertices": 383,
-        "movedFraction": 0.418122,
+        "movedVertices": 700,
+        "movedFraction": 0.764192,
         "insideAfter": 0
       }
     ],
-    "wholeMovedVertices": 383,
-    "hugSelectedVertices": 142,
-    "hugMovedVertices": 82,
-    "wholeMovedFraction": 0.418122,
-    "hugMovedFraction": 0.08952
+    "wholeMovedVertices": 700,
+    "hugSelectedVertices": 134,
+    "hugMovedVertices": 56,
+    "wholeMovedFraction": 0.764192,
+    "hugMovedFraction": 0.061135
   },
   "weights": {
-    "mode": "transfer",
+    "mode": "stiff",
     "strippedGroups": {
       "proxy-feet_L": [
         "chest",
@@ -189,7 +190,32 @@
         "upper_arm_R"
       ]
     },
-    "orphanedVertices": {}
+    "orphanedVertices": {},
+    "band": {
+      "proxy-feet_L": {
+        "vertices": 458,
+        "bandVertices": 36,
+        "bandFraction": 0.078603,
+        "ceiling": 0.8,
+        "minPeakWeight": 0.503311,
+        "meanPeakWeight": 0.957652,
+        "bandHeightMetres": 0.075995,
+        "bandMinY": 0.047372,
+        "bandMaxY": 0.123368
+      },
+      "proxy-feet_R": {
+        "vertices": 458,
+        "bandVertices": 35,
+        "bandFraction": 0.076419,
+        "ceiling": 0.8,
+        "minPeakWeight": 0.509663,
+        "meanPeakWeight": 0.959036,
+        "bandHeightMetres": 0.075995,
+        "bandMinY": 0.047373,
+        "bandMaxY": 0.123368
+      }
+    },
+    "stiffness": 3
   },
   "rest": {
     "maxRestRotationBefore": 0,
@@ -259,8 +285,8 @@
       "islands": 2
     },
     "maxInfluencesPerVertex": 2,
-    "minWeightSum": 0.999999925,
-    "maxWeightSum": 1.00000006,
+    "minWeightSum": 0.99999997,
+    "maxWeightSum": 1.00000003,
     "influencingBones": [
       "foot_L",
       "foot_R",
@@ -304,7 +330,7 @@
     "manifest": "proxy-feet.manifest.json",
     "report": "proxy-feet.report.json",
     "review": "proxy-feet.review.png",
-    "sha256": "c49788eab38a10095499247bc1eefc57cb3a3c89bcadd71b10443bf6d3625185"
+    "sha256": "6119df1a64e02a73f917c6a6292a0e0004511086bb42c124a987b62e66880b3a"
   },
   "review": {
     "bodyVerticesInsideThePiece": {

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { GEAR_SLOTS, SLOT_LAYERS } from '../src/render/gear'
 import { validate } from '../scripts/art/schema.mjs'
 
 const ROOT = join(import.meta.dirname, '..')
@@ -35,6 +36,31 @@ describe('the family contract', () => {
     for (const bone of [...HUMANOID.bones, ...HUMANOID.helpers]) {
       if (bone.parent !== null) expect(seen).toContain(bone.parent)
       seen.add(bone.name)
+    }
+  })
+
+  /**
+   * Every piece is fitted against the bare body, so what keeps a cloak off a tunic
+   * and a tunic out of a waistband is the clearance each slot stands off the skin
+   * by. Layering is that ordering made explicit: an outer layer never sits closer
+   * to the skin than something it is worn over.
+   */
+  it('layering_orders_clearances', () => {
+    const slots = Object.entries(HUMANOID.slots) as [string, { layer: number; clearance: number }][]
+    for (const [outer, over] of slots) {
+      for (const [inner, under] of slots) {
+        if (over.layer <= under.layer) continue
+        expect(over.clearance, `${outer} (layer ${over.layer}) sits under ${inner} (layer ${under.layer})`)
+          .toBeGreaterThan(under.clearance)
+      }
+    }
+  })
+
+  /** The renderer hides one piece under another by layer, so its table is the contract's. */
+  it('is the layer table the renderer hides gear by', () => {
+    expect(Object.keys(HUMANOID.slots).sort()).toEqual([...GEAR_SLOTS].sort())
+    for (const [slot, rule] of Object.entries(HUMANOID.slots) as [string, { layer: number }][]) {
+      expect(SLOT_LAYERS[slot as keyof typeof SLOT_LAYERS], slot).toBe(rule.layer)
     }
   })
 

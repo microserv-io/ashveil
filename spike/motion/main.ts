@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { disposeActorView, orientActorView, type ActorView } from '../../src/render/actorview'
 import {
   applyBodyMasks,
+  applyGearMasks,
   removePiece,
   viewMaterialsWith,
   wearPiece,
@@ -42,7 +43,7 @@ const LEASH = 4.5
 const TURN_RATE = 2.6
 const TURN_DURATION = 0.8
 const PANEL_KEY = 'ashveil.motion.panel'
-const GEAR_KEY = 'ashveil.motion.gear'
+const GEAR_KEY = 'ashveil.motion.gear.off'
 /** Below this the panel would cover the body, so it starts out of the way. */
 const NARROW_VIEWPORT = 640
 
@@ -276,6 +277,7 @@ function rewear(): void {
       : []
   })
   applyBodyMasks(body.group, worn)
+  applyGearMasks(worn)
   viewMaterialsWith(body, bodyMaterials, worn)
   saveGear()
 }
@@ -322,16 +324,24 @@ function wornSlots(): string {
 
 function saveGear(): void {
   try {
-    localStorage.setItem(GEAR_KEY, JSON.stringify([...wearing]))
+    const off = REVIEW_GEAR.filter((entry) => !wearing.has(entry.piece)).map((entry) => entry.piece)
+    localStorage.setItem(GEAR_KEY, JSON.stringify(off))
   } catch {}
 }
 
+/**
+ * Dressed unless the reviewer said otherwise, so the bare body is the special case.
+ * What is stored is what was taken off, not what was put on: a piece fitted since
+ * the reviewer last set this is worn, rather than hidden by a preference written
+ * before it existed.
+ */
 function readGearPreference(): Set<string> {
+  const off = new Set<string>()
   try {
     const stored = localStorage.getItem(GEAR_KEY)
-    if (stored) return new Set(JSON.parse(stored) as string[])
+    if (stored) for (const piece of JSON.parse(stored) as string[]) off.add(piece)
   } catch {}
-  return new Set()
+  return new Set(REVIEW_GEAR.filter((entry) => !off.has(entry.piece)).map((entry) => entry.piece))
 }
 
 function recentre(): void {

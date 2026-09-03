@@ -270,6 +270,7 @@
           "defaultCovers",
           "align",
           "clearance",
+          "layer",
           "coverReach",
           "hug",
           "weights",
@@ -457,12 +458,67 @@
                     }
                   }
                 }
+              },
+              "limb": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "bone",
+                  "band",
+                  "fade"
+                ],
+                "properties": {
+                  "bone": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_]+$"
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "L",
+                          "R"
+                        ],
+                        "properties": {
+                          "L": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          },
+                          "R": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "band": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "fade": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                }
               }
             }
           },
           "clearance": {
             "type": "number",
             "minimum": 0
+          },
+          "layer": {
+            "type": "integer",
+            "minimum": 1
           },
           "coverReach": {
             "type": "number",
@@ -512,6 +568,7 @@
               "mode": {
                 "enum": [
                   "transfer",
+                  "stiff",
                   "rigid"
                 ]
               },
@@ -544,6 +601,10 @@
                     "pattern": "^[A-Za-z0-9_]+$"
                   }
                 }
+              },
+              "stiffness": {
+                "type": "number",
+                "minimum": 1
               }
             }
           },

@@ -177,7 +177,9 @@ describe('the clipping gate against the body itself', () => {
     expect(inside.over / inside.vertices, 'nearly all of the shell is inside').toBeGreaterThan(0.8)
   })
 
-  it('fails both gates for a shell that is inside the body everywhere', () => {
+  // The only case that walks every pose without a shared measurement to lean on,
+  // against a shell the nearest search is worst on: seconds, not milliseconds.
+  it('fails both gates for a shell that is inside the body everywhere', { timeout: 30_000 }, () => {
     const inside = measureClip(skinBody, shellPiece(-OFFSET), limits)
     expect(inside.cycles.motion.maxDepth).toBeGreaterThan(limits.depth)
     expect(inside.gates.clears_the_body_through_motion_cycles).toBe(false)

@@ -292,8 +292,8 @@ change to the shipped mesh.
 
 ```
 npm run art:gear -- --input <piece.glb> --slot <slot> --body <body> --piece <name> \
-  [--weights transfer|rigid] [--covers <slot,slot>] [--span AXIS:FROM:TO[:FACTOR]] \
-  [--yaw 0|180] [--no-mask] [--outdir <dir>]
+  [--weights transfer|stiff|rigid] [--covers <slot,slot>] [--span AXIS:FROM:TO[:FACTOR]] \
+  [--yaw 0|180] [--under <piece,piece>] [--no-mask] [--outdir <dir>]
 ```
 
 Writes `public/gear/<piece>/`: `<piece>.glb`, `<piece>.manifest.json`,
@@ -364,6 +364,24 @@ leaves `hug.bands` empty: a hood pulled onto the scalp stops being a hood. The r
 carries what shrinkwrap moved as a fraction of the piece, because a pass that moves
 most of a piece is a reshaping and the alignment above it is what wants fixing.
 
+**Limb alignment.** A source is modelled standing on its own and a body's limbs are
+not axis aligned, so scale and anchors alone leave a boot's vertical shaft 4.8cm off
+a shin that leans 5.9 degrees inward, and the outside pass then wraps the shaft onto
+the calf instead of correcting it. A slot may declare `align.limb: {bone, band, fade}`:
+after the anchors, the band — a fraction of the piece's extent along that bone, 1.0
+being the cuff and 0.0 the toe or the fingertip, because a bone points at its child
+and so runs tail to head up the limb — is turned onto the bone's own direction about
+its lowest cross-section centroid and seated onto the bone's line, smoothstepped to
+nothing across `fade` so the anchored end never moves. The turn alone is measurably
+worse than doing nothing (the shaft then leans correctly through the wrong place),
+which is why the seat goes with it. Only `feet` carries one: `hands` was given the
+same rule on the assumption a gauntlet's cuff needed it, and the first fitted pair
+said otherwise — a cuff band is where the piece is anchored, so swinging it drags the
+glove off its own anchors (12mm and 17mm of residual against none, and half again as
+much for the shrinkwrap to correct). A slot earns a `limb` from a measurement, not
+from the shape of its name. The report records the correction angle, and a proxy
+skips it, being already carved off these bones.
+
 **Weights and export.** `transfer` copies the body's cleaned weights by nearest-face
 interpolation, keeps only the slot's `allowedBones` (a pair's side keeps only its own
 `_L`/`_R` bones plus unsuffixed ones), sends orphans to the nearest allowed bone
@@ -371,7 +389,13 @@ segment, caps four influences and renormalises. A slot's list has to reach every
 the garment rides: `legs` includes `spine`, because a waistband weighted to the pelvis
 alone shears through the belly the moment the torso flexes forward. Since masks are
 computed, a slot's `region` now only sets alignment extents and carves proxies, so it
-is drawn tight to the anatomy rather than widened to cover a garment. `rigid` gives
+is drawn tight to the anatomy rather than widened to cover a garment. `stiff` runs the
+same transfer and then raises each weight to the slot's `stiffness` power, keeps the
+two strongest and renormalises, so a leather or plate piece hinges in a thin band
+instead of smearing the way skin does: the boots' band of vertices holding no bone
+above 0.8 fell from 751 (11.9% of the piece, 16.5cm tall) to 57 (3.8%, 11.8cm), and
+`feet`, `hands`, `head` and `shoulders` default to it while the cloth slots stay on
+`transfer`. The report carries that band per island. `rigid` gives
 every vertex weight 1.0 on one bone (per side for pairs). Either way the piece exports on the body's own
 joint list with identical inverse binds, so the runtime binds it straight to the
 body's `Skeleton`.
@@ -411,11 +435,50 @@ fails the clip gate honestly — it only ever passed while `--covers legs,waist`
 that belly away. They are fixtures, not production art, and the review page never
 lists them.
 
+**Layering.** Every piece is fitted against the bare body, so nothing in a per-piece
+gate can see a hood's mantle inside a tunic collar. Each slot carries a `layer` and
+stands off the skin by a `clearance` that rises with it — `legs` and `hands` 1, `feet`
+and `chest` 2, `head` and `shoulders` 3, `waist` 4, `back` 5 — so an outer piece is
+always further out than what it covers, and `tests/art_contracts.test.ts` refuses a
+contract where a higher layer sits closer in. The ladder is ceilinged by what the
+pieces carry: above 0.016 the hood loses `clears_the_body_through_motion_cycles`,
+because a mantle pushed off the skin stops hiding the shoulder it is measured against.
+`--under <piece,...>` names the fitted pieces this one is worn over: their shells
+join the body in the surface the shrinkwrap pushes out of and the bind gate measures
+against, so a hood is fitted around a tunic collar rather than through it, and the
+manifest records what it was fitted over. Coverage stays body-only — gear never masks
+gear at fit time, because which pieces are worn together is a runtime question. It
+follows that a set is fitted from the skin outward: trousers, then the tunic under
+which they sit, then the hood.
+
+`node --import tsx scripts/art/gear/clip.ts --set <dir> --set <dir>` skins a worn set
+through bind, walk and run and counts the vertices of a higher-layer piece more than
+3mm inside a lower-layer one. It is advisory and gates nothing: a cloak resting on a
+pauldron is a set that works. It still reads high after `--under`, and that is the
+honest answer: a solid garment wraps the one below it, and only the piece underneath
+not drawing what is behind the wrap can close it.
+
 **Runtime and review.** `src/render/gear.ts`: a piece binds to the body's own
 `Skeleton` object as a sibling `SkinnedMesh`; `applyBodyMasks` takes the union of the
 worn pieces' `hides` and drops from the index every body triangle whose three vertices
 are all in it, sharing every attribute by reference. The body sidecar is not a runtime
-file: the page reads each piece's own manifest. Wearing a piece costs exactly one more draw call. The motion
+file: the page reads each piece's own manifest. Wearing a piece costs exactly one more draw call.
+`applyGearMasks` does the same for gear under gear, which the fitter cannot bake because
+which pieces are worn together is only known here: `src/render/gearcover.ts` sorts the
+worn pieces by their slot's `layer` — never by the order they were put on — and drops
+from each piece the triangles whose three vertices are all covered by a higher one.
+Its rule is not the body's, deliberately. A vertex counts only when it is **inside**
+the higher piece, by ray parity along three axes, and deeper than 4mm. A normal ray
+was tried first and opened holes: a tunic hem passing above a trouser hip and a boot
+cuff meeting a trouser leg both catch the ray while occluding nothing, and the
+triangles they took read as dark rectangles the moment the camera came off axis.
+Parity rather than the nearest triangle's normal, because a garment is an open shell
+and everything under an upward-facing hem reads as behind it; each ray starts a
+fraction of a millimetre off its axes so a shared edge is not counted twice. Wearing
+all four warden pieces hides 19.4% of the trousers and 8.3% of the tunic, costs one
+55ms pass on wear and nothing per frame, and taking the outer piece off puts the
+triangles back. The triangle grid it searches with is the one
+`scripts/art/gear/penetration.ts` measures the clip gate with. The motion
 review page's Gear panel (`spike/motion/gear.ts`) lists every fitted piece under
 `public/gear` — proxy fixtures excluded — with a checkbox each plus "Wear all" and
 "Bare".

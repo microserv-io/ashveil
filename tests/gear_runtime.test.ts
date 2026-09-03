@@ -49,7 +49,7 @@ function buildBody(): TestBody {
   const root = new THREE.Group()
   root.add(tree)
   const meshes = glb.meshes.map((source) => {
-    const mesh = new THREE.SkinnedMesh(geometryOf(source), new THREE.MeshStandardMaterial())
+    const mesh = new THREE.SkinnedMesh(geometryOf(source), new THREE.MeshToonMaterial())
     mesh.name = source.name
     root.add(mesh)
     mesh.bind(skeleton)
@@ -68,7 +68,8 @@ function buildPiece(reorder = false): THREE.Object3D {
 
   const scene = new THREE.Group()
   scene.add(tree)
-  const mesh = new THREE.SkinnedMesh(geometryOf(glb.meshes[0]!), new THREE.MeshStandardMaterial())
+  // A piece reaches wearPiece stylised, the way the loader hands it over.
+  const mesh = new THREE.SkinnedMesh(geometryOf(glb.meshes[0]!), new THREE.MeshToonMaterial())
   mesh.name = 'proxy'
   scene.add(mesh)
   mesh.bind(new THREE.Skeleton(bones))
@@ -243,17 +244,17 @@ describe('masking the body under a worn slot', () => {
 describe('handing the worn materials to the view', () => {
   type View = Parameters<typeof viewMaterialsWith>[0]
 
-  function fakeView(materials: THREE.MeshStandardMaterial[]): View {
+  function fakeView(materials: THREE.MeshToonMaterial[]): View {
     return {
       materials,
       baseColours: materials.map((material) => material.color.clone()),
       baseTransparent: materials.map((material) => material.transparent),
-    } as View
+    } as unknown as View
   }
 
   it('replaces the gear entries rather than growing the arrays on a re-wear', () => {
     const body = buildBody()
-    const view = fakeView([new THREE.MeshStandardMaterial()])
+    const view = fakeView([new THREE.MeshToonMaterial()])
     const chest = wearPiece(body.root, { slot: 'chest', scene: buildPiece(), covers: ['chest'], hides: {} })
 
     viewMaterialsWith(view, 1, [chest])

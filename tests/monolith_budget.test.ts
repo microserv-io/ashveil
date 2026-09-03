@@ -33,8 +33,16 @@ const BUDGETS: Readonly<Record<string, number>> = {
   'src/render/semanticskeleton.ts': 155,
   'src/render/helperbones.ts': 130,
   // Binding a fitted piece to the body's skeleton and hiding the body under it.
-  // All of it runs on attach; the frame path only sees the extra draw call.
-  'src/render/gear.ts': 180,
+  // All of it runs on attach; the frame path only sees the extra draw call. Down
+  // from 180 since the masking moved to gearcover.ts, which is where the layer
+  // table's own reader lives too.
+  'src/render/gear.ts': 165,
+  // Which mesh covers which, and the triangle grid the answer is searched with.
+  // Most of it is the search: Ericson's closest point, Moller-Trumbore, ray parity
+  // and the uniform grid the fitter's clip gate shares. Raised once when parity
+  // replaced a normal ray that hid triangles a viewer could still find an angle on;
+  // splitting the grid out would split the scratch arrays three readers share.
+  'src/render/gearcover.ts': 620,
   'src/render/skeletonbones.ts': 60,
   'src/render/riginput.ts': 100,
   // The procedural pose generator. `clips.ts` is the pose table and so exempt;

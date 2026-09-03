@@ -14,6 +14,7 @@
     "bones",
     "inverseBindSha256",
     "covers",
+    "under",
     "hides",
     "weights",
     "alignment",
@@ -97,6 +98,14 @@
         ]
       }
     },
+    "under": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      }
+    },
     "hides": {
       "type": "object",
       "additionalProperties": {
@@ -111,6 +120,7 @@
     "weights": {
       "enum": [
         "transfer",
+        "stiff",
         "rigid"
       ]
     },
@@ -233,6 +243,69 @@
             },
             "factor": {
               "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "limb": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "bone",
+            "band",
+            "fade",
+            "correctionDegrees",
+            "seatMetres",
+            "pieceAxis",
+            "boneDirection",
+            "bandVertices"
+          ],
+          "properties": {
+            "bone": {
+              "type": "string"
+            },
+            "band": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "number"
+              }
+            },
+            "fade": {
+              "type": "number",
+              "minimum": 0
+            },
+            "correctionDegrees": {
+              "type": "number",
+              "minimum": 0
+            },
+            "seatMetres": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "number"
+              }
+            },
+            "pieceAxis": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "number"
+              }
+            },
+            "boneDirection": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "number"
+              }
+            },
+            "bandVertices": {
+              "type": "integer",
               "minimum": 0
             }
           }

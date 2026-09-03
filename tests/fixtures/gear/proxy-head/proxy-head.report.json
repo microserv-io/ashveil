@@ -8,6 +8,7 @@
   "covers": [
     "head"
   ],
+  "under": [],
   "referenceRegions": [
     "head"
   ],
@@ -15,11 +16,11 @@
     "reachMetres": 0.06,
     "hiddenVertices": {
       "Body": 943,
-      "Facial_Feature_01": 163,
-      "Facial_Feature_02": 71,
-      "Facial_Feature_03": 2,
-      "Facial_Feature_04": 3,
-      "Head": 1124
+      "Facial_Feature_01": 164,
+      "Facial_Feature_02": 78,
+      "Facial_Feature_03": 11,
+      "Facial_Feature_04": 0,
+      "Head": 1161
     }
   },
   "source": {
@@ -82,34 +83,29 @@
     "pieceVertices": 650,
     "outsidePasses": [
       {
-        "movedVertices": 359,
-        "movedFraction": 0.552308,
-        "insideAfter": 9
+        "movedVertices": 619,
+        "movedFraction": 0.952308,
+        "insideAfter": 14
       },
       {
-        "movedVertices": 107,
-        "movedFraction": 0.164615,
-        "insideAfter": 4
-      },
-      {
-        "movedVertices": 40,
-        "movedFraction": 0.061538,
+        "movedVertices": 201,
+        "movedFraction": 0.309231,
         "insideAfter": 2
       },
       {
-        "movedVertices": 27,
-        "movedFraction": 0.041538,
+        "movedVertices": 63,
+        "movedFraction": 0.096923,
         "insideAfter": 0
       }
     ],
-    "wholeMovedVertices": 533,
+    "wholeMovedVertices": 883,
     "hugSelectedVertices": 0,
     "hugMovedVertices": 0,
-    "wholeMovedFraction": 0.82,
+    "wholeMovedFraction": 1.358462,
     "hugMovedFraction": 0
   },
   "weights": {
-    "mode": "transfer",
+    "mode": "stiff",
     "strippedGroups": {
       "proxy-head": [
         "chest",
@@ -136,7 +132,18 @@
         "upper_arm_R"
       ]
     },
-    "orphanedVertices": {}
+    "orphanedVertices": {},
+    "band": {
+      "proxy-head": {
+        "vertices": 650,
+        "bandVertices": 0,
+        "bandFraction": 0,
+        "ceiling": 0.8,
+        "minPeakWeight": 0.998322,
+        "meanPeakWeight": 0.999978
+      }
+    },
+    "stiffness": 3
   },
   "rest": {
     "maxRestRotationBefore": 0,
@@ -206,8 +213,8 @@
       "islands": 2
     },
     "maxInfluencesPerVertex": 2,
-    "minWeightSum": 0.999999955,
-    "maxWeightSum": 1.00000006,
+    "minWeightSum": 0.999999971,
+    "maxWeightSum": 1.000000022,
     "influencingBones": [
       "head",
       "neck"
@@ -248,13 +255,13 @@
     "manifest": "proxy-head.manifest.json",
     "report": "proxy-head.report.json",
     "review": "proxy-head.review.png",
-    "sha256": "8d120bdb2bd6fa743c4225eb4c63fe53d9b898e276038d3d93bb6a6b9e4e67c9"
+    "sha256": "0dfabd6da302efd713f849451ed321a9ea796b8c0ac69bee66ae37d700c5ce50"
   },
   "review": {
     "bodyVerticesInsideThePiece": {
-      "bind": 719,
-      "abduct90": 719,
-      "flex60": 719
+      "bind": 913,
+      "abduct90": 913,
+      "flex60": 914
     }
   }
 }

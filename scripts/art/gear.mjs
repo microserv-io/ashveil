@@ -9,7 +9,7 @@ const CLIP = join(ROOT, 'scripts', 'art', 'gear', 'clip.ts')
 const CLIP_ARGUMENT = join('scripts', 'art', 'gear', 'clip.ts')
 const BLENDER_CANDIDATES = ['/opt/homebrew/bin/blender', '/usr/local/bin/blender', 'blender']
 const FLAGS = new Set(['--no-mask'])
-const VALUES = new Set(['--input', '--slot', '--body', '--piece', '--weights', '--covers', '--span', '--yaw', '--outdir'])
+const VALUES = new Set(['--input', '--slot', '--body', '--piece', '--weights', '--covers', '--span', '--yaw', '--under', '--outdir'])
 const NAME = /^[a-z0-9][a-z0-9-]*$/
 const SPAN = /^[XYZ]:[a-z0-9_]+:[a-z0-9_]+(:[0-9]+(\.[0-9]+)?)?$/
 
@@ -32,7 +32,7 @@ export function parseArgs(argv) {
   for (const name of ['body', 'piece']) {
     if (!NAME.test(parsed[name])) throw new GearError(`argument gate: --${name} "${parsed[name]}" is not a lowercase name a path can carry`)
   }
-  if (parsed.weights && !['transfer', 'rigid'].includes(parsed.weights)) {
+  if (parsed.weights && !['transfer', 'stiff', 'rigid'].includes(parsed.weights)) {
     throw new GearError(`weight gate: unknown mode "${parsed.weights}"`)
   }
   if (parsed.span && !SPAN.test(parsed.span)) {
@@ -71,13 +71,24 @@ export function resolvePlan(parsed, { root = ROOT, exists = existsSync } = {}) {
     const path = join(bodydir, `${parsed.body}.${suffix}`)
     if (!exists(path)) throw new GearError(`body gate: no file at ${path}`)
   }
+  // A piece worn over another is fitted against that piece as well as the skin, so
+  // the one underneath has to be fitted and shipped before this one is.
+  const under = parsed.under ? parsed.under.split(',').map((name) => name.trim()).filter(Boolean) : []
+  for (const name of under) {
+    if (!NAME.test(name)) throw new GearError(`under gate: "${name}" is not a lowercase name a path can carry`)
+    if (name === parsed.piece) throw new GearError(`under gate: ${name} cannot be worn under itself`)
+    for (const suffix of ['glb', 'manifest.json']) {
+      const path = join(root, 'public', 'gear', name, `${name}.${suffix}`)
+      if (!exists(path)) throw new GearError(`under gate: no fitted piece at ${path}`)
+    }
+  }
   const outdir = parsed.outdir ? resolve(root, parsed.outdir) : join(root, 'public', 'gear', parsed.piece)
   // The clip gate is handed the directory and reads the piece out of its name,
   // so a directory named after anything else is a piece nothing downstream finds.
   if (basename(outdir) !== parsed.piece) {
     throw new GearError(`argument gate: --outdir "${outdir}" is not named after the piece "${parsed.piece}"`)
   }
-  return { ...parsed, covers, outdir }
+  return { ...parsed, covers, under, outdir }
 }
 
 export function blenderArgs(plan, runner = RUNNER) {
@@ -88,6 +99,7 @@ export function blenderArgs(plan, runner = RUNNER) {
     ...(plan.covers.length > 0 ? ['--covers', plan.covers.join(',')] : []),
     ...(plan.span ? ['--span', plan.span] : []),
     ...(plan.yaw ? ['--yaw', plan.yaw] : []),
+    ...(plan.under.length > 0 ? ['--under', plan.under.join(',')] : []),
     ...(plan.noMask ? ['--no-mask'] : [])]
 }
 
