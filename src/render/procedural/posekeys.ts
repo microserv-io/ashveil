@@ -1,4 +1,5 @@
 import { CARRY_HAND } from './arms'
+import type { Gather } from './gather'
 import { Joint } from './joints'
 import { KNEE_POLE_SIDE, STANCE_HIP } from './limbs'
 import { quatFromAxisAngle, quatIdentity, quatMultiply } from './quat'
@@ -45,9 +46,9 @@ export interface PoseClipSource {
   /** True keeps a foot flat under its own hip unless a key states where it steps. */
   readonly planted: boolean
   readonly loop?: boolean
+  readonly gather?: Gather
   readonly keys: readonly PoseKey[]
 }
-
 const ZERO: Vec3 = [0, 0, 0]
 /** The elbow's resting lead: back and a little outward, the way an arm hangs. */
 const ELBOW_REST: Vec3 = [0.35, 0, -1]
@@ -61,6 +62,7 @@ const KNEE_REST: Vec3 = [KNEE_POLE_SIDE, 0, 1]
 export interface PoseClip {
   readonly planted: boolean
   readonly loop: boolean
+  readonly gather: Gather | null
   /** Sides some key states a foot for. A planted clip leaves the others where they stand. */
   readonly steps: readonly [boolean, boolean]
   readonly times: Float32Array
@@ -80,6 +82,7 @@ export function compilePoseClip(source: PoseClipSource): PoseClip {
   const clip: PoseClip = {
     planted: source.planted,
     loop: source.loop ?? false,
+    gather: source.gather ?? null,
     steps: [source.keys.some((key) => key.footL), source.keys.some((key) => key.footR)],
     times: new Float32Array(count),
     rotations: new Float32Array(count * Joint.Count * 4),

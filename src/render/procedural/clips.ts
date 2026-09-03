@@ -97,18 +97,56 @@ function relax(strike: Vec3, side: number): Vec3 {
 
 const CLEAVE_R: Vec3 = [-0.42, -0.4, 0.4]
 const CLEAVE_L: Vec3 = [0.34, -0.5, 0.3]
-const FIREBOLT_R: Vec3 = [-0.2, -0.24, 0.62]
-const FIREBOLT_L: Vec3 = [0.28, -0.5, 0.3]
-const FROST_R: Vec3 = [-0.58, -0.44, 0.34]
-const FROST_L: Vec3 = [0.58, -0.44, 0.34]
 const BITE_R: Vec3 = [-0.36, -0.32, 0.62]
 const BITE_L: Vec3 = [0.36, -0.32, 0.62]
 const BOLT_R: Vec3 = [-0.2, 0.08, 0.78]
 const BOLT_L: Vec3 = [0.2, 0.08, 0.78]
 const SLAM_R: Vec3 = [-0.48, -0.8, 0.34]
 const SLAM_L: Vec3 = [0.48, -0.8, 0.34]
-const CAST_R: Vec3 = [-0.12, -0.3, 0.7]
-const CAST_L: Vec3 = [0.26, -0.58, 0.26]
+const CAST_R: Vec3 = [0.06, -0.3, 0.74]
+const CAST_L: Vec3 = [-0.06, -0.3, 0.74]
+/** The ball held at the right of the waist: the right hand outside it, the left crossed over it. */
+const CAST_BALL: PoseKey = {
+  at: 0.16,
+  torso: [
+    { joint: Joint.Chest, yaw: -0.2, pitch: 0.1 },
+    { joint: Joint.Spine, yaw: -0.1, pitch: 0.04 },
+    { joint: Joint.Head, pitch: 0.12 },
+  ],
+  handR: [-0.07, -0.67, 0.41],
+  handL: [-0.27, -0.67, 0.41],
+  poleR: [-0.8, -0.3, -0.5],
+  poleL: [0.8, -0.2, -0.5],
+  offset: [0, -0.02, 0],
+}
+/**
+ * Every spell: both hands roll a ball at the right of the waist through the
+ * wind-up, then drive it out together on the turn. The roll is time-driven rather
+ * than phase-driven so a three-second cast keeps moving instead of stretching.
+ */
+const CAST: PoseClipSource = {
+  planted: true,
+  gather: { radius: 0.1, period: 0.7, until: 0.4 },
+  keys: [
+    { at: 0, handL: DRAW_BACK_L, handR: DRAW_BACK_R },
+    CAST_BALL,
+    { ...CAST_BALL, at: 0.34 },
+    {
+      at: STRIKE,
+      ease: STRIKE_EASE,
+      torso: [
+        { joint: Joint.Chest, yaw: 0.1, pitch: 0.18 },
+        { joint: Joint.Spine, yaw: 0.05, pitch: 0.08 },
+      ],
+      handR: CAST_R,
+      handL: CAST_L,
+      poleR: [-0.6, -0.4, -0.7],
+      poleL: [0.6, -0.4, -0.7],
+      offset: [0, -0.02, 0.05],
+    },
+    { at: 1, ease: 1.2, handR: relax(CAST_R, RIGHT), handL: relax(CAST_L, LEFT) },
+  ],
+}
 const CHANNEL_L: Vec3 = [-0.06, -0.42, 0.62]
 const CHANNEL_R: Vec3 = [0.06, -0.42, 0.62]
 const CHANNEL_REST: PoseKey = {
@@ -192,85 +230,8 @@ export const POSE_SOURCES: Readonly<Record<PoseClipName, PoseClipSource>> = {
       { at: 1, ease: 1.2, footL: [0, GROUND, 0], handR: relax(CLEAVE_R, RIGHT), handL: relax(CLEAVE_L, LEFT) },
     ],
   },
-  /** A thrust: the hand is cocked at the hip, then driven out at chest height. */
-  firebolt: {
-    planted: true,
-    keys: [
-      { at: 0, handL: DRAW_BACK_L, handR: DRAW_BACK_R },
-      {
-        at: 0.18,
-        torso: [
-          { joint: Joint.Chest, pitch: -0.12, yaw: -0.16 },
-          { joint: Joint.Spine, pitch: -0.06, yaw: -0.08 },
-        ],
-        handR: [-0.3, -0.7, -0.16],
-        handL: [0.24, -0.72, 0.16],
-        offset: [0, -0.02, -0.06],
-      },
-      {
-        at: STRIKE,
-        ease: STRIKE_EASE,
-        torso: [
-          { joint: Joint.Chest, pitch: 0.2, yaw: 0.12 },
-          { joint: Joint.Spine, pitch: 0.1, yaw: 0.06 },
-        ],
-        handR: FIREBOLT_R,
-        handL: FIREBOLT_L,
-        offset: [0, -0.02, 0.05],
-      },
-      { at: 1, ease: 1.2, handR: relax(FIREBOLT_R, RIGHT), handL: relax(FIREBOLT_L, LEFT) },
-    ],
-  },
-  /** Both hands overhead, then slammed down and out as the body drops onto it. */
-  frost_nova: {
-    planted: true,
-    keys: [
-      { at: 0 },
-      {
-        at: 0.18,
-        torso: [{ joint: Joint.Chest, pitch: -0.08 }, { joint: Joint.Head, pitch: -0.1 }],
-        handL: [0.46, -0.4, 0.16],
-        handR: [-0.46, -0.4, 0.16],
-      },
-      {
-        at: 0.3,
-        torso: [{ joint: Joint.Chest, pitch: -0.12 }, { joint: Joint.Head, pitch: -0.14 }],
-        handL: [0.5, 0.1, 0.1],
-        handR: [-0.5, 0.1, 0.1],
-      },
-      {
-        at: 0.36,
-        torso: [
-          { joint: Joint.Chest, pitch: -0.16 },
-          { joint: Joint.Spine, pitch: -0.08 },
-          { joint: Joint.Head, pitch: -0.2 },
-        ],
-        handL: [0.34, 0.5, 0.02],
-        handR: [-0.34, 0.5, 0.02],
-        offset: [0, -0.05, 0],
-      },
-      {
-        at: 0.5,
-        torso: [{ joint: Joint.Chest, pitch: 0.1 }, { joint: Joint.Head, pitch: 0.12 }],
-        handL: [0.56, 0.04, 0.2],
-        handR: [-0.56, 0.04, 0.2],
-        offset: [0, -0.09, 0],
-      },
-      {
-        at: LATE_STRIKE,
-        ease: STRIKE_EASE,
-        torso: [
-          { joint: Joint.Chest, pitch: 0.34 },
-          { joint: Joint.Spine, pitch: 0.18 },
-          { joint: Joint.Head, pitch: 0.3 },
-        ],
-        handL: FROST_L,
-        handR: FROST_R,
-        offset: [0, -0.14, 0.02],
-      },
-      { at: 1, ease: 1.2, handR: relax(FROST_R, RIGHT), handL: relax(FROST_L, LEFT) },
-    ],
-  },
+  firebolt: CAST,
+  frost_nova: CAST,
   /** A lunge: the head and shoulders go first and the hands claw after them. */
   monster_bite: {
     planted: true,
@@ -376,37 +337,7 @@ export const POSE_SOURCES: Readonly<Record<PoseClipName, PoseClipSource>> = {
       { at: 1, ease: 1.2, handR: relax(SLAM_R, RIGHT), handL: relax(SLAM_L, LEFT) },
     ],
   },
-  /** A one-hand conjure gathered beside the head, unlike firebolt's hip-level thrust. */
-  cast: {
-    planted: true,
-    keys: [
-      { at: 0, handL: DRAW_BACK_L, handR: DRAW_BACK_R },
-      {
-        at: 0.22,
-        torso: [
-          { joint: Joint.Chest, pitch: -0.08, yaw: -0.12 },
-          { joint: Joint.Spine, pitch: -0.04, yaw: -0.06 },
-        ],
-        handR: [-0.3, -0.28, 0.16],
-        poleR: [-0.7, -0.2, -0.6],
-        handL: [0.22, -0.55, 0.3],
-        offset: [0, -0.015, -0.03],
-      },
-      {
-        at: STRIKE,
-        ease: STRIKE_EASE,
-        torso: [
-          { joint: Joint.Chest, pitch: 0.14, yaw: 0.18 },
-          { joint: Joint.Spine, pitch: 0.07, yaw: 0.08 },
-        ],
-        handR: CAST_R,
-        poleR: [-0.6, -0.3, -0.7],
-        handL: CAST_L,
-        offset: [0, -0.02, 0.04],
-      },
-      { at: 1, ease: 1.2, handR: relax(CAST_R, RIGHT), handL: relax(CAST_L, LEFT) },
-    ],
-  },
+  cast: CAST,
   /** A held two-hand beam whose breathing pulse loops without a seam. */
   channel: {
     planted: true,

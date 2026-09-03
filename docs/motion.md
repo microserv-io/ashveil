@@ -13,7 +13,9 @@ and no retargeting. This is how to add or change a motion, and what must hold.
 - `src/render/procedural/posekeys.ts`: the pose key format. A key states only what
   it changes: torso turns as angles about the body axes, hands as targets relative
   to their own shoulder in arm lengths, feet as targets relative to their own hip in
-  leg lengths, elbow and knee poles as directions, the root offset in leg lengths.
+  leg lengths, elbow and knee poles as directions, the root offset in leg lengths;
+  a row may state a `gather`, a time-driven roll of both hands through the wind-up
+  for casts whose time varies.
 - `src/render/procedural/clips.ts`: the pose tables, one row per skill. This is
   where a new spell or swing lives.
 - `docs/pipeline.md`: how bodies are built and why the joints are semantic.
@@ -50,7 +52,8 @@ swing as one parameterisation from stroll to sprint. The shoulder girdle
 (`girdle.ts`) follows the arm. The flinch (`flinch.ts`) is an additive layer from
 the hit flash. Death (`clips.ts`, `dead`) is a fall onto the back that must settle
 within `DEATH_SETTLE`. Skills: cleave, firebolt, frost nova, monster bite, bolt and
-slam, all target-driven. Casting adds a generic one-hand `cast` and a looping
+slam, all target-driven; firebolt and frost nova both play the two-hand `cast`,
+which gathers a ball at the waist and fires it on the turn. Casting adds a looping
 two-hand `channel`. Executes follow the cast with `execute_overhead` and
 `execute_thrust`. Weapon motions cover `swing_one_hand`, `swing_two_hand` and
 `bow_draw`. `stagger` is a full-body hit reaction stronger than the flinch layer.

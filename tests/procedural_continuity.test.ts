@@ -52,17 +52,24 @@ interface Jump {
 function play(geometry: RigGeometry, name: PoseClipName, windup: number, recovery: number): Jump {
   const clip = POSE_CLIPS[name]
   const phases: number[] = []
-  for (let t = 0; t < windup; t += DT) phases.push(castPhase(Math.min(1, t / windup), null))
-  for (let t = 0; t <= recovery; t += DT) phases.push(castPhase(null, Math.min(1, t / recovery)))
+  const times: number[] = []
+  for (let t = 0; t < windup; t += DT) {
+    phases.push(castPhase(Math.min(1, t / windup), null))
+    times.push(t)
+  }
+  for (let t = 0; t <= recovery; t += DT) {
+    phases.push(castPhase(null, Math.min(1, t / recovery)))
+    times.push(windup + t)
+  }
   let worst = 0
   let joint = 0
   let at = ''
   let worstArm = 0
   let armJoint = 0
   let armAt = ''
-  writeClipPose(geometry, clip, phases[0]!, state, before)
+  writeClipPose(geometry, clip, phases[0]!, state, before, times[0]!)
   for (let step = 1; step < phases.length; step++) {
-    writeClipPose(geometry, clip, phases[step]!, state, after)
+    writeClipPose(geometry, clip, phases[step]!, state, after, times[step]!)
     for (let index = 0; index < Joint.Count; index++) {
       const moved = quatAngleBetween(before.rotations, index * 4, after.rotations, index * 4)
       if (CARRIED.includes(index)) {

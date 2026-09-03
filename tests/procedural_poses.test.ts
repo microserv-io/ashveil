@@ -41,6 +41,20 @@ function reach(): number {
   return Math.max(left, right) / geometry.armLength - CARRY_HAND[2]!
 }
 
+/** Both hands of the cast at one phase and one instant of sim time, in the body frame. */
+function castHands(phase: number, time: number): Float32Array {
+  writeClipPose(geometry, POSE_CLIPS.cast, phase, state, pose, time)
+  resolvePositions(geometry, pose, positions)
+  return new Float32Array([
+    ...positions.slice(Joint.HandL * 3, Joint.HandL * 3 + 3),
+    ...positions.slice(Joint.HandR * 3, Joint.HandR * 3 + 3),
+  ])
+}
+
+function travelled(from: Float32Array, to: Float32Array, lane: number): number {
+  return Math.hypot(to[lane]! - from[lane]!, to[lane + 1]! - from[lane + 1]!, to[lane + 2]! - from[lane + 2]!)
+}
+
 describe('placeholder skill poses', () => {
   it('covers every skill the rig can be asked for', () => {
     expect(SKILL_CLIPS).toEqual(['cleave', 'firebolt', 'frost_nova', 'monster_bite', 'monster_bolt', 'monster_slam'])
@@ -160,6 +174,17 @@ describe('placeholder skill poses', () => {
     write('stagger', 1)
     for (let axis = 0; axis < 3; axis++) {
       expect(Math.abs(pose.offset[axis]! - standing[axis]!)).toBeLessThanOrEqual(1e-6)
+    }
+  })
+
+  it('rolls the ball between both hands through the cast wind-up', () => {
+    const gather = POSE_CLIPS.cast.gather!
+    const rolled = gather.radius * geometry.armLength * 0.5
+    const gathering = [castHands(0.25, 0), castHands(0.25, gather.period / 4)]
+    const firing = [castHands(0.5, 0), castHands(0.5, gather.period / 4)]
+    for (const lane of [0, 3]) {
+      expect(travelled(gathering[0]!, gathering[1]!, lane), `hand ${lane} does not roll`).toBeGreaterThanOrEqual(rolled)
+      expect(travelled(firing[0]!, firing[1]!, lane), `hand ${lane} still rolls on the turn`).toBeLessThanOrEqual(1e-6)
     }
   })
 

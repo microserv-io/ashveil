@@ -1,10 +1,11 @@
 import type { RigState } from '../rig'
 import type { RigInput } from '../riginput'
 import type { ArmCarry } from '../profiles/profile'
+import { writeDash } from './dash'
 import { applyFlinch } from './flinch'
 import { createGaitDrive, createGaitState, seedOffset, strideFrequency, writeLocomotion } from './gait'
 import { writeShoulderGirdle } from './girdle'
-import { writeDash, writeIdle } from './stances'
+import { writeIdle } from './stances'
 import type { RigGeometry } from './geometry'
 import { blendPose, copyPose, createPose, type Pose } from './pose'
 import { DEATH_SETTLE, POSE_CLIPS, type PoseClipName } from './clips'
@@ -104,7 +105,7 @@ export function createPoseGenerator(geometry: RigGeometry, armCarry?: ArmCarry):
     if (current === 'moving') return writeLocomotion(geometry, drive, scratch, out, armCarry)
     if (current === 'dash') return writeDash(geometry, drive, scratch, out, armCarry)
     const at = current === 'dead' ? fallProgress(input.time) : castPhase(input)
-    writeClipPose(geometry, POSE_CLIPS[current], at, scratch, out)
+    writeClipPose(geometry, POSE_CLIPS[current], at, scratch, out, input.time)
   }
 
   function fallProgress(time: number): number {
