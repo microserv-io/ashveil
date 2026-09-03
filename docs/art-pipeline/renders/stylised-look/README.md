@@ -12,3 +12,7 @@ branch with this look merged in, since gear only exists there.
 | review page, gameplay camera | `review-gameplay-before.jpg` | `review-gameplay-after.jpg` |
 | game, gameplay camera | `game-before.jpg` | `game-after.jpg` |
 | hit flash on toon | | `review-hit-flash-after.jpg` |
+
+Chest crops at 3x, from the same 3.5 m shot: `chest-before.jpg` (PBR), `chest-hard-ramp.jpg`
+(the first toon pass, three nearest-filtered texels, which erased surface form) and
+`chest-soft-ramp.jpg` (the shipped ramp: soft hand-overs, key-heavy light).
