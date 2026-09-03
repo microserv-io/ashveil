@@ -71,6 +71,25 @@ describe('the family contract', () => {
     }
   })
 
+  it('lets generic back attachments follow a shoulder wrap', () => {
+    const allowed = new Set(HUMANOID.slots.back.weights.allowedBones)
+    for (const bone of [
+      'shoulder_helper_L', 'upper_arm_L', 'twist_upper_arm_L',
+      'shoulder_helper_R', 'upper_arm_R', 'twist_upper_arm_R',
+    ]) expect(allowed).toContain(bone)
+    expect(HUMANOID.slots.back.hidesPieces).toBeUndefined()
+  })
+
+  it('seats paired shoulder caps outward over a lower chest layer', () => {
+    expect(HUMANOID.slots.shoulders.align.layerSeat).toMatchObject({
+      axis: 'X',
+      direction: 1,
+      mirror: true,
+      bandAxis: 'Y',
+      band: [0.5, 1],
+    })
+  })
+
   /** A capsule named after a bone the family has not is a capsule that never forms. */
   it('names only bones the family has for the limbs a drape is pushed off', () => {
     const bones = new Set((HUMANOID.bones as { name: string }[]).map((bone) => bone.name))

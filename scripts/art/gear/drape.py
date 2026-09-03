@@ -264,10 +264,12 @@ def _reduce_supports(candidates: list[dict], limit: int) -> list[dict]:
     return [ordered[at] for at in sorted(chosen)]
 
 
-def surface_supports(obj, names: list[str], body_samples: dict) -> list[dict]:
+def surface_supports(obj, names: list[str], body_samples: dict,
+                     chains: list[list[str]] | None = None, owner: int = 0) -> list[dict]:
     """Vertices, edge midpoints and centroid samples for every draped triangle."""
     group_index = {group.name: group.index for group in obj.vertex_groups}
     chain = {group_index[name]: at for at, name in enumerate(names)}
+    ownership = ([set(names)] if chains is None else [set(chain_names) for chain_names in chains])
     barycentrics = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0),
                     (0.5, 0.5, 0.0), (0.0, 0.5, 0.5), (0.5, 0.0, 0.5),
                     (1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0))
@@ -280,6 +282,10 @@ def surface_supports(obj, names: list[str], body_samples: dict) -> list[dict]:
             continue
         for barycentric in barycentrics:
             terms = _terms(obj, vertices, barycentric)
+            totals = [sum(term["weight"] for term in terms if term["joint"] in chain_names)
+                      for chain_names in ownership]
+            if owner != int(np.argmax(totals)):
+                continue
             influence = np.zeros(len(names), dtype=np.float64)
             for term in terms:
                 if term["joint"] in names:
@@ -303,6 +309,38 @@ def surface_supports(obj, names: list[str], body_samples: dict) -> list[dict]:
                              "normal": rounded(normal),
                              "clearance": round(separation, 6)})
     return supports
+
+
+def require_surface_supports(name: str, supports: list[dict]) -> list[dict]:
+    if not supports:
+        raise DrapeError(f"drape gate: {name} has no surface supports after chain ownership")
+    return supports
+
+
+def partition_bands(obj, specs: list[dict], armature) -> list[dict]:
+    """Give overlapping cloth bands to their nearest declared attachment in X/Z."""
+    if not specs:
+        return []
+    points = np.array([runtime_from_blender(obj.matrix_world @ vertex.co)
+                       for vertex in obj.data.vertices], dtype=np.float64)
+    low, high = float(points[:, 1].min()), float(points[:, 1].max())
+    extent = high - low
+    bands = [(points[:, 1] <= low + spec["to"] * extent)
+             & (points[:, 1] >= low + spec["from"] * extent) for spec in specs]
+    groups: dict[tuple[float, float], list[int]] = {}
+    for at, spec in enumerate(specs):
+        groups.setdefault((spec["from"], spec["to"]), []).append(at)
+    for members in groups.values():
+        if len(members) == 1:
+            continue
+        attachments = np.asarray([_bone_head(armature, specs[at]["attachBone"])[[0, 2]]
+                                  for at in members], dtype=np.float64)
+        distances = np.sum((points[:, None, [0, 2]] - attachments[None, :, :]) ** 2, axis=2)
+        owners = np.argmin(distances, axis=1)
+        for local, at in enumerate(members):
+            bands[at] &= owners == local
+    return [{"vertices": band, "low": low, "high": high,
+             "line": low + spec["to"] * extent} for band, spec in zip(bands, specs)]
 
 
 def body_anchors(meshes) -> dict:
@@ -352,16 +390,19 @@ def collider_proxies(meshes, armature) -> list[dict]:
     return proxies
 
 
-def build(obj, spec: dict, armature, surface) -> tuple[dict, dict]:
+def build(obj, spec: dict, armature, surface,
+          selected: dict | None = None) -> tuple[dict, dict]:
     """One drape on one island: its chain, its weights, and what the manifest carries."""
     points = np.array([runtime_from_blender(obj.matrix_world @ vertex.co)
                        for vertex in obj.data.vertices], dtype=np.float64)
-    low, high = float(points[:, 1].min()), float(points[:, 1].max())
+    low = float(points[:, 1].min()) if selected is None else float(selected["low"])
+    high = float(points[:, 1].max()) if selected is None else float(selected["high"])
     extent = high - low
     if extent <= 1e-6:
         raise DrapeError(f"drape gate: {spec['name']} sits on an island with no height")
-    line = low + spec["to"] * extent
-    band = (points[:, 1] <= line) & (points[:, 1] >= low + spec["from"] * extent)
+    line = low + spec["to"] * extent if selected is None else float(selected["line"])
+    band = ((points[:, 1] <= line) & (points[:, 1] >= low + spec["from"] * extent)
+            if selected is None else selected["vertices"].copy())
     if int(band.sum()) < 8:
         raise DrapeError(f"drape gate: {spec['name']} holds {int(band.sum())} vertices, "
                          "which is not a band of cloth")

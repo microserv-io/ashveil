@@ -346,22 +346,17 @@ describe('wearing a piece with a drape', () => {
     expect(sample(1 / 60)).toBe(sample(1 / 240))
   })
 
-  /**
-   * A cape is a sheet, not a solid. Letting it hide the tunic under it cut the
-   * tunic's whole back away and then swung off to show the hole through the cape's
-   * own lining, which read as a field of shards from behind.
-   */
-  it('hides nothing below it until the fitter says it may', () => {
+  it('lets fixed geometry cover by default and retains an explicit opt-out', () => {
     const body = buildBody()
-    expect(wearDrape(body).hidesPieces, 'a drape keeps its hands off what is under it').toBe(false)
+    expect(wearDrape(body).hidesPieces, 'a fixed yoke may hide what is under it').toBe(true)
 
-    const plain = wearPiece(body.root, { slot: 'chest', scene: buildPiece(), covers: ['chest'], hides: {} })
-    expect(plain.hidesPieces, 'a piece that cannot move still hides').toBe(true)
+    const backpack = wearPiece(body.root, { slot: 'back', scene: buildPiece(), covers: ['back'], hides: {} })
+    expect(backpack.hidesPieces, 'a rigid backpack still hides').toBe(true)
 
-    const told = wearPiece(body.root, {
-      slot: 'legs', scene: buildDrapedPiece(), covers: ['legs'], hides: {}, drapes: [SASH], hidesPieces: true,
+    const open = wearPiece(body.root, {
+      slot: 'legs', scene: buildDrapedPiece(), covers: ['legs'], hides: {}, drapes: [SASH], hidesPieces: false,
     })
-    expect(told.hidesPieces, 'and the fitter can say otherwise').toBe(true)
+    expect(open.hidesPieces, 'and an open attachment can opt out').toBe(false)
   })
 
   it('leaves a piece with no drape bound to the body’s own skeleton', () => {

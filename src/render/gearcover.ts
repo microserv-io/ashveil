@@ -342,10 +342,8 @@ export interface LayeredMesh {
   readonly layer: number
   readonly mesh: THREE.SkinnedMesh
   /**
-   * False for a piece that covers nothing below it however it is layered. Hiding
-   * asks whether a point is inside the piece above, and a cape is a sheet rather
-   * than a solid: it reads as enclosing the tunic's whole back, cuts it away, and
-   * then swings off to show the hole through its own lining.
+   * False for an open piece that covers nothing below it however it is layered.
+   * Moving drape triangles are excluded independently from the fixed surface.
    */
   readonly hidesPieces?: boolean
   /**

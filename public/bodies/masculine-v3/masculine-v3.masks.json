@@ -1,6 +1,6 @@
 {
   "body": "masculine-v3",
-  "contractVersion": "1.2.0",
+  "contractVersion": "1.3.0",
   "family": "humanoid.v1",
   "schema": "ashveil.body-masks.v1",
   "slots": {

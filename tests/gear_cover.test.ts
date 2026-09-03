@@ -23,6 +23,14 @@ function meshOf(geometry: THREE.BufferGeometry): THREE.SkinnedMesh {
   return new THREE.SkinnedMesh(geometry, new THREE.MeshStandardMaterial())
 }
 
+function skinTo(geometry: THREE.BufferGeometry, joint: number): THREE.BufferGeometry {
+  const vertices = geometry.getAttribute('position').count
+  geometry.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(
+    Array.from({ length: vertices * 4 }, (_, at) => at % 4 === 0 ? joint : 0), 4,
+  ))
+  return geometry
+}
+
 function triangles(mesh: THREE.Mesh): number {
   return (mesh.geometry.getIndex()?.count ?? 0) / 3
 }
@@ -105,6 +113,22 @@ describe('hiding a worn piece under the pieces over it', () => {
 
     applyPieceMasks([{ layer: 3, mesh: inner }, { layer: 3, mesh: outer }])
     expect(triangles(inner)).toBe(whole)
+  })
+
+  it('uses a draped attachment fixed surface but never its moving triangles', () => {
+    const fixedInner = meshOf(shell(0.05))
+    applyPieceMasks([
+      { layer: 1, mesh: fixedInner },
+      { layer: 5, mesh: meshOf(skinTo(shell(0.08), 0)), drapeJoints: 1 },
+    ])
+    expect(triangles(fixedInner), 'the fixed yoke or backpack may cover').toBe(0)
+
+    const movingInner = meshOf(shell(0.05))
+    applyPieceMasks([
+      { layer: 1, mesh: movingInner },
+      { layer: 5, mesh: meshOf(skinTo(shell(0.08), 1)), drapeJoints: 1 },
+    ])
+    expect(triangles(movingInner), 'moving cloth never cuts a hole below it').toBeGreaterThan(0)
   })
 
   it('layers shoulders above chest at the same tier as headgear', () => {

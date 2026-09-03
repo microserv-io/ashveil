@@ -4,14 +4,14 @@
   "piece": "warden-pauldrons",
   "slot": "shoulders",
   "hides": {
-    "Body": 95
+    "Body": 80
   },
   "clip": {
     "depth": 0.005,
     "fraction": 0.002
   },
   "vertices": 4677,
-  "exempt": 2091,
+  "exempt": 2074,
   "poses": 201,
   "cycles": {
     "motion": {
@@ -31,10 +31,10 @@
     "advisory": {
       "pose": "abduct150",
       "phase": 0,
-      "maxDepth": 0.009602353099946481,
-      "count": 2,
-      "fraction": 0.00042762454564892024,
-      "owned": 2,
+      "maxDepth": 0.05976438801898574,
+      "count": 15,
+      "fraction": 0.003207184092366902,
+      "owned": 15,
       "fixed": 0
     }
   },

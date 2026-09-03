@@ -15,7 +15,7 @@
     "motion": {
       "pose": "run",
       "phase": 0.75,
-      "maxDepth": 0.023717185663288728,
+      "maxDepth": 0.024185888272809677,
       "count": 3,
       "fraction": 0.0014423076923076924,
       "owned": 3,
@@ -24,10 +24,10 @@
     "stress": {
       "pose": "armflex90",
       "phase": 0,
-      "maxDepth": 0.006819614825942847,
-      "count": 0,
-      "fraction": 0,
-      "owned": 0,
+      "maxDepth": 0.009158702058244718,
+      "count": 1,
+      "fraction": 0.0004807692307692308,
+      "owned": 1,
       "fixed": 0
     },
     "advisory": {

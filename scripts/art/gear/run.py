@@ -393,7 +393,7 @@ def run(args) -> dict:
         for at, obj in enumerate(objects):
             side = ("L", "R")[at] if slot["pair"] else "all"
             alignment_report[side]["layerSeat"] = geometry.layer_seat(
-                obj, layer_surface, slot["align"]["layerSeat"], layer_clearance)
+                obj, layer_surface, slot["align"]["layerSeat"], layer_clearance, side)
         shrinkwrap["layerSeatPasses"] = geometry.finish_layer_seat(objects, targets, slot, surface)
     mode = args.weights or slot["weights"]["mode"]
     weight_report = weights.apply(objects, target, loaded["armature"], slot, mode, slot["pair"])
@@ -402,17 +402,26 @@ def run(args) -> dict:
     body_anchors = drape.body_anchors(loaded["meshes"]) if drape_specs else None
     for at, obj in enumerate(objects):
         object_drapes = []
-        for spec in drape_specs:
-            block, measured_drape = drape.build(obj, drape.sided(spec, ("L", "R")[at] if slot["pair"] else None),
-                                                loaded["armature"], surface)
+        object_specs = [drape.sided(spec, ("L", "R")[at] if slot["pair"] else None)
+                        for spec in drape_specs]
+        selected_bands = drape.partition_bands(obj, object_specs, loaded["armature"])
+        planned_drapes = sorted(zip(object_specs, selected_bands),
+                                key=lambda item: -(item[0]["to"] - item[0]["from"]))
+        for spec, selected in planned_drapes:
+            block, measured_drape = drape.build(obj, spec, loaded["armature"], surface,
+                                                None if len(object_specs) == 1 else selected)
             block["colliders"] = collider_proxies
             drapes.append(block)
             object_drapes.append(block)
             drape_report.append(measured_drape)
         if drape_specs:
             drape.tidy(obj)
-            for block in object_drapes:
-                block["supports"] = drape.surface_supports(obj, block["bones"], body_anchors)
+            chains = [block["bones"] for block in object_drapes]
+            for owner, block in enumerate(object_drapes):
+                block["supports"] = drape.require_surface_supports(
+                    block["name"], drape.surface_supports(
+                    obj, block["bones"], body_anchors,
+                    None if len(chains) == 1 else chains, owner))
     fitted = piece.join(objects, args.piece)
     # Told, not guessed: a source whose two faces were painted from each other reads as
     # shards, and no measurement of a texture can say whether that was the artist's idea.

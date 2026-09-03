@@ -308,8 +308,9 @@ landmarks. What `--covers` names is an alignment and fitting reference only — 
 piece hides is measured off the fitted piece (see "Masking").
 
 Eight slots, three of them pairs: `feet`, `hands`, `shoulders` (two islands, one per
-side), and `legs`, `waist`, `chest`, `back`, `head` (one). `back` is the cloak: its
-contract region is empty, so it aligns against the chest's via `referenceSlot`.
+side), and `legs`, `waist`, `chest`, `back`, `head` (one). `back` is the outermost
+attachment: a shoulder wrap, wings, a backpack or hanging fabric. Its contract region
+is empty, so it aligns against the chest's via `referenceSlot`.
 
 A slot's region lives in `humanoid.v1.json`'s `slots` block as `{bone, along}` rules:
 a body vertex belongs to the slot when its dominant bone (largest skin weight) is
@@ -496,6 +497,10 @@ band its own short chain of bones: `from` and `to` are fractions of the island's
 extent after alignment, so `sash:pelvis:0.0:0.58:2` hangs the lower 58 percent of the
 belt off the pelvis in two segments. For a pair the drape is declared once for the left
 island and the fitter swaps `_L` for `_R` and names the drapes `<name>_L` and `<name>_R`.
+Rigid attachments such as backpacks and rigid wings omit `--drape`. When one connected
+cloth island hangs from several places, repeat the flag with the same band and a unique
+name for each attachment. Overlapping band vertices go to their nearest attachment in
+the horizontal plane, so the left arm, torso and right arm drive independent panels.
 
 The chain's root is the centroid of the vertices in the 1.5cm ring below the `to` line,
 and it runs from there to the band's own bottom, split into equal bones
@@ -559,9 +564,10 @@ piece only: every triangle with a corner weighted mostly to a `drape_` bone is l
 both the ray test and the swallow test, because whatever a drape covers at bind is skin the
 game has to draw the moment it swings. On this cape that is 4292 of 6000 triangles, and its
 `hides` fell from 1778 body vertices to 434 — the yoke's own footprint, which is the part
-that never moves. The report carries both counts. `slot.hidesPieces` says the same thing
-one layer up, for the runtime rather than the body: `back` is `false`, because a cape hangs
-behind everything and can never take a piece under it off the draw. It rides in the manifest.
+that never moves. The report carries both counts. Runtime gear masking applies the same
+triangle rule one layer up: a fixed yoke, wing root or backpack can hide a lower piece,
+while triangles influenced by any drape chain cannot. A slot contract can still set
+`hidesPieces: false` for a category of open attachments.
 
 **Rest tilt.** The last field of `--drape` is `restDegrees`, how far off the body the chain
 hangs at rest: a cape that hangs plumb sits on the seat and a sash on the thigh, and neither
@@ -680,17 +686,18 @@ npm run art:gear -- --input <shoulders.glb> --slot shoulders --body <body> \
 ```
 
 The fitter refuses an under-piece from another body or the same/higher layer, measures
-the smallest upward cap seat that clears the lower shell, and records both the dependency
-and the per-side measurement in the manifest. The cap keeps its transferred clavicle,
+the smallest configured cap seat that clears the lower shell, and records both the dependency
+and the per-side measurement in the manifest. A paired seat can mirror its direction so
+left and right caps move outward while their measured band stays on the vertical axis.
+The cap keeps its transferred clavicle,
 shoulder-helper and upper-arm weights; only the declared hanging band receives drape
 weights, so choosing its attach bone never rewrites the fixed plate.
 
 `node --import tsx scripts/art/gear/clip.ts --set <dir> --set <dir>` skins a worn set
 through bind, walk and run and counts the vertices of a higher-layer piece more than
 3mm inside a lower-layer one. It is advisory and gates nothing: a cloak resting on a
-pauldron is a set that works. It still reads high after `--under`, and that is the
-honest answer: a solid garment wraps the one below it, and only the piece underneath
-not drawing what is behind the wrap can close it.
+pauldron can be a set that works, while a fixed shoulder cap deeply inside its tunic is
+evidence that the configured seat is too small.
 
 **Runtime and review.** `src/render/gear.ts`: a piece binds to the body's own
 `Skeleton` object as a sibling `SkinnedMesh`; `applyBodyMasks` takes the union of the

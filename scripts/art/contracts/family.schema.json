@@ -525,6 +525,21 @@
                       1
                     ]
                   },
+                  "mirror": {
+                    "type": "boolean"
+                  },
+                  "minimum": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 0.1
+                  },
+                  "bandAxis": {
+                    "enum": [
+                      "X",
+                      "Y",
+                      "Z"
+                    ]
+                  },
                   "step": {
                     "type": "number",
                     "exclusiveMinimum": 0,

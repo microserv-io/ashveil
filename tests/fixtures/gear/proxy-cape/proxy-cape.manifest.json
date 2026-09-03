@@ -1,7 +1,7 @@
 {
   "schema": "ashveil.gear-manifest.v1",
   "family": "humanoid.v1",
-  "contractVersion": "1.2.0",
+  "contractVersion": "1.3.0",
   "body": "masculine-v3",
   "slot": "back",
   "piece": "proxy-cape",
@@ -43,7 +43,7 @@
     "back"
   ],
   "under": [],
-  "hidesPieces": false,
+  "hidesPieces": true,
   "drapes": [
     {
       "name": "cape",
@@ -1889,7 +1889,7 @@
           "terms": [
             {
               "joint": "chest",
-              "weight": 0.341909,
+              "weight": 0.3084537,
               "position": [
                 0.202888,
                 1.444249,
@@ -1898,7 +1898,25 @@
             },
             {
               "joint": "clavicle_L",
-              "weight": 0.158091,
+              "weight": 0.142622,
+              "position": [
+                0.202888,
+                1.444249,
+                0.129674
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0358363,
+              "position": [
+                0.202888,
+                1.444249,
+                0.129674
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.0130879,
               "position": [
                 0.202888,
                 1.444249,
@@ -1907,7 +1925,7 @@
             },
             {
               "joint": "chest",
-              "weight": 0.1415594,
+              "weight": 0.1395409,
               "position": [
                 0.202888,
                 1.425763,
@@ -1916,7 +1934,7 @@
             },
             {
               "joint": "clavicle_L",
-              "weight": 0.0228802,
+              "weight": 0.022554,
               "position": [
                 0.202888,
                 1.425763,
@@ -1925,7 +1943,16 @@
             },
             {
               "joint": "drape_cape_1",
-              "weight": 0.3355603,
+              "weight": 0.3362926,
+              "position": [
+                0.202888,
+                1.425763,
+                0.129674
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.0016125,
               "position": [
                 0.202888,
                 1.425763,

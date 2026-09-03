@@ -130,7 +130,7 @@
         "properties": {
           "name": {
             "type": "string",
-            "pattern": "^[a-z][a-z0-9_]*$"
+            "pattern": "^[a-z][a-z0-9_]*(?:_[LR])?$"
           },
           "attachBone": {
             "type": "string",
@@ -143,7 +143,7 @@
             "uniqueItems": true,
             "items": {
               "type": "string",
-              "pattern": "^drape_[a-z][a-z0-9_]*_[1-6]$"
+              "pattern": "^drape_[a-z][a-z0-9_]*(?:_[LR])?_[1-6]$"
             }
           },
           "segmentLength": {
@@ -370,9 +370,11 @@
           "required": [
             "axis",
             "direction",
+            "bandAxis",
             "band",
             "selectedVertices",
             "stepMetres",
+            "minimumMetres",
             "maximumMetres",
             "targetDepthMetres",
             "clearanceMetres",
@@ -394,6 +396,13 @@
                 1
               ]
             },
+            "bandAxis": {
+              "enum": [
+                "X",
+                "Y",
+                "Z"
+              ]
+            },
             "band": {
               "type": "array",
               "minItems": 2,
@@ -409,6 +418,10 @@
               "minimum": 1
             },
             "stepMetres": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "minimumMetres": {
               "type": "number",
               "exclusiveMinimum": 0
             },

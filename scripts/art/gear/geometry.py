@@ -1007,17 +1007,24 @@ def shrinkwrap(objects: list, targets: list, slot: dict, surface: Surface, span:
     return report
 
 
-def layer_seat(obj, surface: Surface, rule: dict, clearance: float) -> dict:
+def layer_seat(obj, surface: Surface, rule: dict, clearance: float, side: str | None = None) -> dict:
     """Find the smallest bounded translation that seats an outer layer above its target."""
+    if rule.get("mirror") and side not in ("L", "R"):
+        raise RuntimeError(
+            f"layer seat gate: {obj.name} cannot mirror a seat without paired side L or R")
     axis = AXIS[rule["axis"]]
     direction = float(rule["direction"])
+    if rule.get("mirror") and side == "R":
+        direction *= -1.0
     step = float(rule["step"])
+    minimum = float(rule.get("minimum", step))
     maximum = float(rule["maximum"])
     target_depth = float(rule["depth"])
     points = _runtime_points(obj)
-    low, high = float(points[:, axis].min()), float(points[:, axis].max())
+    band_axis = AXIS[rule.get("bandAxis", rule["axis"])]
+    low, high = float(points[:, band_axis].min()), float(points[:, band_axis].max())
     band_low, band_high = (low + float(fraction) * (high - low) for fraction in rule["band"])
-    selected = points[(points[:, axis] >= band_low) & (points[:, axis] <= band_high)]
+    selected = points[(points[:, band_axis] >= band_low) & (points[:, band_axis] <= band_high)]
     if len(selected) == 0:
         raise RuntimeError(f"layer seat gate: {obj.name} has no vertices in its seating band")
 
@@ -1036,13 +1043,13 @@ def layer_seat(obj, surface: Surface, rule: dict, clearance: float) -> dict:
     after = before
     best = None
     best_offset = 0.0
-    steps = int(math.floor(maximum / step + 1e-9))
+    steps = int(math.floor((maximum - minimum) / step + 1e-9)) + 1
     if steps < 1:
         raise RuntimeError(
             f"layer seat gate: {obj.name} maximum {maximum:.6f}m is smaller than "
-            f"its {step:.6f}m step")
-    for at in range(1, steps + 1):
-        offset = min(maximum, at * step)
+            f"its {minimum:.6f}m minimum")
+    for at in range(steps):
+        offset = min(maximum, minimum + at * step)
         candidate = measured(offset)
         chosen, after = offset, candidate
         candidate_score = max(candidate["maxPenetrationMetres"] - target_depth,
@@ -1075,9 +1082,10 @@ def layer_seat(obj, surface: Surface, rule: dict, clearance: float) -> dict:
     for vertex, point in zip(obj.data.vertices, points + shifted):
         vertex.co = inverse @ Vector(blender_from_runtime(point))
     obj.data.update()
-    return {"axis": rule["axis"], "direction": int(direction), "band": list(rule["band"]),
+    return {"axis": rule["axis"], "direction": int(direction),
+            "bandAxis": rule.get("bandAxis", rule["axis"]), "band": list(rule["band"]),
             "selectedVertices": len(selected), "stepMetres": step,
-            "maximumMetres": maximum, "targetDepthMetres": target_depth,
+            "minimumMetres": minimum, "maximumMetres": maximum, "targetDepthMetres": target_depth,
             "clearanceMetres": clearance,
             "translationMetres": rounded(shifted),
             "before": {"insideVertices": before["insideVertices"],

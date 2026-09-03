@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
 import { blenderArgs, mergeClip, parseArgs, resolvePlan } from '../scripts/art/gear.mjs'
+import { readGlb } from '../scripts/art/glb'
 import { validate } from '../scripts/art/schema.mjs'
 
 const ROOT = join(import.meta.dirname, '..')
@@ -138,6 +139,12 @@ describe('the gear wrapper', () => {
     expect(report.gates).toEqual(manifest.gates)
     expect(report.gatesPass).toBe(false)
   })
+
+  it('validates the shipped paired layer-seat manifest', () => {
+    const manifest = JSON.parse(readFileSync(
+      join(ROOT, 'public', 'gear', 'warden-pauldrons', 'warden-pauldrons.manifest.json'), 'utf8'))
+    expect(validate(GEAR_SCHEMA, manifest)).toEqual([])
+  })
 })
 
 describe.skipIf(!runnable)('the gear fitter, end to end', () => {
@@ -197,6 +204,166 @@ describe.skipIf(!runnable)('the gear fitter, end to end', () => {
       }
     })
   }
+
+  it('partitions one overlapping cloth band into deterministic independent chains', { timeout: 600_000 }, () => {
+    const panels = [
+      'cape_r:upper_arm_R:0.0:0.95:3',
+      'cape:chest:0.0:0.95:3',
+      'cape_l:upper_arm_L:0.0:0.95:3',
+    ]
+    const fit = (piece: string, drapes = panels) => {
+      const outdir = outdirFor(piece)
+      const result = spawnSync(process.execPath, [WRAPPER,
+        '--input', 'proxy:cape', '--slot', 'back', '--body', BODY, '--piece', piece,
+        ...drapes.flatMap((drape) => ['--drape', drape]),
+        '--outdir', outdir,
+      ], { cwd: ROOT, encoding: 'utf8' })
+      expect(result.status, result.stderr + result.stdout).toBe(0)
+      return outdir
+    }
+    const first = fit('proxy-wrap')
+    const second = fit('proxy-wrap')
+    const readOutput = (directory: string, piece: string, suffix: string) =>
+      JSON.parse(readFileSync(join(directory, `${piece}.${suffix}`), 'utf8'))
+    const firstManifest = readOutput(first, 'proxy-wrap', 'manifest.json')
+    const firstReport = readOutput(first, 'proxy-wrap', 'report.json')
+    const singleReport = JSON.parse(readFileSync(
+      join(ROOT, 'tests', 'fixtures', 'gear', 'proxy-cape', 'proxy-cape.report.json'), 'utf8'))
+
+    expect(firstReport.drapes.map((entry: { attachBone: string }) => entry.attachBone)).toEqual([
+      'upper_arm_R', 'chest', 'upper_arm_L',
+    ])
+    expect(firstReport.drapes.reduce((total: number, entry: { bandVertices: number }) =>
+      total + entry.bandVertices, 0)).toBe(singleReport.drapes[0].bandVertices)
+    const chains = firstManifest.drapes.map((entry: { bones: string[] }) => new Set(entry.bones))
+    firstManifest.drapes.forEach((entry: { supports: { terms: { joint: string; weight: number }[] }[] }, owner: number) => {
+      for (const support of entry.supports) {
+        const totals = chains.map((bones: Set<string>) => support.terms.reduce(
+          (total, term) => total + (bones.has(term.joint) ? term.weight : 0), 0))
+        expect(totals[owner]).toBe(Math.max(...totals))
+      }
+    })
+    for (const suffix of ['glb', 'manifest.json', 'report.json', 'clip.json']) {
+      const firstBytes = readFileSync(join(first, `proxy-wrap.${suffix}`))
+      const secondBytes = readFileSync(join(second, `proxy-wrap.${suffix}`))
+      expect(firstBytes.equals(secondBytes), suffix).toBe(true)
+    }
+
+    const tilted = panels.map((drape) => `${drape}:3`)
+    const fitTilted = (drapes: string[]) => {
+      const outdir = outdirFor('proxy-wrap-tilted')
+      const plan = resolvePlan(parseArgs([
+        '--input', 'proxy:cape', '--slot', 'back', '--body', BODY, '--piece', 'proxy-wrap-tilted',
+        ...drapes.flatMap((drape) => ['--drape', drape]), '--outdir', outdir,
+      ]))
+      const result = spawnSync(BLENDER, blenderArgs(plan), { cwd: ROOT, encoding: 'utf8' })
+      expect(result.status, result.stderr + result.stdout).toBe(0)
+      return outdir
+    }
+    const forward = fitTilted(tilted)
+    const reversed = fitTilted([...tilted].reverse())
+    const positions = (directory: string) =>
+      [...readGlb(join(directory, 'proxy-wrap-tilted.glb')).meshes[0]!.positions]
+    expect(positions(forward)).toEqual(positions(reversed))
+    const drapeMeasurements = (directory: string) => Object.fromEntries(
+      readOutput(directory, 'proxy-wrap-tilted', 'report.json').drapes
+        .map((entry: { name: string; bandVertices: number; root: number[]; axis: number[]; toLineY: number }) =>
+          [entry.name, {
+            bandVertices: entry.bandVertices, root: entry.root, axis: entry.axis, toLineY: entry.toLineY,
+          }]),
+    )
+    expect(drapeMeasurements(forward)).toEqual(drapeMeasurements(reversed))
+  })
+
+  it('fits nested bands independently of declaration order', { timeout: 600_000 }, () => {
+    const fit = (drapes: string[]) => {
+      const outdir = outdirFor('proxy-stack')
+      const plan = resolvePlan(parseArgs([
+        '--input', 'proxy:cape', '--slot', 'back', '--body', BODY, '--piece', 'proxy-stack',
+        ...drapes.flatMap((drape) => ['--drape', drape]), '--outdir', outdir,
+      ]))
+      const result = spawnSync(BLENDER, blenderArgs(plan), { cwd: ROOT, encoding: 'utf8' })
+      expect(result.status, result.stderr + result.stdout).toBe(0)
+      return outdir
+    }
+    const cape = 'cape:chest:0.0:0.95:3'
+    const hem = 'hem:pelvis:0.0:0.4:2'
+    const forward = fit([cape, hem])
+    const reversed = fit([hem, cape])
+    for (const suffix of ['glb', 'manifest.json', 'report.json']) {
+      expect(readFileSync(join(forward, `proxy-stack.${suffix}`))
+        .equals(readFileSync(join(reversed, `proxy-stack.${suffix}`))), suffix).toBe(true)
+    }
+    const manifest = JSON.parse(readFileSync(join(forward, 'proxy-stack.manifest.json'), 'utf8'))
+    expect(manifest.drapes.map((drape: { name: string; supports: unknown[] }) =>
+      [drape.name, drape.supports.length])).toEqual([['cape', 72], ['hem', 48]])
+  })
+
+  it('names a drape starved of surface supports', () => {
+    const result = spawnSync(BLENDER, [
+      '--background', '--factory-startup', '--python-exit-code', '1', '--python-expr',
+      'import sys; sys.path.insert(0, "scripts/art"); from gear.drape import require_surface_supports; require_surface_supports("empty", [])',
+    ], { cwd: ROOT, encoding: 'utf8' })
+    expect(result.status).not.toBe(0)
+    expect(result.stderr + result.stdout).toMatch(/drape gate: empty has no surface supports after chain ownership/)
+  })
+
+  it('keeps the legacy layer-seat candidate ladder when optional controls are absent', () => {
+    const expression = `
+import json, sys
+sys.path.insert(0, "scripts/art")
+import bpy
+from gear.geometry import layer_seat
+
+mesh = bpy.data.meshes.new("legacy")
+mesh.from_pydata([(0.0, 0.0, 0.0)], [], [])
+obj = bpy.data.objects.new("legacy", mesh)
+
+class Surface:
+    def __init__(self):
+        self.samples = []
+    def penetration(self, point):
+        self.samples.append(round(float(point[0]), 6))
+        return 0.0 if point[0] >= 0.029 else 0.1
+    def nearest(self, point):
+        return point.copy()
+
+surface = Surface()
+report = layer_seat(obj, surface, {
+    "axis": "X", "direction": 1, "step": 0.01, "maximum": 0.03,
+    "depth": 0.0, "band": [0.0, 1.0],
+}, 0.0)
+assert surface.samples == [0.0, 0.01, 0.02, 0.03], surface.samples
+assert report["bandAxis"] == "X", report
+assert report["minimumMetres"] == 0.01, report
+assert report["translationMetres"] == [0.03, 0.0, 0.0], report
+print(json.dumps(report))
+`
+    const result = spawnSync(BLENDER, [
+      '--background', '--factory-startup', '--python-exit-code', '1', '--python-expr', expression,
+    ], { cwd: ROOT, encoding: 'utf8' })
+    expect(result.status, result.stderr + result.stdout).toBe(0)
+  })
+
+  it('rejects a mirrored layer seat without a paired side', () => {
+    const expression = `
+import sys
+from types import SimpleNamespace
+sys.path.insert(0, "scripts/art")
+from gear.geometry import layer_seat
+layer_seat(SimpleNamespace(name="solo"), None, {
+    "axis": "X", "direction": 1, "mirror": True, "step": 0.01,
+    "maximum": 0.03, "depth": 0.0, "band": [0.0, 1.0],
+}, 0.0, "all")
+`
+    const result = spawnSync(BLENDER, [
+      '--background', '--factory-startup', '--python-exit-code', '1', '--python-expr', expression,
+    ], { cwd: ROOT, encoding: 'utf8' })
+    expect(result.status).not.toBe(0)
+    expect(result.stderr + result.stdout).toMatch(
+      /layer seat gate: solo cannot mirror a seat without paired side L or R/,
+    )
+  })
 })
 
 describe.skipIf(runnable)('the gear fitter, end to end', () => {

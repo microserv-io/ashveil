@@ -55,9 +55,8 @@ export interface GearPieceSource {
   /** The hanging cloth this piece carries, if any: one chain per manifest entry. */
   drapes?: readonly DrapeDefinition[]
   /**
-   * Whether this piece hides the pieces it is worn over. The fitter states it; a
-   * piece that hangs free and has never said defaults to hiding nothing, because a
-   * sheet that moves cannot be trusted to keep covering what is behind it.
+   * Whether this piece hides the pieces it is worn over. Moving drape triangles are
+   * excluded separately, so fixed geometry covers unless the piece opts out.
    */
   hidesPieces?: boolean
 }
@@ -123,7 +122,7 @@ export function wearPiece(body: THREE.Object3D, source: GearPieceSource): WornPi
     mesh,
     material,
     drapes: drapes.chains,
-    hidesPieces: source.hidesPieces ?? drapes.chains.length === 0,
+    hidesPieces: source.hidesPieces ?? true,
   }
 }
 

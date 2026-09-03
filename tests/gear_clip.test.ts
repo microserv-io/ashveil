@@ -11,6 +11,7 @@ import {
   loadClipPiece,
   matchJoints,
   measureClip,
+  runSetAdvisory,
   type BodySurface,
   type ClipBody,
   type ClipMotion,
@@ -470,8 +471,23 @@ describe('the fitted Warden pauldrons', () => {
     expect(manifest.under).toEqual(['warden-tunic'])
     for (const side of ['L', 'R']) {
       const seat = manifest.alignment[side].layerSeat
-      expect(seat.translationMetres[1]).toBeGreaterThanOrEqual(seat.stepMetres)
+      const direction = side === 'L' ? 1 : -1
+      expect(seat.axis).toBe('X')
+      expect(seat.bandAxis).toBe('Y')
+      expect(seat.direction).toBe(direction)
+      expect(seat.translationMetres[0] * direction).toBeGreaterThanOrEqual(seat.minimumMetres)
       expect(seat.after.minimumClearanceMetres).toBeGreaterThanOrEqual(seat.clearanceMetres)
+    }
+  })
+
+  it('keeps the seated caps outside the tunic through bind and gait', () => {
+    const tunic = join(import.meta.dirname, '..', 'public', 'gear', 'warden-tunic')
+    const overlap = runSetAdvisory([tunic, directory])
+
+    for (const motion of ['bind', 'walk', 'run']) {
+      expect(overlap.worst[motion]).toEqual([
+        expect.objectContaining({ outer: 'warden-pauldrons', inner: 'warden-tunic', count: 0 }),
+      ])
     }
   })
 
