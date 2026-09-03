@@ -18,6 +18,7 @@ export const LOOK = {
   rampEdges: [0.4, 0.68] as const,
   /** Width of each hand-over; hard steps erase surface form, so the edges are soft. */
   rampSoftness: 0.14,
+  /** Enough texels that a hand-over spans several of them under linear filtering. */
   rampTexels: 64,
   /** Multiplier on the base-colour texture's chroma; 1 leaves the texture as authored. */
   saturation: 1.15,
@@ -32,7 +33,7 @@ let sharedRamp: THREE.DataTexture | null = null
 const SATURATION_LITERAL = LOOK.saturation.toFixed(3)
 const PROGRAM_CACHE_KEY = `ashveil-toon-saturation-${SATURATION_LITERAL}`
 
-/** One shared function: three keys its program cache on this, so a closure per material would compile one program each. */
+/** Shared by every toon material, alongside one cache key, so they all compile to one program. */
 const applySaturation: THREE.Material['onBeforeCompile'] = (shader) => {
   shader.fragmentShader = shader.fragmentShader.replace(
     '#include <map_fragment>',
@@ -107,7 +108,7 @@ export function toonMaterial(source: THREE.MeshStandardMaterial): BodyMaterial {
   return configureMaterial(material)
 }
 
-/** A glTF material shared by several primitives stays one material after conversion. */
+/** Several primitives can share one glTF material; converting per mesh would split it and dispose it twice. */
 const converted = new WeakMap<THREE.MeshStandardMaterial, BodyMaterial>()
 
 export function stylise<T extends THREE.Object3D>(root: T): T {

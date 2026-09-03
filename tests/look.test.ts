@@ -25,9 +25,11 @@ describe('the painterly look', () => {
     expect(texels[0]).toBe(Math.round(LOOK.ramp[0] * 255))
     expect(texels.at(-1)).toBe(255)
     expect(texels.every((step, index) => index === 0 || step >= texels[index - 1]!)).toBe(true)
-    // A hard step erased surface form; no neighbouring texels may jump more than a hand-over allows.
+    // A hand-over spread over its softness window bounds how far neighbouring texels may jump.
+    const largestTier = Math.max(...LOOK.ramp.map((tier, index) => (index === 0 ? 0 : tier - LOOK.ramp[index - 1]!)))
+    const texelsPerHandover = LOOK.rampSoftness * LOOK.rampTexels
     const largestStep = Math.max(...texels.map((step, index) => (index === 0 ? 0 : step - texels[index - 1]!)))
-    expect(largestStep).toBeLessThan(255 / LOOK.rampTexels * 6)
+    expect(largestStep).toBeLessThan((largestTier * 255 * 2) / texelsPerHandover)
   })
 
   it('holds each tier flat between hand-overs', () => {
