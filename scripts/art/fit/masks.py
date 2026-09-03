@@ -24,6 +24,45 @@ def _segments(contract: dict, landmarks: dict[str, np.ndarray]) -> dict[str, tup
     return result
 
 
+def _members(region: dict, dominant: np.ndarray, body: Body, rules: list,
+             segments: dict) -> np.ndarray:
+    members = np.zeros(len(region["positions"]), dtype=bool)
+    for rule in rules:
+        if rule["bone"] not in body.index:
+            continue
+        start, end = segments[rule["bone"]]
+        segment = end - start
+        length_squared = float(segment @ segment)
+        if length_squared < 1e-12:
+            raise RuntimeError(f"mask gate: bone {rule['bone']} has no length")
+        candidates = dominant == body.index[rule["bone"]]
+        along = np.clip(((region["positions"] - start) @ segment) / length_squared, 0.0, 1.0)
+        lower, upper = rule.get("along", [0.0, 1.0])
+        inside = candidates & (along >= lower) & (along <= upper)
+        # `forward` takes the back of a bone's skin without its front: a hood
+        # wraps the skull behind the ear line but never covers the face.
+        near, far = rule.get("forward", [-np.inf, np.inf])
+        depth = region["positions"][:, 2] - start[2]
+        members |= inside & (depth >= near) & (depth <= far)
+    return members
+
+
+def resolve_rules(body: Body, contract: dict, table: dict, rules: list) -> dict[str, list[int]]:
+    """One region-rule list against the shipped body, per mesh.
+
+    The same resolution slots are cut with, so a `replaces` list reads exactly like a
+    `region` one and gets `along` and `forward` for free.
+    """
+    landmarks = {name: np.asarray(point, dtype=np.float64) for name, point in table.items()}
+    segments = _segments(contract, landmarks)
+    resolved = {}
+    for region in body.regions:
+        dominant = np.argmax(region["weights"], axis=1)
+        members = _members(region, dominant, body, rules, segments)
+        resolved[region["name"]] = np.flatnonzero(members).astype(int).tolist()
+    return resolved
+
+
 def resolve(body: Body, contract: dict, table: dict) -> dict:
     landmarks = {name: np.asarray(point, dtype=np.float64) for name, point in table.items()}
     segments = _segments(contract, landmarks)
@@ -32,24 +71,7 @@ def resolve(body: Body, contract: dict, table: dict) -> dict:
     for region in body.regions:
         dominant = np.argmax(region["weights"], axis=1)
         for slot, slot_spec in contract["slots"].items():
-            members = np.zeros(len(region["positions"]), dtype=bool)
-            for rule in slot_spec["region"]:
-                if rule["bone"] not in body.index:
-                    continue
-                start, end = segments[rule["bone"]]
-                segment = end - start
-                length_squared = float(segment @ segment)
-                if length_squared < 1e-12:
-                    raise RuntimeError(f"mask gate: bone {rule['bone']} has no length")
-                candidates = dominant == body.index[rule["bone"]]
-                along = np.clip(((region["positions"] - start) @ segment) / length_squared, 0.0, 1.0)
-                lower, upper = rule.get("along", [0.0, 1.0])
-                inside = candidates & (along >= lower) & (along <= upper)
-                # `forward` takes the back of a bone's skin without its front: a hood
-                # wraps the skull behind the ear line but never covers the face.
-                near, far = rule.get("forward", [-np.inf, np.inf])
-                depth = region["positions"][:, 2] - start[2]
-                members |= inside & (depth >= near) & (depth <= far)
+            members = _members(region, dominant, body, slot_spec["region"], segments)
             resolved[slot][region["name"]] = np.flatnonzero(members).astype(int).tolist()
     return resolved
 

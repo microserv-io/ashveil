@@ -30,6 +30,10 @@ LIMB_SLICES = 8
 ROLL_OUTSIDE_PENALTY = 0.05
 # A region vertex the piece's shell cannot answer for at all, as a distance.
 ROLL_MISS_METRES = 1.0
+# How far the seating score may pull the roll off the thumb prior. A hand is near
+# enough symmetric that the score alone picks the mirror; the thumb says which way
+# round the piece goes and the score only trims where in that neighbourhood it sits.
+ROLL_REFINE_DEGREES = 20.0
 
 
 def _runtime_points(obj) -> np.ndarray:
@@ -200,6 +204,15 @@ def _roll(points: np.ndarray, obj, reference: np.ndarray, roll: dict,
     tree = BVHTree.FromPolygons([tuple(float(value) for value in point) for point in points],
                                 _triangles(obj), all_triangles=True)
 
+    prior = roll.get("prior")
+    prior_degrees = None
+    piece_thumb = body_thumb = None
+    if prior:
+        piece_thumb = _across(np.asarray(prior["piece"], dtype=np.float64), axis)
+        body_thumb = _across(np.asarray(prior["body"], dtype=np.float64), axis)
+        prior_degrees = math.degrees(math.atan2(float(axis @ np.cross(piece_thumb, body_thumb)),
+                                                float(piece_thumb @ body_thumb))) % 360.0
+
     scored = []
     for degrees in range(0, 360, max(1, int(round(step)))):
         angle = math.radians(degrees)
@@ -216,18 +229,26 @@ def _roll(points: np.ndarray, obj, reference: np.ndarray, roll: dict,
             if not _encloses(tree, point):
                 outside += 1
         fraction = outside / max(1, len(carried))
-        scored.append({"degrees": degrees,
-                       "meanDistanceMetres": round(float(np.mean(distances)), 6),
-                       "outsideFraction": round(fraction, 6),
-                       "score": round(float(np.mean(distances)) + fraction * ROLL_OUTSIDE_PENALTY, 6)})
+        entry = {"degrees": degrees,
+                 "meanDistanceMetres": round(float(np.mean(distances)), 6),
+                 "outsideFraction": round(fraction, 6),
+                 "score": round(float(np.mean(distances)) + fraction * ROLL_OUTSIDE_PENALTY, 6)}
+        if prior_degrees is not None:
+            entry["fromPriorDegrees"] = round(abs((degrees - prior_degrees + 180.0) % 360.0 - 180.0), 3)
+        scored.append(entry)
 
-    order = sorted(scored, key=lambda entry: (entry["score"], entry["degrees"]))
-    best, second = order[0], order[1]
+    allowed = [entry for entry in scored
+               if entry.get("fromPriorDegrees", 0.0) <= ROLL_REFINE_DEGREES]
+    if not allowed:
+        raise RuntimeError("thumb gate: no roll step lands within the thumb prior's window")
+    order = sorted(allowed, key=lambda entry: (entry["score"], entry["degrees"]))
+    best = order[0]
+    second = order[1] if len(order) > 1 else order[0]
     at_zero = next(entry for entry in scored if entry["degrees"] == 0)
     angle = math.radians(best["degrees"])
     rolled = _turn_about(points, axis, centre, angle)
     rolled = rolled + anchor(rolled)
-    return rolled, {
+    measured = {
         "bone": roll["bone"],
         "scoredRegionVertices": int(len(span)),
         "stepDegrees": float(step),
@@ -237,6 +258,16 @@ def _roll(points: np.ndarray, obj, reference: np.ndarray, roll: dict,
         "secondBest": second,
         "atZero": at_zero,
     }
+    if prior_degrees is not None:
+        measured["prior"] = {
+            "degrees": round(prior_degrees, 3),
+            "windowDegrees": ROLL_REFINE_DEGREES,
+            "refinedDegrees": round((best["degrees"] - prior_degrees + 180.0) % 360.0 - 180.0, 3),
+            "pieceThumb": rounded(piece_thumb),
+            "bodyThumb": rounded(body_thumb),
+            "candidates": len(allowed),
+        }
+    return rolled, measured
 
 
 def _reached(points: np.ndarray, reference: np.ndarray) -> np.ndarray:
@@ -295,6 +326,142 @@ def _enclose(points: np.ndarray, obj, reference: np.ndarray, settings: dict,
         "reachedTarget": steps[-1]["insideFraction"] >= target,
         "steps": steps,
     }
+
+
+def _across(direction: np.ndarray, axis: np.ndarray) -> np.ndarray:
+    """A direction flattened onto the plane across the limb, where a roll can see it."""
+    flat = direction - axis * float(direction @ axis)
+    length = float(np.linalg.norm(flat))
+    if length < 1e-9:
+        raise RuntimeError("thumb gate: the thumb direction runs along the limb axis")
+    return flat / length
+
+
+def _frame(axis: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Two axes across the limb, so a slice can be measured and scaled in its own plane."""
+    seed = np.array([0.0, 0.0, 1.0]) if abs(axis[2]) < 0.9 else np.array([1.0, 0.0, 0.0])
+    across = np.cross(axis, seed)
+    across = across / np.linalg.norm(across)
+    return across, np.cross(axis, across)
+
+
+def _neck(points: np.ndarray, along: np.ndarray, frame, low: float, high: float,
+          slices: int = 24) -> float:
+    """Where a garment is narrowest between its ends: a glove's wrist, a boot's ankle.
+
+    The ends are excluded because an open rim and a fingertip are both narrow, and
+    neither is the waist the stretch has to pin.
+    """
+    across, up = frame
+    edges = np.linspace(low, high, slices + 1)
+    best, at = None, (low + high) * 0.5
+    for index in range(slices):
+        if not 0.2 <= (index + 0.5) / slices <= 0.8:
+            continue
+        chosen = points[(along >= edges[index]) & (along <= edges[index + 1])]
+        if len(chosen) < 8:
+            continue
+        radius = float(np.mean(np.hypot(chosen @ across, chosen @ up)))
+        if best is None or radius < best:
+            best, at = radius, float((edges[index] + edges[index + 1]) * 0.5)
+    return at
+
+
+def _remap(values: np.ndarray, source: list[float], target: list[float]) -> np.ndarray:
+    """Piecewise linear along the axis, so fingers stretch without dragging the cuff."""
+    moved = np.empty_like(values)
+    for index in range(len(source) - 1):
+        low, high = source[index], source[index + 1]
+        span = high - low
+        scale = (target[index + 1] - target[index]) / span if abs(span) > 1e-9 else 1.0
+        first, last = index == 0, index == len(source) - 2
+        chosen = ((values >= low) | first) & ((values <= high) | last)
+        moved[chosen] = target[index] + (values[chosen] - low) * scale
+    return moved
+
+
+def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: float) -> tuple[np.ndarray, dict]:
+    """Deform the piece onto the limb it is worn on, along the limb and around it.
+
+    One source has to fit every body the game grows, and races differ in hand and
+    limb size, so a piece cannot be scaled uniformly onto a body and then have the
+    shrinkwrap argue with the result: a glove scaled to reach the wrist has fingers
+    the wrong length, and growing it to cover them turns the cuff into a bell.
+
+    So the piece is stretched piecewise along the limb axis until its own stations -
+    fingertip, wrist, cuff - sit on the body's, and then widened slice by slice until
+    each cross section clears the body it holds. The slice factors are smoothed along
+    the axis because a factor that jumps between slices is a ridge in the silhouette.
+    """
+    axis = np.array(tube["axis"], dtype=np.float64)
+    axis = axis / np.linalg.norm(axis)
+    origin = np.array(tube["origin"], dtype=np.float64)
+    across, up = _frame(axis)
+    relative = points - origin
+    along = relative @ axis
+    body_along = (reference - origin) @ axis
+    report: dict = {}
+
+    stretch = tube.get("stretch")
+    if stretch is not None:
+        tips = np.asarray(stretch["tipRegion"], dtype=np.float64)
+        waist = float((np.asarray(stretch["waistPoint"], dtype=np.float64) - origin) @ axis)
+        body = [float(body_along.min()), waist, float(((tips - origin) @ axis).max())]
+        piece = [float(along.min()), 0.0, float(along.max())]
+        piece[1] = _neck(relative, along, (across, up), piece[0], piece[2])
+        if not (piece[0] < piece[1] < piece[2] and body[0] < body[1] < body[2]):
+            raise RuntimeError(f"tube gate: stations out of order, piece {piece} body {body}")
+        along = _remap(along, piece, body)
+        relative = relative + np.outer(along - (relative @ axis), axis)
+        report["stations"] = {"piece": [round(value, 6) for value in piece],
+                              "body": [round(value, 6) for value in body],
+                              "stretch": [round((body[at + 1] - body[at]) / (piece[at + 1] - piece[at]), 6)
+                                          for at in range(2)]}
+
+    step = float(tube["sliceMetres"])
+    low, high = float(along.min()), float(along.max())
+    count = max(1, int(math.ceil((high - low) / step)))
+    edges = np.linspace(low, high, count + 1)
+    centres = (edges[:-1] + edges[1:]) * 0.5
+    factors = np.ones((count, 2))
+    for index in range(count):
+        chosen = (along >= edges[index]) & (along <= edges[index + 1])
+        held = (body_along >= edges[index]) & (body_along <= edges[index + 1])
+        if chosen.sum() < 4 or held.sum() < 4:
+            continue
+        skin = reference[held] - origin
+        for lane, direction in enumerate((across, up)):
+            mine = relative[chosen] @ direction
+            theirs = skin @ direction
+            wide = float(mine.max() - mine.min())
+            if wide <= 1e-9:
+                continue
+            factors[index, lane] = max(1.0, (float(theirs.max() - theirs.min()) + 2.0 * clearance) / wide)
+
+    smooth = max(1, int(tube.get("smooth", 3)))
+    if smooth > 1 and count > 1:
+        pad = smooth // 2
+        padded = np.pad(factors, ((pad, pad), (0, 0)), mode="edge")
+        kernel = np.ones(smooth) / smooth
+        factors = np.stack([np.convolve(padded[:, lane], kernel, mode="valid")[:count] for lane in range(2)],
+                           axis=1)
+
+    weight = np.ones(len(points))
+    band = tube.get("band")
+    if band:
+        fraction = (along - low) / max(high - low, 1e-9)
+        weight = np.array([_band_weight(value, [list(band)], float(tube.get("fade", 0.0)))
+                           for value in fraction])
+    scaled = np.stack([np.interp(along, centres, factors[:, lane]) for lane in range(2)], axis=1)
+    scaled = 1.0 + (scaled - 1.0) * weight[:, None]
+    radial = np.outer(relative @ across * scaled[:, 0], across) + np.outer(relative @ up * scaled[:, 1], up)
+    report["slices"] = count
+    report["sliceMetres"] = step
+    report["smooth"] = smooth
+    report["radialFactorMin"] = round(float(factors.min()), 6)
+    report["radialFactorMax"] = round(float(factors.max()), 6)
+    report["radialFactorMean"] = round(float(factors.mean()), 6)
+    return origin + np.outer(along, axis) + radial, report
 
 
 def _within_span(points: np.ndarray, reference: np.ndarray, axis: np.ndarray) -> np.ndarray:
@@ -375,7 +542,8 @@ def _straighten(points: np.ndarray, limb: dict) -> tuple[np.ndarray, dict]:
 
 def align(obj, reference: np.ndarray, rule: dict, surface: Surface, side: str | None = None,
           span: dict | None = None, yaw: int = 0, limb: dict | None = None,
-          roll: dict | None = None, enclose: dict | None = None) -> dict:
+          roll: dict | None = None, tube: dict | None = None,
+          enclose: dict | None = None) -> dict:
     """Place the piece on the region it covers, at the yaw the caller asked for.
 
     The fitter used to vote between 0 and 180 by counting vertices inside the body,
@@ -423,12 +591,16 @@ def align(obj, reference: np.ndarray, rule: dict, surface: Surface, side: str | 
     candidates = {turn: place(turn, scale) for turn in (0, 180)}
     inside, mean, points, translation, deep = candidates[yaw]
     rolled = None
+    tubed = None
     grown = None
     if roll:
         points, rolled = _roll(points, obj, reference, roll, anchor, float(roll["stepDegrees"]))
+    if tube:
+        # The stations are the placement, so the anchors are not re-applied over them.
+        points, tubed = _tube(points, reference, tube, float(tube["clearance"]))
     if enclose:
         points, grown = _enclose(points, obj, reference, enclose, anchor)
-    if roll or enclose:
+    if roll or tube or enclose:
         distances = [surface.measure(point) for point in points]
         inside = sum(1 for is_inside, _ in distances if is_inside)
         mean = sum(distance for _, distance in distances) / max(1, len(distances))
@@ -470,6 +642,8 @@ def align(obj, reference: np.ndarray, rule: dict, surface: Surface, side: str | 
         measured["limb"] = turned[yaw]
     if rolled:
         measured["roll"] = rolled
+    if tubed:
+        measured["tube"] = tubed
     if grown:
         measured["enclose"] = grown
     return measured

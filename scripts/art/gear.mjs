@@ -9,7 +9,7 @@ const CLIP = join(ROOT, 'scripts', 'art', 'gear', 'clip.ts')
 const CLIP_ARGUMENT = join('scripts', 'art', 'gear', 'clip.ts')
 const BLENDER_CANDIDATES = ['/opt/homebrew/bin/blender', '/usr/local/bin/blender', 'blender']
 const FLAGS = new Set(['--no-mask'])
-const VALUES = new Set(['--input', '--slot', '--body', '--piece', '--weights', '--covers', '--span', '--yaw', '--under', '--outdir'])
+const VALUES = new Set(['--input', '--slot', '--body', '--piece', '--weights', '--covers', '--span', '--yaw', '--under', '--thumb', '--outdir'])
 const NAME = /^[a-z0-9][a-z0-9-]*$/
 const SPAN = /^[XYZ]:[a-z0-9_]+:[a-z0-9_]+(:[0-9]+(\.[0-9]+)?)?$/
 
@@ -37,6 +37,11 @@ export function parseArgs(argv) {
   }
   if (parsed.span && !SPAN.test(parsed.span)) {
     throw new GearError(`span gate: "${parsed.span}" is not AXIS:FROM:TO[:FACTOR]`)
+  }
+  // Where the piece's own thumbs point, which no measurement of a near-symmetric
+  // hand can recover: the concept convention is +Z, and this one was drawn inward.
+  if (parsed.thumb && !['+Z', '-Z', 'inward', 'outward'].includes(parsed.thumb)) {
+    throw new GearError(`thumb gate: "${parsed.thumb}" is not +Z, -Z, inward or outward`)
   }
   // Sources face +Z by contract, so a turned piece is told, never guessed.
   if (parsed.yaw && !['0', '180'].includes(parsed.yaw)) {
@@ -100,6 +105,7 @@ export function blenderArgs(plan, runner = RUNNER) {
     ...(plan.span ? ['--span', plan.span] : []),
     ...(plan.yaw ? ['--yaw', plan.yaw] : []),
     ...(plan.under.length > 0 ? ['--under', plan.under.join(',')] : []),
+    ...(plan.thumb ? ['--thumb', plan.thumb] : []),
     ...(plan.noMask ? ['--no-mask'] : [])]
 }
 

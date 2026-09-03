@@ -184,6 +184,14 @@
     },
     "reportFile": {
       "type": "string"
+    },
+    "thumb": {
+      "enum": [
+        "+Z",
+        "-Z",
+        "inward",
+        "outward"
+      ]
     }
   },
   "$defs": {
@@ -349,64 +357,119 @@
             },
             "atZero": {
               "$ref": "#/$defs/rollCandidate"
+            },
+            "prior": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "degrees",
+                "windowDegrees",
+                "refinedDegrees",
+                "pieceThumb",
+                "bodyThumb",
+                "candidates"
+              ],
+              "properties": {
+                "degrees": {
+                  "type": "number"
+                },
+                "windowDegrees": {
+                  "type": "number"
+                },
+                "refinedDegrees": {
+                  "type": "number"
+                },
+                "pieceThumb": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "bodyThumb": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "candidates": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
             }
           }
         },
-        "enclose": {
+        "tube": {
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "bone",
-            "fraction",
-            "step",
-            "maxGrow",
-            "scoredRegionVertices",
-            "chosenScale",
-            "insideFractionAtOne",
-            "insideFractionChosen",
-            "reachedTarget",
-            "steps"
+            "slices",
+            "sliceMetres",
+            "smooth",
+            "radialFactorMin",
+            "radialFactorMax",
+            "radialFactorMean"
           ],
           "properties": {
-            "bone": {
-              "type": "string"
+            "stations": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "piece",
+                "body",
+                "stretch"
+              ],
+              "properties": {
+                "piece": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "body": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "stretch": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
             },
-            "fraction": {
-              "type": "number"
-            },
-            "step": {
-              "type": "number"
-            },
-            "maxGrow": {
-              "type": "number"
-            },
-            "scoredRegionVertices": {
+            "slices": {
               "type": "integer",
               "minimum": 1
             },
-            "chosenScale": {
+            "sliceMetres": {
               "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "smooth": {
+              "type": "integer",
               "minimum": 1
             },
-            "insideFractionAtOne": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 1
+            "radialFactorMin": {
+              "type": "number"
             },
-            "insideFractionChosen": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 1
+            "radialFactorMax": {
+              "type": "number"
             },
-            "reachedTarget": {
-              "type": "boolean"
-            },
-            "steps": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "$ref": "#/$defs/encloseStep"
-              }
+            "radialFactorMean": {
+              "type": "number"
             }
           }
         }
@@ -435,6 +498,10 @@
           "maximum": 1
         },
         "score": {
+          "type": "number",
+          "minimum": 0
+        },
+        "fromPriorDegrees": {
           "type": "number",
           "minimum": 0
         }

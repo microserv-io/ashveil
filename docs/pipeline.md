@@ -392,11 +392,15 @@ because a glove is judged by whether the hand is in it rather than by how close 
 passes. The gloves' concept was drawn back-of-hand to the viewer, so the fitted pair
 was rolled a quarter turn off a hand that hangs palm to thigh and the fingers came out
 through the palm; the search moves the score from 76 to 59 and lands on 260 and 100
-degrees, mirrored, with the neighbouring step second. `align.enclose: {bone, fraction,
-step, maxGrow}` then grows the island about its anchored end until that bone's skin is
-inside the piece, re-anchoring each step and recording every one. Both are measured
-against one bone's own skin, never the whole slot region: `hands` is four fifths
-forearm, and asking a glove to contain the forearm is asking the wrong question.
+degrees, mirrored, with the neighbouring step second. The angle is not searched for blind: a slot's `thumb` says which way a
+worn thumb points on this family (`+Z`, forward, for a hand hanging in the A pose) and
+`--thumb <+Z|-Z|inward|outward>` says which way the source's own thumbs point in its
+frame, so the roll is the turn that maps one onto the other and the seating score only
+refines it within 20 degrees. A near-symmetric hand cannot be told from its mirror by
+any measurement of shape, which is what an earlier search learned the hard way: it
+picked the mirror and scored it best. `align.enclose` grows a piece until a bone's
+skin is inside it; it is kept in the code and the schema but no slot uses it, because
+`replaces` made it unnecessary for skin and its growth flared the cuff.
 
 **`regionEnclosed`** is the report line these produced and the one to read first on a
 new piece: the fraction of the region inside the fitted shell. The set reads boots
@@ -404,6 +408,30 @@ new piece: the fraction of the region inside the fitted shell. The set reads boo
 gloves 0.40, which is the piece the reviewer rejected. No gate catches this, because
 every gate asks whether the piece clears the body and a garment sitting beside a limb
 clears it perfectly.
+
+**Tube fit: one model, many bodies.** A piece is authored once and has to fit every
+body the game grows, and races differ in hand and limb size, so a source cannot be
+scaled uniformly onto a body and then have the shrinkwrap argue with what is left: a
+glove scaled to reach the wrist has fingers the wrong length, and growing it until
+they are covered turns the cuff into a bell. `align.tube` deforms the piece onto the
+limb instead. Along the axis it stretches piecewise so the piece's own stations —
+fingertip, the narrowest cross section, cuff — land on the body's, which lets fingers
+lengthen or shorten without dragging the cuff with them. Across the axis it slices the
+piece every 2cm and widens each slice until that cross section clears the body it
+holds by the slot's clearance, smoothing the factors over three slices because a
+factor that jumps between slices is a ridge in the silhouette. A boot bends at the
+ankle, so its foot and its shaft are two axes and only the shaft is tubed: `feet`
+carries the axis and a band above the ankle and no station stretch, and the foot is
+left as the source drew it.
+
+**Replacing rather than covering.** A slot's `replaces`, written in the same
+region-rule shape as `region`, names the skin the piece stands in for: the hand for
+`hands`, the foot for `feet`, nothing for the cloth slots. What a piece hides is the
+union of the coverage measured off the fitted piece and that replaced region, so a
+glove hides the whole hand even where it does not quite reach — the way an armoured
+game does it — and no fingertip pokes through as bare skin. The two counts stay
+separate in the report, because a replaced region hiding much more than the coverage
+means the piece is the wrong size and the tube fit is what answers that.
 
 **Weights and export.** `transfer` copies the body's cleaned weights by nearest-face
 interpolation, keeps only the slot's `allowedBones` (a pair's side keeps only its own

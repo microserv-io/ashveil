@@ -25,8 +25,25 @@
       "Facial_Feature_03": 0,
       "Facial_Feature_04": 0,
       "Head": 0
+    },
+    "measuredVertices": {
+      "Body": 2399,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    },
+    "replacedVertices": {
+      "Body": 0,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
     }
   },
+  "replaces": [],
   "source": {
     "file": "warden-tunic-tripo.glb",
     "sha256": "a2018aec6f2c34932ae14c87336cf3acb9c3d67c1eab9f4dba3f341265f17cd7"

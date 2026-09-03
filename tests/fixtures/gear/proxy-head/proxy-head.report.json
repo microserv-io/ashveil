@@ -21,8 +21,25 @@
       "Facial_Feature_03": 11,
       "Facial_Feature_04": 0,
       "Head": 1161
+    },
+    "measuredVertices": {
+      "Body": 943,
+      "Facial_Feature_01": 164,
+      "Facial_Feature_02": 78,
+      "Facial_Feature_03": 11,
+      "Facial_Feature_04": 0,
+      "Head": 1161
+    },
+    "replacedVertices": {
+      "Body": 0,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
     }
   },
+  "replaces": [],
   "source": {
     "file": "proxy:head",
     "sha256": "28a5088916abf4069df26bf1b7461544ed6063e2a307d8f83061b0e296bea826"

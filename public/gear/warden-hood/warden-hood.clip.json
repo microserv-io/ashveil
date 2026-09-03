@@ -4,11 +4,11 @@
   "piece": "warden-hood",
   "slot": "head",
   "hides": {
-    "Body": 1061,
-    "Facial_Feature_01": 102,
-    "Facial_Feature_02": 27,
     "Facial_Feature_03": 12,
     "Facial_Feature_04": 24,
+    "Body": 1061,
+    "Facial_Feature_02": 27,
+    "Facial_Feature_01": 102,
     "Head": 1241
   },
   "clip": {

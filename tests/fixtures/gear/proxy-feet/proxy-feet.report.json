@@ -21,8 +21,32 @@
       "Facial_Feature_03": 0,
       "Facial_Feature_04": 0,
       "Head": 0
+    },
+    "measuredVertices": {
+      "Body": 1489,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    },
+    "replacedVertices": {
+      "Body": 1281,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
     }
   },
+  "replaces": [
+    {
+      "bone": "foot_L"
+    },
+    {
+      "bone": "foot_R"
+    }
+  ],
   "source": {
     "file": "proxy:feet",
     "sha256": "28a5088916abf4069df26bf1b7461544ed6063e2a307d8f83061b0e296bea826"

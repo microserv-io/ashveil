@@ -23,8 +23,25 @@
       "Facial_Feature_03": 12,
       "Facial_Feature_04": 24,
       "Head": 1241
+    },
+    "measuredVertices": {
+      "Body": 1061,
+      "Facial_Feature_01": 102,
+      "Facial_Feature_02": 27,
+      "Facial_Feature_03": 12,
+      "Facial_Feature_04": 24,
+      "Head": 1241
+    },
+    "replacedVertices": {
+      "Body": 0,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
     }
   },
+  "replaces": [],
   "source": {
     "file": "warden-hood-tripo.glb",
     "sha256": "d2a7a5f7c3b13e7c2aecf7e2afdf2886892efc0969738414a51e658556c0f222"

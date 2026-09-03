@@ -267,6 +267,7 @@
         "required": [
           "pair",
           "region",
+          "replaces",
           "defaultCovers",
           "align",
           "clearance",
@@ -323,6 +324,46 @@
                 }
               }
             }
+          },
+          "replaces": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "bone"
+              ],
+              "properties": {
+                "bone": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_]+$"
+                },
+                "along": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                },
+                "forward": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "thumb": {
+            "enum": [
+              "+Z",
+              "-Z"
+            ]
           },
           "align": {
             "type": "object",
@@ -599,6 +640,152 @@
                   "maxGrow": {
                     "type": "number",
                     "minimum": 1
+                  }
+                }
+              },
+              "tube": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "axisFrom",
+                  "axisTo"
+                ],
+                "properties": {
+                  "axisFrom": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_]+$"
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "L",
+                          "R"
+                        ],
+                        "properties": {
+                          "L": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          },
+                          "R": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "axisTo": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_]+$"
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "L",
+                          "R"
+                        ],
+                        "properties": {
+                          "L": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          },
+                          "R": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "sliceMetres": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "smooth": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "band": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "fade": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "stretch": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "bone",
+                      "waist"
+                    ],
+                    "properties": {
+                      "bone": {
+                        "oneOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "L",
+                              "R"
+                            ],
+                            "properties": {
+                              "L": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z0-9_]+$"
+                              },
+                              "R": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z0-9_]+$"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "waist": {
+                        "oneOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_]+$"
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "L",
+                              "R"
+                            ],
+                            "properties": {
+                              "L": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z0-9_]+$"
+                              },
+                              "R": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z0-9_]+$"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
                   }
                 }
               }

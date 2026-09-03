@@ -8,6 +8,7 @@ export interface GearPlan {
   weights?: 'transfer' | 'stiff' | 'rigid'
   covers: string[]
   under: string[]
+  thumb?: '+Z' | '-Z' | 'inward' | 'outward'
   span?: string
   yaw?: '0' | '180'
   noMask: boolean

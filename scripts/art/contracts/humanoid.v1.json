@@ -344,6 +344,14 @@
           ]
         }
       ],
+      "replaces": [
+        {
+          "bone": "foot_L"
+        },
+        {
+          "bone": "foot_R"
+        }
+      ],
       "align": {
         "span": {
           "axis": "Z",
@@ -371,6 +379,23 @@
             "L": "shin_L",
             "R": "shin_R"
           },
+          "band": [
+            0.35,
+            1.0
+          ],
+          "fade": 0.25
+        },
+        "tube": {
+          "axisFrom": {
+            "L": "ankle_L",
+            "R": "ankle_R"
+          },
+          "axisTo": {
+            "L": "knee_L",
+            "R": "knee_R"
+          },
+          "sliceMetres": 0.02,
+          "smooth": 3,
           "band": [
             0.35,
             1.0
@@ -449,6 +474,7 @@
           ]
         }
       ],
+      "replaces": [],
       "align": {
         "span": {
           "axis": "Y",
@@ -531,6 +557,7 @@
           ]
         }
       ],
+      "replaces": [],
       "align": {
         "span": {
           "axis": "X",
@@ -610,6 +637,7 @@
           "bone": "clavicle_R"
         }
       ],
+      "replaces": [],
       "align": {
         "span": {
           "axis": "Y",
@@ -677,6 +705,7 @@
         "back"
       ],
       "region": [],
+      "replaces": [],
       "align": {
         "referenceSlot": "chest",
         "span": {
@@ -761,6 +790,29 @@
           ]
         }
       ],
+      "replaces": [
+        {
+          "bone": "hand_L"
+        },
+        {
+          "bone": "hand_R"
+        },
+        {
+          "bone": "forearm_L",
+          "along": [
+            0.9,
+            1.0
+          ]
+        },
+        {
+          "bone": "forearm_R",
+          "along": [
+            0.9,
+            1.0
+          ]
+        }
+      ],
+      "thumb": "+Z",
       "align": {
         "span": {
           "axis": "Y",
@@ -790,14 +842,27 @@
           },
           "stepDegrees": 10
         },
-        "enclose": {
-          "bone": {
+        "tube": {
+          "axisFrom": {
+            "L": "wrist_L",
+            "R": "wrist_R"
+          },
+          "axisTo": {
             "L": "hand_L",
             "R": "hand_R"
           },
-          "fraction": 0.98,
-          "step": 0.02,
-          "maxGrow": 1.05
+          "sliceMetres": 0.02,
+          "smooth": 3,
+          "stretch": {
+            "bone": {
+              "L": "hand_L",
+              "R": "hand_R"
+            },
+            "waist": {
+              "L": "wrist_L",
+              "R": "wrist_R"
+            }
+          }
         }
       },
       "clearance": 0.01,
@@ -863,6 +928,7 @@
           ]
         }
       ],
+      "replaces": [],
       "align": {
         "span": {
           "axis": "Y",
@@ -955,6 +1021,7 @@
           ]
         }
       ],
+      "replaces": [],
       "align": {
         "span": {
           "axis": "Y",

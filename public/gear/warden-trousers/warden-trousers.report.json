@@ -23,8 +23,25 @@
       "Facial_Feature_03": 0,
       "Facial_Feature_04": 0,
       "Head": 0
+    },
+    "measuredVertices": {
+      "Body": 1407,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
+    },
+    "replacedVertices": {
+      "Body": 0,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 0,
+      "Head": 0
     }
   },
+  "replaces": [],
   "source": {
     "file": "warden-trousers-tripo.glb",
     "sha256": "33d31dede2a0cbaf5753475bd86076e6e57d89c848567a89b50d4622a9c0bdbc"

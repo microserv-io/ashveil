@@ -20,6 +20,7 @@ export interface ReviewGearPiece {
 export const REVIEW_GEAR: readonly ReviewGearPiece[] = [
   { slot: 'feet', piece: 'warden-boots', path: gearPath('warden-boots') },
   { slot: 'legs', piece: 'warden-trousers', path: gearPath('warden-trousers') },
+  { slot: 'hands', piece: 'warden-gloves', path: gearPath('warden-gloves') },
   { slot: 'chest', piece: 'warden-tunic', path: gearPath('warden-tunic') },
   { slot: 'head', piece: 'warden-hood', path: gearPath('warden-hood') },
 ]

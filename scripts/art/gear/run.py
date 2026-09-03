@@ -12,7 +12,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from fit import export as exporter  # noqa: E402
+from fit import masks as body_masks  # noqa: E402
 from fit.glb import Glb  # noqa: E402
+from fit.skin import Body  # noqa: E402
 from gear import body, gate, geometry, piece, review, weights  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -30,6 +32,7 @@ def parse(argv: list[str]):
     parser.add_argument("--span")
     parser.add_argument("--yaw", choices=("0", "180"), default="0")
     parser.add_argument("--under")
+    parser.add_argument("--thumb", choices=("+Z", "-Z", "inward", "outward"), default="+Z")
     parser.add_argument("--no-mask", action="store_true")
     parser.add_argument("--outdir", required=True)
     return parser.parse_args(argv)
@@ -67,6 +70,7 @@ def _manifest(args, contract: dict, source: dict, covers: list[str], under: list
         "inverseBindSha256": exporter.sha256_array(inverse),
         "covers": covers,
         "under": under,
+        "thumb": args.thumb,
         "hides": hides,
         "weights": mode,
         "alignment": alignment,
@@ -146,7 +150,7 @@ def _alignment_rule(rule: dict, proxy: bool) -> dict:
     if not proxy:
         return rule
     return {key: value for key, value in rule.items()
-            if key not in ("limb", "roll", "enclose")} | {
+            if key not in ("limb", "roll", "tube", "enclose")} | {
         "span": {**rule["span"], "factor": 1.0},
         "anchors": {axis: {**anchor, "offset": 0.0} for axis, anchor in rule["anchors"].items()}}
 
@@ -167,14 +171,70 @@ def _bone_line(named, side: str | None, contract: dict, landmarks: dict) -> tupl
     return bone, head, tail
 
 
-def _roll(rule: dict, side: str | None, contract: dict, landmarks: dict) -> dict | None:
+def _roll(rule: dict, side: str | None, contract: dict, landmarks: dict,
+          worn: str | None, said: str) -> dict | None:
     """The bone a piece is turned about to find which way round it goes."""
     roll = rule.get("roll")
     if not roll:
         return None
     bone, head, tail = _bone_line(roll["bone"], side, contract, landmarks)
-    return {"bone": bone, "direction": [a - b for a, b in zip(head, tail)],
-            "stepDegrees": float(roll["stepDegrees"])}
+    resolved = {"bone": bone, "direction": [a - b for a, b in zip(head, tail)],
+                "stepDegrees": float(roll["stepDegrees"])}
+    if worn:
+        resolved["prior"] = {"piece": _thumb_axis(said, side), "body": _thumb_axis(worn, side)}
+    return resolved
+
+
+# Runtime axes: +X is the body's left, +Z is forward. `inward` is toward the midline,
+# which is the opposite side for each hand, so a pair's declaration is one word.
+THUMB_AXES = {"+Z": (0.0, 0.0, 1.0), "-Z": (0.0, 0.0, -1.0)}
+
+
+def _thumb_axis(named: str, side: str | None) -> list[float]:
+    """A thumb direction as a runtime vector, for the body or for the piece's own frame."""
+    if named in THUMB_AXES:
+        return list(THUMB_AXES[named])
+    if named not in ("inward", "outward"):
+        raise RuntimeError(f"thumb gate: \"{named}\" is not a thumb direction")
+    if side is None:
+        raise RuntimeError(f"thumb gate: \"{named}\" only means something on a pair")
+    toward_midline = -1.0 if side == "L" else 1.0
+    return [toward_midline if named == "inward" else -toward_midline, 0.0, 0.0]
+
+
+def _tube(rule: dict, side: str | None, loaded: dict, slots: list[str], landmarks: dict,
+          clearance: float) -> dict | None:
+    """Deform the piece onto the limb: one source, every body the game grows."""
+    tube = rule.get("tube")
+    if not tube:
+        return None
+
+    def named(value):
+        return value[side] if isinstance(value, dict) and side else value
+
+    for key in ("axisFrom", "axisTo"):
+        if named(tube[key]) not in landmarks:
+            raise RuntimeError(f"tube gate: the body has no landmark \"{named(tube[key])}\"")
+    origin = [float(value) for value in landmarks[named(tube["axisFrom"])]]
+    end = [float(value) for value in landmarks[named(tube["axisTo"])]]
+    if all(abs(a - b) < 1e-9 for a, b in zip(origin, end)):
+        raise RuntimeError("tube gate: the axis landmarks are the same point")
+    resolved = {"axis": [b - a for a, b in zip(origin, end)], "origin": origin,
+                "sliceMetres": float(tube.get("sliceMetres", 0.02)),
+                "smooth": int(tube.get("smooth", 3)), "clearance": clearance}
+    if "band" in tube:
+        resolved["band"] = list(tube["band"])
+        resolved["fade"] = float(tube.get("fade", 0.0))
+    stretch = tube.get("stretch")
+    if stretch:
+        bones = stretch["bone"] if isinstance(stretch["bone"], dict) else {"all": stretch["bone"]}
+        held = body.region(loaded, slots, side is not None, bones)
+        waist = named(stretch["waist"])
+        if waist not in landmarks:
+            raise RuntimeError(f"tube gate: the body has no landmark \"{waist}\"")
+        resolved["stretch"] = {"tipRegion": held[side or "all"],
+                               "waistPoint": [float(value) for value in landmarks[waist]]}
+    return resolved
 
 
 def _enclose(rule: dict, side: str | None, loaded: dict, slots: list[str]) -> dict | None:
@@ -245,7 +305,10 @@ def run(args) -> dict:
         landmarks = loaded["manifest"]["landmarks"]
         measured_side = geometry.align(obj, reference[side], rule, surface, chosen, span,
                                        int(args.yaw), _limb(rule, chosen, contract, landmarks),
-                                       _roll(rule, chosen, contract, landmarks),
+                                       _roll(rule, chosen, contract, landmarks,
+                                             slot.get("thumb"), args.thumb),
+                                       _tube(rule, chosen, loaded, reference_slots, landmarks,
+                                             float(slot["clearance"])),
                                        _enclose(rule, chosen, loaded, reference_slots))
         measured_side["proxy"] = proxy
         measured_side["reference"] = reference_slots
@@ -258,8 +321,19 @@ def run(args) -> dict:
     fitted = piece.join(objects, args.piece)
 
     enclosed = geometry.enclosure(fitted, reference)
-    hides = ({} if args.no_mask
-             else geometry.coverage(fitted, loaded["meshes"], float(slot["coverReach"])))
+    covered = ({} if args.no_mask
+               else geometry.coverage(fitted, loaded["meshes"], float(slot["coverReach"])))
+    # A glove replaces the hand rather than covering it, so the skin it stands in for
+    # goes whether the garment reaches it or not: a fingertip the glove is a little
+    # short of is still a gloved finger, not a bare one poking through.
+    replaced = ({} if args.no_mask or not slot["replaces"]
+                else body_masks.resolve_rules(Body(Glb(str(loaded["path"])), contract), contract,
+                                              loaded["manifest"]["landmarks"], slot["replaces"]))
+    # Sorted, because a set of mesh names iterates in a different order every process
+    # and the fitter has to write the same bytes twice.
+    union = {name: sorted(set(covered.get(name, [])) | set(replaced.get(name, [])))
+             for name in sorted(set(covered) | set(replaced))}
+    hides = {name: indices for name, indices in union.items() if indices}
     hidden = {name: set(indices) for name, indices in hides.items()}
     outside = geometry.outside_measure([fitted], geometry.Surface(loaded["meshes"] + beneath, hidden))
 
@@ -270,7 +344,7 @@ def run(args) -> dict:
     rest = exporter.finish(glb_path)
     measured = gate.measure(glb_path, str(loaded["path"]), contract, source_had, outside)
     gates_table = gate.gates(measured, slot, faces)
-    kept = ("scale", "yawDegrees", "translation", "spanOverride", "limb", "roll", "enclose")
+    kept = ("scale", "yawDegrees", "translation", "spanOverride", "limb", "roll", "tube", "enclose")
     # The region it grew against is thousands of points, and the manifest is a contract.
     alignment = ({side: {key: value for key, value in report.items() if key in kept}
                   for side, report in alignment_report.items()}
@@ -289,7 +363,12 @@ def run(args) -> dict:
         "referenceRegions": reference_slots,
         "coverage": {"reachMetres": float(slot["coverReach"]),
                      "hiddenVertices": {mesh.name: len(hides.get(mesh.name, []))
-                                        for mesh in loaded["meshes"]}},
+                                        for mesh in loaded["meshes"]},
+                     "measuredVertices": {mesh.name: len(covered.get(mesh.name, []))
+                                          for mesh in loaded["meshes"]},
+                     "replacedVertices": {mesh.name: len(replaced.get(mesh.name, []))
+                                          for mesh in loaded["meshes"]}},
+        "replaces": slot["replaces"],
         "source": source,
         "islands": island_report,
         "alignment": alignment_report,
