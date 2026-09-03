@@ -426,8 +426,9 @@
             "radial",
             "radialClampedLanes",
             "sliceStations",
-            "sliceFactors",
-            "sliceRatios"
+            "sliceRatios",
+            "knotStations",
+            "knotFactors"
           ],
           "properties": {
             "stations": {
@@ -506,7 +507,13 @@
                 "type": "number"
               }
             },
-            "sliceFactors": {
+            "knotStations": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "knotFactors": {
               "type": "array",
               "items": {
                 "type": "array",

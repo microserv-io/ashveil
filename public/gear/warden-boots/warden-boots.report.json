@@ -23,7 +23,7 @@
       "Head": 0
     },
     "measuredVertices": {
-      "Body": 1640,
+      "Body": 1618,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -83,11 +83,11 @@
         0,
         0.014529
       ],
-      "insideVerticesBeforeShrinkwrap": 383,
-      "insideFractionBeforeShrinkwrap": 0.167909,
-      "deepInsideVerticesBeforeShrinkwrap": 271,
-      "deepInsideFractionBeforeShrinkwrap": 0.118808,
-      "meanSurfaceDistanceMetres": 0.021535,
+      "insideVerticesBeforeShrinkwrap": 368,
+      "insideFractionBeforeShrinkwrap": 0.161333,
+      "deepInsideVerticesBeforeShrinkwrap": 254,
+      "deepInsideFractionBeforeShrinkwrap": 0.111355,
+      "meanSurfaceDistanceMetres": 0.021042,
       "insideVerticesByYaw": {
         "0": 398,
         "180": 202
@@ -97,9 +97,9 @@
         "180": 0.018227
       },
       "anchorResidualMetres": {
-        "X": 0.020344906,
+        "X": 0.021757071,
         "Y": 0,
-        "Z": 0.00820962
+        "Z": 0.010049241
       },
       "limb": {
         "bone": "shin_L",
@@ -131,11 +131,25 @@
         "sliceMetres": 0.02,
         "smooth": 3,
         "radialFactorMin": 1,
-        "radialFactorMax": 1.264504,
-        "radialFactorMean": 1.021358,
+        "radialFactorMax": 1.043797,
+        "radialFactorMean": 1.021899,
         "radial": "enclose",
-        "radialClampedLanes": 0,
-        "centreShiftMaxMetres": 0.029351,
+        "radialClampedLanes": 2,
+        "centreShiftMaxMetres": 0.042,
+        "knotStations": [
+          0.025185,
+          0.300245
+        ],
+        "knotFactors": [
+          [
+            1.043797,
+            1
+          ],
+          [
+            1.043797,
+            1
+          ]
+        ],
         "sliceStations": [
           -0.113307,
           -0.094072,
@@ -160,104 +174,14 @@
           0.271393,
           0.290628
         ],
-        "sliceFactors": [
-          [
-            1.264504,
-            1.013236
-          ],
-          [
-            1.19294,
-            1.022763
-          ],
-          [
-            1.107978,
-            1.020544
-          ],
-          [
-            1.041111,
-            1.011746
-          ],
-          [
-            1.037976,
-            1
-          ],
-          [
-            1.044585,
-            1
-          ],
-          [
-            1.044585,
-            1
-          ],
-          [
-            1.035065,
-            1
-          ],
-          [
-            1.014599,
-            1
-          ],
-          [
-            1.0391,
-            1
-          ],
-          [
-            1.024501,
-            1
-          ],
-          [
-            1.024501,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ]
-        ],
         "sliceRatios": [
           [
             1.296456,
-            1.006657
+            0.983734
           ],
           [
-            1.200601,
-            1.026393
+            1.10826,
+            0.776463
           ],
           [
             1.081763,
@@ -269,7 +193,7 @@
           ],
           [
             0.991373,
-            0.801533
+            0.639677
           ],
           [
             1.072359,
@@ -277,23 +201,23 @@
           ],
           [
             1.061396,
-            0.753097
+            0.734611
           ],
           [
-            0.953719,
-            0.774386
+            1.034589,
+            2.194276
           ],
           [
             1.043797,
-            0.825491
+            0.993239
           ],
           [
             1,
             1
           ],
           [
-            1.073504,
-            0.751203
+            1.878268,
+            4.069154
           ],
           [
             1,
@@ -354,11 +278,11 @@
         0,
         0.014654
       ],
-      "insideVerticesBeforeShrinkwrap": 382,
-      "insideFractionBeforeShrinkwrap": 0.167544,
-      "deepInsideVerticesBeforeShrinkwrap": 271,
-      "deepInsideFractionBeforeShrinkwrap": 0.11886,
-      "meanSurfaceDistanceMetres": 0.021438,
+      "insideVerticesBeforeShrinkwrap": 394,
+      "insideFractionBeforeShrinkwrap": 0.172807,
+      "deepInsideVerticesBeforeShrinkwrap": 273,
+      "deepInsideFractionBeforeShrinkwrap": 0.119737,
+      "meanSurfaceDistanceMetres": 0.020847,
       "insideVerticesByYaw": {
         "0": 396,
         "180": 201
@@ -368,9 +292,9 @@
         "180": 0.018222
       },
       "anchorResidualMetres": {
-        "X": 0.020337797,
+        "X": 0.020432856,
         "Y": 0,
-        "Z": 0.008167384
+        "Z": 0.013700445
       },
       "limb": {
         "bone": "shin_R",
@@ -402,11 +326,25 @@
         "sliceMetres": 0.02,
         "smooth": 3,
         "radialFactorMin": 1,
-        "radialFactorMax": 1.265157,
-        "radialFactorMean": 1.021532,
+        "radialFactorMax": 1.044459,
+        "radialFactorMean": 1.011115,
         "radial": "enclose",
-        "radialClampedLanes": 0,
-        "centreShiftMaxMetres": 0.029394,
+        "radialClampedLanes": 3,
+        "centreShiftMaxMetres": 0.041954,
+        "knotStations": [
+          0.025096,
+          0.299974
+        ],
+        "knotFactors": [
+          [
+            1.044459,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
         "sliceStations": [
           -0.113304,
           -0.094082,
@@ -431,108 +369,18 @@
           0.271141,
           0.290363
         ],
-        "sliceFactors": [
-          [
-            1.265157,
-            1.013886
-          ],
-          [
-            1.193787,
-            1.023417
-          ],
-          [
-            1.108786,
-            1.020983
-          ],
-          [
-            1.041713,
-            1.011966
-          ],
-          [
-            1.038377,
-            1
-          ],
-          [
-            1.045013,
-            1
-          ],
-          [
-            1.045013,
-            1
-          ],
-          [
-            1.035498,
-            1
-          ],
-          [
-            1.01482,
-            1
-          ],
-          [
-            1.039547,
-            1
-          ],
-          [
-            1.024727,
-            1
-          ],
-          [
-            1.024727,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ],
-          [
-            1,
-            1
-          ]
-        ],
         "sliceRatios": [
           [
             1.297126,
-            1.007303
+            0.972706
           ],
           [
-            1.201219,
-            1.027052
+            1.108862,
+            0.812205
           ],
           [
-            1.083015,
-            1.035897
+            1.046565,
+            0.811338
           ],
           [
             1.042125,
@@ -540,7 +388,7 @@
           ],
           [
             0.984267,
-            0.802043
+            0.640067
           ],
           [
             1.073007,
@@ -551,20 +399,20 @@
             0.753589
           ],
           [
-            0.954306,
-            0.774934
+            1.035229,
+            2.19611
           ],
           [
             1.044459,
-            0.826013
+            0.993979
           ],
           [
             0.43098,
             0.25745
           ],
           [
-            1.074182,
-            0.75168
+            1.879453,
+            4.071785
           ],
           [
             1,
@@ -619,19 +467,19 @@
     }
   },
   "facing": {
-    "pieceCentroidZ": -0.027752,
+    "pieceCentroidZ": -0.027187,
     "regionCentroidZ": -0.004082,
-    "aheadOfRegionMetres": -0.02367,
+    "aheadOfRegionMetres": -0.023105,
     "toes": {
       "L": {
-        "islandCentroidZ": -0.027303,
+        "islandCentroidZ": -0.026775,
         "ankleZ": -0.059648,
-        "aheadMetres": 0.032345
+        "aheadMetres": 0.032873
       },
       "R": {
-        "islandCentroidZ": -0.028201,
+        "islandCentroidZ": -0.027599,
         "ankleZ": -0.059648,
-        "aheadMetres": 0.031447
+        "aheadMetres": 0.032049
       }
     }
   },
@@ -645,8 +493,8 @@
     "R": {
       "regionVertices": 769,
       "withinPieceBox": 769,
-      "insideVertices": 691,
-      "insideFraction": 0.89857
+      "insideVertices": 669,
+      "insideFraction": 0.869961
     }
   },
   "decimation": {
@@ -658,16 +506,16 @@
     "pieceVertices": 3013,
     "outsidePasses": [
       {
-        "movedVertices": 1116,
-        "movedFraction": 0.370395,
+        "movedVertices": 1217,
+        "movedFraction": 0.403916,
         "insideAfter": 0
       }
     ],
-    "wholeMovedVertices": 1116,
-    "hugSelectedVertices": 224,
-    "hugMovedVertices": 129,
-    "wholeMovedFraction": 0.370395,
-    "hugMovedFraction": 0.042814
+    "wholeMovedVertices": 1217,
+    "hugSelectedVertices": 223,
+    "hugMovedVertices": 132,
+    "wholeMovedFraction": 0.403916,
+    "hugMovedFraction": 0.04381
   },
   "weights": {
     "mode": "stiff",
@@ -725,25 +573,25 @@
     "band": {
       "warden-boots_L": {
         "vertices": 1507,
-        "bandVertices": 64,
-        "bandFraction": 0.042468,
+        "bandVertices": 62,
+        "bandFraction": 0.041141,
         "ceiling": 0.8,
-        "minPeakWeight": 0.503274,
-        "meanPeakWeight": 0.977875,
-        "bandHeightMetres": 0.117943,
+        "minPeakWeight": 0.506409,
+        "meanPeakWeight": 0.978833,
+        "bandHeightMetres": 0.121241,
         "bandMinY": 0.030396,
-        "bandMaxY": 0.148338
+        "bandMaxY": 0.151637
       },
       "warden-boots_R": {
         "vertices": 1506,
-        "bandVertices": 60,
-        "bandFraction": 0.039841,
+        "bandVertices": 57,
+        "bandFraction": 0.037849,
         "ceiling": 0.8,
-        "minPeakWeight": 0.510278,
-        "meanPeakWeight": 0.978994,
-        "bandHeightMetres": 0.114647,
+        "minPeakWeight": 0.501279,
+        "meanPeakWeight": 0.978886,
+        "bandHeightMetres": 0.117219,
         "bandMinY": 0.031412,
-        "bandMaxY": 0.146058
+        "bandMaxY": 0.14863
       }
     },
     "stiffness": 3
@@ -861,13 +709,13 @@
     "manifest": "warden-boots.manifest.json",
     "report": "warden-boots.report.json",
     "review": "warden-boots.review.png",
-    "sha256": "a7f2c28ff561ca95f65d456d842f0482dfbbb2ca6d5a39710560497866c801da"
+    "sha256": "ad29ddeef8c53d0854bdbce46199997638a0be63cedcadc4a36c3f0b36dafbb9"
   },
   "review": {
     "bodyVerticesInsideThePiece": {
-      "bind": 11,
-      "abduct90": 11,
-      "flex60": 11
+      "bind": 17,
+      "abduct90": 17,
+      "flex60": 17
     }
   }
 }

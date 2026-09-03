@@ -425,18 +425,29 @@ lengthen or shorten without dragging the cuff with them. The narrowest cross sec
 measured about each slice's own centroid rather than about the axis, or a roll about
 that axis moves the station it finds. Across the axis it slices the piece every 2cm and
 **carries each slice onto the body's own cross section** before widening it until it
-clears by the slot's clearance, smoothing both over three slices because a factor that
-jumps between slices is a ridge in the silhouette. `tube.radial` says what the widening
-is for: `enclose` never shrinks a slice, so the piece ends up round whatever it holds,
-and `match` sizes each slice to the body's own cross section within [0.85, 1.35] and may
-shrink one. A slot whose `replaces` already takes the skin away wants `match` — the
-glove has to be the hand's size, not merely fit round it, and `enclose` plus a 1cm
-clearance read as mittens. `feet` stays `enclose`; `hands` matches at 3mm of clearance,
-because leather is skin-tight and the tunic's sleeves are too short to layer over a cuff.
-The report carries the factor and the raw ratio per slice, which is how the source is
-told from the fit: this glove's fingers ask for 0.77 at the tips and 1.66 at the palm,
-one curled mass where the hand tapers and thin where it is broad, and no per-slice
-scaling makes fingers out of that. The carrying is what makes a long
+clears by the slot's clearance. **The widening is a profile, not a factor per slice.**
+A factor per slice ripples: neighbouring cross sections of a source differ by more than
+the body does, and the piece came out corrugated, faint rings of different girth down
+the cuff and worse in motion. A garment changes girth where it changes station, so the
+profile is knotted at the stations themselves — fingertip, wrist, cuff for `hands`, the
+band's ends for `feet` — each knot the median of the ratios of the three nearest slices,
+straight lines between the knots and held flat beyond the ends.
+
+Each slice's reach is measured with its spurs dropped, points further from the section's
+own centre than twice its median radius, and the same way on both sides so the ratio
+compares palm to palm. Plain min and max let one spur speak for a whole cross section: a
+thumb, or the 305 forearm-weighted vertices this body carries 10cm in front of its arm,
+which widened the glove's palm to palm-plus-spur. A percentile per lane cannot see that
+one — it is a sixth of the section and all of it at one end.
+
+`tube.radial` says what the widening is for: `enclose` never shrinks a knot, so the piece
+ends up round whatever it holds, and `match` sizes it to the body's own cross section
+within [0.85, 1.35] and may shrink one. A slot whose `replaces` already takes the skin
+away wants `match` — the glove has to be the hand's size, not merely fit round it, and
+`enclose` plus a 1cm clearance read as mittens. `feet` stays `enclose`; `hands` matches
+at 3mm of clearance, because leather is skin-tight and the tunic's sleeves are too short
+to layer over a cuff. The report carries the knot factors and the raw ratio per slice,
+which is how the source is told from the fit. The carrying is what makes a long
 cuff wearable: widening an off-centre slice about the axis only throws it further off,
 which stood the gauntlet's cuff 7cm clear of the arm and belled it out to reach back —
 the funnel the reviewer saw from the side. A boot bends at the ankle, so its foot and

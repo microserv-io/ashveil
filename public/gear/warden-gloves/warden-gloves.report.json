@@ -15,7 +15,7 @@
   "coverage": {
     "reachMetres": 0.06,
     "hiddenVertices": {
-      "Body": 3855,
+      "Body": 3843,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -23,7 +23,7 @@
       "Head": 0
     },
     "measuredVertices": {
-      "Body": 2296,
+      "Body": 2653,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -84,11 +84,11 @@
         0.751213,
         0.027487
       ],
-      "insideVerticesBeforeShrinkwrap": 506,
-      "insideFractionBeforeShrinkwrap": 0.192835,
-      "deepInsideVerticesBeforeShrinkwrap": 130,
-      "deepInsideFractionBeforeShrinkwrap": 0.049543,
-      "meanSurfaceDistanceMetres": 0.009365,
+      "insideVerticesBeforeShrinkwrap": 585,
+      "insideFractionBeforeShrinkwrap": 0.222942,
+      "deepInsideVerticesBeforeShrinkwrap": 206,
+      "deepInsideFractionBeforeShrinkwrap": 0.078506,
+      "meanSurfaceDistanceMetres": 0.009573,
       "insideVerticesByYaw": {
         "0": 194,
         "180": 455
@@ -98,9 +98,9 @@
         "180": 0.014919
       },
       "anchorResidualMetres": {
-        "X": 0.000274196,
-        "Y": 0.015393445,
-        "Z": 0.008824059
+        "X": 0.00264511,
+        "Y": 0.012731315,
+        "Z": 0.018204223
       },
       "roll": {
         "bone": "forearm_L",
@@ -171,12 +171,31 @@
         "slices": 12,
         "sliceMetres": 0.02,
         "smooth": 3,
-        "radialFactorMin": 0.85,
+        "radialFactorMin": 0.917318,
         "radialFactorMax": 1.35,
-        "radialFactorMean": 1.196199,
+        "radialFactorMean": 1.168028,
         "radial": "match",
-        "radialClampedLanes": 15,
-        "centreShiftMaxMetres": 0.071709,
+        "radialClampedLanes": 3,
+        "centreShiftMaxMetres": 0.074016,
+        "knotStations": [
+          -0.158655,
+          0,
+          0.069971
+        ],
+        "knotFactors": [
+          [
+            0.917318,
+            1.35
+          ],
+          [
+            1.35,
+            1.35
+          ],
+          [
+            1.021354,
+            1.019498
+          ]
+        ],
         "sliceStations": [
           -0.149129,
           -0.130076,
@@ -191,60 +210,10 @@
           0.041393,
           0.060445
         ],
-        "sliceFactors": [
-          [
-            0.85,
-            1.276496
-          ],
-          [
-            0.903594,
-            1.223397
-          ],
-          [
-            1.004592,
-            1.223397
-          ],
-          [
-            1.159912,
-            1.2969
-          ],
-          [
-            1.272985,
-            1.35
-          ],
-          [
-            1.338653,
-            1.35
-          ],
-          [
-            1.35,
-            1.35
-          ],
-          [
-            1.35,
-            1.35
-          ],
-          [
-            1.303967,
-            1.35
-          ],
-          [
-            1.194418,
-            1.239833
-          ],
-          [
-            1.027751,
-            1.091862
-          ],
-          [
-            0.907118,
-            0.943891
-          ]
-        ],
         "sliceRatios": [
           [
-            0.848701,
-            1.442376
+            0.917318,
+            1.393348
           ],
           [
             0.827447,
@@ -252,43 +221,43 @@
           ],
           [
             1.010783,
-            1.1907
+            1.681549
           ],
           [
             1.152995,
             1.666203
           ],
           [
-            1.31596,
-            2.15507
+            1.41582,
+            3.298158
           ],
           [
             1.38926,
-            2.246044
+            2.24361
           ],
           [
-            1.377864,
-            1.648174
+            1.945803,
+            2.757562
           ],
           [
-            1.462568,
-            1.68346
+            1.885846,
+            2.628721
           ],
           [
-            1.471555,
-            1.657405
+            2.824191,
+            2.75285
           ],
           [
             1.2119,
-            1.647936
+            0.880445
           ],
           [
             1.021354,
             1.019498
           ],
           [
-            0.767839,
-            0.906088
+            0.80816,
+            1.033324
           ]
         ]
       },
@@ -305,11 +274,11 @@
         0.751213,
         0.027536
       ],
-      "insideVerticesBeforeShrinkwrap": 509,
-      "insideFractionBeforeShrinkwrap": 0.194053,
-      "deepInsideVerticesBeforeShrinkwrap": 129,
-      "deepInsideFractionBeforeShrinkwrap": 0.04918,
-      "meanSurfaceDistanceMetres": 0.009345,
+      "insideVerticesBeforeShrinkwrap": 562,
+      "insideFractionBeforeShrinkwrap": 0.214258,
+      "deepInsideVerticesBeforeShrinkwrap": 201,
+      "deepInsideFractionBeforeShrinkwrap": 0.07663,
+      "meanSurfaceDistanceMetres": 0.009356,
       "insideVerticesByYaw": {
         "0": 194,
         "180": 457
@@ -319,9 +288,9 @@
         "180": 0.014915
       },
       "anchorResidualMetres": {
-        "X": 0.000273318,
-        "Y": 0.015411155,
-        "Z": 0.008817963
+        "X": 0.002565243,
+        "Y": 0.012742411,
+        "Z": 0.018606587
       },
       "roll": {
         "bone": "forearm_R",
@@ -392,12 +361,31 @@
         "slices": 12,
         "sliceMetres": 0.02,
         "smooth": 3,
-        "radialFactorMin": 0.85,
+        "radialFactorMin": 0.917295,
         "radialFactorMax": 1.35,
-        "radialFactorMean": 1.196117,
+        "radialFactorMean": 1.154499,
         "radial": "match",
-        "radialClampedLanes": 15,
-        "centreShiftMaxMetres": 0.071706,
+        "radialClampedLanes": 3,
+        "centreShiftMaxMetres": 0.074842,
+        "knotStations": [
+          -0.158634,
+          0,
+          0.069991
+        ],
+        "knotFactors": [
+          [
+            0.917295,
+            1.35
+          ],
+          [
+            1.35,
+            1.35
+          ],
+          [
+            1.015459,
+            0.944243
+          ]
+        ],
         "sliceStations": [
           -0.149108,
           -0.130056,
@@ -412,60 +400,10 @@
           0.041413,
           0.060465
         ],
-        "sliceFactors": [
-          [
-            0.85,
-            1.276501
-          ],
-          [
-            0.903576,
-            1.22341
-          ],
-          [
-            1.004548,
-            1.22341
-          ],
-          [
-            1.159842,
-            1.296909
-          ],
-          [
-            1.272933,
-            1.35
-          ],
-          [
-            1.338628,
-            1.35
-          ],
-          [
-            1.35,
-            1.35
-          ],
-          [
-            1.35,
-            1.35
-          ],
-          [
-            1.303947,
-            1.35
-          ],
-          [
-            1.193773,
-            1.239865
-          ],
-          [
-            1.027106,
-            1.091913
-          ],
-          [
-            0.906492,
-            0.943961
-          ]
-        ],
         "sliceRatios": [
           [
-            0.84868,
-            1.442386
+            0.917295,
+            1.47487
           ],
           [
             0.827425,
@@ -473,43 +411,43 @@
           ],
           [
             1.010727,
-            1.190727
+            1.681587
           ],
           [
             1.152916,
             1.666242
           ],
           [
-            1.315883,
-            2.155138
+            1.415738,
+            2.732539
           ],
           [
             1.389168,
-            2.246101
+            1.922631
           ],
           [
-            1.407113,
-            1.648237
+            1.987109,
+            2.872842
           ],
           [
-            1.462484,
-            1.683516
+            1.885737,
+            2.62881
           ],
           [
-            1.471476,
-            1.657481
+            2.824039,
+            2.752975
           ],
           [
             1.211842,
-            1.647984
+            0.880497
           ],
           [
-            1.019476,
-            1.019594
+            1.015459,
+            0.944243
           ],
           [
-            0.767793,
-            0.906145
+            0.808112,
+            1.033389
           ]
         ]
       },
@@ -520,43 +458,43 @@
     }
   },
   "facing": {
-    "pieceCentroidZ": 0.027596,
+    "pieceCentroidZ": 0.017398,
     "regionCentroidZ": 0.013149,
-    "aheadOfRegionMetres": 0.014447
+    "aheadOfRegionMetres": 0.004249
   },
   "regionEnclosed": {
     "L": {
       "regionVertices": 2009,
-      "withinPieceBox": 1829,
-      "insideVertices": 983,
-      "insideFraction": 0.537452
+      "withinPieceBox": 1749,
+      "insideVertices": 1204,
+      "insideFraction": 0.688393
     },
     "R": {
       "regionVertices": 1977,
-      "withinPieceBox": 1790,
-      "insideVertices": 950,
-      "insideFraction": 0.530726
+      "withinPieceBox": 1696,
+      "insideVertices": 1179,
+      "insideFraction": 0.695165
     }
   },
   "decimation": {
     "trianglesBefore": 10141,
-    "trianglesAfter": 3998,
+    "trianglesAfter": 3999,
     "ratio": 0.394438
   },
   "shrinkwrap": {
-    "pieceVertices": 2110,
+    "pieceVertices": 2117,
     "outsidePasses": [
       {
-        "movedVertices": 726,
-        "movedFraction": 0.344076,
+        "movedVertices": 651,
+        "movedFraction": 0.307511,
         "insideAfter": 0
       }
     ],
-    "wholeMovedVertices": 726,
-    "hugSelectedVertices": 445,
-    "hugMovedVertices": 321,
-    "wholeMovedFraction": 0.344076,
-    "hugMovedFraction": 0.152133
+    "wholeMovedVertices": 651,
+    "hugSelectedVertices": 471,
+    "hugMovedVertices": 393,
+    "wholeMovedFraction": 0.307511,
+    "hugMovedFraction": 0.18564
   },
   "weights": {
     "mode": "stiff",
@@ -613,26 +551,26 @@
     "orphanedVertices": {},
     "band": {
       "warden-gloves_L": {
-        "vertices": 1055,
-        "bandVertices": 150,
-        "bandFraction": 0.14218,
+        "vertices": 1058,
+        "bandVertices": 128,
+        "bandFraction": 0.120983,
         "ceiling": 0.8,
-        "minPeakWeight": 0.594334,
-        "meanPeakWeight": 0.955626,
-        "bandHeightMetres": 0.066062,
-        "bandMinY": 0.769219,
-        "bandMaxY": 0.835281
+        "minPeakWeight": 0.508836,
+        "meanPeakWeight": 0.957139,
+        "bandHeightMetres": 0.066436,
+        "bandMinY": 0.768533,
+        "bandMaxY": 0.83497
       },
       "warden-gloves_R": {
-        "vertices": 1055,
-        "bandVertices": 150,
-        "bandFraction": 0.14218,
+        "vertices": 1059,
+        "bandVertices": 127,
+        "bandFraction": 0.119924,
         "ceiling": 0.8,
-        "minPeakWeight": 0.509242,
-        "meanPeakWeight": 0.956109,
-        "bandHeightMetres": 0.066142,
-        "bandMinY": 0.769271,
-        "bandMaxY": 0.835413
+        "minPeakWeight": 0.501557,
+        "meanPeakWeight": 0.958877,
+        "bandHeightMetres": 0.066961,
+        "bandMinY": 0.767963,
+        "bandMaxY": 0.834924
       }
     },
     "stiffness": 3
@@ -696,7 +634,7 @@
       "foot_R"
     ],
     "inverseBindMaxAbsDifference": 1.79e-7,
-    "triangles": 3998,
+    "triangles": 3999,
     "materials": 1,
     "meshes": 1,
     "sides": {
@@ -749,13 +687,13 @@
     "manifest": "warden-gloves.manifest.json",
     "report": "warden-gloves.report.json",
     "review": "warden-gloves.review.png",
-    "sha256": "bae3ae5ea78578b50fc0eaa60b2c4d1ee64effe6d077f2f7d032996913e4eba1"
+    "sha256": "06d305395a70eb646d5f1f81a87a64cbbdda294f7fa412dc466c79b762c6bb1b"
   },
   "review": {
     "bodyVerticesInsideThePiece": {
-      "bind": 83,
-      "abduct90": 58,
-      "flex60": 70
+      "bind": 43,
+      "abduct90": 65,
+      "flex60": 33
     }
   }
 }

@@ -24,9 +24,16 @@ DEEP_INSIDE = 0.005
 OUTSIDE_PASSES = 8
 # Cross sections a limb band is measured as. Fewer and a cuff's own wobble is the axis.
 LIMB_SLICES = 8
-# How far a `match` slice may be resized. Wider and one bad cross section - a glove's
+# How far a `match` knot may be resized. Wider and one bad cross section - a glove's
 # curled fingers against a flat hand - reshapes the piece instead of sizing it.
 MATCH_LIMITS = (0.85, 1.35)
+# How much of the limb a knot's factor is taken from, either side of its station, and
+# the fewest cross sections it may be a median of: two is an average, one is a spike.
+KNOT_REACH = 0.015
+KNOT_SLICES = 3
+# How far out of a cross section a point may sit, as a multiple of the section's own
+# median radius, before it is a spur rather than the limb.
+REACH_SPREAD = 2.0
 # What one region vertex left outside the piece costs the roll score, as metres of
 # mean distance. Enclosure is the question a glove is judged by, so it outweighs
 # hugging: a glove tight against the back of a hand the fingers hang out of is wrong.
@@ -399,6 +406,49 @@ def _remap(values: np.ndarray, source: list[float], target: list[float]) -> np.n
     return moved
 
 
+def _reach(section: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """How far a cross section reaches per lane, once its spurs are dropped.
+
+    Plain min and max let a spur speak for the whole slice - a thumb, or a patch of
+    skin weighted to the wrong bone - and a glove measured against that comes out as
+    wide as palm plus spur. A percentile per lane does not catch one either, since a
+    spur is all at one end; distance from the section's own centre does. Both sides
+    are measured the same way, so the ratio still compares palm to palm.
+    """
+    centre = np.median(section, axis=0)
+    radius = np.linalg.norm(section - centre, axis=1)
+    kept = section[radius <= max(REACH_SPREAD * float(np.median(radius)), 1e-4)]
+    if len(kept) < 4:
+        kept = section
+    return kept.min(axis=0), kept.max(axis=0)
+
+
+def _profile(knots: list[float], centres: np.ndarray, ratios: np.ndarray,
+             measured: np.ndarray, match: bool) -> tuple[np.ndarray, int]:
+    """One radial factor per station, per lane, and a straight line between them.
+
+    A factor per slice makes a ripple: neighbouring cross sections of a source differ
+    by more than the body does, so the piece came out corrugated, rings of different
+    girth down the cuff and worse in motion. The stations are where a garment actually
+    changes girth - fingertip, wrist, cuff - so the profile is knotted there, each knot
+    the median of the ratios around it, and the surface between two knots is a cone.
+    """
+    profile = np.ones((len(knots), 2))
+    clamped = 0
+    for at, station in enumerate(knots):
+        near = measured & (np.abs(centres - station) <= KNOT_REACH)
+        if int(near.sum()) < KNOT_SLICES and measured.any():
+            order = np.argsort(np.where(measured, np.abs(centres - station), np.inf))
+            near = np.zeros(len(centres), dtype=bool)
+            near[order[:min(KNOT_SLICES, int(measured.sum()))]] = True
+        if not near.any():
+            continue
+        asked = np.median(ratios[near], axis=0)
+        profile[at] = np.clip(asked, *MATCH_LIMITS) if match else np.maximum(1.0, asked)
+        clamped += int(np.count_nonzero(profile[at] != asked))
+    return profile, clamped
+
+
 def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: float) -> tuple[np.ndarray, dict]:
     """Deform the piece onto the limb it is worn on, along the limb and around it.
 
@@ -413,9 +463,9 @@ def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: floa
     away and which therefore has to be the limb's size rather than merely fit round it.
 
     So the piece is stretched piecewise along the limb axis until its own stations -
-    fingertip, wrist, cuff - sit on the body's, and then widened slice by slice until
-    each cross section clears the body it holds. The slice factors are smoothed along
-    the axis because a factor that jumps between slices is a ridge in the silhouette.
+    fingertip, wrist, cuff - sit on the body's, and then widened on a profile knotted
+    at those same stations, because a garment changes girth where it changes station
+    and nowhere else.
 
     Each slice is carried onto the body's own cross section as well as widened, so a
     limb that turns at its joint - a forearm leaves this wrist 11.5 degrees off the
@@ -429,6 +479,7 @@ def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: floa
     along = relative @ axis
     body_along = (reference - origin) @ axis
     report: dict = {}
+    knots: list[float] = []
 
     stretch = tube.get("stretch")
     if stretch is not None:
@@ -441,6 +492,7 @@ def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: floa
             raise RuntimeError(f"tube gate: stations out of order, piece {piece} body {body}")
         along = _remap(along, piece, body)
         relative = relative + np.outer(along - (relative @ axis), axis)
+        knots = list(body)
         report["stations"] = {"piece": [round(value, 6) for value in piece],
                               "body": [round(value, 6) for value in body],
                               "stretch": [round((body[at + 1] - body[at]) / (piece[at + 1] - piece[at]), 6)
@@ -453,40 +505,35 @@ def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: floa
     centres = (edges[:-1] + edges[1:]) * 0.5
     lanes = np.stack([relative @ across, relative @ up], axis=1)
     skin_lanes = np.stack([(reference - origin) @ across, (reference - origin) @ up], axis=1)
-    factors = np.ones((count, 2))
     middles = np.zeros((count, 2))
     shifts = np.zeros((count, 2))
     match = tube.get("radial", "enclose") == "match"
     ratios = np.ones((count, 2))
-    clamped = 0
+    measured = np.zeros(count, dtype=bool)
     for index in range(count):
         chosen = (along >= edges[index]) & (along <= edges[index + 1])
         held = (body_along >= edges[index]) & (body_along <= edges[index + 1])
         if chosen.sum() < 4:
             continue
-        mine = lanes[chosen]
-        middles[index] = (mine.max(axis=0) + mine.min(axis=0)) * 0.5
+        mine_low, mine_high = _reach(lanes[chosen])
+        middles[index] = (mine_high + mine_low) * 0.5
         if held.sum() < 4:
             continue
-        theirs = skin_lanes[held]
-        shifts[index] = (theirs.max(axis=0) + theirs.min(axis=0)) * 0.5 - middles[index]
-        ratio = ((theirs.max(axis=0) - theirs.min(axis=0) + 2.0 * clearance)
-                 / np.maximum(mine.max(axis=0) - mine.min(axis=0), 1e-9))
+        theirs_low, theirs_high = _reach(skin_lanes[held])
+        shifts[index] = (theirs_high + theirs_low) * 0.5 - middles[index]
+        ratio = ((theirs_high - theirs_low + 2.0 * clearance)
+                 / np.maximum(mine_high - mine_low, 1e-9))
         ratios[index] = ratio
-        if match:
-            factors[index] = np.clip(ratio, *MATCH_LIMITS)
-            clamped += int(np.count_nonzero(factors[index] != ratio))
-        else:
-            factors[index] = np.maximum(1.0, ratio)
+        measured[index] = True
 
     smooth = max(1, int(tube.get("smooth", 3)))
     if smooth > 1 and count > 1:
         pad = smooth // 2
         kernel = np.ones(smooth) / smooth
-        factors, middles, shifts = (
+        middles, shifts = (
             np.stack([np.convolve(np.pad(strip, ((pad, pad), (0, 0)), mode="edge")[:, lane], kernel,
                                   mode="valid")[:count] for lane in range(2)], axis=1)
-            for strip in (factors, middles, shifts))
+            for strip in (middles, shifts))
 
     weight = np.ones(len(points))
     band = tube.get("band")
@@ -494,11 +541,17 @@ def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: floa
         fraction = (along - low) / max(high - low, 1e-9)
         weight = np.array([_band_weight(value, [list(band)], float(tube.get("fade", 0.0)))
                            for value in fraction])
+        if not knots:
+            knots = [low + float(edge) * (high - low) for edge in band]
+    if not knots:
+        knots = [low, high]
+    profile, clamped = _profile(knots, centres, ratios, measured, match)
 
     def sampled(strip: np.ndarray) -> np.ndarray:
         return np.stack([np.interp(along, centres, strip[:, lane]) for lane in range(2)], axis=1)
 
-    scaled = 1.0 + (sampled(factors) - 1.0) * weight[:, None]
+    widened = np.stack([np.interp(along, knots, profile[:, lane]) for lane in range(2)], axis=1)
+    scaled = 1.0 + (widened - 1.0) * weight[:, None]
     # Widened about the slice's own centre and carried onto the limb's, because
     # scaling an off-centre cuff about the axis only throws it further off.
     middle = sampled(middles)
@@ -507,15 +560,16 @@ def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: floa
     report["slices"] = count
     report["sliceMetres"] = step
     report["smooth"] = smooth
-    report["radialFactorMin"] = round(float(factors.min()), 6)
-    report["radialFactorMax"] = round(float(factors.max()), 6)
-    report["radialFactorMean"] = round(float(factors.mean()), 6)
+    report["radialFactorMin"] = round(float(profile.min()), 6)
+    report["radialFactorMax"] = round(float(profile.max()), 6)
+    report["radialFactorMean"] = round(float(profile.mean()), 6)
     report["radial"] = "match" if match else "enclose"
     report["radialClampedLanes"] = clamped
     report["centreShiftMaxMetres"] = round(float(np.abs(shifts).max()), 6)
-    # Per slice, so a mass where the fingers should be can be read off the report.
+    report["knotStations"] = [round(float(value), 6) for value in knots]
+    report["knotFactors"] = [[round(float(value), 6) for value in knot] for knot in profile]
+    # The ratios the body asked for, per slice: how the source's own shape reads.
     report["sliceStations"] = [round(float(value), 6) for value in centres]
-    report["sliceFactors"] = [[round(float(value), 6) for value in slice_factor] for slice_factor in factors]
     report["sliceRatios"] = [[round(float(value), 6) for value in slice_ratio] for slice_ratio in ratios]
     return origin + np.outer(along, axis) + radial, report
 
