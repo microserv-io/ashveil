@@ -9,6 +9,7 @@
     "legs",
     "waist"
   ],
+  "under": [],
   "referenceRegions": [
     "legs",
     "waist"
@@ -89,16 +90,16 @@
     "pieceVertices": 3028,
     "outsidePasses": [
       {
-        "movedVertices": 1974,
-        "movedFraction": 0.651915,
+        "movedVertices": 1593,
+        "movedFraction": 0.52609,
         "insideAfter": 0
       }
     ],
-    "wholeMovedVertices": 1974,
-    "hugSelectedVertices": 1119,
-    "hugMovedVertices": 262,
-    "wholeMovedFraction": 0.651915,
-    "hugMovedFraction": 0.086526
+    "wholeMovedVertices": 1593,
+    "hugSelectedVertices": 1123,
+    "hugMovedVertices": 357,
+    "wholeMovedFraction": 0.52609,
+    "hugMovedFraction": 0.1179
   },
   "weights": {
     "mode": "transfer",
@@ -124,7 +125,20 @@
         "upper_arm_R"
       ]
     },
-    "orphanedVertices": {}
+    "orphanedVertices": {},
+    "band": {
+      "warden-trousers": {
+        "vertices": 3028,
+        "bandVertices": 956,
+        "bandFraction": 0.31572,
+        "ceiling": 0.8,
+        "minPeakWeight": 0.466463,
+        "meanPeakWeight": 0.86413,
+        "bandHeightMetres": 0.58966,
+        "bandMinY": 0.467475,
+        "bandMaxY": 1.057135
+      }
+    }
   },
   "rest": {
     "maxRestRotationBefore": 0,
@@ -240,13 +254,13 @@
     "manifest": "warden-trousers.manifest.json",
     "report": "warden-trousers.report.json",
     "review": "warden-trousers.review.png",
-    "sha256": "bab9786ec3b3dae3a31fac63b95659951df253575da14577203c937f824b5c46"
+    "sha256": "6b01226ddddf8516c198ca09fca768c492eb43b02d28ebbbb4213ba482572ef7"
   },
   "review": {
     "bodyVerticesInsideThePiece": {
-      "bind": 208,
-      "abduct90": 208,
-      "flex60": 208
+      "bind": 223,
+      "abduct90": 223,
+      "flex60": 223
     }
   }
 }

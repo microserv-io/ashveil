@@ -9,6 +9,9 @@
     "chest",
     "shoulders"
   ],
+  "under": [
+    "warden-trousers"
+  ],
   "referenceRegions": [
     "chest",
     "shoulders"
@@ -16,7 +19,7 @@
   "coverage": {
     "reachMetres": 0.06,
     "hiddenVertices": {
-      "Body": 2398,
+      "Body": 2399,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -65,18 +68,18 @@
         0.964817,
         -0.019322
       ],
-      "insideVerticesBeforeShrinkwrap": 2460,
-      "insideFractionBeforeShrinkwrap": 0.586832,
+      "insideVerticesBeforeShrinkwrap": 2519,
+      "insideFractionBeforeShrinkwrap": 0.600906,
       "deepInsideVerticesBeforeShrinkwrap": 1993,
       "deepInsideFractionBeforeShrinkwrap": 0.475429,
-      "meanSurfaceDistanceMetres": 0.012796,
+      "meanSurfaceDistanceMetres": 0.012015,
       "insideVerticesByYaw": {
-        "0": 2460,
-        "180": 1746
+        "0": 2519,
+        "180": 1764
       },
       "meanSurfaceDistanceByYaw": {
-        "0": 0.012796,
-        "180": 0.028973
+        "0": 0.012015,
+        "180": 0.02839
       },
       "anchorResidualMetres": {
         "X": 0,
@@ -104,21 +107,51 @@
     "pieceVertices": 4192,
     "outsidePasses": [
       {
-        "movedVertices": 3149,
-        "movedFraction": 0.751193,
-        "insideAfter": 62
+        "movedVertices": 3371,
+        "movedFraction": 0.804151,
+        "insideAfter": 81
       },
       {
-        "movedVertices": 616,
-        "movedFraction": 0.146947,
-        "insideAfter": 0
+        "movedVertices": 694,
+        "movedFraction": 0.165553,
+        "insideAfter": 9
+      },
+      {
+        "movedVertices": 252,
+        "movedFraction": 0.060115,
+        "insideAfter": 13
+      },
+      {
+        "movedVertices": 243,
+        "movedFraction": 0.057968,
+        "insideAfter": 7
+      },
+      {
+        "movedVertices": 240,
+        "movedFraction": 0.057252,
+        "insideAfter": 16
+      },
+      {
+        "movedVertices": 238,
+        "movedFraction": 0.056775,
+        "insideAfter": 5
+      },
+      {
+        "movedVertices": 238,
+        "movedFraction": 0.056775,
+        "insideAfter": 16
+      },
+      {
+        "movedVertices": 236,
+        "movedFraction": 0.056298,
+        "insideAfter": 8
       }
     ],
-    "wholeMovedVertices": 3765,
+    "wholeMovedVertices": 5512,
     "hugSelectedVertices": 1145,
-    "hugMovedVertices": 265,
-    "wholeMovedFraction": 0.898139,
-    "hugMovedFraction": 0.063216
+    "hugMovedVertices": 286,
+    "wholeMovedFraction": 1.314885,
+    "hugMovedFraction": 0.068225
   },
   "weights": {
     "mode": "transfer",
@@ -140,7 +173,22 @@
         "twist_upper_arm_R"
       ]
     },
-    "orphanedVertices": {}
+    "orphanedVertices": {
+      "warden-tunic": 30
+    },
+    "band": {
+      "warden-tunic": {
+        "vertices": 4192,
+        "bandVertices": 2269,
+        "bandFraction": 0.541269,
+        "ceiling": 0.8,
+        "minPeakWeight": 0.295446,
+        "meanPeakWeight": 0.756552,
+        "bandHeightMetres": 0.59964,
+        "bandMinY": 0.965003,
+        "bandMaxY": 1.564643
+      }
+    }
   },
   "rest": {
     "maxRestRotationBefore": 0,
@@ -210,8 +258,8 @@
       "islands": 5
     },
     "maxInfluencesPerVertex": 4,
-    "minWeightSum": 0.999999858,
-    "maxWeightSum": 1.00000011,
+    "minWeightSum": 0.999999874,
+    "maxWeightSum": 1.000000104,
     "influencingBones": [
       "chest",
       "clavicle_L",
@@ -232,10 +280,14 @@
       "textures": true
     },
     "bindClearance": {
-      "insideVertices": 0,
-      "disagreeingVertices": 0,
-      "maxPenetrationMetres": 0,
-      "deepestPoint": null
+      "insideVertices": 7,
+      "disagreeingVertices": 41,
+      "maxPenetrationMetres": 0.004093339,
+      "deepestPoint": [
+        -0.158208,
+        1.017385,
+        0.039185
+      ]
     }
   },
   "gates": {
@@ -260,13 +312,13 @@
     "manifest": "warden-tunic.manifest.json",
     "report": "warden-tunic.report.json",
     "review": "warden-tunic.review.png",
-    "sha256": "75801bac2a8052eb7939a65ba3ea6fcc0d1d50abb2cac0c9dddfdf4ab80fc5c2"
+    "sha256": "4334ea4506fb87debee214e7f0c7c945afa2a22e3c9ca80dcd359f9d577ec4ec"
   },
   "review": {
     "bodyVerticesInsideThePiece": {
-      "bind": 533,
-      "abduct90": 535,
-      "flex60": 527
+      "bind": 534,
+      "abduct90": 500,
+      "flex60": 524
     }
   }
 }

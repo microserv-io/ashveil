@@ -4,7 +4,7 @@
   "piece": "warden-tunic",
   "slot": "chest",
   "hides": {
-    "Body": 2398
+    "Body": 2399
   },
   "clip": {
     "depth": 0.005,

@@ -3,18 +3,19 @@
   "family": "humanoid.v1",
   "contractVersion": "1.2.0",
   "body": "masculine-v3",
-  "slot": "feet",
-  "piece": "warden-boots",
+  "slot": "hands",
+  "piece": "warden-gloves",
   "covers": [
-    "feet"
+    "hands"
   ],
+  "under": [],
   "referenceRegions": [
-    "feet"
+    "hands"
   ],
   "coverage": {
     "reachMetres": 0.06,
     "hiddenVertices": {
-      "Body": 1639,
+      "Body": 763,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -23,199 +24,124 @@
     }
   },
   "source": {
-    "file": "warden-boots-tripo.glb",
-    "sha256": "2cc91732526de3deeca0de40ff434ad1249191a63911eb84604e89e45f5296e0"
+    "file": "warden-gloves-tripo.glb",
+    "sha256": "f8e9bb938f47d43b0b5877d4825638e07233a89f02b726bea502e743240e85c3"
   },
   "islands": {
-    "found": 14,
-    "kept": 2,
+    "found": 4,
+    "kept": 4,
     "grouped": {
-      "L": 1,
-      "R": 1
+      "L": 2,
+      "R": 2
     },
-    "droppedTriangleCounts": [
-      50,
-      51,
-      55,
-      56,
-      104,
-      104,
-      104,
-      104,
-      168,
-      168,
-      190,
-      192
-    ],
-    "triangles": 9095
+    "droppedTriangleCounts": [],
+    "triangles": 10141
   },
   "alignment": {
     "L": {
-      "scale": 0.412721,
+      "scale": 0.293957,
       "yawDegrees": 0,
       "translation": [
-        0.115931,
-        0,
-        0.014529
+        0.331242,
+        0.751213,
+        0.027487
       ],
-      "insideVerticesBeforeShrinkwrap": 398,
-      "insideFractionBeforeShrinkwrap": 0.174485,
-      "deepInsideVerticesBeforeShrinkwrap": 277,
-      "deepInsideFractionBeforeShrinkwrap": 0.121438,
-      "meanSurfaceDistanceMetres": 0.021901,
+      "insideVerticesBeforeShrinkwrap": 194,
+      "insideFractionBeforeShrinkwrap": 0.073933,
+      "deepInsideVerticesBeforeShrinkwrap": 113,
+      "deepInsideFractionBeforeShrinkwrap": 0.043064,
+      "meanSurfaceDistanceMetres": 0.040404,
       "insideVerticesByYaw": {
-        "0": 398,
-        "180": 202
+        "0": 194,
+        "180": 455
       },
       "meanSurfaceDistanceByYaw": {
-        "0": 0.021901,
-        "180": 0.018227
+        "0": 0.040404,
+        "180": 0.014919
       },
       "anchorResidualMetres": {
-        "X": 0.020344906,
+        "X": 0,
         "Y": 0,
-        "Z": 0.002241586
-      },
-      "limb": {
-        "bone": "shin_L",
-        "band": [
-          0.35,
-          1
-        ],
-        "fade": 0.25,
-        "correctionDegrees": 7.9003,
-        "seatMetres": [
-          -0.020274,
-          -0.001553,
-          -0.014391
-        ],
-        "pieceAxis": [
-          -0.007918,
-          0.997988,
-          -0.062909
-        ],
-        "boneDirection": [
-          -0.102521,
-          0.994036,
-          0.037178
-        ],
-        "bandVertices": 1252
+        "Z": 0
       },
       "proxy": false,
       "reference": [
-        "feet"
+        "hands"
       ]
     },
     "R": {
-      "scale": 0.412462,
+      "scale": 0.293957,
       "yawDegrees": 0,
       "translation": [
-        -0.116001,
-        0,
-        0.014654
+        -0.331244,
+        0.751213,
+        0.027536
       ],
-      "insideVerticesBeforeShrinkwrap": 396,
-      "insideFractionBeforeShrinkwrap": 0.173684,
-      "deepInsideVerticesBeforeShrinkwrap": 277,
-      "deepInsideFractionBeforeShrinkwrap": 0.121491,
-      "meanSurfaceDistanceMetres": 0.021875,
+      "insideVerticesBeforeShrinkwrap": 194,
+      "insideFractionBeforeShrinkwrap": 0.073961,
+      "deepInsideVerticesBeforeShrinkwrap": 113,
+      "deepInsideFractionBeforeShrinkwrap": 0.04308,
+      "meanSurfaceDistanceMetres": 0.040386,
       "insideVerticesByYaw": {
-        "0": 396,
-        "180": 201
+        "0": 194,
+        "180": 457
       },
       "meanSurfaceDistanceByYaw": {
-        "0": 0.021875,
-        "180": 0.018222
+        "0": 0.040386,
+        "180": 0.014915
       },
       "anchorResidualMetres": {
-        "X": 0.020337797,
+        "X": 0,
         "Y": 0,
-        "Z": 0.002195638
-      },
-      "limb": {
-        "bone": "shin_R",
-        "band": [
-          0.35,
-          1
-        ],
-        "fade": 0.25,
-        "correctionDegrees": 7.8972,
-        "seatMetres": [
-          0.020276,
-          -0.001546,
-          -0.01458
-        ],
-        "pieceAxis": [
-          0.00794,
-          0.997991,
-          -0.062856
-        ],
-        "boneDirection": [
-          0.102521,
-          0.994036,
-          0.037178
-        ],
-        "bandVertices": 1251
+        "Z": 0
       },
       "proxy": false,
       "reference": [
-        "feet"
+        "hands"
       ]
     }
   },
   "facing": {
-    "pieceCentroidZ": -0.024394,
-    "regionCentroidZ": -0.004082,
-    "aheadOfRegionMetres": -0.020312,
-    "toes": {
-      "L": {
-        "islandCentroidZ": -0.024409,
-        "ankleZ": -0.059648,
-        "aheadMetres": 0.035239
-      },
-      "R": {
-        "islandCentroidZ": -0.02438,
-        "ankleZ": -0.059648,
-        "aheadMetres": 0.035268
-      }
-    }
+    "pieceCentroidZ": 0.050791,
+    "regionCentroidZ": 0.013149,
+    "aheadOfRegionMetres": 0.037642
   },
   "decimation": {
-    "trianglesBefore": 9095,
-    "trianglesAfter": 5998,
-    "ratio": 0.659703
+    "trianglesBefore": 10141,
+    "trianglesAfter": 3998,
+    "ratio": 0.394438
   },
   "shrinkwrap": {
-    "pieceVertices": 3011,
+    "pieceVertices": 2119,
     "outsidePasses": [
       {
-        "movedVertices": 1237,
-        "movedFraction": 0.410827,
+        "movedVertices": 409,
+        "movedFraction": 0.193016,
         "insideAfter": 0
       }
     ],
-    "wholeMovedVertices": 1237,
-    "hugSelectedVertices": 232,
-    "hugMovedVertices": 134,
-    "wholeMovedFraction": 0.410827,
-    "hugMovedFraction": 0.044503
+    "wholeMovedVertices": 409,
+    "hugSelectedVertices": 341,
+    "hugMovedVertices": 190,
+    "wholeMovedFraction": 0.193016,
+    "hugMovedFraction": 0.089665
   },
   "weights": {
     "mode": "stiff",
     "strippedGroups": {
-      "warden-boots_L": [
+      "warden-gloves_L": [
         "chest",
         "clavicle_L",
         "clavicle_R",
+        "foot_L",
         "foot_R",
-        "forearm_L",
         "forearm_R",
-        "hand_L",
         "hand_R",
         "head",
         "neck",
         "pelvis",
         "root",
+        "shin_L",
         "shin_R",
         "shoulder_helper_L",
         "shoulder_helper_R",
@@ -227,20 +153,20 @@
         "upper_arm_L",
         "upper_arm_R"
       ],
-      "warden-boots_R": [
+      "warden-gloves_R": [
         "chest",
         "clavicle_L",
         "clavicle_R",
         "foot_L",
+        "foot_R",
         "forearm_L",
-        "forearm_R",
         "hand_L",
-        "hand_R",
         "head",
         "neck",
         "pelvis",
         "root",
         "shin_L",
+        "shin_R",
         "shoulder_helper_L",
         "shoulder_helper_R",
         "spine",
@@ -254,27 +180,27 @@
     },
     "orphanedVertices": {},
     "band": {
-      "warden-boots_L": {
-        "vertices": 1506,
-        "bandVertices": 57,
-        "bandFraction": 0.037849,
+      "warden-gloves_L": {
+        "vertices": 1059,
+        "bandVertices": 145,
+        "bandFraction": 0.136922,
         "ceiling": 0.8,
-        "minPeakWeight": 0.500686,
-        "meanPeakWeight": 0.978583,
-        "bandHeightMetres": 0.118494,
-        "bandMinY": 0.030396,
-        "bandMaxY": 0.148889
+        "minPeakWeight": 0.755301,
+        "meanPeakWeight": 0.962777,
+        "bandHeightMetres": 0.052597,
+        "bandMinY": 0.771507,
+        "bandMaxY": 0.824104
       },
-      "warden-boots_R": {
-        "vertices": 1505,
-        "bandVertices": 55,
-        "bandFraction": 0.036545,
+      "warden-gloves_R": {
+        "vertices": 1060,
+        "bandVertices": 139,
+        "bandFraction": 0.131132,
         "ceiling": 0.8,
-        "minPeakWeight": 0.50051,
-        "meanPeakWeight": 0.979067,
-        "bandHeightMetres": 0.117021,
-        "bandMinY": 0.031412,
-        "bandMaxY": 0.148433
+        "minPeakWeight": 0.763315,
+        "meanPeakWeight": 0.964215,
+        "bandHeightMetres": 0.047058,
+        "bandMinY": 0.77151,
+        "bandMaxY": 0.818568
       }
     },
     "stiffness": 3
@@ -338,22 +264,22 @@
       "foot_R"
     ],
     "inverseBindMaxAbsDifference": 1.79e-7,
-    "triangles": 5998,
+    "triangles": 3998,
     "materials": 1,
     "meshes": 1,
     "sides": {
-      "L": 1,
-      "R": 1,
-      "islands": 2
+      "L": 2,
+      "R": 2,
+      "islands": 4
     },
     "maxInfluencesPerVertex": 2,
     "minWeightSum": 0.99999997,
     "maxWeightSum": 1.00000003,
     "influencingBones": [
-      "foot_L",
-      "foot_R",
-      "shin_L",
-      "shin_R"
+      "forearm_L",
+      "forearm_R",
+      "hand_L",
+      "hand_R"
     ],
     "hasUvs": true,
     "textures": 1,
@@ -382,23 +308,22 @@
     "bones_rest_axis_aligned": true,
     "piece_sits_off_the_skin_at_bind": true,
     "pair_has_both_sides": true,
-    "toes_point_forward": true,
     "clears_the_body_through_motion_cycles": true,
     "clears_the_body_through_stress_poses": true
   },
   "gatesPass": true,
   "outputs": {
-    "glb": "warden-boots.glb",
-    "manifest": "warden-boots.manifest.json",
-    "report": "warden-boots.report.json",
-    "review": "warden-boots.review.png",
-    "sha256": "7f968ec50d19a3e5544b4ec36c3fc0a6335679702cd92c165df6cb158080ff1f"
+    "glb": "warden-gloves.glb",
+    "manifest": "warden-gloves.manifest.json",
+    "report": "warden-gloves.report.json",
+    "review": "warden-gloves.review.png",
+    "sha256": "e2da9f0f76585b29e5620ec1fd549bd4c1a7b31739feae1d7bbc8e475e914010"
   },
   "review": {
     "bodyVerticesInsideThePiece": {
-      "bind": 10,
-      "abduct90": 10,
-      "flex60": 10
+      "bind": 161,
+      "abduct90": 63,
+      "flex60": 152
     }
   }
 }

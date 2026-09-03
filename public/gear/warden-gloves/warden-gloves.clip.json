@@ -1,16 +1,16 @@
 {
   "schema": "ashveil.gear-clip.v1",
   "body": "masculine-v3",
-  "piece": "warden-boots",
-  "slot": "feet",
+  "piece": "warden-gloves",
+  "slot": "hands",
   "hides": {
-    "Body": 1639
+    "Body": 763
   },
   "clip": {
     "depth": 0.005,
     "fraction": 0.002
   },
-  "vertices": 6328,
+  "vertices": 4046,
   "poses": 201,
   "cycles": {
     "motion": {
