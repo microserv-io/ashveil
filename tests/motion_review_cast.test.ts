@@ -10,6 +10,7 @@ import {
   REVIEW_TIMINGS,
   resting,
   WINDUP,
+  withWindup,
 } from '../spike/motion/cast'
 
 describe('the review page plays a skill once', () => {
@@ -32,8 +33,16 @@ describe('the review page plays a skill once', () => {
 
   it('resolves skill, motion, and review-default timings', () => {
     expect(castTimings('cleave')).toEqual({ windup: 0.22, recovery: 0.14 })
-    expect(castTimings('cast')).toEqual({ windup: 0.3, recovery: 0.18 })
+    expect(castTimings('cast')).toEqual({ windup: 1, recovery: 0.2 })
     expect(castTimings('idle')).toEqual(REVIEW_TIMINGS)
+  })
+
+  it('overrides only positive wind-ups', () => {
+    const timings = { windup: 0.3, recovery: 0.18 }
+
+    expect(withWindup(timings, 0)).toBe(timings)
+    expect(withWindup(timings, -1)).toBe(timings)
+    expect(withWindup(timings, 5)).toEqual({ windup: 5, recovery: timings.recovery })
   })
 
   it('holds one-shot casts, wraps loops, and never runs the clock negative', () => {

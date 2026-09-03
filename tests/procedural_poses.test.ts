@@ -188,6 +188,19 @@ describe('placeholder skill poses', () => {
     }
   })
 
+  it('holds the ball low at the right hip, a ball apart, before it fires', () => {
+    const hands = castHands(0.25, 0)
+    // `castHands` leaves its own pose resolved, so this is the chest above those hands.
+    const chest = positions[Joint.Chest * 3 + 1]!
+    for (const [side, lane] of [['left', 0], ['right', 3]] as const) {
+      // +x is the body's left (`joints.ts`), so a gather at the right hip puts both hands below zero.
+      expect(hands[lane]!, `the ${side} hand is not right of the centre line`).toBeLessThan(0)
+      expect(hands[lane + 1]!, `the ${side} hand is not below the chest`).toBeLessThan(chest)
+    }
+    const apart = Math.hypot(hands[0]! - hands[3]!, hands[1]! - hands[4]!, hands[2]! - hands[5]!)
+    expect(apart / geometry.armLength, 'the hands are too close to hold a ball between them').toBeGreaterThanOrEqual(0.2)
+  })
+
   it('the executes start where the cast leaves both hands', () => {
     write('cast', 1)
     resolvePositions(geometry, pose, positions)

@@ -41,8 +41,9 @@ and no retargeting. This is how to add or change a motion, and what must hold.
    quaternions, allocation-free frame path, and the handedness table.
 5. Watch it: `npm run motion:dev`, open http://100.103.10.11:5277 (or the port you
    chose) on any device, and pick the body and state; Loop repeats the state with an
-   idle beat between casts, and Cycle plays it once. Rocco reviews every animation
-   on that page and a GIF on the PR before it merges.
+   idle beat between casts, Cycle plays it once, and the Cast slider overrides the
+   wind-up so a long gather can be watched. Rocco reviews every animation on that
+   page and a GIF on the PR before it merges.
 
 ## Motion families that exist
 

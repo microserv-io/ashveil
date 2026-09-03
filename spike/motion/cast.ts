@@ -31,6 +31,11 @@ export function castTimings(state: RigState): MotionTimings {
   return REVIEW_TIMINGS
 }
 
+/** A cast is reviewed at the sim's timing unless the reviewer wants to watch a long gather. */
+export function withWindup(timings: MotionTimings, windup: number): MotionTimings {
+  return windup <= 0 ? timings : { windup, recovery: timings.recovery }
+}
+
 /** Where in its wind-up or recovery a cast is, `seconds` into it. */
 export function castPhase(seconds: number, timings: MotionTimings = REVIEW_TIMINGS): RigPhase {
   const at = Math.min(castLength(timings), Math.max(0, seconds))

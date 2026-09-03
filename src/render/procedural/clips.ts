@@ -42,7 +42,7 @@ export interface MotionTimings {
 }
 
 export const MOTION_TIMINGS: Readonly<Record<MotionName, MotionTimings>> = {
-  cast: { windup: 0.3, recovery: 0.18 },
+  cast: { windup: 1, recovery: 0.2 },
   channel: { windup: 0.25, recovery: 0.25 },
   execute_overhead: { windup: 0.52, recovery: 0.4 },
   execute_thrust: { windup: 0.36, recovery: 0.34 },
@@ -103,21 +103,22 @@ const BOLT_R: Vec3 = [-0.2, 0.08, 0.78]
 const BOLT_L: Vec3 = [0.2, 0.08, 0.78]
 const SLAM_R: Vec3 = [-0.48, -0.8, 0.34]
 const SLAM_L: Vec3 = [0.48, -0.8, 0.34]
-const CAST_R: Vec3 = [0.06, -0.3, 0.74]
-const CAST_L: Vec3 = [-0.06, -0.3, 0.74]
+const CAST_R: Vec3 = [0.06, -0.26, 0.78]
+const CAST_L: Vec3 = [-0.06, -0.26, 0.78]
 /** The ball held at the right of the waist: the right hand outside it, the left crossed over it. */
 const CAST_BALL: PoseKey = {
-  at: 0.16,
+  at: 0.2,
   torso: [
-    { joint: Joint.Chest, yaw: -0.2, pitch: 0.1 },
-    { joint: Joint.Spine, yaw: -0.1, pitch: 0.04 },
-    { joint: Joint.Head, pitch: 0.12 },
+    { joint: Joint.Chest, yaw: -0.3, pitch: 0.14 },
+    { joint: Joint.Spine, yaw: -0.15, pitch: 0.06 },
+    { joint: Joint.Pelvis, yaw: -0.06 },
+    { joint: Joint.Head, pitch: 0.16 },
   ],
-  handR: [-0.07, -0.67, 0.41],
-  handL: [-0.27, -0.67, 0.41],
+  handR: [-0.16, -0.74, 0.4],
+  handL: [-0.38, -0.72, 0.46],
   poleR: [-0.8, -0.3, -0.5],
   poleL: [0.8, -0.2, -0.5],
-  offset: [0, -0.02, 0],
+  offset: [0, -0.04, -0.01],
 }
 /**
  * Every spell: both hands roll a ball at the right of the waist through the
@@ -126,7 +127,7 @@ const CAST_BALL: PoseKey = {
  */
 const CAST: PoseClipSource = {
   planted: true,
-  gather: { radius: 0.1, period: 0.7, until: 0.4 },
+  gather: { radius: 0.12, period: 0.7, until: 0.4 },
   keys: [
     { at: 0, handL: DRAW_BACK_L, handR: DRAW_BACK_R },
     CAST_BALL,
@@ -135,14 +136,14 @@ const CAST: PoseClipSource = {
       at: STRIKE,
       ease: STRIKE_EASE,
       torso: [
-        { joint: Joint.Chest, yaw: 0.1, pitch: 0.18 },
-        { joint: Joint.Spine, yaw: 0.05, pitch: 0.08 },
+        { joint: Joint.Chest, yaw: 0.12, pitch: 0.24 },
+        { joint: Joint.Spine, yaw: 0.06, pitch: 0.1 },
       ],
       handR: CAST_R,
       handL: CAST_L,
       poleR: [-0.6, -0.4, -0.7],
       poleL: [0.6, -0.4, -0.7],
-      offset: [0, -0.02, 0.05],
+      offset: [0, -0.03, 0.08],
     },
     { at: 1, ease: 1.2, handR: relax(CAST_R, RIGHT), handL: relax(CAST_L, LEFT) },
   ],

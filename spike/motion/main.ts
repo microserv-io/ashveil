@@ -9,7 +9,7 @@ import { SceneHost } from '../../src/render/scene'
 import { SKILLS } from '../../src/sim/skills'
 import { Sim } from '../../src/sim/sim'
 import { DT, HIT_FLASH_DURATION, type Actor } from '../../src/sim/types'
-import { advanceCast, castLeft, castLength, castPhase, castTimings, describePhase, recovering, resting } from './cast'
+import { advanceCast, castLeft, castLength, castPhase, castTimings, describePhase, recovering, resting, withWindup } from './cast'
 import {
   createReviewBodyView,
   loadReviewBodies,
@@ -51,6 +51,7 @@ const state = element<HTMLSelectElement>('state')
 const bodySelect = element<HTMLSelectElement>('body')
 const speed = element<HTMLInputElement>('speed')
 const scale = element<HTMLInputElement>('scale')
+const cast = element<HTMLInputElement>('cast')
 const distance = element<HTMLInputElement>('distance')
 const pitch = element<HTMLInputElement>('pitch')
 const orbit = element<HTMLInputElement>('orbit')
@@ -96,6 +97,7 @@ bodySelect.addEventListener('change', rebuild)
 element('turn').addEventListener('click', () => (turnLeft = TURN_DURATION))
 element('cycle').addEventListener('click', cycle)
 state.addEventListener('change', cycle)
+cast.addEventListener('input', cycle)
 element('hit').addEventListener('click', () => (hitAge = 0))
 element('step').addEventListener('click', () => (stepQueued = true))
 element('recenter').addEventListener('click', recentre)
@@ -144,7 +146,8 @@ function frame(now: number): void {
   element('orbit-value').textContent = Number(orbit.value).toFixed(0)
   element('speed-value').textContent = Number(speed.value).toFixed(1)
   element('scale-value').textContent = timeScale.toFixed(2)
-  readout.textContent = describe(wall, castTimings(state.value as RigState))
+  element('cast-value').textContent = Number(cast.value) === 0 ? 'sim' : `${Number(cast.value).toFixed(1)}s`
+  readout.textContent = describe(wall, withWindup(castTimings(state.value as RigState), Number(cast.value)))
   requestAnimationFrame(frame)
 }
 
@@ -197,7 +200,7 @@ function steerHome(delta: number): void {
 function writeInput(delta: number): void {
   const chosen = state.value as RigState
   const acting = chosen !== 'idle' && chosen !== 'moving' && chosen !== 'dead'
-  const timings = castTimings(chosen)
+  const timings = withWindup(castTimings(chosen), Number(cast.value))
   const clipLoops = chosen in POSE_CLIPS && POSE_CLIPS[chosen as PoseClipName].loop
 
   input.state = chosen
