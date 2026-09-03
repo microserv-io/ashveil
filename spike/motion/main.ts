@@ -9,7 +9,7 @@ import { SceneHost } from '../../src/render/scene'
 import { SKILLS } from '../../src/sim/skills'
 import { Sim } from '../../src/sim/sim'
 import { DT, HIT_FLASH_DURATION, type Actor } from '../../src/sim/types'
-import { advanceCast, castLeft, castLength, castPhase, castTimings, describePhase, recovering } from './cast'
+import { advanceCast, castLeft, castLength, castPhase, castTimings, describePhase, recovering, resting } from './cast'
 import {
   createReviewBodyView,
   loadReviewBodies,
@@ -54,6 +54,7 @@ const scale = element<HTMLInputElement>('scale')
 const distance = element<HTMLInputElement>('distance')
 const pitch = element<HTMLInputElement>('pitch')
 const orbit = element<HTMLInputElement>('orbit')
+const loop = element<HTMLInputElement>('loop')
 const readout = element<HTMLPreElement>('readout')
 const controls = element('controls')
 const toggle = element<HTMLButtonElement>('panel-toggle')
@@ -143,7 +144,7 @@ function frame(now: number): void {
   element('orbit-value').textContent = Number(orbit.value).toFixed(0)
   element('speed-value').textContent = Number(speed.value).toFixed(1)
   element('scale-value').textContent = timeScale.toFixed(2)
-  readout.textContent = describe(wall, castTimings(input.state))
+  readout.textContent = describe(wall, castTimings(state.value as RigState))
   requestAnimationFrame(frame)
 }
 
@@ -197,7 +198,7 @@ function writeInput(delta: number): void {
   const chosen = state.value as RigState
   const acting = chosen !== 'idle' && chosen !== 'moving' && chosen !== 'dead'
   const timings = castTimings(chosen)
-  const loop = chosen in POSE_CLIPS && POSE_CLIPS[chosen as PoseClipName].loop
+  const clipLoops = chosen in POSE_CLIPS && POSE_CLIPS[chosen as PoseClipName].loop
 
   input.state = chosen
   input.speed = chosen === 'moving' ? Number(speed.value) : 0
@@ -217,7 +218,16 @@ function writeInput(delta: number): void {
     castAt = castLength(timings)
     return
   }
-  castAt = advanceCast(castAt, delta, timings, loop)
+  const mode = clipLoops ? 'wrap' : loop.checked ? 'repeat' : 'hold'
+  castAt = advanceCast(castAt, delta, timings, mode)
+  if (resting(castAt, timings)) {
+    input.state = 'idle'
+    input.dashing = false
+    input.phase = null
+    input.castLeft = 0
+    input.recovering = false
+    return
+  }
   input.phase = castPhase(castAt, timings)
   input.castLeft = castLeft(castAt, timings)
   input.recovering = recovering(castAt, timings)
@@ -261,7 +271,7 @@ function describe(wall: number, timings: MotionTimings): string {
     'driver     procedural',
     `body       ${bodySelect.value}`,
     `bodyScale  ${bodyScale.toFixed(6)}`,
-    `cast       ${castAt.toFixed(2)}s of ${castLength(timings).toFixed(2)} (windup ${timings.windup.toFixed(2)}, recovery ${timings.recovery.toFixed(2)})`,
+    `cast       ${castAt.toFixed(2)}s of ${castLength(timings).toFixed(2)} (windup ${timings.windup.toFixed(2)}, recovery ${timings.recovery.toFixed(2)})${resting(castAt, timings) ? ' (rest)' : ''}`,
     `frame      ${(wall * 1000).toFixed(1)}ms`,
     '',
     `state      ${input.state}`,

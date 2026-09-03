@@ -6,7 +6,9 @@ import {
   castPhase,
   castTimings,
   describePhase,
+  LOOP_REST,
   REVIEW_TIMINGS,
+  resting,
   WINDUP,
 } from '../spike/motion/cast'
 
@@ -35,10 +37,27 @@ describe('the review page plays a skill once', () => {
   })
 
   it('holds one-shot casts, wraps loops, and never runs the clock negative', () => {
-    expect(advanceCast(0.9, 0.2, REVIEW_TIMINGS, false)).toBe(CAST_LENGTH)
-    expect(advanceCast(0.9, 0.2, REVIEW_TIMINGS, true)).toBeCloseTo(0.1)
-    expect(advanceCast(0.1, -0.2, REVIEW_TIMINGS, false)).toBe(0)
-    expect(advanceCast(0.1, -0.2, REVIEW_TIMINGS, true)).toBe(0)
+    expect(advanceCast(0.9, 0.2, REVIEW_TIMINGS, 'hold')).toBe(CAST_LENGTH)
+    expect(advanceCast(0.9, 0.2, REVIEW_TIMINGS, 'wrap')).toBeCloseTo(0.1)
+    expect(advanceCast(0.1, -0.2, REVIEW_TIMINGS, 'hold')).toBe(0)
+    expect(advanceCast(0.1, -0.2, REVIEW_TIMINGS, 'wrap')).toBe(0)
+  })
+
+  it('rests between repeated casts and carries the remainder when restarting', () => {
+    expect(advanceCast(0.9, 0.2, REVIEW_TIMINGS, 'repeat')).toBeCloseTo(CAST_LENGTH + 0.1)
+    expect(advanceCast(CAST_LENGTH + LOOP_REST - 0.1, 0.05, REVIEW_TIMINGS, 'repeat')).toBeCloseTo(
+      CAST_LENGTH + LOOP_REST - 0.05,
+    )
+    expect(advanceCast(CAST_LENGTH + LOOP_REST - 0.1, 0.2, REVIEW_TIMINGS, 'repeat')).toBeCloseTo(0.1)
+  })
+
+  it('rests only after the last cast pose and until the repeat wraps', () => {
+    expect(resting(0)).toBe(false)
+    expect(resting(CAST_LENGTH)).toBe(false)
+    expect(resting(CAST_LENGTH + Number.EPSILON)).toBe(true)
+
+    const wrapped = advanceCast(CAST_LENGTH + LOOP_REST - 0.1, 0.2, REVIEW_TIMINGS, 'repeat')
+    expect(resting(wrapped)).toBe(false)
   })
 
   it('says where in the cast it is', () => {

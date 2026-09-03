@@ -7,16 +7,19 @@ import type { SkillId } from '../../src/sim/types'
 /**
  * The cast clock the review page drives a skill with.
  *
- * A skill is one wind-up and one recovery, played once and then held, so a pose
- * can be looked at instead of watched going past. The Cycle button starts it
- * again, which is the whole interaction on a phone: one tap, one swing.
+ * A cast plays once and holds by default, so a pose can be inspected. Loop
+ * repeats it with a rest, while Cycle restarts it — the whole interaction on a
+ * phone is one tap, one swing.
  */
 
 /** A representative cast: long enough to read, close to the sim's own timings. */
 export const WINDUP = 0.4
 export const RECOVERY = 0.6
 export const CAST_LENGTH = WINDUP + RECOVERY
+/** The generator's state blend needs an idle beat between repeats; wrapping a cast straight to its first key pops. */
+export const LOOP_REST = 0.5
 export const REVIEW_TIMINGS: MotionTimings = { windup: WINDUP, recovery: RECOVERY }
+export type CastMode = 'hold' | 'wrap' | 'repeat'
 
 /** A state is reviewed at the rate it really plays at, not one stand-in cast. */
 export function castTimings(state: RigState): MotionTimings {
@@ -49,11 +52,16 @@ export function castLength(timings: MotionTimings = REVIEW_TIMINGS): number {
   return timings.windup + timings.recovery
 }
 
-/** Where the clock is after `delta`: a looping clip wraps, every other one holds at the end. */
-export function advanceCast(seconds: number, delta: number, timings: MotionTimings, loop: boolean): number {
+export function resting(seconds: number, timings: MotionTimings = REVIEW_TIMINGS): boolean {
+  return seconds > castLength(timings)
+}
+
+/** Where the clock is after `delta`, preserving overshoot when a mode repeats. */
+export function advanceCast(seconds: number, delta: number, timings: MotionTimings, mode: CastMode): number {
   const next = Math.max(0, seconds + delta)
   const length = castLength(timings)
-  return loop ? next % length : Math.min(length, next)
+  if (mode === 'hold') return Math.min(length, next)
+  return next % (mode === 'wrap' ? length : length + LOOP_REST)
 }
 
 export function describePhase(phase: RigPhase): string {
