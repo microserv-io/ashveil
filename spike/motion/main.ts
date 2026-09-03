@@ -71,6 +71,7 @@ const toggle = element<HTMLButtonElement>('panel-toggle')
 fill(bodySelect, bodies.map((entry) => entry.id))
 fill(state, ['idle', 'moving', 'dead', ...Object.keys(SKILLS)])
 state.value = 'moving'
+applyQuery()
 
 const input: RigInput = {
   state: 'moving',
@@ -402,7 +403,25 @@ function showPanels(open: boolean): void {
   } catch {}
 }
 
+/**
+ * `?state=idle&distance=3&pitch=12&orbit=90&speed=2&time=0&panel=closed` sets the
+ * page up from the URL, so a screenshot or a phone can land on an exact view.
+ */
+function applyQuery(): void {
+  const query = new URLSearchParams(location.search)
+  const sliders: readonly (readonly [string, HTMLInputElement | HTMLSelectElement])[] = [
+    ['state', state], ['speed', speed], ['time', scale], ['distance', distance], ['pitch', pitch], ['orbit', orbit],
+  ]
+  for (const [key, control] of sliders) {
+    const value = query.get(key)
+    if (value !== null) control.value = value
+  }
+}
+
 function readPanelPreference(): boolean {
+  const query = new URLSearchParams(location.search).get('panel')
+  if (query === 'closed') return false
+  if (query === 'open') return true
   try {
     const stored = localStorage.getItem(PANEL_KEY)
     if (stored !== null) return stored === 'open'

@@ -172,13 +172,19 @@ def _bone_line(named, side: str | None, contract: dict, landmarks: dict) -> tupl
 
 
 def _roll(rule: dict, side: str | None, contract: dict, landmarks: dict,
-          worn: str | None, said: str) -> dict | None:
-    """The bone a piece is turned about to find which way round it goes."""
+          worn: str | None, said: str, tube: dict | None = None) -> dict | None:
+    """The line a piece is turned about to find which way round it goes.
+
+    The tube's axis when the slot has one, because the stations the tube measures
+    have to survive the roll: a forearm 11.5 degrees off the hand's own axis moved
+    the fingertip station 3.6cm and stretched the cuff to twice its length.
+    """
     roll = rule.get("roll")
     if not roll:
         return None
     bone, head, tail = _bone_line(roll["bone"], side, contract, landmarks)
-    resolved = {"bone": bone, "direction": [a - b for a, b in zip(head, tail)],
+    resolved = {"bone": bone,
+                "direction": list(tube["axis"]) if tube else [a - b for a, b in zip(head, tail)],
                 "stepDegrees": float(roll["stepDegrees"])}
     if worn:
         resolved["prior"] = {"piece": _thumb_axis(said, side), "body": _thumb_axis(worn, side)}
@@ -303,12 +309,12 @@ def run(args) -> dict:
         side = ("L", "R")[at] if slot["pair"] else "all"
         chosen = side if slot["pair"] else None
         landmarks = loaded["manifest"]["landmarks"]
+        tube = _tube(rule, chosen, loaded, reference_slots, landmarks, float(slot["clearance"]))
         measured_side = geometry.align(obj, reference[side], rule, surface, chosen, span,
                                        int(args.yaw), _limb(rule, chosen, contract, landmarks),
                                        _roll(rule, chosen, contract, landmarks,
-                                             slot.get("thumb"), args.thumb),
-                                       _tube(rule, chosen, loaded, reference_slots, landmarks,
-                                             float(slot["clearance"])),
+                                             slot.get("thumb"), args.thumb, tube),
+                                       tube,
                                        _enclose(rule, chosen, loaded, reference_slots))
         measured_side["proxy"] = proxy
         measured_side["reference"] = reference_slots

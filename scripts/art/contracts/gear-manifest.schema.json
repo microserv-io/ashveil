@@ -323,6 +323,7 @@
           "additionalProperties": false,
           "required": [
             "bone",
+            "axis",
             "scoredRegionVertices",
             "stepDegrees",
             "chosenDegrees",
@@ -334,6 +335,14 @@
           "properties": {
             "bone": {
               "type": "string"
+            },
+            "axis": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "number"
+              }
             },
             "scoredRegionVertices": {
               "type": "integer",
@@ -412,7 +421,8 @@
             "smooth",
             "radialFactorMin",
             "radialFactorMax",
-            "radialFactorMean"
+            "radialFactorMean",
+            "centreShiftMaxMetres"
           ],
           "properties": {
             "stations": {
@@ -470,6 +480,10 @@
             },
             "radialFactorMean": {
               "type": "number"
+            },
+            "centreShiftMaxMetres": {
+              "type": "number",
+              "minimum": 0
             }
           }
         }

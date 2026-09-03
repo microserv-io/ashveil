@@ -800,14 +800,14 @@
         {
           "bone": "forearm_L",
           "along": [
-            0.9,
+            0.75,
             1.0
           ]
         },
         {
           "bone": "forearm_R",
           "along": [
-            0.9,
+            0.75,
             1.0
           ]
         }

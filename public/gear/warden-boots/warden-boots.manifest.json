@@ -40,6 +40,7 @@
     "feet"
   ],
   "under": [],
+  "thumb": "+Z",
   "hides": {
     "Body": [
       110,
@@ -1891,7 +1892,8 @@
         "smooth": 3,
         "radialFactorMin": 1,
         "radialFactorMax": 1.264504,
-        "radialFactorMean": 1.021358
+        "radialFactorMean": 1.021358,
+        "centreShiftMaxMetres": 0.029351
       }
     },
     "R": {
@@ -1933,12 +1935,13 @@
         "smooth": 3,
         "radialFactorMin": 1,
         "radialFactorMax": 1.265157,
-        "radialFactorMean": 1.021532
+        "radialFactorMean": 1.021532,
+        "centreShiftMaxMetres": 0.029394
       }
     }
   },
   "budget": {
-    "triangles": 5997,
+    "triangles": 5999,
     "materials": 1,
     "meshes": 1,
     "maxInfluencesPerVertex": 2

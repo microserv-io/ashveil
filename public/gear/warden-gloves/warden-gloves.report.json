@@ -15,7 +15,7 @@
   "coverage": {
     "reachMetres": 0.06,
     "hiddenVertices": {
-      "Body": 3723,
+      "Body": 3849,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -23,7 +23,7 @@
       "Head": 0
     },
     "measuredVertices": {
-      "Body": 2213,
+      "Body": 3430,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -31,7 +31,7 @@
       "Head": 0
     },
     "replacedVertices": {
-      "Body": 2618,
+      "Body": 3393,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -49,14 +49,14 @@
     {
       "bone": "forearm_L",
       "along": [
-        0.9,
+        0.75,
         1
       ]
     },
     {
       "bone": "forearm_R",
       "along": [
-        0.9,
+        0.75,
         1
       ]
     }
@@ -84,11 +84,11 @@
         0.751213,
         0.027487
       ],
-      "insideVerticesBeforeShrinkwrap": 119,
-      "insideFractionBeforeShrinkwrap": 0.045351,
-      "deepInsideVerticesBeforeShrinkwrap": 64,
-      "deepInsideFractionBeforeShrinkwrap": 0.02439,
-      "meanSurfaceDistanceMetres": 0.034751,
+      "insideVerticesBeforeShrinkwrap": 177,
+      "insideFractionBeforeShrinkwrap": 0.067454,
+      "deepInsideVerticesBeforeShrinkwrap": 35,
+      "deepInsideFractionBeforeShrinkwrap": 0.013338,
+      "meanSurfaceDistanceMetres": 0.01218,
       "insideVerticesByYaw": {
         "0": 194,
         "180": 455
@@ -98,50 +98,55 @@
         "180": 0.014919
       },
       "anchorResidualMetres": {
-        "X": 0.004729188,
-        "Y": 0.026904713,
-        "Z": 0.020056178
+        "X": 0.00013486,
+        "Y": 0.013876784,
+        "Z": 0.006572424
       },
       "roll": {
         "bone": "forearm_L",
-        "scoredRegionVertices": 1956,
+        "axis": [
+          0.338459,
+          -0.862382,
+          0.376488
+        ],
+        "scoredRegionVertices": 1981,
         "stepDegrees": 10,
-        "chosenDegrees": 90,
+        "chosenDegrees": 260,
         "candidates": 36,
         "best": {
-          "degrees": 90,
-          "meanDistanceMetres": 0.022622,
-          "outsideFraction": 0.866053,
-          "score": 0.065925,
-          "fromPriorDegrees": 3.8
+          "degrees": 260,
+          "meanDistanceMetres": 0.026102,
+          "outsideFraction": 0.879354,
+          "score": 0.070069,
+          "fromPriorDegrees": 18.405
         },
         "secondBest": {
-          "degrees": 100,
-          "meanDistanceMetres": 0.022936,
-          "outsideFraction": 0.866564,
-          "score": 0.066264,
-          "fromPriorDegrees": 13.8
+          "degrees": 270,
+          "meanDistanceMetres": 0.026422,
+          "outsideFraction": 0.879859,
+          "score": 0.070415,
+          "fromPriorDegrees": 8.405
         },
         "atZero": {
           "degrees": 0,
-          "meanDistanceMetres": 0.030076,
-          "outsideFraction": 0.917689,
-          "score": 0.07596,
-          "fromPriorDegrees": 86.2
+          "meanDistanceMetres": 0.029935,
+          "outsideFraction": 0.918728,
+          "score": 0.075872,
+          "fromPriorDegrees": 81.595
         },
         "prior": {
-          "degrees": 86.2,
+          "degrees": 278.405,
           "windowDegrees": 20,
-          "refinedDegrees": 3.8,
+          "refinedDegrees": -18.405,
           "pieceThumb": [
-            -0.943476,
-            -0.324981,
-            0.065119
+            -0.940981,
+            -0.310188,
+            0.135418
           ],
           "bodyThumb": [
-            -0.062522,
-            0.174506,
-            0.982669
+            -0.137546,
+            0.350463,
+            0.926422
           ],
           "candidates": 4
         }
@@ -149,9 +154,9 @@
       "tube": {
         "stations": {
           "piece": [
-            -0.135099,
-            -0.058567,
-            0.109802
+            -0.157503,
+            -0.000396,
+            0.071017
           ],
           "body": [
             -0.158655,
@@ -159,16 +164,17 @@
             0.069971
           ],
           "stretch": [
-            2.07306,
-            0.415579
+            1.009846,
+            0.979811
           ]
         },
         "slices": 12,
         "sliceMetres": 0.02,
         "smooth": 3,
-        "radialFactorMin": 1,
-        "radialFactorMax": 4.312996,
-        "radialFactorMean": 1.869704
+        "radialFactorMin": 1.015603,
+        "radialFactorMax": 2.250933,
+        "radialFactorMean": 1.544794,
+        "centreShiftMaxMetres": 0.071709
       },
       "proxy": false,
       "reference": [
@@ -183,11 +189,11 @@
         0.751213,
         0.027536
       ],
-      "insideVerticesBeforeShrinkwrap": 119,
-      "insideFractionBeforeShrinkwrap": 0.045368,
-      "deepInsideVerticesBeforeShrinkwrap": 64,
-      "deepInsideFractionBeforeShrinkwrap": 0.0244,
-      "meanSurfaceDistanceMetres": 0.034754,
+      "insideVerticesBeforeShrinkwrap": 179,
+      "insideFractionBeforeShrinkwrap": 0.068242,
+      "deepInsideVerticesBeforeShrinkwrap": 35,
+      "deepInsideFractionBeforeShrinkwrap": 0.013343,
+      "meanSurfaceDistanceMetres": 0.012177,
       "insideVerticesByYaw": {
         "0": 194,
         "180": 457
@@ -197,50 +203,55 @@
         "180": 0.014915
       },
       "anchorResidualMetres": {
-        "X": 0.004707034,
-        "Y": 0.026912984,
-        "Z": 0.020140338
+        "X": 0.000133445,
+        "Y": 0.013896665,
+        "Z": 0.006551779
       },
       "roll": {
         "bone": "forearm_R",
-        "scoredRegionVertices": 1922,
+        "axis": [
+          -0.338459,
+          -0.862382,
+          0.376488
+        ],
+        "scoredRegionVertices": 1950,
         "stepDegrees": 10,
-        "chosenDegrees": 270,
+        "chosenDegrees": 100,
         "candidates": 36,
         "best": {
-          "degrees": 270,
-          "meanDistanceMetres": 0.022276,
-          "outsideFraction": 0.865245,
-          "score": 0.065539,
-          "fromPriorDegrees": 3.8
+          "degrees": 100,
+          "meanDistanceMetres": 0.025603,
+          "outsideFraction": 0.867692,
+          "score": 0.068988,
+          "fromPriorDegrees": 18.405
         },
         "secondBest": {
-          "degrees": 260,
-          "meanDistanceMetres": 0.022619,
-          "outsideFraction": 0.859001,
-          "score": 0.065569,
-          "fromPriorDegrees": 13.8
+          "degrees": 90,
+          "meanDistanceMetres": 0.025888,
+          "outsideFraction": 0.866154,
+          "score": 0.069195,
+          "fromPriorDegrees": 8.405
         },
         "atZero": {
           "degrees": 0,
-          "meanDistanceMetres": 0.030036,
-          "outsideFraction": 0.915713,
-          "score": 0.075821,
-          "fromPriorDegrees": 86.2
+          "meanDistanceMetres": 0.029905,
+          "outsideFraction": 0.916923,
+          "score": 0.075751,
+          "fromPriorDegrees": 81.595
         },
         "prior": {
-          "degrees": 273.8,
+          "degrees": 81.595,
           "windowDegrees": 20,
-          "refinedDegrees": -3.8,
+          "refinedDegrees": 18.405,
           "pieceThumb": [
-            0.943476,
-            -0.324981,
-            0.065119
+            0.940981,
+            -0.310188,
+            0.135418
           ],
           "bodyThumb": [
-            0.062522,
-            0.174506,
-            0.982669
+            0.137546,
+            0.350463,
+            0.926422
           ],
           "candidates": 4
         }
@@ -248,9 +259,9 @@
       "tube": {
         "stations": {
           "piece": [
-            -0.135079,
-            -0.058548,
-            0.109822
+            -0.157484,
+            -0.000376,
+            0.071036
           ],
           "body": [
             -0.158634,
@@ -258,16 +269,17 @@
             0.069991
           ],
           "stretch": [
-            2.07279,
-            0.415701
+            1.009715,
+            0.980099
           ]
         },
         "slices": 12,
         "sliceMetres": 0.02,
         "smooth": 3,
-        "radialFactorMin": 1,
-        "radialFactorMax": 4.313145,
-        "radialFactorMean": 1.870801
+        "radialFactorMin": 1.015589,
+        "radialFactorMax": 2.250987,
+        "radialFactorMean": 1.545937,
+        "centreShiftMaxMetres": 0.071706
       },
       "proxy": false,
       "reference": [
@@ -276,22 +288,22 @@
     }
   },
   "facing": {
-    "pieceCentroidZ": 0.0699,
+    "pieceCentroidZ": 0.029522,
     "regionCentroidZ": 0.013149,
-    "aheadOfRegionMetres": 0.056751
+    "aheadOfRegionMetres": 0.016373
   },
   "regionEnclosed": {
     "L": {
       "regionVertices": 2009,
-      "withinPieceBox": 1781,
-      "insideVertices": 914,
-      "insideFraction": 0.513195
+      "withinPieceBox": 2000,
+      "insideVertices": 1572,
+      "insideFraction": 0.786
     },
     "R": {
       "regionVertices": 1977,
-      "withinPieceBox": 1751,
-      "insideVertices": 916,
-      "insideFraction": 0.52313
+      "withinPieceBox": 1968,
+      "insideVertices": 1543,
+      "insideFraction": 0.784045
     }
   },
   "decimation": {
@@ -300,19 +312,19 @@
     "ratio": 0.394438
   },
   "shrinkwrap": {
-    "pieceVertices": 2128,
+    "pieceVertices": 2108,
     "outsidePasses": [
       {
-        "movedVertices": 339,
-        "movedFraction": 0.159305,
+        "movedVertices": 932,
+        "movedFraction": 0.442125,
         "insideAfter": 0
       }
     ],
-    "wholeMovedVertices": 339,
-    "hugSelectedVertices": 347,
-    "hugMovedVertices": 178,
-    "wholeMovedFraction": 0.159305,
-    "hugMovedFraction": 0.083647
+    "wholeMovedVertices": 932,
+    "hugSelectedVertices": 430,
+    "hugMovedVertices": 287,
+    "wholeMovedFraction": 0.442125,
+    "hugMovedFraction": 0.136148
   },
   "weights": {
     "mode": "stiff",
@@ -369,26 +381,26 @@
     "orphanedVertices": {},
     "band": {
       "warden-gloves_L": {
-        "vertices": 1063,
-        "bandVertices": 294,
-        "bandFraction": 0.276576,
+        "vertices": 1054,
+        "bandVertices": 156,
+        "bandFraction": 0.148008,
         "ceiling": 0.8,
-        "minPeakWeight": 0.574204,
-        "meanPeakWeight": 0.92706,
-        "bandHeightMetres": 0.056888,
-        "bandMinY": 0.777991,
-        "bandMaxY": 0.834879
+        "minPeakWeight": 0.522861,
+        "meanPeakWeight": 0.955061,
+        "bandHeightMetres": 0.063248,
+        "bandMinY": 0.76999,
+        "bandMaxY": 0.833238
       },
       "warden-gloves_R": {
-        "vertices": 1065,
-        "bandVertices": 287,
-        "bandFraction": 0.269484,
+        "vertices": 1054,
+        "bandVertices": 152,
+        "bandFraction": 0.144213,
         "ceiling": 0.8,
-        "minPeakWeight": 0.590869,
-        "meanPeakWeight": 0.930515,
-        "bandHeightMetres": 0.056723,
-        "bandMinY": 0.778134,
-        "bandMaxY": 0.834857
+        "minPeakWeight": 0.515985,
+        "meanPeakWeight": 0.956745,
+        "bandHeightMetres": 0.062966,
+        "bandMinY": 0.770229,
+        "bandMaxY": 0.833195
       }
     },
     "stiffness": 3
@@ -505,13 +517,13 @@
     "manifest": "warden-gloves.manifest.json",
     "report": "warden-gloves.report.json",
     "review": "warden-gloves.review.png",
-    "sha256": "bffcaf3b4f40fe8c8ed4ecb16a0dfca9c1edb790f0c1631d5f5ead7b2034e8b1"
+    "sha256": "e680ef2f8017f1a1da6db3d4cf1aa18dc7f349446137a5c00eacd8a64d0caa0a"
   },
   "review": {
     "bodyVerticesInsideThePiece": {
-      "bind": 39,
-      "abduct90": 70,
-      "flex60": 58
+      "bind": 47,
+      "abduct90": 53,
+      "flex60": 42
     }
   }
 }

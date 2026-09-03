@@ -204,6 +204,16 @@ def _roll(points: np.ndarray, obj, reference: np.ndarray, roll: dict,
     tree = BVHTree.FromPolygons([tuple(float(value) for value in point) for point in points],
                                 _triangles(obj), all_triangles=True)
 
+    def seat(moved: np.ndarray) -> np.ndarray:
+        """The anchors again, minus the axis they turn about.
+
+        A bounding box turns with the piece, so re-anchoring along the axis moves the
+        stations a tube measures by centimetres per angle. Where the piece sits along
+        the limb was settled before the roll, and the tube's own stretch places it.
+        """
+        shift = anchor(moved)
+        return shift - axis * float(shift @ axis)
+
     prior = roll.get("prior")
     prior_degrees = None
     piece_thumb = body_thumb = None
@@ -217,7 +227,7 @@ def _roll(points: np.ndarray, obj, reference: np.ndarray, roll: dict,
     for degrees in range(0, 360, max(1, int(round(step)))):
         angle = math.radians(degrees)
         moved = _turn_about(points, axis, centre, angle)
-        shift = anchor(moved)
+        shift = seat(moved)
         # Rolling the piece and measuring the region against it is the same as
         # carrying the region the other way and measuring against the piece as built.
         carried = _turn_about(span - shift, axis, centre, -angle)
@@ -247,9 +257,10 @@ def _roll(points: np.ndarray, obj, reference: np.ndarray, roll: dict,
     at_zero = next(entry for entry in scored if entry["degrees"] == 0)
     angle = math.radians(best["degrees"])
     rolled = _turn_about(points, axis, centre, angle)
-    rolled = rolled + anchor(rolled)
+    rolled = rolled + seat(rolled)
     measured = {
         "bone": roll["bone"],
+        "axis": rounded(axis),
         "scoredRegionVertices": int(len(span)),
         "stepDegrees": float(step),
         "chosenDegrees": best["degrees"],
@@ -351,6 +362,10 @@ def _neck(points: np.ndarray, along: np.ndarray, frame, low: float, high: float,
 
     The ends are excluded because an open rim and a fingertip are both narrow, and
     neither is the waist the stretch has to pin.
+
+    Each slice is measured about its own centroid, not about the limb axis, so the
+    station a roll about that axis finds is the same station: a piece turning about
+    a line it does not sit on changes its distance to that line and nothing else.
     """
     across, up = frame
     edges = np.linspace(low, high, slices + 1)
@@ -361,7 +376,8 @@ def _neck(points: np.ndarray, along: np.ndarray, frame, low: float, high: float,
         chosen = points[(along >= edges[index]) & (along <= edges[index + 1])]
         if len(chosen) < 8:
             continue
-        radius = float(np.mean(np.hypot(chosen @ across, chosen @ up)))
+        section = np.stack([chosen @ across, chosen @ up], axis=1)
+        radius = float(np.mean(np.linalg.norm(section - section.mean(axis=0), axis=1)))
         if best is None or radius < best:
             best, at = radius, float((edges[index] + edges[index + 1]) * 0.5)
     return at
@@ -392,6 +408,10 @@ def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: floa
     fingertip, wrist, cuff - sit on the body's, and then widened slice by slice until
     each cross section clears the body it holds. The slice factors are smoothed along
     the axis because a factor that jumps between slices is a ridge in the silhouette.
+
+    Each slice is carried onto the body's own cross section as well as widened, so a
+    limb that turns at its joint - a forearm leaves this wrist 11.5 degrees off the
+    hand - is followed rather than approximated by the axis it was measured on.
     """
     axis = np.array(tube["axis"], dtype=np.float64)
     axis = axis / np.linalg.norm(axis)
@@ -423,28 +443,33 @@ def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: floa
     count = max(1, int(math.ceil((high - low) / step)))
     edges = np.linspace(low, high, count + 1)
     centres = (edges[:-1] + edges[1:]) * 0.5
+    lanes = np.stack([relative @ across, relative @ up], axis=1)
+    skin_lanes = np.stack([(reference - origin) @ across, (reference - origin) @ up], axis=1)
     factors = np.ones((count, 2))
+    middles = np.zeros((count, 2))
+    shifts = np.zeros((count, 2))
     for index in range(count):
         chosen = (along >= edges[index]) & (along <= edges[index + 1])
         held = (body_along >= edges[index]) & (body_along <= edges[index + 1])
-        if chosen.sum() < 4 or held.sum() < 4:
+        if chosen.sum() < 4:
             continue
-        skin = reference[held] - origin
-        for lane, direction in enumerate((across, up)):
-            mine = relative[chosen] @ direction
-            theirs = skin @ direction
-            wide = float(mine.max() - mine.min())
-            if wide <= 1e-9:
-                continue
-            factors[index, lane] = max(1.0, (float(theirs.max() - theirs.min()) + 2.0 * clearance) / wide)
+        mine = lanes[chosen]
+        middles[index] = (mine.max(axis=0) + mine.min(axis=0)) * 0.5
+        if held.sum() < 4:
+            continue
+        theirs = skin_lanes[held]
+        shifts[index] = (theirs.max(axis=0) + theirs.min(axis=0)) * 0.5 - middles[index]
+        factors[index] = np.maximum(1.0, (theirs.max(axis=0) - theirs.min(axis=0) + 2.0 * clearance)
+                                    / np.maximum(mine.max(axis=0) - mine.min(axis=0), 1e-9))
 
     smooth = max(1, int(tube.get("smooth", 3)))
     if smooth > 1 and count > 1:
         pad = smooth // 2
-        padded = np.pad(factors, ((pad, pad), (0, 0)), mode="edge")
         kernel = np.ones(smooth) / smooth
-        factors = np.stack([np.convolve(padded[:, lane], kernel, mode="valid")[:count] for lane in range(2)],
-                           axis=1)
+        factors, middles, shifts = (
+            np.stack([np.convolve(np.pad(strip, ((pad, pad), (0, 0)), mode="edge")[:, lane], kernel,
+                                  mode="valid")[:count] for lane in range(2)], axis=1)
+            for strip in (factors, middles, shifts))
 
     weight = np.ones(len(points))
     band = tube.get("band")
@@ -452,15 +477,23 @@ def _tube(points: np.ndarray, reference: np.ndarray, tube: dict, clearance: floa
         fraction = (along - low) / max(high - low, 1e-9)
         weight = np.array([_band_weight(value, [list(band)], float(tube.get("fade", 0.0)))
                            for value in fraction])
-    scaled = np.stack([np.interp(along, centres, factors[:, lane]) for lane in range(2)], axis=1)
-    scaled = 1.0 + (scaled - 1.0) * weight[:, None]
-    radial = np.outer(relative @ across * scaled[:, 0], across) + np.outer(relative @ up * scaled[:, 1], up)
+
+    def sampled(strip: np.ndarray) -> np.ndarray:
+        return np.stack([np.interp(along, centres, strip[:, lane]) for lane in range(2)], axis=1)
+
+    scaled = 1.0 + (sampled(factors) - 1.0) * weight[:, None]
+    # Widened about the slice's own centre and carried onto the limb's, because
+    # scaling an off-centre cuff about the axis only throws it further off.
+    middle = sampled(middles)
+    placed_lanes = (lanes - middle) * scaled + middle + sampled(shifts) * weight[:, None]
+    radial = np.outer(placed_lanes[:, 0], across) + np.outer(placed_lanes[:, 1], up)
     report["slices"] = count
     report["sliceMetres"] = step
     report["smooth"] = smooth
     report["radialFactorMin"] = round(float(factors.min()), 6)
     report["radialFactorMax"] = round(float(factors.max()), 6)
     report["radialFactorMean"] = round(float(factors.mean()), 6)
+    report["centreShiftMaxMetres"] = round(float(np.abs(shifts).max()), 6)
     return origin + np.outer(along, axis) + radial, report
 
 
