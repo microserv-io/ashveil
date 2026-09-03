@@ -10,6 +10,7 @@ import {
 } from './actorview'
 import { ActorViewPool } from './actorpool'
 import { LightPool } from './lights'
+import type { BodyMaterial } from './look'
 import { meshesOf, spawnModel } from './models'
 import { PALETTE } from './palette'
 import { buildRigInput } from './riginput'
@@ -265,7 +266,7 @@ function createOrbMesh(orb: Orb): THREE.Object3D {
   bottle.scale.setScalar(0.5)
   // The kit's bottle is green; an orb restores life, and the glow has to agree.
   for (const mesh of meshesOf(bottle)) {
-    const material = mesh.material as THREE.MeshStandardMaterial
+    const material = mesh.material as BodyMaterial
     material.color.setHex(PALETTE.orb)
     material.emissive.setHex(PALETTE.orb)
     material.emissiveIntensity = 1.4

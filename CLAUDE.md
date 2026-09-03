@@ -156,6 +156,9 @@ untested, or unmeasurable by this bot", and the third is the easiest one to miss
   every shader program, so one light attached to a projectile recompiles all of them
   mid-fight: that was an 85ms frame. Claim one from `LightPool` in
   `src/render/lights.ts` instead. `tests/frame_budget.test.ts` guards it.
+- **The look lives in `src/render/look.ts`.** Anything loaded outside `loadModels`
+  (review bodies, gear) goes through `stylise()` or renders PBR beside toon
+  neighbours; `tests/look.test.ts` guards the types.
 - **Every sim state needs a pose.** `POSE_SOURCES`'s
   `Readonly<Record<PoseClipName, PoseClipSource>>` type and the `SKILL_CLIPS` list
   pinned in `tests/procedural_poses.test.ts` guard skill coverage;
