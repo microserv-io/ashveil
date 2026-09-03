@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js'
+import { stylise } from './look'
 
 /** Names are the role each model fills in the sim, never the source filename. */
 export const MODEL_NAMES = [
@@ -36,12 +37,12 @@ let registry: Map<ModelName, Model> | null = null
 export async function loadModels(base = 'models', onProgress?: (done: number, total: number) => void): Promise<void> {
   const loader = new GLTFLoader()
   let done = 0
-  const body = loader.loadAsync(BODY_MODEL_PATH).then((gltf) => ({ scene: gltf.scene }))
+  const body = loader.loadAsync(BODY_MODEL_PATH).then((gltf) => ({ scene: stylise(gltf.scene) }))
   const loaded = await Promise.all(
     MODEL_NAMES.map(async (name) => {
       const loadedModel = BODY_MODEL_NAMES.includes(name as (typeof BODY_MODEL_NAMES)[number])
         ? await body
-        : { scene: (await loader.loadAsync(`${base}/${name}.glb`)).scene }
+        : { scene: stylise((await loader.loadAsync(`${base}/${name}.glb`)).scene) }
       onProgress?.(++done, MODEL_NAMES.length)
       return [name, loadedModel] as const
     }),

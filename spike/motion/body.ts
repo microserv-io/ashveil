@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js'
 import { HEIGHT_PER_RADIUS, type ActorView } from '../../src/render/actorview'
+import { stylise, type BodyMaterial } from '../../src/render/look'
 import { meshesOf } from '../../src/render/models'
 import { ProceduralDriver } from '../../src/render/proceduraldriver'
 import { MASCULINE_PROFILE } from '../../src/render/profiles/masculine'
@@ -29,7 +30,7 @@ export function reviewBodyScale(radius: number): number {
 }
 
 export async function loadReviewBody(body: ReviewBodyDefinition): Promise<THREE.Object3D> {
-  return (await new GLTFLoader().loadAsync(body.path)).scene
+  return stylise((await new GLTFLoader().loadAsync(body.path)).scene)
 }
 
 export async function loadReviewBodies(
@@ -55,7 +56,7 @@ export function createReviewBodyView(
   })
   group.add(model)
 
-  const materials = meshesOf(model).map((mesh) => mesh.material as THREE.MeshStandardMaterial)
+  const materials = meshesOf(model).map((mesh) => mesh.material as BodyMaterial)
   const driver = new ProceduralDriver()
   driver.bind(model, body.profile)
   return {

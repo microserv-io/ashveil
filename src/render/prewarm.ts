@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import type { BodyMaterial } from './look'
 import { meshesOf, spawnModel, type ModelName } from './models'
 import type { SceneHost } from './scene'
 
@@ -37,7 +38,7 @@ export function prewarmShaders(host: SceneHost): void {
     // Death fades a body out, and a transparent material is a different program.
     const fading = spawnModel(name)
     for (const mesh of meshesOf(fading)) {
-      const material = mesh.material as THREE.MeshStandardMaterial
+      const material = mesh.material as BodyMaterial
       material.transparent = true
       material.opacity = 0.5
     }

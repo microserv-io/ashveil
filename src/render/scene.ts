@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import type { AreaMap, Vec2 } from '../sim/types'
+import { LOOK } from './look'
 import { spawnModel } from './models'
 import { PALETTE } from './palette'
 import { buildTerrain as buildTerrainGeometry } from './terrain'
@@ -39,6 +40,9 @@ export class SceneHost {
 
   constructor(canvasParent: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' })
+    // Three's defaults, pinned: the look is tuned for authored colours with no curve on top.
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace
+    this.renderer.toneMapping = THREE.NoToneMapping
     this.renderer.setPixelRatio(Math.min(globalThis.devicePixelRatio ?? 1, 2))
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
@@ -57,9 +61,9 @@ export class SceneHost {
   }
 
   private addLights(): void {
-    this.scene.add(new THREE.AmbientLight(0x404a5c, 1.1))
+    this.scene.add(new THREE.HemisphereLight(LOOK.skyLight, LOOK.groundLight, LOOK.fillIntensity))
 
-    const key = new THREE.DirectionalLight(0xffe6c4, 1.5)
+    const key = new THREE.DirectionalLight(LOOK.keyColour, LOOK.keyIntensity)
     key.position.set(12, 26, 8)
     key.castShadow = true
     key.shadow.mapSize.set(2048, 2048)
@@ -71,11 +75,12 @@ export class SceneHost {
     key.shadow.camera.top = extent
     key.shadow.camera.bottom = -extent
     key.shadow.bias = -0.0016
+    key.shadow.intensity = LOOK.shadowIntensity
     this.scene.add(key)
     this.scene.add(key.target)
     this.keyLight = key
 
-    const rim = new THREE.DirectionalLight(0x4a6cff, 0.35)
+    const rim = new THREE.DirectionalLight(LOOK.rimColour, LOOK.rimIntensity)
     rim.position.set(-14, 10, -12)
     this.scene.add(rim)
   }
