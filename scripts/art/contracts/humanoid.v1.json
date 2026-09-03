@@ -981,7 +981,7 @@
         }
       },
       "clearance": 0.016,
-      "layer": 3,
+      "layer": 6,
       "coverReach": 0.06,
       "hug": {
         "bands": [],
@@ -1076,7 +1076,7 @@
         }
       },
       "clearance": 0.016,
-      "layer": 3,
+      "layer": 6,
       "coverReach": 0.06,
       "hug": {
         "bands": [],

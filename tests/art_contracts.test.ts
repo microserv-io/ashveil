@@ -40,20 +40,12 @@ describe('the family contract', () => {
     }
   })
 
-  /**
-   * Every piece is fitted against the bare body, so what keeps a cloak off a tunic
-   * and a tunic out of a waistband is the clearance each slot stands off the skin
-   * by. Layering is that ordering made explicit: an outer layer never sits closer
-   * to the skin than something it is worn over.
-   */
-  it('layering_orders_clearances', () => {
-    const slots = Object.entries(HUMANOID.slots) as [string, { layer: number; clearance: number }][]
-    for (const [outer, over] of slots) {
-      for (const [inner, under] of slots) {
-        if (over.layer <= under.layer) continue
-        expect(over.clearance, `${outer} (layer ${over.layer}) sits under ${inner} (layer ${under.layer})`)
-          .toBeGreaterThan(under.clearance)
-      }
+  it('keeps fixed overlap ordered from chest to back to shoulders and headgear', () => {
+    expect(HUMANOID.slots.back.layer).toBeGreaterThan(HUMANOID.slots.chest.layer)
+    expect(HUMANOID.slots.shoulders.layer).toBeGreaterThan(HUMANOID.slots.back.layer)
+    expect(HUMANOID.slots.head.layer).toBe(HUMANOID.slots.shoulders.layer)
+    for (const [slot, rule] of Object.entries(HUMANOID.slots) as [string, { clearance: number }][]) {
+      expect(rule.clearance, slot).toBeGreaterThan(0)
     }
   })
 

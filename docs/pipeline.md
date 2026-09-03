@@ -308,9 +308,10 @@ landmarks. What `--covers` names is an alignment and fitting reference only — 
 piece hides is measured off the fitted piece (see "Masking").
 
 Eight slots, three of them pairs: `feet`, `hands`, `shoulders` (two islands, one per
-side), and `legs`, `waist`, `chest`, `back`, `head` (one). `back` is the outermost
-attachment: a shoulder wrap, wings, a backpack or hanging fabric. Its contract region
-is empty, so it aligns against the chest's via `referenceSlot`.
+side), and `legs`, `waist`, `chest`, `back`, `head` (one). A `back` attachment can be
+a shoulder wrap, wings, a backpack or hanging fabric. It sits above chest geometry but
+below equipped shoulders and headgear. Its contract region is empty, so it aligns
+against the chest's via `referenceSlot`.
 
 A slot's region lives in `humanoid.v1.json`'s `slots` block as `{bone, along}` rules:
 a body vertex belongs to the slot when its dominant bone (largest skin weight) is
@@ -659,16 +660,14 @@ fails the clip gate honestly — it only ever passed while `--covers legs,waist`
 that belly away. They are fixtures, not production art, and the review page never
 lists them.
 
-**Layering.** Every piece is fitted against the bare body, so nothing in a per-piece
-gate can see a hood's mantle inside a tunic collar. Each slot carries a `layer` and
-stands off the skin by a `clearance` that rises with it — `legs` and `hands` 1, `feet`
-and `chest` 2, `head` and `shoulders` 3, `waist` 4, `back` 5 — so an outer piece is
-always further out than what it covers, and `tests/art_contracts.test.ts` refuses a
-contract where a higher layer sits closer in. The ladder is ceilinged by what the
-pieces carry: above 0.016 the hood loses `clears_the_body_through_motion_cycles`,
-because a mantle pushed off the skin stops hiding the shoulder it is measured against.
-Shoulders deliberately share headgear's tier above chest: a tunic can never mask a
-pauldron, while a pauldron may mask chest geometry underneath it.
+**Layering.** A slot's integer `layer` is fixed-overlap precedence, separate from the
+`clearance` used to fit it against the body: `legs` and `hands` are 1, `feet` and
+`chest` 2, `waist` 4, `back` 5, and `shoulders` and `head` 6. Chest cannot mask a back
+attachment, and back geometry cannot mask equipped pauldrons or headgear. At a real
+overlap the higher fixed surface removes only buried lower triangles; it never hides a
+whole slot. Drape triangles are excluded from that covering surface because they move.
+They continue to use the measured torso and limb colliders from the body; there is no
+dynamic cloth collision against other equipped gear.
 `--under <piece,...>` names the fitted pieces this one is worn over: their shells
 join the body in the surface the shrinkwrap pushes out of and the bind gate measures
 against, so a hood is fitted around a tunic collar rather than through it, and the
@@ -705,7 +704,7 @@ worn pieces' `hides` and drops from the index every body triangle whose three ve
 are all in it, sharing every attribute by reference. The body sidecar is not a runtime
 file: the page reads each piece's own manifest. Wearing a piece costs exactly one more draw call.
 `applyGearMasks` does the same for gear under gear, which the fitter cannot bake because
-which pieces are worn together is only known here: `src/render/gearcover.ts` sorts the
+which pieces are worn together is only known here: `src/render/gearcover.ts` compares
 worn pieces by their slot's `layer` — never by the order they were put on — and drops
 from each piece the triangles whose three vertices are all covered by a higher one.
 Its rule is not the body's, deliberately. A vertex counts only when it is **inside**

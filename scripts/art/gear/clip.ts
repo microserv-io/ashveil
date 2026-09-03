@@ -618,11 +618,9 @@ export function slotLayers(contract = CONTRACT): Record<string, number> {
 /**
  * Advisory only: how far the pieces of a worn set reach into each other.
  *
- * Every piece is fitted against the bare body, so nothing in the per-piece gate can
- * see a tunic hem inside a waistband. Layering answers it by clearance - an outer
- * slot stands further off the skin than what it covers - and this is the reading
- * that says whether the ordering closed the overlap. It gates nothing: a cloak
- * resting on a pauldron is a set that works, not a set that failed.
+ * Per-piece gates cannot see intersections between equipped pieces. This advisory
+ * measures those overlaps; layer controls fixed masking independently of fit
+ * clearance and body collision. It gates nothing: contact can be intentional.
  */
 export function measureSet(body: ClipBody, pieces: readonly ClipPiece[]): SetOverlap {
   const layers = slotLayers()

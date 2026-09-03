@@ -123,7 +123,7 @@ describe('the gear wrapper', () => {
     ]
     expect(resolvePlan(parseArgs([...base, '--under', 'warden-tunic'])).under).toEqual(['warden-tunic'])
     expect(() => resolvePlan(parseArgs([...base, '--under', 'warden-pauldrons'])))
-      .toThrow(/warden-pauldrons \(shoulders, layer 3\) is not below shoulders \(layer 3\)/)
+      .toThrow(/warden-pauldrons \(shoulders, layer 6\) is not below shoulders \(layer 6\)/)
   })
 
   it('merges the clip gates into the manifest and the report', () => {

@@ -118,37 +118,45 @@ describe('hiding a worn piece under the pieces over it', () => {
   it('uses a draped attachment fixed surface but never its moving triangles', () => {
     const fixedInner = meshOf(shell(0.05))
     applyPieceMasks([
-      { layer: 1, mesh: fixedInner },
-      { layer: 5, mesh: meshOf(skinTo(shell(0.08), 0)), drapeJoints: 1 },
+      { layer: SLOT_LAYERS.chest, mesh: fixedInner },
+      { layer: SLOT_LAYERS.back, mesh: meshOf(skinTo(shell(0.08), 0)), drapeJoints: 1 },
     ])
     expect(triangles(fixedInner), 'the fixed yoke or backpack may cover').toBe(0)
 
     const movingInner = meshOf(shell(0.05))
     applyPieceMasks([
-      { layer: 1, mesh: movingInner },
-      { layer: 5, mesh: meshOf(skinTo(shell(0.08), 1)), drapeJoints: 1 },
+      { layer: SLOT_LAYERS.chest, mesh: movingInner },
+      { layer: SLOT_LAYERS.back, mesh: meshOf(skinTo(shell(0.08), 1)), drapeJoints: 1 },
     ])
     expect(triangles(movingInner), 'moving cloth never cuts a hole below it').toBeGreaterThan(0)
   })
 
-  it('layers shoulders above chest at the same tier as headgear', () => {
+  it('orders fixed overlap from chest to back to shoulders and headgear', () => {
     expect(SLOT_LAYERS.shoulders).toBe(SLOT_LAYERS.head)
-    expect(SLOT_LAYERS.shoulders).toBeGreaterThan(SLOT_LAYERS.chest)
+    expect(SLOT_LAYERS.back).toBeGreaterThan(SLOT_LAYERS.chest)
+    expect(SLOT_LAYERS.shoulders).toBeGreaterThan(SLOT_LAYERS.back)
 
-    const shoulderInsideChest = meshOf(shell(0.05))
+    const backInsideChest = meshOf(shell(0.05))
     applyPieceMasks([
       { layer: SLOT_LAYERS.chest, mesh: meshOf(shell(0.08)) },
-      { layer: SLOT_LAYERS.shoulders, mesh: shoulderInsideChest },
+      { layer: SLOT_LAYERS.back, mesh: backInsideChest },
     ])
-    expect(triangles(shoulderInsideChest), 'chest cannot hide shoulders').toBeGreaterThan(0)
+    expect(triangles(backInsideChest), 'chest cannot hide back attachments').toBeGreaterThan(0)
 
-    const chestInsideShoulder = meshOf(shell(0.05))
-    const shoulder = meshOf(shell(0.08))
+    for (const slot of ['shoulders', 'head'] as const) {
+      const outerInsideBack = meshOf(shell(0.05))
+      applyPieceMasks([
+        { layer: SLOT_LAYERS.back, mesh: meshOf(shell(0.08)) },
+        { layer: SLOT_LAYERS[slot], mesh: outerInsideBack },
+      ])
+      expect(triangles(outerInsideBack), `back cannot hide ${slot}`).toBeGreaterThan(0)
+    }
+
+    const backInsideShoulder = meshOf(shell(0.05))
     applyPieceMasks([
-      { layer: SLOT_LAYERS.chest, mesh: chestInsideShoulder },
-      { layer: SLOT_LAYERS.shoulders, mesh: shoulder },
+      { layer: SLOT_LAYERS.back, mesh: backInsideShoulder },
+      { layer: SLOT_LAYERS.shoulders, mesh: meshOf(shell(0.08)) },
     ])
-    expect(triangles(chestInsideShoulder), 'shoulders hide lower layers').toBe(0)
-    expect(triangles(shoulder)).toBeGreaterThan(0)
+    expect(triangles(backInsideShoulder), 'shoulders hide fixed back overlap').toBe(0)
   })
 })

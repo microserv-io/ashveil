@@ -22,12 +22,11 @@ export const GEAR_SLOTS = ['feet', 'legs', 'waist', 'chest', 'back', 'hands', 's
 export type GearSlot = (typeof GEAR_SLOTS)[number]
 
 /**
- * What a slot is worn over. A higher layer stands further off the skin and hides
- * the pieces below it; `tests/art_contracts.test.ts` holds this to the contract's
- * own `layer`, which is what the fitter's clearances are ordered by.
+ * Fixed-overlap precedence between slots. A higher layer may hide buried triangles
+ * of lower fixed geometry; fitting clearance and moving-cloth collision are separate.
  */
 export const SLOT_LAYERS: Readonly<Record<GearSlot, number>> = {
-  legs: 1, hands: 1, feet: 2, chest: 2, head: 3, shoulders: 3, waist: 4, back: 5,
+  legs: 1, hands: 1, feet: 2, chest: 2, waist: 4, back: 5, head: 6, shoulders: 6,
 }
 
 /**
