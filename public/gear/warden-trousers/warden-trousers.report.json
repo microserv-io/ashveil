@@ -15,11 +15,13 @@
     "waist"
   ],
   "coverage": {
-    "reachMetres": 0.06,
+    "reachMetres": 0.025,
     "triangles": 10327,
     "hangingTriangles": 0,
+    "rayVertices": 1207,
+    "swallowedVertices": 0,
     "hiddenVertices": {
-      "Body": 1407,
+      "Body": 1207,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -27,7 +29,7 @@
       "Head": 0
     },
     "measuredVertices": {
-      "Body": 1407,
+      "Body": 1207,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -103,7 +105,7 @@
         "vertices": 4942,
         "side": "all",
         "sourceCentroid": [
-          0.000064,
+          6.4e-05,
           0.51494,
           -0.015625
         ],
@@ -117,7 +119,7 @@
       "scale": 0.834727,
       "yawDegrees": 0,
       "translation": [
-        -0.000007,
+        -7e-06,
         0.226331,
         -0.023085
       ],
@@ -296,7 +298,7 @@
     ],
     "extraBones": [],
     "extraBoneParents": {},
-    "inverseBindMaxAbsDifference": 1.79e-7,
+    "inverseBindMaxAbsDifference": 1.79e-07,
     "triangles": 10327,
     "materials": 1,
     "meshes": 1,
@@ -391,11 +393,11 @@
           "attachmentVertices": 53,
           "fromNearestShellVertex": false,
           "nearestShellMetres": 0.001223,
-          "translationMetres": 0.000081,
+          "translationMetres": 8.1e-05,
           "translation": [
-            -0.000029,
-            0.000034,
-            0.000068
+            -2.9e-05,
+            3.4e-05,
+            6.8e-05
           ]
         },
         {

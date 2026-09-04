@@ -13,11 +13,13 @@
     "feet"
   ],
   "coverage": {
-    "reachMetres": 0.06,
+    "reachMetres": 0.025,
     "triangles": 1794,
     "hangingTriangles": 0,
+    "rayVertices": 1486,
+    "swallowedVertices": 0,
     "hiddenVertices": {
-      "Body": 1489,
+      "Body": 1486,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -25,7 +27,7 @@
       "Head": 0
     },
     "measuredVertices": {
-      "Body": 1489,
+      "Body": 1486,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -393,9 +395,9 @@
   },
   "review": {
     "bodyVerticesInsideThePiece": {
-      "bind": 77,
-      "abduct90": 77,
-      "flex60": 77
+      "bind": 80,
+      "abduct90": 80,
+      "flex60": 80
     }
   }
 }

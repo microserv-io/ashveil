@@ -13,9 +13,11 @@
     "chest"
   ],
   "coverage": {
-    "reachMetres": 0.06,
+    "reachMetres": 0.02,
     "triangles": 2816,
     "hangingTriangles": 2508,
+    "rayVertices": 0,
+    "swallowedVertices": 0,
     "hiddenVertices": {
       "Body": 0,
       "Facial_Feature_01": 0,

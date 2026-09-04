@@ -13,9 +13,11 @@
     "hands"
   ],
   "coverage": {
-    "reachMetres": 0.06,
+    "reachMetres": 0.025,
     "triangles": 10141,
     "hangingTriangles": 0,
+    "rayVertices": 639,
+    "swallowedVertices": 202,
     "hiddenVertices": {
       "Body": 4068,
       "Facial_Feature_01": 0,
@@ -25,7 +27,7 @@
       "Head": 0
     },
     "measuredVertices": {
-      "Body": 1116,
+      "Body": 841,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -753,7 +755,7 @@
     ],
     "extraBones": [],
     "extraBoneParents": {},
-    "inverseBindMaxAbsDifference": 1.79e-7,
+    "inverseBindMaxAbsDifference": 1.79e-07,
     "triangles": 10141,
     "materials": 1,
     "meshes": 1,

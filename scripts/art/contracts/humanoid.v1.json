@@ -406,7 +406,7 @@
       },
       "clearance": 0.014,
       "layer": 2,
-      "coverReach": 0.06,
+      "coverReach": 0.025,
       "hug": {
         "bands": [
           [
@@ -501,7 +501,7 @@
       },
       "clearance": 0.008,
       "layer": 1,
-      "coverReach": 0.06,
+      "coverReach": 0.025,
       "hug": {
         "bands": [
           [
@@ -584,7 +584,7 @@
       },
       "clearance": 0.02,
       "layer": 4,
-      "coverReach": 0.06,
+      "coverReach": 0.02,
       "hug": {
         "bands": [
           [
@@ -664,7 +664,7 @@
       },
       "clearance": 0.012,
       "layer": 2,
-      "coverReach": 0.06,
+      "coverReach": 0.025,
       "hug": {
         "bands": [
           [
@@ -733,7 +733,7 @@
       },
       "clearance": 0.026,
       "layer": 5,
-      "coverReach": 0.06,
+      "coverReach": 0.02,
       "hug": {
         "bands": [],
         "reach": 0.04,
@@ -881,7 +881,7 @@
       "clearance": 0.003,
       "shrinkwrap": "unreplaced",
       "layer": 1,
-      "coverReach": 0.06,
+      "coverReach": 0.025,
       "hug": {
         "bands": [
           [
@@ -982,7 +982,7 @@
       },
       "clearance": 0.016,
       "layer": 6,
-      "coverReach": 0.06,
+      "coverReach": 0.02,
       "hug": {
         "bands": [],
         "reach": 0.02,
@@ -1077,7 +1077,7 @@
       },
       "clearance": 0.016,
       "layer": 6,
-      "coverReach": 0.06,
+      "coverReach": 0.025,
       "hug": {
         "bands": [],
         "reach": 0.03,

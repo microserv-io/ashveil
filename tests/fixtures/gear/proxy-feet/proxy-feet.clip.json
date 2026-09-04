@@ -4,7 +4,7 @@
   "piece": "proxy-feet",
   "slot": "feet",
   "hides": {
-    "Body": 1489
+    "Body": 1486
   },
   "clip": {
     "depth": 0.005,

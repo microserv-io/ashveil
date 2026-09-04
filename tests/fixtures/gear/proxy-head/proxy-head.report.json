@@ -13,24 +13,26 @@
     "head"
   ],
   "coverage": {
-    "reachMetres": 0.06,
+    "reachMetres": 0.025,
     "triangles": 1210,
     "hangingTriangles": 0,
+    "rayVertices": 1177,
+    "swallowedVertices": 107,
     "hiddenVertices": {
-      "Body": 945,
-      "Facial_Feature_01": 168,
-      "Facial_Feature_02": 78,
-      "Facial_Feature_03": 11,
+      "Body": 830,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
       "Facial_Feature_04": 0,
-      "Head": 1167
+      "Head": 454
     },
     "measuredVertices": {
-      "Body": 945,
-      "Facial_Feature_01": 168,
-      "Facial_Feature_02": 78,
-      "Facial_Feature_03": 11,
+      "Body": 830,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
       "Facial_Feature_04": 0,
-      "Head": 1167
+      "Head": 454
     },
     "replacedVertices": {
       "Body": 0,
@@ -325,9 +327,9 @@
   },
   "review": {
     "bodyVerticesInsideThePiece": {
-      "bind": 713,
-      "abduct90": 713,
-      "flex60": 713
+      "bind": 1273,
+      "abduct90": 1273,
+      "flex60": 1273
     }
   }
 }

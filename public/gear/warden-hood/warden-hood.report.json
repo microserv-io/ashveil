@@ -15,24 +15,26 @@
     "head"
   ],
   "coverage": {
-    "reachMetres": 0.06,
+    "reachMetres": 0.025,
     "triangles": 10097,
     "hangingTriangles": 0,
+    "rayVertices": 1082,
+    "swallowedVertices": 72,
     "hiddenVertices": {
-      "Body": 1069,
-      "Facial_Feature_01": 74,
-      "Facial_Feature_02": 27,
-      "Facial_Feature_03": 14,
-      "Facial_Feature_04": 32,
-      "Head": 1197
+      "Body": 460,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 27,
+      "Head": 667
     },
     "measuredVertices": {
-      "Body": 1069,
-      "Facial_Feature_01": 74,
-      "Facial_Feature_02": 27,
-      "Facial_Feature_03": 14,
-      "Facial_Feature_04": 32,
-      "Head": 1197
+      "Body": 460,
+      "Facial_Feature_01": 0,
+      "Facial_Feature_02": 0,
+      "Facial_Feature_03": 0,
+      "Facial_Feature_04": 27,
+      "Head": 667
     },
     "replacedVertices": {
       "Body": 0,
@@ -91,7 +93,7 @@
         "vertices": 5078,
         "side": "all",
         "sourceCentroid": [
-          -0.000079,
+          -7.9e-05,
           0.522865,
           0.029349
         ],
@@ -322,7 +324,7 @@
     ],
     "extraBones": [],
     "extraBoneParents": {},
-    "inverseBindMaxAbsDifference": 1.79e-7,
+    "inverseBindMaxAbsDifference": 1.79e-07,
     "triangles": 10097,
     "materials": 1,
     "meshes": 1,

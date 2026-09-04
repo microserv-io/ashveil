@@ -4,11 +4,8 @@
   "piece": "proxy-head",
   "slot": "head",
   "hides": {
-    "Body": 945,
-    "Facial_Feature_01": 168,
-    "Facial_Feature_02": 78,
-    "Facial_Feature_03": 11,
-    "Head": 1167
+    "Body": 830,
+    "Head": 454
   },
   "clip": {
     "depth": 0.005,
@@ -19,11 +16,11 @@
   "poses": 201,
   "cycles": {
     "motion": {
-      "pose": "none",
-      "phase": 0,
-      "maxDepth": 0,
-      "count": 0,
-      "fraction": 0
+      "pose": "cleave",
+      "phase": 0.75,
+      "maxDepth": 0.0140772208354891,
+      "count": 6,
+      "fraction": 0.001652892561983471
     },
     "stress": {
       "pose": "none",

@@ -13,11 +13,13 @@
     "feet"
   ],
   "coverage": {
-    "reachMetres": 0.06,
+    "reachMetres": 0.025,
     "triangles": 10441,
     "hangingTriangles": 0,
+    "rayVertices": 1377,
+    "swallowedVertices": 22,
     "hiddenVertices": {
-      "Body": 1806,
+      "Body": 1647,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -25,7 +27,7 @@
       "Head": 0
     },
     "measuredVertices": {
-      "Body": 1768,
+      "Body": 1399,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -867,7 +869,7 @@
     ],
     "extraBones": [],
     "extraBoneParents": {},
-    "inverseBindMaxAbsDifference": 1.79e-7,
+    "inverseBindMaxAbsDifference": 1.79e-07,
     "triangles": 10441,
     "materials": 1,
     "meshes": 1,

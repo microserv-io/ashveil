@@ -27,6 +27,16 @@ RAY_STEP = 1e-5
 RAY_HIT_LIMIT = 256
 # Deeper than this a vertex is buried rather than caught in a crease of the skin.
 DEEP_INSIDE = 0.005
+# How much further than the nearest cloth a cover ray may travel before it landed on
+# a wall it reached across the garment's inside rather than one standing over the
+# skin: a hood's jaw ray crosses the face opening to the far wall. Measured as a
+# detour rather than off the hit's own normal, because these pieces are open surfaces
+# whose winding is not consistent enough for a normal to say which side it was hit on.
+COVER_DETOUR = 0.010
+# How far inside a garment's solid a vertex may sit and still be one the garment ate.
+# Deeper is a cavity the parity test walked into - an armpit, a nape - with no cloth
+# standing over the skin at the bottom of it.
+SWALLOW_DEPTH = 0.010
 # One pass only moves a vertex to the nearest surface, which for a sleeve buried in an
 # arm is the torso, so it takes several to walk out of overlapping shells.
 OUTSIDE_PASSES = 8
@@ -1173,6 +1183,19 @@ def _fixed_faces(piece, hanging: set[str]) -> tuple[list[tuple[int, int, int]], 
     return kept, len(faces) - len(kept)
 
 
+def fixed_shell(piece, hanging: set[str] | None = None) -> BVHTree | None:
+    """The triangles of a piece that stay where they were fitted, as a world-space tree.
+
+    The one surface a mask may be measured against, so a re-mask can ask a shipped
+    piece how far off it the skin it claims to cover actually is.
+    """
+    faces, _ = _fixed_faces(piece, hanging or set())
+    if not faces:
+        return None
+    points = [tuple(piece.matrix_world @ vertex.co) for vertex in piece.data.vertices]
+    return BVHTree.FromPolygons(points, faces, all_triangles=True)
+
+
 def _shell(piece, faces: list[tuple[int, int, int]]):
     """The piece as an object carrying only the faces given, for the inside test."""
     mesh = bpy.data.meshes.new(f"{piece.name}-fixed")
@@ -1185,19 +1208,27 @@ def _shell(piece, faces: list[tuple[int, int, int]]):
     return obj
 
 
-def coverage(piece, meshes: list, reach: float,
-             hanging: set[str] | None = None) -> tuple[dict[str, list[int]], dict]:
+def coverage(piece, meshes: list, reach: float, hanging: set[str] | None = None,
+             swallow: float = SWALLOW_DEPTH,
+             detour: float = COVER_DETOUR) -> tuple[dict[str, list[int]], dict]:
     """The body vertices a fitted piece covers at bind, per mesh.
 
     Authored slot regions stop where the anatomy does, and a garment does not: a
     waistband climbs above the waist, a sleeve wall stands off an upper arm the
-    shoulders region never claimed. So the mask is measured off the piece itself -
-    a vertex is covered when a ray along its own normal reaches the garment within
-    `reach`, or when the garment has swallowed it whole.
+    shoulders region never claimed. So the mask is measured off the piece itself.
+
+    Both tests are about cloth standing over skin, and both have a way of answering
+    yes where there is none. A normal ray within `reach` reaches the far wall of any
+    garment with an opening in it, so the wall it lands on has to be about as far off
+    as the nearest cloth is rather than a `detour` past it. Parity calls the whole of
+    a garment's cavity inside, so a swallowed vertex has to be within `swallow` of the
+    cloth as well. Neither is a tuning knob: a hood ate a jaw 60 mm across its face
+    opening, and parity ate an armpit and a nape 20 mm from any tunic.
     """
     points = [tuple(piece.matrix_world @ vertex.co) for vertex in piece.data.vertices]
     faces, swung = _fixed_faces(piece, hanging or set())
-    report = {"triangles": len(_triangles(piece)), "hangingTriangles": swung}
+    report = {"triangles": len(_triangles(piece)), "hangingTriangles": swung,
+              "rayVertices": 0, "swallowedVertices": 0}
     if not faces:
         # A piece that is all hanging cloth hides nothing, and has no shell to ask.
         return {}, report
@@ -1216,11 +1247,19 @@ def coverage(piece, meshes: list, reach: float,
             place = np.array(tuple(world), dtype=np.float64)
             if np.any(place < low) or np.any(place > high):
                 continue
+            closest = tree.find_nearest(world)
+            gap = closest[3] if closest[0] is not None else float("inf")
             normal = (normal_matrix @ vertex.normal).normalized()
-            if tree.ray_cast(world, normal, reach)[0] is not None:
+            hit, _, _, distance = tree.ray_cast(world, normal, reach)
+            if hit is not None and distance <= gap + detour:
                 found.append(vertex.index)
-            elif shell.measure(runtime_from_blender(world))[0]:
+                report["rayVertices"] += 1
+                continue
+            # Parity costs three ray casts and a majority vote, so ask the cheap half
+            # of the swallow test first.
+            if gap <= swallow and shell.measure(runtime_from_blender(world))[0]:
                 found.append(vertex.index)
+                report["swallowedVertices"] += 1
         if found:
             covered[obj.name] = found
     bpy.data.objects.remove(fixed, do_unlink=True)
