@@ -1,7 +1,7 @@
 {
   "schema": "ashveil.gear-report.v1",
   "family": "humanoid.v1",
-  "contractVersion": "1.2.0",
+  "contractVersion": "1.3.0",
   "body": "masculine-v3",
   "slot": "chest",
   "piece": "warden-tunic",
@@ -18,10 +18,10 @@
   ],
   "coverage": {
     "reachMetres": 0.06,
-    "triangles": 7772,
+    "triangles": 9104,
     "hangingTriangles": 0,
     "hiddenVertices": {
-      "Body": 2394,
+      "Body": 2395,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -29,7 +29,7 @@
       "Head": 0
     },
     "measuredVertices": {
-      "Body": 2394,
+      "Body": 2395,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -76,7 +76,267 @@
       140,
       150
     ],
-    "triangles": 7772
+    "triangles": 9104,
+    "hardwareKept": 18,
+    "hardwareTriangles": 1332,
+    "hardwareIslands": [
+      {
+        "triangles": 150,
+        "vertices": 77,
+        "side": "all",
+        "sourceCentroid": [
+          -0.000447,
+          0.655235,
+          0.207478
+        ],
+        "sourceHeightMetres": 0.099609
+      },
+      {
+        "triangles": 140,
+        "vertices": 72,
+        "side": "all",
+        "sourceCentroid": [
+          -0.000007,
+          0.657647,
+          -0.236382
+        ],
+        "sourceHeightMetres": 0.104492
+      },
+      {
+        "triangles": 96,
+        "vertices": 57,
+        "side": "all",
+        "sourceCentroid": [
+          -0.106458,
+          0.597896,
+          0.192404
+        ],
+        "sourceHeightMetres": 0.024902
+      },
+      {
+        "triangles": 96,
+        "vertices": 57,
+        "side": "all",
+        "sourceCentroid": [
+          -0.140878,
+          0.76416,
+          0.113774
+        ],
+        "sourceHeightMetres": 0.023926
+      },
+      {
+        "triangles": 96,
+        "vertices": 57,
+        "side": "all",
+        "sourceCentroid": [
+          0.106321,
+          0.597896,
+          0.192404
+        ],
+        "sourceHeightMetres": 0.024902
+      },
+      {
+        "triangles": 96,
+        "vertices": 57,
+        "side": "all",
+        "sourceCentroid": [
+          0.141949,
+          0.76691,
+          0.118271
+        ],
+        "sourceHeightMetres": 0.023926
+      },
+      {
+        "triangles": 96,
+        "vertices": 58,
+        "side": "all",
+        "sourceCentroid": [
+          0.132855,
+          0.572383,
+          -0.208732
+        ],
+        "sourceHeightMetres": 0.027832
+      },
+      {
+        "triangles": 86,
+        "vertices": 52,
+        "side": "all",
+        "sourceCentroid": [
+          0.137461,
+          0.767109,
+          -0.206768
+        ],
+        "sourceHeightMetres": 0.024414
+      },
+      {
+        "triangles": 80,
+        "vertices": 49,
+        "side": "all",
+        "sourceCentroid": [
+          -0.138448,
+          0.76706,
+          -0.206568
+        ],
+        "sourceHeightMetres": 0.024902
+      },
+      {
+        "triangles": 78,
+        "vertices": 48,
+        "side": "all",
+        "sourceCentroid": [
+          -0.133108,
+          0.572316,
+          -0.207052
+        ],
+        "sourceHeightMetres": 0.024902
+      },
+      {
+        "triangles": 42,
+        "vertices": 29,
+        "side": "all",
+        "sourceCentroid": [
+          -0.011677,
+          0.688931,
+          -0.242448
+        ],
+        "sourceHeightMetres": 0.004883
+      },
+      {
+        "triangles": 42,
+        "vertices": 29,
+        "side": "all",
+        "sourceCentroid": [
+          0.011693,
+          0.625775,
+          -0.242448
+        ],
+        "sourceHeightMetres": 0.005371
+      },
+      {
+        "triangles": 42,
+        "vertices": 29,
+        "side": "all",
+        "sourceCentroid": [
+          0.012451,
+          0.688897,
+          -0.242448
+        ],
+        "sourceHeightMetres": 0.004883
+      },
+      {
+        "triangles": 39,
+        "vertices": 27,
+        "side": "all",
+        "sourceCentroid": [
+          -0.037426,
+          0.656268,
+          -0.242721
+        ],
+        "sourceHeightMetres": 0.01123
+      },
+      {
+        "triangles": 39,
+        "vertices": 27,
+        "side": "all",
+        "sourceCentroid": [
+          -0.011511,
+          0.625235,
+          -0.242197
+        ],
+        "sourceHeightMetres": 0.002441
+      },
+      {
+        "triangles": 39,
+        "vertices": 27,
+        "side": "all",
+        "sourceCentroid": [
+          -0.000172,
+          0.691678,
+          -0.242721
+        ],
+        "sourceHeightMetres": 0.01123
+      },
+      {
+        "triangles": 39,
+        "vertices": 27,
+        "side": "all",
+        "sourceCentroid": [
+          0.038059,
+          0.656304,
+          -0.242721
+        ],
+        "sourceHeightMetres": 0.01123
+      },
+      {
+        "triangles": 36,
+        "vertices": 25,
+        "side": "all",
+        "sourceCentroid": [
+          -0.000244,
+          0.621953,
+          -0.242725
+        ],
+        "sourceHeightMetres": 0.010742
+      }
+    ],
+    "shellIslands": [
+      {
+        "triangles": 3120,
+        "vertices": 1630,
+        "side": "all",
+        "sourceCentroid": [
+          0.000017,
+          0.685511,
+          -0.019879
+        ],
+        "sourceHeightMetres": 0.929688
+      },
+      {
+        "triangles": 1914,
+        "vertices": 1093,
+        "side": "all",
+        "sourceCentroid": [
+          0.000905,
+          0.676748,
+          -0.014403
+        ],
+        "sourceHeightMetres": 0.382324
+      },
+      {
+        "triangles": 1090,
+        "vertices": 567,
+        "side": "all",
+        "sourceCentroid": [
+          0.340617,
+          0.566994,
+          -0.047627
+        ],
+        "sourceHeightMetres": 0.417969
+      },
+      {
+        "triangles": 1088,
+        "vertices": 566,
+        "side": "all",
+        "sourceCentroid": [
+          -0.340679,
+          0.566719,
+          -0.047841
+        ],
+        "sourceHeightMetres": 0.417969
+      },
+      {
+        "triangles": 560,
+        "vertices": 336,
+        "side": "all",
+        "sourceCentroid": [
+          -0.000055,
+          0.049093,
+          0.01101
+        ],
+        "sourceHeightMetres": 0.103516
+      }
+    ],
+    "shellTriangles": 7772
   },
   "alignment": {
     "all": {
@@ -87,18 +347,18 @@
         0.964817,
         -0.019322
       ],
-      "insideVerticesBeforeShrinkwrap": 2520,
-      "insideFractionBeforeShrinkwrap": 0.601145,
+      "insideVerticesBeforeShrinkwrap": 2526,
+      "insideFractionBeforeShrinkwrap": 0.602576,
       "deepInsideVerticesBeforeShrinkwrap": 1993,
       "deepInsideFractionBeforeShrinkwrap": 0.475429,
-      "meanSurfaceDistanceMetres": 0.012012,
+      "meanSurfaceDistanceMetres": 0.012044,
       "insideVerticesByYaw": {
-        "0": 2520,
-        "180": 1764
+        "0": 2526,
+        "180": 1818
       },
       "meanSurfaceDistanceByYaw": {
-        "0": 0.012012,
-        "180": 0.02839
+        "0": 0.012044,
+        "180": 0.028318
       },
       "anchorResidualMetres": {
         "X": 0,
@@ -121,74 +381,75 @@
     "all": {
       "regionVertices": 1786,
       "withinPieceBox": 1786,
-      "insideVertices": 1559,
-      "insideFraction": 0.8729
+      "insideVertices": 1565,
+      "insideFraction": 0.87626
     }
   },
   "decimation": {
     "trianglesBefore": 7772,
     "trianglesAfter": 7772,
-    "ratio": 1
+    "ratio": 1,
+    "skipped": "full detail"
   },
   "shrinkwrap": {
     "mode": "all",
     "pieceVertices": 4192,
     "outsidePasses": [
       {
-        "movedVertices": 3464,
-        "movedFraction": 0.826336,
-        "carriedVertices": 2168,
-        "insideAfter": 89
+        "movedVertices": 3438,
+        "movedFraction": 0.820134,
+        "carriedVertices": 2154,
+        "insideAfter": 123
       },
       {
-        "movedVertices": 856,
-        "movedFraction": 0.204198,
-        "carriedVertices": 1203,
-        "insideAfter": 3
+        "movedVertices": 898,
+        "movedFraction": 0.214218,
+        "carriedVertices": 1191,
+        "insideAfter": 2
       },
       {
         "movedVertices": 276,
         "movedFraction": 0.06584,
-        "carriedVertices": 563,
-        "insideAfter": 9
-      },
-      {
-        "movedVertices": 249,
-        "movedFraction": 0.059399,
-        "carriedVertices": 343,
-        "insideAfter": 5
+        "carriedVertices": 546,
+        "insideAfter": 41
       },
       {
         "movedVertices": 247,
         "movedFraction": 0.058922,
-        "carriedVertices": 228,
-        "insideAfter": 14
+        "carriedVertices": 335,
+        "insideAfter": 4
+      },
+      {
+        "movedVertices": 250,
+        "movedFraction": 0.059637,
+        "carriedVertices": 224,
+        "insideAfter": 39
+      },
+      {
+        "movedVertices": 253,
+        "movedFraction": 0.060353,
+        "carriedVertices": 172,
+        "insideAfter": 4
+      },
+      {
+        "movedVertices": 240,
+        "movedFraction": 0.057252,
+        "carriedVertices": 141,
+        "insideAfter": 41
       },
       {
         "movedVertices": 252,
         "movedFraction": 0.060115,
-        "carriedVertices": 173,
-        "insideAfter": 4
-      },
-      {
-        "movedVertices": 239,
-        "movedFraction": 0.057013,
-        "carriedVertices": 144,
-        "insideAfter": 13
-      },
-      {
-        "movedVertices": 249,
-        "movedFraction": 0.059399,
-        "carriedVertices": 142,
-        "insideAfter": 4
+        "carriedVertices": 138,
+        "insideAfter": 1
       }
     ],
-    "wholeMovedVertices": 5832,
-    "hugSelectedVertices": 1138,
-    "hugMovedVertices": 906,
+    "wholeMovedVertices": 5854,
+    "hugSelectedVertices": 1146,
+    "hugMovedVertices": 909,
     "shellRadius": 0.01,
-    "wholeMovedFraction": 1.391221,
-    "hugMovedFraction": 0.216126
+    "wholeMovedFraction": 1.396469,
+    "hugMovedFraction": 0.216842
   },
   "weights": {
     "mode": "transfer",
@@ -210,19 +471,17 @@
         "twist_upper_arm_R"
       ]
     },
-    "orphanedVertices": {
-      "warden-tunic": 30
-    },
+    "orphanedVertices": {},
     "band": {
       "warden-tunic": {
-        "vertices": 4192,
-        "bandVertices": 2238,
-        "bandFraction": 0.533874,
+        "vertices": 4996,
+        "bandVertices": 2420,
+        "bandFraction": 0.484388,
         "ceiling": 0.8,
         "minPeakWeight": 0.305477,
-        "meanPeakWeight": 0.758351,
-        "bandHeightMetres": 0.598839,
-        "bandMinY": 0.966684,
+        "meanPeakWeight": 0.779186,
+        "bandHeightMetres": 0.600707,
+        "bandMinY": 0.964817,
         "bandMaxY": 1.565523
       }
     }
@@ -290,17 +549,17 @@
     "extraBones": [],
     "extraBoneParents": {},
     "inverseBindMaxAbsDifference": 1.79e-7,
-    "triangles": 7772,
+    "triangles": 9104,
     "materials": 1,
     "meshes": 1,
     "sides": {
-      "L": 2,
-      "R": 3,
-      "islands": 5
+      "L": 9,
+      "R": 14,
+      "islands": 23
     },
     "maxInfluencesPerVertex": 4,
-    "minWeightSum": 0.999999875,
-    "maxWeightSum": 1.000000119,
+    "minWeightSum": 0.99999987,
+    "maxWeightSum": 1.000000132,
     "influencingBones": [
       "chest",
       "clavicle_L",
@@ -322,12 +581,12 @@
     },
     "bindClearance": {
       "insideVertices": 2,
-      "disagreeingVertices": 41,
-      "maxPenetrationMetres": 0.003741253,
+      "disagreeingVertices": 45,
+      "maxPenetrationMetres": 0.003731861,
       "deepestPoint": [
-        -0.017161,
-        0.986939,
-        0.103037
+        -0.01712,
+        0.986823,
+        0.10302
       ]
     }
   },
@@ -353,13 +612,197 @@
     "manifest": "warden-tunic.manifest.json",
     "report": "warden-tunic.report.json",
     "review": "warden-tunic.review.png",
-    "sha256": "5a1442b8fa264ca49070c0de403e673916352881a119bbbdfb6101bd564beacb"
+    "sha256": "3c8e2c4819b1affee0e8eeff6e4de24272bdf4c23760f8a91632d67ac3593253"
+  },
+  "fullDetail": true,
+  "weldUnder": true,
+  "transport": {
+    "all": {
+      "islands": 18,
+      "clusters": 10,
+      "attachRadiusMetres": 0.02,
+      "clusterRadiusMetres": 0.005,
+      "fromNearestShellVertex": 0,
+      "maxTranslationMetres": 0.02573,
+      "shellMoveMaxMetres": 0.049153,
+      "shellMoveMeanMetres": 0.016953,
+      "table": [
+        {
+          "islands": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            14,
+            15,
+            16
+          ],
+          "triangles": 458,
+          "vertices": 292,
+          "attachmentVertices": 70,
+          "fromNearestShellVertex": false,
+          "nearestShellMetres": 0.002391,
+          "translationMetres": 0.001802,
+          "translation": [
+            -0.000008,
+            -0.000201,
+            -0.001791
+          ]
+        },
+        {
+          "islands": [
+            1
+          ],
+          "triangles": 150,
+          "vertices": 77,
+          "attachmentVertices": 63,
+          "fromNearestShellVertex": false,
+          "nearestShellMetres": 0.003756,
+          "translationMetres": 0.02573,
+          "translation": [
+            -0.000785,
+            0.009363,
+            0.023953
+          ]
+        },
+        {
+          "islands": [
+            13
+          ],
+          "triangles": 96,
+          "vertices": 58,
+          "attachmentVertices": 21,
+          "fromNearestShellVertex": false,
+          "nearestShellMetres": 0.004421,
+          "translationMetres": 0.011525,
+          "translation": [
+            -0.00123,
+            -0.004291,
+            -0.010625
+          ]
+        },
+        {
+          "islands": [
+            0
+          ],
+          "triangles": 96,
+          "vertices": 57,
+          "attachmentVertices": 56,
+          "fromNearestShellVertex": false,
+          "nearestShellMetres": 0.00263,
+          "translationMetres": 0.020487,
+          "translation": [
+            -0.007293,
+            0.000622,
+            0.019134
+          ]
+        },
+        {
+          "islands": [
+            2
+          ],
+          "triangles": 96,
+          "vertices": 57,
+          "attachmentVertices": 52,
+          "fromNearestShellVertex": false,
+          "nearestShellMetres": 0.003853,
+          "translationMetres": 0.021783,
+          "translation": [
+            -0.007538,
+            0.011236,
+            0.017071
+          ]
+        },
+        {
+          "islands": [
+            11
+          ],
+          "triangles": 96,
+          "vertices": 57,
+          "attachmentVertices": 55,
+          "fromNearestShellVertex": false,
+          "nearestShellMetres": 0.004141,
+          "translationMetres": 0.020651,
+          "translation": [
+            0.006973,
+            0.000049,
+            0.019438
+          ]
+        },
+        {
+          "islands": [
+            12
+          ],
+          "triangles": 96,
+          "vertices": 57,
+          "attachmentVertices": 51,
+          "fromNearestShellVertex": false,
+          "nearestShellMetres": 0.003354,
+          "translationMetres": 0.019631,
+          "translation": [
+            0.006383,
+            0.010247,
+            0.01548
+          ]
+        },
+        {
+          "islands": [
+            17
+          ],
+          "triangles": 86,
+          "vertices": 52,
+          "attachmentVertices": 48,
+          "fromNearestShellVertex": false,
+          "nearestShellMetres": 0.002333,
+          "translationMetres": 0.024016,
+          "translation": [
+            0.000325,
+            0.005401,
+            -0.023398
+          ]
+        },
+        {
+          "islands": [
+            10
+          ],
+          "triangles": 80,
+          "vertices": 49,
+          "attachmentVertices": 49,
+          "fromNearestShellVertex": false,
+          "nearestShellMetres": 0.001771,
+          "translationMetres": 0.0239,
+          "translation": [
+            -0.001546,
+            0.005762,
+            -0.023143
+          ]
+        },
+        {
+          "islands": [
+            3
+          ],
+          "triangles": 78,
+          "vertices": 48,
+          "attachmentVertices": 21,
+          "fromNearestShellVertex": false,
+          "nearestShellMetres": 0.006268,
+          "translationMetres": 0.010513,
+          "translation": [
+            0.001112,
+            -0.003687,
+            -0.009783
+          ]
+        }
+      ]
+    }
   },
   "review": {
     "bodyVerticesInsideThePiece": {
-      "bind": 383,
-      "abduct90": 444,
-      "flex60": 403
+      "bind": 342,
+      "abduct90": 390,
+      "flex60": 275
     }
   }
 }

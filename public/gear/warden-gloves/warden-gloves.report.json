@@ -1,7 +1,7 @@
 {
   "schema": "ashveil.gear-report.v1",
   "family": "humanoid.v1",
-  "contractVersion": "1.2.0",
+  "contractVersion": "1.3.0",
   "body": "masculine-v3",
   "slot": "hands",
   "piece": "warden-gloves",
@@ -14,10 +14,10 @@
   ],
   "coverage": {
     "reachMetres": 0.06,
-    "triangles": 3997,
+    "triangles": 10141,
     "hangingTriangles": 0,
     "hiddenVertices": {
-      "Body": 4070,
+      "Body": 4068,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -25,7 +25,7 @@
       "Head": 0
     },
     "measuredVertices": {
-      "Body": 1119,
+      "Body": 1116,
       "Facial_Feature_01": 0,
       "Facial_Feature_02": 0,
       "Facial_Feature_03": 0,
@@ -75,7 +75,57 @@
       "R": 2
     },
     "droppedTriangleCounts": [],
-    "triangles": 10141
+    "triangles": 10141,
+    "hardwareKept": 0,
+    "hardwareTriangles": 0,
+    "hardwareIslands": [],
+    "shellIslands": [
+      {
+        "triangles": 4553,
+        "vertices": 2278,
+        "side": "L",
+        "sourceCentroid": [
+          0.269792,
+          0.266327,
+          0.097529
+        ],
+        "sourceHeightMetres": 0.831543
+      },
+      {
+        "triangles": 4550,
+        "vertices": 2277,
+        "side": "R",
+        "sourceCentroid": [
+          -0.269815,
+          0.266308,
+          0.097501
+        ],
+        "sourceHeightMetres": 0.831543
+      },
+      {
+        "triangles": 519,
+        "vertices": 346,
+        "side": "R",
+        "sourceCentroid": [
+          -0.380404,
+          0.7516,
+          -0.041411
+        ],
+        "sourceHeightMetres": 0.124512
+      },
+      {
+        "triangles": 519,
+        "vertices": 346,
+        "side": "L",
+        "sourceCentroid": [
+          0.380405,
+          0.751593,
+          -0.041408
+        ],
+        "sourceHeightMetres": 0.124512
+      }
+    ],
+    "shellTriangles": 10141
   },
   "alignment": {
     "L": {
@@ -528,38 +578,39 @@
     "L": {
       "regionVertices": 2053,
       "withinPieceBox": 2034,
-      "insideVertices": 379,
-      "insideFraction": 0.186332
+      "insideVertices": 376,
+      "insideFraction": 0.184857
     },
     "R": {
       "regionVertices": 2026,
       "withinPieceBox": 2006,
-      "insideVertices": 352,
-      "insideFraction": 0.175474
+      "insideVertices": 347,
+      "insideFraction": 0.172981
     }
   },
   "decimation": {
     "trianglesBefore": 10141,
-    "trianglesAfter": 3997,
-    "ratio": 0.394438
+    "trianglesAfter": 10141,
+    "ratio": 1,
+    "skipped": "full detail"
   },
   "shrinkwrap": {
     "mode": "unreplaced",
-    "pieceVertices": 2101,
+    "pieceVertices": 5247,
     "outsidePasses": [
       {
-        "movedVertices": 376,
-        "movedFraction": 0.178962,
+        "movedVertices": 830,
+        "movedFraction": 0.158186,
         "carriedVertices": 0,
         "insideAfter": 0
       }
     ],
-    "wholeMovedVertices": 376,
-    "hugSelectedVertices": 616,
-    "hugMovedVertices": 592,
+    "wholeMovedVertices": 830,
+    "hugSelectedVertices": 1304,
+    "hugMovedVertices": 1249,
     "shellRadius": 0,
-    "wholeMovedFraction": 0.178962,
-    "hugMovedFraction": 0.281771
+    "wholeMovedFraction": 0.158186,
+    "hugMovedFraction": 0.238041
   },
   "weights": {
     "mode": "stiff",
@@ -616,26 +667,26 @@
     "orphanedVertices": {},
     "band": {
       "warden-gloves_L": {
-        "vertices": 1050,
-        "bandVertices": 26,
-        "bandFraction": 0.024762,
+        "vertices": 2624,
+        "bandVertices": 53,
+        "bandFraction": 0.020198,
         "ceiling": 0.8,
-        "minPeakWeight": 0.516119,
-        "meanPeakWeight": 0.988357,
-        "bandHeightMetres": 0.037831,
+        "minPeakWeight": 0.51095,
+        "meanPeakWeight": 0.989655,
+        "bandHeightMetres": 0.041571,
         "bandMinY": 0.935074,
-        "bandMaxY": 0.972905
+        "bandMaxY": 0.976645
       },
       "warden-gloves_R": {
-        "vertices": 1051,
-        "bandVertices": 19,
-        "bandFraction": 0.018078,
+        "vertices": 2623,
+        "bandVertices": 46,
+        "bandFraction": 0.017537,
         "ceiling": 0.8,
-        "minPeakWeight": 0.505299,
-        "meanPeakWeight": 0.988587,
-        "bandHeightMetres": 0.03497,
-        "bandMinY": 0.933409,
-        "bandMaxY": 0.968379
+        "minPeakWeight": 0.515954,
+        "meanPeakWeight": 0.988762,
+        "bandHeightMetres": 0.028717,
+        "bandMinY": 0.940722,
+        "bandMaxY": 0.969438
       }
     },
     "stiffness": 3
@@ -703,7 +754,7 @@
     "extraBones": [],
     "extraBoneParents": {},
     "inverseBindMaxAbsDifference": 1.79e-7,
-    "triangles": 3997,
+    "triangles": 10141,
     "materials": 1,
     "meshes": 1,
     "sides": {
@@ -740,7 +791,7 @@
     "at_most_four_influences_per_vertex": true,
     "weights_sum_to_one": true,
     "every_influence_is_an_allowed_bone": true,
-    "triangles_within_budget": true,
+    "triangles_within_budget": false,
     "materials_within_budget": true,
     "uvs_survived_the_pipeline": true,
     "textures_survived_the_pipeline": true,
@@ -750,19 +801,39 @@
     "clears_the_body_through_motion_cycles": true,
     "clears_the_body_through_stress_poses": true
   },
-  "gatesPass": true,
+  "gatesPass": false,
   "outputs": {
     "glb": "warden-gloves.glb",
     "manifest": "warden-gloves.manifest.json",
     "report": "warden-gloves.report.json",
     "review": "warden-gloves.review.png",
-    "sha256": "204fee206edc5e2966f32f6eff11f99312dd72aac8e5ab2f9ea344637f3c4da3"
+    "sha256": "fec7280ae4b09307866ef4a71043e498381419cbe8e1c9e0115f9f027835f0fd"
   },
+  "fullDetail": true,
+  "transport": {
+    "L": {
+      "islands": 0,
+      "clusters": 0,
+      "attachRadiusMetres": 0.02,
+      "clusterRadiusMetres": 0.005,
+      "table": []
+    },
+    "R": {
+      "islands": 0,
+      "clusters": 0,
+      "attachRadiusMetres": 0.02,
+      "clusterRadiusMetres": 0.005,
+      "table": []
+    }
+  },
+  "gatesFailed": [
+    "triangles_within_budget"
+  ],
   "review": {
     "bodyVerticesInsideThePiece": {
-      "bind": 29,
-      "abduct90": 38,
-      "flex60": 31
+      "bind": 24,
+      "abduct90": 26,
+      "flex60": 23
     }
   }
 }

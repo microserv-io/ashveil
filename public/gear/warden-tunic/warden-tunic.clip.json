@@ -4,13 +4,13 @@
   "piece": "warden-tunic",
   "slot": "chest",
   "hides": {
-    "Body": 2394
+    "Body": 2395
   },
   "clip": {
     "depth": 0.005,
     "fraction": 0.002
   },
-  "vertices": 6760,
+  "vertices": 8236,
   "exempt": 0,
   "poses": 201,
   "cycles": {
@@ -33,7 +33,30 @@
       "phase": 0,
       "maxDepth": 0.024633353628574647,
       "count": 163,
-      "fraction": 0.024112426035502958
+      "fraction": 0.019791160757649345
+    }
+  },
+  "samples": {
+    "cleave@0.34375": {
+      "pose": "cleave",
+      "phase": 0.34375,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    },
+    "frost_nova@0.375": {
+      "pose": "frost_nova",
+      "phase": 0.375,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    },
+    "abduct90@0": {
+      "pose": "abduct90",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
     }
   },
   "gates": {

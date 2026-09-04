@@ -1,7 +1,7 @@
 {
   "schema": "ashveil.gear-report.v1",
   "family": "humanoid.v1",
-  "contractVersion": "1.2.0",
+  "contractVersion": "1.3.0",
   "body": "masculine-v3",
   "slot": "legs",
   "piece": "warden-trousers",
@@ -16,7 +16,7 @@
   ],
   "coverage": {
     "reachMetres": 0.06,
-    "triangles": 6000,
+    "triangles": 10327,
     "hangingTriangles": 0,
     "hiddenVertices": {
       "Body": 1407,
@@ -59,7 +59,58 @@
       170,
       170
     ],
-    "triangles": 9817
+    "triangles": 10327,
+    "hardwareKept": 3,
+    "hardwareTriangles": 510,
+    "hardwareIslands": [
+      {
+        "triangles": 170,
+        "vertices": 92,
+        "side": "all",
+        "sourceCentroid": [
+          -0.166392,
+          0.952334,
+          -0.038797
+        ],
+        "sourceHeightMetres": 0.065918
+      },
+      {
+        "triangles": 170,
+        "vertices": 92,
+        "side": "all",
+        "sourceCentroid": [
+          -0.001682,
+          0.965916,
+          -0.111769
+        ],
+        "sourceHeightMetres": 0.064453
+      },
+      {
+        "triangles": 170,
+        "vertices": 92,
+        "side": "all",
+        "sourceCentroid": [
+          0.165225,
+          0.952334,
+          -0.038861
+        ],
+        "sourceHeightMetres": 0.065918
+      }
+    ],
+    "shellIslands": [
+      {
+        "triangles": 9817,
+        "vertices": 4942,
+        "side": "all",
+        "sourceCentroid": [
+          0.000064,
+          0.51494,
+          -0.015625
+        ],
+        "sourceHeightMetres": 0.999512
+      }
+    ],
+    "shellTriangles": 9817
   },
   "alignment": {
     "all": {
@@ -110,23 +161,24 @@
   },
   "decimation": {
     "trianglesBefore": 9817,
-    "trianglesAfter": 6000,
-    "ratio": 0.611185
+    "trianglesAfter": 9817,
+    "ratio": 1,
+    "skipped": "full detail"
   },
   "shrinkwrap": {
     "mode": "all",
-    "pieceVertices": 3028,
+    "pieceVertices": 4942,
     "outsidePasses": [
       {
-        "movedVertices": 1642,
-        "movedFraction": 0.542272,
-        "carriedVertices": 529,
+        "movedVertices": 2873,
+        "movedFraction": 0.581344,
+        "carriedVertices": 1277,
         "insideAfter": 0
       },
       {
-        "movedVertices": 52,
-        "movedFraction": 0.017173,
-        "carriedVertices": 209,
+        "movedVertices": 77,
+        "movedFraction": 0.015581,
+        "carriedVertices": 419,
         "insideAfter": 0
       },
       {
@@ -136,12 +188,12 @@
         "insideAfter": 0
       }
     ],
-    "wholeMovedVertices": 1694,
-    "hugSelectedVertices": 1118,
-    "hugMovedVertices": 625,
+    "wholeMovedVertices": 2950,
+    "hugSelectedVertices": 1797,
+    "hugMovedVertices": 1142,
     "shellRadius": 0.01,
-    "wholeMovedFraction": 0.559445,
-    "hugMovedFraction": 0.206407
+    "wholeMovedFraction": 0.596924,
+    "hugMovedFraction": 0.231081
   },
   "weights": {
     "mode": "transfer",
@@ -170,15 +222,15 @@
     "orphanedVertices": {},
     "band": {
       "warden-trousers": {
-        "vertices": 3028,
-        "bandVertices": 956,
-        "bandFraction": 0.31572,
+        "vertices": 5218,
+        "bandVertices": 1754,
+        "bandFraction": 0.336144,
         "ceiling": 0.8,
-        "minPeakWeight": 0.466463,
-        "meanPeakWeight": 0.864115,
-        "bandHeightMetres": 0.589659,
-        "bandMinY": 0.467475,
-        "bandMaxY": 1.057134
+        "minPeakWeight": 0.468437,
+        "meanPeakWeight": 0.855746,
+        "bandHeightMetres": 0.584801,
+        "bandMinY": 0.471753,
+        "bandMaxY": 1.056554
       }
     }
   },
@@ -245,17 +297,17 @@
     "extraBones": [],
     "extraBoneParents": {},
     "inverseBindMaxAbsDifference": 1.79e-7,
-    "triangles": 6000,
+    "triangles": 10327,
     "materials": 1,
     "meshes": 1,
     "sides": {
-      "L": 1,
-      "R": 0,
-      "islands": 1
+      "L": 2,
+      "R": 2,
+      "islands": 4
     },
     "maxInfluencesPerVertex": 4,
-    "minWeightSum": 0.999999892,
-    "maxWeightSum": 1.000000095,
+    "minWeightSum": 0.999999888,
+    "maxWeightSum": 1.000000089,
     "influencingBones": [
       "pelvis",
       "shin_L",
@@ -284,7 +336,7 @@
     "at_most_four_influences_per_vertex": true,
     "weights_sum_to_one": true,
     "every_influence_is_an_allowed_bone": true,
-    "triangles_within_budget": true,
+    "triangles_within_budget": false,
     "materials_within_budget": true,
     "uvs_survived_the_pipeline": true,
     "textures_survived_the_pipeline": true,
@@ -294,19 +346,85 @@
     "clears_the_body_through_motion_cycles": true,
     "clears_the_body_through_stress_poses": true
   },
-  "gatesPass": true,
+  "gatesPass": false,
   "outputs": {
     "glb": "warden-trousers.glb",
     "manifest": "warden-trousers.manifest.json",
     "report": "warden-trousers.report.json",
     "review": "warden-trousers.review.png",
-    "sha256": "107ab858df1853c0c22b1c1fbc019e1a91b6d99614f78df8f48912ed75fffd50"
+    "sha256": "82791eac9366080b4da8ee1273a0bc8974cfdc62e42b5d1ff3e1037ea69ad7a3"
   },
+  "fullDetail": true,
+  "transport": {
+    "all": {
+      "islands": 3,
+      "clusters": 3,
+      "attachRadiusMetres": 0.02,
+      "clusterRadiusMetres": 0.005,
+      "fromNearestShellVertex": 0,
+      "maxTranslationMetres": 0.010704,
+      "shellMoveMaxMetres": 0.045844,
+      "shellMoveMeanMetres": 0.006153,
+      "table": [
+        {
+          "islands": [
+            0
+          ],
+          "triangles": 170,
+          "vertices": 92,
+          "attachmentVertices": 36,
+          "fromNearestShellVertex": false,
+          "nearestShellMetres": 0.004176,
+          "translationMetres": 0.009787,
+          "translation": [
+            -0.008766,
+            0.001812,
+            -0.003959
+          ]
+        },
+        {
+          "islands": [
+            1
+          ],
+          "triangles": 170,
+          "vertices": 92,
+          "attachmentVertices": 53,
+          "fromNearestShellVertex": false,
+          "nearestShellMetres": 0.001223,
+          "translationMetres": 0.000081,
+          "translation": [
+            -0.000029,
+            0.000034,
+            0.000068
+          ]
+        },
+        {
+          "islands": [
+            2
+          ],
+          "triangles": 170,
+          "vertices": 92,
+          "attachmentVertices": 36,
+          "fromNearestShellVertex": false,
+          "nearestShellMetres": 0.003993,
+          "translationMetres": 0.010704,
+          "translation": [
+            0.009594,
+            0.001974,
+            -0.004317
+          ]
+        }
+      ]
+    }
+  },
+  "gatesFailed": [
+    "triangles_within_budget"
+  ],
   "review": {
     "bodyVerticesInsideThePiece": {
-      "bind": 163,
-      "abduct90": 163,
-      "flex60": 163
+      "bind": 114,
+      "abduct90": 114,
+      "flex60": 114
     }
   }
 }

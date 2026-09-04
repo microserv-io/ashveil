@@ -1,7 +1,7 @@
 {
   "schema": "ashveil.gear-manifest.v1",
   "family": "humanoid.v1",
-  "contractVersion": "1.2.0",
+  "contractVersion": "1.3.0",
   "body": "masculine-v3",
   "slot": "feet",
   "piece": "warden-boots",
@@ -2232,7 +2232,7 @@
     }
   },
   "budget": {
-    "triangles": 5998,
+    "triangles": 10441,
     "materials": 1,
     "meshes": 1,
     "maxInfluencesPerVertex": 2
@@ -2243,7 +2243,7 @@
     "at_most_four_influences_per_vertex": true,
     "weights_sum_to_one": true,
     "every_influence_is_an_allowed_bone": true,
-    "triangles_within_budget": true,
+    "triangles_within_budget": false,
     "materials_within_budget": true,
     "uvs_survived_the_pipeline": true,
     "textures_survived_the_pipeline": true,

@@ -4,13 +4,13 @@
   "piece": "warden-gloves",
   "slot": "hands",
   "hides": {
-    "Body": 4070
+    "Body": 4068
   },
   "clip": {
     "depth": 0.005,
     "fraction": 0.002
   },
-  "vertices": 4011,
+  "vertices": 8496,
   "exempt": 0,
   "poses": 201,
   "cycles": {
@@ -31,7 +31,30 @@
     "advisory": {
       "pose": "abduct150",
       "phase": 0,
-      "maxDepth": 0.0027581219033779216,
+      "maxDepth": 0.00299709660084193,
+      "count": 0,
+      "fraction": 0
+    }
+  },
+  "samples": {
+    "cleave@0.34375": {
+      "pose": "cleave",
+      "phase": 0.34375,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    },
+    "frost_nova@0.375": {
+      "pose": "frost_nova",
+      "phase": 0.375,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    },
+    "abduct90@0": {
+      "pose": "abduct90",
+      "phase": 0,
+      "maxDepth": 0,
       "count": 0,
       "fraction": 0
     }
