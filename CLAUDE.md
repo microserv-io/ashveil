@@ -35,6 +35,7 @@ Small dependency set on purpose.
 | `docs/quality.md` | How work gets done: red/green, what must have a test, module-first, the gate, what to look for in review. |
 | `docs/pipeline.md` | The character and animation pipeline: the agent-run path from concept to a rigged body, the family contracts, the gear fitting recipe. Read before touching character generation or rigging. |
 | `docs/motion.md` | How to add or change a motion: the frame contract, the pose key format, the gates, the review page. Read before touching `src/render/procedural/`. |
+| `docs/gear.md` | How a gear piece is generated on the canonical body, extracted, seated, skinned and hung: the decided approach and why the standalone-piece fitter was dropped. Read before touching `scripts/art/gear/` or `src/render/gear.ts`. |
 
 ## Commands
 
