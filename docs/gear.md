@@ -81,7 +81,16 @@ head. The "Many bodies" section below is that pattern with Blender built-ins.
   put on the body by a rule that reads the body's measurements: a *ring* (belt
   strap, collar, cuff) is placed on the cross section at its height, a *socket*
   piece (pauldron cap, helm, backpack) is placed rigidly at its bone's socket, and
-  hardware and hanging cloth ride along. Neither deforms a vertex. Only *shell*
+  hardware and hanging cloth ride along. Neither deforms a vertex.
+- **A socket piece's orientation is declared, never searched.** The fitter puts the
+  piece's crest on the socket's crest at the slot clearance; its yaw, pitch, roll
+  and offset about that point are authored per piece, dialled once on the review
+  page with sliders and written into the piece's flags, the way an attachment
+  offset is authored per item in every game that attaches shoulders. Three attempts
+  to derive it from geometry (an arm-axis tilt, a registration from the drawn pose,
+  a scored grid of seeds) each produced a pose the eye rejected, and the scored one
+  was the worst: it hid the plate behind the shoulder because its coverage term
+  counted the cap alone. The same rule as yaw in the old fitter, learned twice. Only *shell*
   pieces (tunic, trousers, gloves, boots, hood) need the body's shape, and the five
   the game has were fitted by the old fitter, now frozen as a tool for them.
 - **Generation on the mannequin is the fallback for a new shell piece, not the
