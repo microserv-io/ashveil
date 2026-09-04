@@ -227,9 +227,13 @@ npm run art:gear -- --input <dressed.glb> --slot <slot> --piece <name> \
   front of the loop. The strap's inner ellipse is fitted to the target surface's
   cross section at the strap's height plus 3 mm by a scale per horizontal axis and
   a vertical placement, the target ellipse centred the same way, and every other
-  island moves rigidly with the strap. Then only the strap is seated; each other
-  island follows the mean displacement of the strap vertices it attaches to, so a
-  buckle or a pouch is never deformed. Hardware that still sits inside the target
+  island moves rigidly with the strap. Then the strap alone is conformed to the
+  cross section it sits on, per azimuth and per height, so the leather follows the
+  waist around and up and down while keeping its thickness; each other island
+  follows the rigid transform, rotation included, that best maps the strap patch it
+  attaches to from before to after, so a buckle or a pouch is never deformed and
+  never left floating off a strap that curved away under it. A translation alone
+  was tried first and left the pouches standing off the conformed strap from above. Hardware that still sits inside the target
   after that (a pouch hanging into a lower layer) is cleared as a cluster: islands
   within 5 mm of each other move together, radially out from the ring centre by
   the cluster's worst depth plus 3 mm, at most three passes, and the pass count is
