@@ -73,9 +73,19 @@ head. The "Many bodies" section below is that pattern with Blender built-ins.
   concept for a piece is the canonical body's own render wearing it, over the
   reference pieces of the layers beneath, so Tripo returns a dressed body in the
   body's proportions and pose with the piece already where it belongs.
-- **The fitter corrects, it never reshapes.** After registration the only geometry
-  change is a push-out to a 3 mm safety clearance off the mannequin and a Corrective
-  Smooth on what moved. A piece that needs more is a rejected generation.
+- **Ring pieces are placed by their ring.** A belt strap, a collar or a cuff is a loop
+  around a bone, and a loop has exactly one correct placement: the body's cross
+  section at that height plus the strap's clearance. The fitter places such a piece
+  by that rule, with its buckle, pouches and hanging cloth riding along, so an
+  existing standalone belt needs no regeneration. This is the only per-shape rule.
+- **The fitter corrects, it never reshapes.** After registration or ring placement
+  the only geometry change is a push-out to a 3 mm safety clearance off the
+  mannequin and a Corrective Smooth on what moved. A piece that needs more is a
+  rejected generation.
+- **Belt, shoulders and back carry hanging attachments.** A sash below the strap,
+  feathers or cloth below a pauldron cap, a cape's panels below its yoke. The fixed
+  part is placed and skinned like any piece; every hanging panel gets its own spring
+  chain. A slot is never reduced to its fixed part to make a gate pass.
 - **Skin weights are transferred from the body** with Blender's Data Transfer
   modifier, nearest face interpolated, the closest-point method Maya, Unreal and
   every production pipeline start from.
@@ -140,7 +150,7 @@ manifest. The raw dressed body is committed under
 npm run art:gear -- --input <dressed.glb> --slot <slot> --piece <name> \
   --hides <region[:from-to],...> [--hides-slots <slot,...>] \
   [--drape name:bone:from:to[:segments]] [--weights transfer|stiff|rigid] \
-  [--prefitted]
+  [--ring | --prefitted]
 ```
 
 - **Register.** Uniform scale plus a proper rotation and translation that best match
@@ -170,6 +180,15 @@ npm run art:gear -- --input <dressed.glb> --slot <slot> --piece <name> \
   registration skin nor discarded. Region boundaries fall inside the hidden region,
   and the piece carries the dressed body's own skin there, so the staircase a
   dominant-bone boundary leaves on the body is covered by the piece.
+- **Ring placement** (`--ring`) replaces register and extract for a ring piece. The
+  strap is the largest island whose vertices close a loop around the slot's bone
+  axis; its centre line is fitted to the body's cross section at the slot's `along`
+  range plus the slot clearance by a scale per horizontal axis and a vertical
+  placement, and every other island of the piece moves rigidly with the strap. The
+  contact-ring gate then reads the strap's inner face. The Warden belt is placed
+  this way from its existing Tripo source: its strap is 34.7 cm deep against a
+  24.9 cm torso today only because the old fitter scaled one axis and let the other
+  follow.
 - `--prefitted` skips register and extract for a piece already in body space. It
   still regenerates the manifest (authored regions instead of vertex indices, no
   `under`), reruns every gate and produces the review sheet, and the piece goes back
@@ -195,8 +214,11 @@ npm run art:gear -- --input <dressed.glb> --slot <slot> --piece <name> \
 `--drape sash:pelvis:0.0:0.58:2` declares a band (fractions of the piece's height)
 that hangs from a bone in chains of `segments` bones. A chain is built per hanging
 panel: the connected components of the band that stand off the mannequin, one chain
-each, so a sash is one chain and a cape's three panels are three. A band that
-encircles the body is refused, because a chain through the pelvis is not a panel.
+each, so a sash is one chain, a pauldron's feathers are one per side, and a cape's
+three panels are three. The band must lie below the fixed part (the strap, the cap,
+the yoke); a declaration that takes the whole strap is refused, because a chain
+through the pelvis is not a panel, and the fitter names the panels it found in the
+report so a missing one is visible.
 Each bone's tail is the centroid of the next slice down its panel, so the chain hangs
 where the cloth is. A band vertex is held by the two joints it lies between along
 its panel, faded into the transferred body weights over 3 cm at the top; this is a
@@ -285,28 +307,33 @@ parametric outfits do with several source sizes.
 | `--covers`, `--span`, `--yaw`, `--thumb`, `--under`, the 2% debris rule, computed coverage, the rim rule | delete |
 | byte-for-byte fixture tests of fitted output, the one-sided standoff gate | delete |
 
-The five accepted Warden pieces stay as pre-fitted inputs. Belt, pauldrons and cloak
-are regenerated on the layer-1 mannequin, in that order: the belt proves
-registration and extraction on the simplest shape, the pauldrons prove a drape, the
-cloak proves three panels and collision.
+The five accepted Warden pieces stay as pre-fitted inputs and the belt keeps its
+Tripo source through ring placement, so the first two slices spend no Tripo credits.
+Pauldrons and cloak are regenerated on the layer-1 mannequin: the pauldrons prove
+registration, extraction, a pair and a drape per side; the cloak proves three panels
+and collision.
 
 ## Slices, one PR each
 
 1. **Salvage.** Split PR 28 along the table above: merge the kept parts, close the
    rest. The five pieces go through `--prefitted` and back to Rocco.
-2. **Mannequin and belt.** `art:mannequin` for both layers, the dressed-belt concept
-   and generation, register, extract, seat, skin, the registration and contact-ring
-   gates, the review sheet. Done when the belt sits over the tunic with its buckle
-   and Rocco approves the sheet.
+2. **Belt on the body.** Ring placement from the existing Tripo source, seat, skin,
+   the contact-ring gate, the review sheet, with every island kept. Done when the
+   strap sits on the waist over the tunic with its buckle and pouches and Rocco
+   approves the sheet. No Tripo spend.
 3. **Spring bones.** The panel chain builder, the manifest settings, the runtime
-   adapter with the contractual update order, the pauldron drape. Done when the
-   pauldron cloth swings at a run and settles at idle on the review page.
-4. **Cloak.** Three panels, capsule colliders, the cosmetic distance cut-off with
+   adapter with the contractual update order, the belt's sash as the first chain.
+   Done when the sash swings at a run and settles at idle on the review page.
+4. **Mannequin and pauldrons.** `art:mannequin` for both layers, the dressed
+   pauldron concept and generation, register, extract, the registration gate, a
+   drape per side. Done when both caps sit on the shoulders with their cloth
+   swinging and Rocco approves the sheet.
+5. **Cloak.** Three panels, capsule colliders, the cosmetic distance cut-off with
    hysteresis, the frame budget measured with thirty cloaked actors. Done when Rocco
    approves the GIF and the perf gate passes.
-5. **Game wiring.** Equip from the sim's gear state through `actorview.ts`, hides
+6. **Game wiring.** Equip from the sim's gear state through `actorview.ts`, hides
    resolved per body, perf gate with a full set worn.
-6. **Second body.** The conform flow above, when the second humanoid body exists.
+7. **Second body.** The conform flow above, when the second humanoid body exists.
 
 ## Non-goals
 
