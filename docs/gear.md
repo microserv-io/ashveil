@@ -72,7 +72,10 @@ head. The "Many bodies" section below is that pattern with Blender built-ins.
 - **Gear is generated on the canonical body, on the mannequin for its layer.** The
   concept for a piece is the canonical body's own render wearing it, over the
   reference pieces of the layers beneath, so Tripo returns a dressed body in the
-  body's proportions and pose with the piece already where it belongs.
+  body's proportions and pose with the piece already where it belongs. Tripo works
+  from the image, not from measurements, so the dressed body is close and never
+  exact; the fitter measures the difference and closes it, it does not assume it
+  away.
 - **Ring pieces are placed by their ring.** A belt strap, a collar or a cuff is a loop
   around a bone, and a loop has exactly one correct placement: the body's cross
   section at that height plus the strap's clearance. The fitter places such a piece
@@ -200,7 +203,11 @@ npm run art:gear -- --input <dressed.glb> --slot <slot> --piece <name> \
 - **Seat.** One Shrinkwrap in `Outside` mode against the layer's mannequin with a
   3 mm offset: it moves only vertices that sit inside the mannequin plus the safety
   margin and leaves everything else where Tripo put it, so a buckle or a dome is
-  never pulled onto the skin. Corrective Smooth on the moved vertices. The fraction
+  never pulled onto the skin. Then the cut boundary ring is snapped onto the
+  mannequin surface with a 3 cm falloff into the piece (a vertex-group weighted
+  Shrinkwrap, `On Surface`), so the seam between the piece's skin and the body's
+  closes whatever residual registration left. Corrective Smooth on the moved
+  vertices. The fraction
   moved and the mean move are reported. Nearest-point projection is wrong at concave
   folds (armpit, crotch); vertices there are excluded by the region's `forward` and
   `along` bounds and any residual is what the review sheet is for.
@@ -264,6 +271,18 @@ not one.
   side, and for a layer-1 piece with the reference pieces worn. The sheet is
   attached to every PR that adds or changes a piece. Rocco's approval on the sheet
   and on the live review page is the acceptance.
+
+### If Tripo drifts further than the gate allows
+
+The registration gate is the first thing the pauldron generation tests, and it is
+a real risk: Tripo generates from the image, so a dressed body can come back with
+a thicker arm or a lower shoulder than the render. Under 1 cm the seat closes it.
+Past that, the fix is the same conform step the many-bodies flow uses, applied at
+fit time: bind the extracted piece to the dressed body's visible shell with Surface
+Deform, shrinkwrap that shell onto the mannequin body to body, and the piece
+follows. It is a fallback because it reshapes, and it is the standard reshaping
+(a wrap deformer), not a new rule. If even that fails the generation is rejected
+and the concept revised, never the fitter.
 
 ## Many bodies
 
