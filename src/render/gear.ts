@@ -7,7 +7,7 @@ import { isBodyMaterial, type BodyMaterial } from './look'
 
 export { resetWornPieces, updateWornPieces } from './drapestep'
 export type { DrapeChain, DrapeDefinition } from './drapebones'
-export type { PieceRegions, RegionHides } from './gearregions'
+export type { HideProfile, PieceRegions, RegionHides } from './gearregions'
 
 /**
  * Gear on a fitted body: a second skinned mesh driven by the body's own bones, and
@@ -127,6 +127,7 @@ export function wearPiece(body: THREE.Object3D, source: GearPieceSource): WornPi
     regions: source.regions,
     hidesRegions: source.hidesRegions,
     hidesBand: source.hidesBand,
+    hidesProfile: source.hidesProfile,
   }
 }
 

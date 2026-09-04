@@ -1,7 +1,8 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import {
-  GEAR_SLOTS, type DrapeDefinition, type GearHides, type GearSlot, type PieceRegions,
+  GEAR_SLOTS, type DrapeDefinition, type GearHides, type GearSlot, type HideProfile,
+  type PieceRegions,
 } from '../../src/render/gear'
 import { stylise } from '../../src/render/look'
 
@@ -54,6 +55,7 @@ export interface LoadedGearPiece {
   readonly regions: PieceRegions | undefined
   readonly hidesRegions: readonly string[] | undefined
   readonly hidesBand: readonly [number, number] | undefined
+  readonly hidesProfile: HideProfile | undefined
 }
 
 /** Where `npm run art:gear` puts a piece, and so where the page fetches it. */
@@ -72,7 +74,7 @@ export async function loadGearManifest(piece: string): Promise<Omit<LoadedGearPi
   if (!response.ok) throw new Error(`gear: ${url} answered ${response.status}`)
   const manifest = (await response.json()) as {
     covers?: unknown; hides?: unknown; drapes?: unknown; hidesPieces?: unknown
-    regions?: unknown; hidesRegions?: unknown; hidesBand?: unknown
+    regions?: unknown; hidesRegions?: unknown; hidesBand?: unknown; hidesProfile?: unknown
   }
   if (!Array.isArray(manifest.covers)) throw new Error(`gear: ${url} has no "covers" array`)
   for (const slot of manifest.covers) {
@@ -93,6 +95,7 @@ export async function loadGearManifest(piece: string): Promise<Omit<LoadedGearPi
     regions: regionsOf(manifest.regions, url),
     hidesRegions: hiddenRegionsOf(manifest.hidesRegions, url),
     hidesBand: bandOf(manifest.hidesBand, url),
+    hidesProfile: profileOf(manifest.hidesProfile, url),
   }
 }
 
@@ -124,6 +127,24 @@ function bandOf(band: unknown, url: string): readonly [number, number] | undefin
     throw new Error(`gear: ${url} has a "hidesBand" that is not two numbers`)
   }
   return band as [number, number]
+}
+
+/** A piece fitted before the edges were measured hides over its flat band instead. */
+function profileOf(profile: unknown, url: string): HideProfile | undefined {
+  if (profile === undefined) return undefined
+  if (!profile || typeof profile !== 'object' || Array.isArray(profile)) {
+    throw new Error(`gear: ${url} has a "hidesProfile" that is not an object`)
+  }
+  const { centre, bins, top, bottom } = profile as Record<string, unknown>
+  const numbers = (value: unknown, least: number) =>
+    Array.isArray(value) && value.length >= least && value.every((each) => typeof each === 'number')
+  if (!numbers(centre, 3) || typeof bins !== 'number' || !numbers(top, 3) || !numbers(bottom, 3)) {
+    throw new Error(`gear: ${url} has a "hidesProfile" that is not a centre, a bin count and two edges`)
+  }
+  if ((top as number[]).length !== (bottom as number[]).length) {
+    throw new Error(`gear: ${url} has a "hidesProfile" whose edges are different lengths`)
+  }
+  return profile as HideProfile
 }
 
 /** A piece with no hanging cloth has no `drapes` at all, and that is the common case. */

@@ -75,6 +75,9 @@ CONFORM_SLOPE = 0.006
 CONFORM_SLOPE_PASSES = 8
 # Past this a bin moved far enough to be worth naming rather than counting.
 CONFORM_LOUD = 0.015
+# How far inside its own edges the leather cuts the piece below it. The two surfaces
+# deform apart, so a cut ending exactly at the strap sawtooths the moment either moves.
+PROFILE_INSET = 0.003
 # A vertex the seat did not touch is not "moved"; float noise is not movement.
 MOVE_EPSILON = 1e-6
 # Below this the seat found nothing to fix and a smooth would only blur the source.
@@ -534,33 +537,57 @@ def bin_thickness(points: np.ndarray, centre_xz: np.ndarray, bins: int) -> np.nd
     return (outer - inner)[np.isfinite(inner)]
 
 
-def band_profile(points: np.ndarray, centre_xz: np.ndarray, bins: int) -> dict:
-    """Where the strap's own edges run around the ring, against its flat Y extent.
+def edge_stats(values: np.ndarray) -> dict:
+    """One edge's own extent around the ring. The tilt is what a flat band gets wrong."""
+    return {"min": round(float(values.min()), 6),
+            "median": round(float(np.median(values)), 6),
+            "max": round(float(values.max()), 6),
+            "tiltMetres": round(float(values.max() - values.min()), 6)}
 
-    A hide rule reaches over the piece below through a band of heights, and that is
-    only the strap wherever the strap is level. This says how far from level it is:
-    `everywhereMetres` is the heights it covers at every azimuth, and a value there
-    much shorter than the strap means a flat band cuts a hem the leather is not
-    behind at the azimuths where it rides low.
+
+def band_profile(points: np.ndarray, centre_xz: np.ndarray, bins: int,
+                 inset: float = PROFILE_INSET, kernel: int = CONFORM_KERNEL) -> dict:
+    """Where the strap's own edges run around the ring, and the band a hide rule cuts.
+
+    A surface conform tilts the strap, so the heights it covers at one azimuth are not
+    the heights it covers at the next: a flat band spanning the whole strap cuts hem
+    the leather is not behind at the azimuths where it rides low, and the band they
+    all share is a slab a millimetre high. `hideTop` and `hideBottom` are the edges
+    themselves, smoothed the way the conform target is and pulled `inset` into the
+    leather so the cut always ends under it.
     """
     at = bin_index(azimuth(points, centre_xz)[0], bins)
-    tops = []
-    bottoms = []
+    tops = np.full(bins, np.nan)
+    bottoms = np.full(bins, np.nan)
     for index in range(bins):
         members = points[at == index]
         if len(members) == 0:
             continue
-        bottoms.append(float(members[:, 1].min()))
-        tops.append(float(members[:, 1].max()))
-    if not tops:
+        bottoms[index] = members[:, 1].min()
+        tops[index] = members[:, 1].max()
+    if not np.isfinite(tops).any():
         raise RingError("band gate: the strap covers no azimuth bin")
+    empty = int((~np.isfinite(tops)).sum())
+    tops = circular_fill(tops)
+    bottoms = circular_fill(bottoms)
+    hide_top = circular_smooth(tops, kernel) - inset
+    hide_bottom = circular_smooth(bottoms, kernel) + inset
     return {
-        "bins": len(tops),
-        "everywhereMetres": [round(max(bottoms), 6), round(min(tops), 6)],
-        "topSpreadMetres": round(max(tops) - min(tops), 6),
-        "bottomSpreadMetres": round(max(bottoms) - min(bottoms), 6),
-        "tops": [round(value, 6) for value in tops],
-        "bottoms": [round(value, 6) for value in bottoms],
+        "bins": bins,
+        "emptyBins": empty,
+        "insetMetres": inset,
+        "kernelBins": kernel,
+        "everywhereMetres": [round(float(bottoms.max()), 6), round(float(tops.min()), 6)],
+        "topSpreadMetres": round(float(tops.max() - tops.min()), 6),
+        "bottomSpreadMetres": round(float(bottoms.max() - bottoms.min()), 6),
+        "topMetres": edge_stats(tops),
+        "bottomMetres": edge_stats(bottoms),
+        "hideTopMetres": edge_stats(hide_top),
+        "hideBottomMetres": edge_stats(hide_bottom),
+        "tops": [round(float(value), 6) for value in tops],
+        "bottoms": [round(float(value), 6) for value in bottoms],
+        "hideTop": [round(float(value), 6) for value in hide_top],
+        "hideBottom": [round(float(value), 6) for value in hide_bottom],
     }
 
 
@@ -1404,6 +1431,16 @@ def run(args) -> dict:
     # the conform and the seat have decided where the leather actually lies.
     hides_band = [round(float(strap_after[:, 1].min()), 6), round(float(strap_after[:, 1].max()), 6)]
     strap_profile = band_profile(strap_after, ring_centre_xz, CONFORM_BINS)
+    # The conform tilts the strap by nearly its own height, so the band it hides is
+    # its own edges per azimuth and not one pair of heights.
+    hides_profile = {
+        "centre": [round(float(ring_centre_xz[0]), 6),
+                   round((hides_band[0] + hides_band[1]) / 2.0, 6),
+                   round(float(ring_centre_xz[1]), 6)],
+        "bins": strap_profile["bins"],
+        "top": strap_profile["hideTop"],
+        "bottom": strap_profile["hideBottom"],
+    }
 
     depths = np.array([dressed.depth(blender_from_runtime(point)) for point in after_points])
     bare_depths = np.array([bare.depth(blender_from_runtime(point)) for point in after_points])
@@ -1460,8 +1497,10 @@ def run(args) -> dict:
         # under the tunic is already hidden by the tunic's own mask.
         "hides": {},
         # One layer up the same rule bites: the leather owns the waist band, so the
-        # piece below stops drawing what it tagged waist inside that band.
-        **({"hidesRegions": hidden_regions, "hidesBand": hides_band} if hidden_regions else {}),
+        # piece below stops drawing what it tagged waist inside that band. `hidesBand`
+        # is the flat extent the profile replaces, kept one release for older runtimes.
+        **({"hidesRegions": hidden_regions, "hidesBand": hides_band,
+            "hidesProfile": hides_profile} if hidden_regions else {}),
         "regions": piece_regions,
         "weights": mode,
         # The schema carries one scale, and the ring rule has three; the report has
@@ -1505,7 +1544,7 @@ def run(args) -> dict:
                       "translation": manifest["alignment"]["translation"]},
         "hardware": hardware,
         "regions": {**region_report, "hides": hidden_regions, "band": hides_band,
-                    "bandProfile": strap_profile},
+                    "bandProfile": strap_profile, "hidesProfileCentre": hides_profile["centre"]},
         "islandTable": islands_table,
         "transport": {"mode": args.seat, "attachRadiusMetres": ATTACH_RADIUS,
                       "strapIsland": strap_at, "islandsMoved": len(transported),

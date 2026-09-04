@@ -372,7 +372,7 @@ export function applyPieceMasks(worn: readonly LayeredMesh[]): void {
       if (other.layer <= wear.layer || other.mesh === wear.mesh) continue
       if (other.hidesPieces === false) continue
       const hidden = hidesByRegion(wear, other)
-        ? hiddenByRegion(inner.positions, wear.regions!, other.hidesRegions!, other.hidesBand)
+        ? hiddenByRegion(inner.positions, wear.regions!, other)
         : coveredVertices(inner, coveringOf(other))
       for (const vertex of hidden) covered.add(vertex)
     }

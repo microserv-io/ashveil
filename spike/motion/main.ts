@@ -285,6 +285,7 @@ function rewear(): void {
         regions: loaded.regions,
         hidesRegions: loaded.hidesRegions,
         hidesBand: loaded.hidesBand,
+        hidesProfile: loaded.hidesProfile,
       })]
       : []
   })

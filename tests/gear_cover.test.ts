@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import { applyPieceMasks, coveredVertices, COVER_DEPTH } from '../src/render/gearcover'
+import { hiddenByRegion, type RegionHides } from '../src/render/gearregions'
 import { SLOT_LAYERS } from '../src/render/gear'
 
 /**
@@ -201,6 +202,56 @@ describe('hiding a worn piece under the pieces over it', () => {
         { layer: SLOT_LAYERS.waist, mesh: meshOf(shell(0.08)), hidesRegions: ['waist'], hidesBand: [-1, 1] },
       ])
       expect(triangles(lower)).toBe(0)
+    })
+
+    /**
+     * The tilted strap, which is what the conform actually produces: the leather
+     * rides high at the front and low at the back, so the hem it is behind at one
+     * azimuth is hem it has moved off at the opposite one. Four bins, and a point on
+     * an axis falls halfway between two of them.
+     */
+    describe('over the profile the hiding piece carries', () => {
+      /** High between +x and the sides, low between -x and them. */
+      const TILTED: RegionHides = {
+        hidesRegions: ['waist'],
+        hidesBand: [0, 0.1],
+        hidesProfile: {
+          centre: [0, 0, 0],
+          bins: 4,
+          top: [0.02, 0.1, 0.1, 0.02],
+          bottom: [0, 0.08, 0.08, 0],
+        },
+      }
+
+      /** Every point tagged waist, so only the band shape decides what goes. */
+      function hiddenOf(points: readonly number[][], over: RegionHides): Set<number> {
+        const positions = new Float32Array(points.flat())
+        return hiddenByRegion(positions, { waist: points.map((_, at) => at) }, over)
+      }
+
+      it('hides the hem where the strap rides high and keeps it where it rides low', () => {
+        const hem = [[1, 0.09, 0], [-1, 0.09, 0]]
+        expect(hiddenOf(hem, TILTED), 'front is under the leather, back is not').toEqual(new Set([0]))
+        const flat = { ...TILTED, hidesProfile: undefined }
+        expect(hiddenOf(hem, flat), 'a flat band spanning both cuts both').toEqual(new Set([0, 1]))
+      })
+
+      it('falls back to the flat band for a piece that carries no profile', () => {
+        const points = [[1, 0.05, 0], [1, 0.5, 0]]
+        expect(hiddenOf(points, { hidesRegions: ['waist'], hidesBand: [0, 0.1] })).toEqual(new Set([0]))
+      })
+
+      it('reads the last bin and the first as neighbours', () => {
+        // -x falls between them, so the seam is the only thing that can answer here.
+        const seam: RegionHides = {
+          hidesRegions: ['waist'],
+          hidesProfile: { centre: [0, 0, 0], bins: 4, top: [0.1, 0.02, 0.02, 0.02], bottom: [0, 0, 0, 0] },
+        }
+        const across = [[-1, 0.05, 0.001], [-1, 0.05, -0.001]]
+        expect(hiddenOf(across, seam), 'both sides of the seam average the two bins')
+          .toEqual(new Set([0, 1]))
+        expect(hiddenOf([[-1, 0.07, 0.001]], seam), 'above the averaged edge').toEqual(new Set())
+      })
     })
 
     /** Layer still decides direction: a belt cannot hide the piece worn over it. */

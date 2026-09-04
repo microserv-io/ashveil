@@ -12,12 +12,27 @@
 /** Which body region each of a piece's own vertices lies against, from the fitter. */
 export type PieceRegions = Readonly<Record<string, readonly number[]>>
 
+/**
+ * The hiding piece's own top and bottom edge per azimuth about `centre`, in bind
+ * pose. A belt strap conformed to a waist is tilted by nearly its own height, so the
+ * heights it is behind at the front are not the ones it is behind at the hip: one
+ * pair of heights either reaches past the leather or shrinks to the slab they share.
+ */
+export interface HideProfile {
+  readonly centre: readonly number[]
+  readonly bins: number
+  readonly top: readonly number[]
+  readonly bottom: readonly number[]
+}
+
 /** What a piece was tagged with, and what it claims from the pieces below it. */
 export interface RegionHides {
   regions?: PieceRegions
   hidesRegions?: readonly string[]
   /** `[yMin, yMax]` of the fixed geometry doing the hiding, in bind pose. */
   hidesBand?: readonly [number, number]
+  /** The same band followed around the ring, and preferred wherever it is carried. */
+  hidesProfile?: HideProfile
 }
 
 /**
@@ -28,19 +43,39 @@ export interface RegionHides {
 export function hiddenByRegion(
   positions: Float32Array,
   regions: PieceRegions,
-  hides: readonly string[],
-  band: readonly [number, number] | undefined,
+  over: RegionHides,
 ): Set<number> {
   const hidden = new Set<number>()
-  for (const region of hides) {
+  const profile = over.hidesProfile
+  const band = over.hidesBand
+  for (const region of over.hidesRegions ?? []) {
     for (const vertex of regions[region] ?? []) {
       const y = positions[vertex * 3 + 1]
       if (y === undefined) continue
-      if (band && (y < band[0] || y > band[1])) continue
+      if (profile) {
+        const dx = positions[vertex * 3]! - (profile.centre[0] ?? 0)
+        const dz = positions[vertex * 3 + 2]! - (profile.centre[2] ?? 0)
+        if (y < edgeAt(profile.bottom, dx, dz) || y > edgeAt(profile.top, dx, dz)) continue
+      } else if (band && (y < band[0] || y > band[1])) continue
       hidden.add(vertex)
     }
   }
   return hidden
+}
+
+/**
+ * One edge where a point sits around the ring, between the two bin centres it falls
+ * between. The bins are read off the edge's own length rather than the declared
+ * count, so a profile can never index past what it ships, and the last bin's
+ * neighbour is the first: a waist is a loop.
+ */
+function edgeAt(edge: readonly number[], dx: number, dz: number): number {
+  const bins = edge.length
+  const at = ((Math.atan2(dz, dx) + Math.PI) / (2 * Math.PI)) * bins - 0.5
+  const low = Math.floor(at)
+  const first = edge[((low % bins) + bins) % bins]!
+  const second = edge[(((low + 1) % bins) + bins) % bins]!
+  return first + (second - first) * (at - low)
 }
 
 /** Whether both sides carry what the authored rule needs; burial answers when not. */

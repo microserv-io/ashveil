@@ -276,6 +276,36 @@
         "type": "number"
       }
     },
+    "hidesProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "centre",
+        "bins",
+        "top",
+        "bottom"
+      ],
+      "properties": {
+        "centre": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        },
+        "bins": {
+          "type": "number",
+          "minimum": 3
+        },
+        "top": {
+          "$ref": "#/$defs/edge"
+        },
+        "bottom": {
+          "$ref": "#/$defs/edge"
+        }
+      }
+    },
     "regions": {
       "type": "object",
       "additionalProperties": false,
@@ -386,6 +416,13 @@
       "items": {
         "type": "integer",
         "minimum": 0
+      }
+    },
+    "edge": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "number"
       }
     },
     "alignment": {
