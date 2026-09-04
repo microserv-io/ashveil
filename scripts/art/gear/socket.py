@@ -1,21 +1,27 @@
-"""Socket placement: a shoulder cap is a rigid part hung on one joint.
+"""Socket placement: a shoulder cap is a rigid part registered onto the shoulder.
 
-A pauldron is not a garment. It is a plate that sits over the deltoid, held by one
-joint, with hardware bolted through it and cloth hanging off it. The body has an
-opinion about where it goes - the joint's own axis and the width of the muscle under
-it - and no opinion at all about its shape. So nothing here deforms a vertex.
+A pauldron is not a garment. It is a plate that sits over the crest of the shoulder,
+with hardware bolted through it and cloth hanging off it. The body has an opinion
+about where it goes - the top of the shoulder, and the width of the muscle under it -
+and no opinion at all about its shape. So nothing here deforms a vertex.
 
 The whole rule, per side: the largest island is the cap, everything else on that side
-rides it. The cap's own axis is measured (the apex of its dome through its centroid),
-turned to the upper arm's axis, scaled so the cap spans the deltoid, and translated so
-its inner apex lands on the shoulder's skin plus the slot's clearance. One similarity
-transform, applied to every island of that side alike. If the cap still sits inside
-the body afterwards, the whole side slides straight back out along that same axis.
+rides it. The cap keeps the lean it was drawn with, is scaled so it spans the deltoid,
+and is dropped so its own crest - the highest vertex of its inner face - lands on the
+body's shoulder crest plus the slot's clearance. A rigid ICP then turns and slides it
+until its inner face stands one clearance off the skin all along, bounded to 45
+degrees, and a push out along the surface normal frees whatever is still buried. One
+rigid transform per side, applied to every island of that side alike.
 
-This is `ring.py`'s rule with the loop's cross section replaced by a joint's axis, and
-it exists because the alignment the shipped pauldrons went through put 61% and 79% of
-the piece inside the body and then shrinkwrapped every vertex 2.9 times to get it out,
-which is what "the vertices are breaking" looks like from the review camera.
+The tilt this replaced stood the cap up on the upper arm's axis, which is 10 degrees
+from vertical where the cap is drawn leaning 35 degrees down the deltoid, and the
+anchor put it on the centroid of the muscle rather than the crest above it: together
+they hung the plate on the arm like a sleeve and left the top of the shoulder bare.
+Both survive behind `--anchor deltoid` because the comparison is the evidence.
+
+This exists because the alignment the shipped pauldrons went through put 61% and 79%
+of the piece inside the body and then shrinkwrapped every vertex 2.9 times to get it
+out, which is what "the vertices are breaking" looks like from the review camera.
 """
 
 from __future__ import annotations
@@ -67,6 +73,25 @@ CLEARANCE_PASSES = 6
 MAX_CLEARANCE = 0.04
 # The share of the fixed cap the seat is asked to lift clear.
 SEAT_PERCENTILE = 95.0
+# How far from the joint, horizontally, the shoulder's crest is looked for.
+CREST_RADIUS = 0.04
+ICP_PASSES = 25
+# Past this a nearest point is another limb, not the shoulder this cap sits on.
+ICP_REJECT = 0.04
+# A tenth of a millimetre is the registration having stopped moving.
+ICP_SETTLE = 0.0001
+# The cap is placed as drawn; a registration that turns it further than this has
+# stopped correcting the drawing and started arguing with it.
+ICP_MAX_DEGREES = 45.0
+# The share of the cap nearest its own axis, when the shell's normals do not split an
+# inner face off an outer one - a single-sided cap has no inner wall to find.
+INNER_FRACTION = 0.4
+MIN_INNER_VERTICES = 40
+PUSH_PASSES = 3
+PUSH_LIMIT = 0.03
+# An island reaching this close to the midline bridges the chest between the two caps
+# rather than sitting on one shoulder, and belongs to neither side's registration.
+STRAP_MIDLINE = 0.06
 # A shoulders region thinner than this is not a deltoid and cannot set a width.
 MIN_REGION_VERTICES = 50
 MIN_REGION_WIDTH = 0.04
@@ -179,6 +204,170 @@ def slide(objects: list, shift: np.ndarray) -> None:
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
 
+def normals_of(obj) -> np.ndarray:
+    """One object's vertex normals in the runtime frame."""
+    rotation = obj.matrix_world.to_3x3().inverted().transposed()
+    return np.array([unit(runtime_from_blender(rotation @ vertex.normal))
+                     for vertex in obj.data.vertices], dtype=np.float64)
+
+
+def skin_points(meshes: list) -> np.ndarray:
+    points: list = []
+    for obj in meshes:
+        matrix = obj.matrix_world
+        points.extend(runtime_from_blender(matrix @ vertex.co) for vertex in obj.data.vertices)
+    return np.array(points, dtype=np.float64)
+
+
+def crest_of(skin: np.ndarray, joint: np.ndarray, radius: float) -> np.ndarray:
+    """The top of the shoulder: the highest skin standing over the joint.
+
+    Horizontally around the joint rather than nearest to it, because the nearest
+    surface to a joint buried in a deltoid is the side of the arm.
+    """
+    flat = np.linalg.norm(skin[:, [0, 2]] - joint[[0, 2]], axis=1)
+    near = skin[flat <= radius]
+    if len(near) == 0:
+        raise SocketError(f"crest gate: no skin within {radius} m of the joint")
+    return near[int(np.argmax(near[:, 1]))]
+
+
+def inner_face(points: np.ndarray, normals: np.ndarray, axis: np.ndarray,
+               apex: np.ndarray, rule: str = "nearest") -> tuple[np.ndarray, str]:
+    """The side of the cap that looks at the shoulder: its concave wall.
+
+    A cap is a shell with two walls, and only the one facing the body has anything to
+    say about where the body is. Which wall that is, is the sign of a vertex normal
+    against the direction out of the cap's own axis: the inner wall faces the hollow
+    the shoulder fills. A cap drawn as a single surface has no such wall, and the
+    fraction nearest the axis is the honest fallback rather than a silent half.
+    """
+    along = (points - apex) @ axis
+    radial = points - apex - np.outer(along, axis)
+    reach = np.linalg.norm(radial, axis=1)
+    outward = radial / np.maximum(reach, 1e-12)[:, None]
+    facing = np.einsum("ij,ij->i", normals, outward)
+    chosen = (facing < 0.0) & (reach > 1e-4)
+    if rule == "normals" and int(chosen.sum()) >= MIN_INNER_VERTICES:
+        return chosen, "vertex normals that face the cap's own axis"
+    return reach <= float(np.quantile(reach, INNER_FRACTION)), (
+        f"the {INNER_FRACTION:.0%} of the cap nearest its own axis")
+
+
+def nearest_surface(tree: BVHTree, point: np.ndarray):
+    """The closest point on a target, its outward normal, and the distance to it."""
+    hit, normal, _, distance = tree.find_nearest(Vector(blender_from_runtime(point)))
+    if hit is None:
+        return None
+    return (np.array(runtime_from_blender(hit), dtype=np.float64),
+            unit(runtime_from_blender(normal)), float(distance))
+
+
+def kabsch(source: np.ndarray, goal: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """The rotation and translation that best carry one point set onto another."""
+    source_centre, goal_centre = source.mean(axis=0), goal.mean(axis=0)
+    covariance = (source - source_centre).T @ (goal - goal_centre)
+    left, _, right = np.linalg.svd(covariance)
+    flip = np.diag([1.0, 1.0, float(np.sign(np.linalg.det(right.T @ left.T)) or 1.0)])
+    rotation = right.T @ flip @ left.T
+    return rotation, goal_centre - rotation @ source_centre
+
+
+def axis_angle(rotation: np.ndarray) -> tuple[np.ndarray, float]:
+    """A rotation as the axis it turns about and how far, in degrees."""
+    angle = math.degrees(math.acos(max(-1.0, min(1.0, (float(np.trace(rotation)) - 1.0) * 0.5))))
+    axis = np.array([rotation[2, 1] - rotation[1, 2], rotation[0, 2] - rotation[2, 0],
+                     rotation[1, 0] - rotation[0, 1]])
+    if float(np.linalg.norm(axis)) < 1e-9:
+        values, vectors = np.linalg.eig(rotation)
+        axis = np.real(vectors[:, int(np.argmin(np.abs(values - 1.0)))])
+    return unit(axis), angle
+
+
+def register(points: np.ndarray, normals: np.ndarray, tree: BVHTree,
+             clearance: float) -> dict:
+    """Turn and slide a rigid inner face until it stands one clearance off the skin.
+
+    The correspondence test is that the two shells face each other, not that the
+    target's normal faces the vertex: a cap that starts buried has every nearest
+    normal pointing away from it, and the literal front-face test would starve the
+    first pass of exactly the vertices that need moving. How many pairs would have
+    passed that test too is counted rather than assumed.
+    """
+    rotation, shift = np.eye(3), np.zeros(3)
+    placed = points.copy()
+    trace: list[dict] = []
+    residual = None
+    bounded = False
+    for _ in range(ICP_PASSES):
+        turned = normals @ rotation.T
+        sources, goals, front = [], [], 0
+        for at, point in enumerate(placed):
+            found = nearest_surface(tree, point)
+            if found is None:
+                continue
+            surface, normal, distance = found
+            if distance > ICP_REJECT or float(turned[at] @ normal) >= 0.0:
+                continue
+            if float((point - surface) @ normal) > 0.0:
+                front += 1
+            sources.append(point)
+            goals.append(surface + normal * clearance)
+        if len(sources) < MIN_INNER_VERTICES:
+            trace.append({"pairs": len(sources), "stopped": "too few correspondences"})
+            break
+        step, offset = kabsch(np.array(sources), np.array(goals))
+        wanted = step @ rotation
+        _, turned_by = axis_angle(wanted)
+        if turned_by > ICP_MAX_DEGREES:
+            bounded = True
+            trace.append({"pairs": len(sources), "wantedDegrees": round(turned_by, 4),
+                          "stopped": f"past the {ICP_MAX_DEGREES:.0f} degree bound"})
+            break
+        rotation, shift = wanted, step @ shift + offset
+        placed = points @ rotation.T + shift
+        gaps = np.array([nearest_surface(tree, point)[2] for point in placed])
+        moved = np.abs(gaps - clearance)
+        settled = residual is not None and abs(residual - float(moved.mean())) < ICP_SETTLE
+        residual = float(moved.mean())
+        trace.append({"pairs": len(sources), "frontFacingPairs": front,
+                      "meanResidualMillimetres": round(residual * 1000.0, 4),
+                      "rotationDegrees": round(turned_by, 4)})
+        if settled:
+            break
+    gaps = np.array([nearest_surface(tree, point)[2] for point in placed])
+    moved = np.abs(gaps - clearance)
+    axis, degrees = axis_angle(rotation)
+    return {"rotation": rotation, "translation": shift, "placed": placed,
+            "iterations": len(trace), "bounded": bounded, "trace": trace,
+            "axis": [round(float(value), 6) for value in axis],
+            "degrees": round(degrees, 4),
+            "residualMeanMillimetres": round(float(moved.mean()) * 1000.0, 4),
+            "residualP95Millimetres": round(float(np.percentile(moved, 95.0)) * 1000.0, 4)}
+
+
+def push_out(placed: np.ndarray, tree: BVHTree, surface: geometry.Surface) -> tuple[np.ndarray, list]:
+    """Lift a rigid part off whatever it is still buried in, along the skin's own normal."""
+    moved = np.zeros(3)
+    passes: list[dict] = []
+    for _ in range(PUSH_PASSES):
+        buried = depths(placed + moved, surface)
+        worst = float(buried.max(initial=0.0))
+        if worst <= CLEARANCE_DEPTH:
+            break
+        found = nearest_surface(tree, placed[int(np.argmax(buried))] + moved)
+        step = min(worst + CLEARANCE_MARGIN, PUSH_LIMIT - float(np.linalg.norm(moved)))
+        if found is None or step <= 0.0:
+            break
+        moved = moved + found[1] * step
+        passes.append({"pushMetres": round(step, 6),
+                       "alongNormal": [round(float(value), 6) for value in found[1]],
+                       "depthBeforeMetres": round(worst, 6),
+                       "depthAfterMetres": round(
+                           float(depths(placed + moved, surface).max(initial=0.0)), 6)})
+    return moved, passes
+
+
 def depths(points: np.ndarray, surface: geometry.Surface) -> np.ndarray:
     """How deep each vertex sits in what a viewer sees.
 
@@ -280,6 +469,42 @@ def deltoid_width(region: np.ndarray, axis: np.ndarray, anchor: np.ndarray, side
     return {**measured, "source": "shoulder helper to outer skin, doubled", "widthMetres": doubled}
 
 
+def bridges_chest(points: np.ndarray) -> bool:
+    """An island that crosses the midline, or sits on it, bridges the two caps."""
+    return bool(points[:, 0].min() < 0.0 < points[:, 0].max()
+                or abs(float(points[:, 0].mean())) < STRAP_MIDLINE)
+
+
+def carry_straps(straps: list[tuple], placement: dict, dressed: geometry.Surface,
+                 bare: geometry.Surface) -> dict:
+    """Chest straps keep the pose they were drawn in, between the two caps.
+
+    A strap belongs to neither shoulder, so neither shoulder's registration can own
+    it; the mean of the two carries it and it stays where the drawing put it relative
+    to both. Inside the torso is where a strap that bridges a chest ends up, and it is
+    hidden there, so the depth is reported rather than seated.
+    """
+    if not straps:
+        return {"islands": 0,
+                "rule": f"no island crosses the midline or centres within {STRAP_MIDLINE} m of it"}
+    scale = float(np.mean([placement[side]["scale"] for side in ("L", "R")]))
+    mean = np.mean([np.array(placement[side]["rotationMatrix"]) for side in ("L", "R")], axis=0)
+    left, _, right = np.linalg.svd(mean)
+    rotation = left @ right
+    translation = np.mean([np.array(placement[side]["translation"]) for side in ("L", "R")], axis=0)
+    apply_similarity([obj for obj, _ in straps], scale, rotation, np.zeros(3), translation)
+    points = np.concatenate([ring.points_of(obj) for obj, _ in straps])
+    inside, outside = depths(points, dressed), depths(points, bare)
+    return {"islands": len(straps), "vertices": int(len(points)),
+            "rule": "the mean of both sides' rigid transforms",
+            "scale": round(scale, 6), "translation": rounded_list(translation),
+            "rotationDegrees": round(axis_angle(rotation)[1], 4),
+            "maxDepthDressedMetres": round(float(inside.max(initial=0.0)), 6),
+            "deeperThan2mmDressed": int((inside > CLEARANCE_DEPTH).sum()),
+            "maxDepthBareMetres": round(float(outside.max(initial=0.0)), 6),
+            "deeperThan2mmBare": int((outside > CLEARANCE_DEPTH).sum())}
+
+
 def island_rows(entries: list[tuple]) -> list[dict]:
     """Every island of a side on one line, where it came from and where it landed."""
     rows = []
@@ -293,8 +518,9 @@ def island_rows(entries: list[tuple]) -> list[dict]:
 
 
 def place_side(entries: list[tuple], side: str, contract: dict, landmarks: dict,
-               region: np.ndarray, dressed: geometry.Surface, clearance: float,
-               cap_fraction: float, anchor: str = "deltoid", seat: str = "p95") -> dict:
+               region: np.ndarray, dressed: geometry.Surface, skin: np.ndarray,
+               clearance: float, cap_fraction: float, anchor: str = "crest",
+               seat: str = "p95", stage: str = "push", inner: str = "nearest") -> dict:
     """Everything the rule does to one shoulder, in one place, rigidly."""
     axis_arm, joint = arm_axis(landmarks, contract, side)
     cap, cap_points = entries[0]
@@ -314,6 +540,95 @@ def place_side(entries: list[tuple], side: str, contract: dict, landmarks: dict,
     muscle = deltoid_width(region, axis_arm, joint, side, dressed)
     scale = muscle["widthMetres"] * DELTOID_FACTOR / span
 
+    shared = {"side": side, "anchor": anchor, "armAxis": rounded_list(axis_arm),
+              "jointHead": rounded_list(joint),
+              "capIsland": {"vertices": int(len(cap_points)), "triangles": ring.triangles_of(cap)},
+              "openingAxisSource": rounded_list(axis), "axisTrace": trace,
+              "apexSource": rounded_list(apex), "capFraction": cap_fraction,
+              "capSpanAlongAxisMetres": round(span, 6),
+              "wholeIslandAlongAxisMetres": round(whole, 6),
+              "deltoid": muscle, "deltoidFactor": DELTOID_FACTOR, "scale": round(scale, 6),
+              "clearanceMetres": clearance, "fixedCapVertices": int(is_fixed.sum())}
+    if anchor == "crest":
+        return {**shared, **_crest_side(entries, side, cap, cap_points, is_fixed, axis, apex,
+                                        scale, dressed, skin, joint, clearance, stage, inner)}
+    return {**shared, **_deltoid_side(entries, side, cap, cap_points, is_fixed, axis, apex, scale,
+                                      axis_arm, joint, region, dressed, clearance, seat, anchor)}
+
+
+def rounded_list(values) -> list[float]:
+    return [round(float(value), 6) for value in values]
+
+
+def _crest_side(entries: list[tuple], side: str, cap, cap_points: np.ndarray,
+                is_fixed: np.ndarray, axis: np.ndarray, apex: np.ndarray, scale: float,
+                dressed: geometry.Surface, skin: np.ndarray, joint: np.ndarray,
+                clearance: float, stage: str = "push", inner: str = "nearest") -> dict:
+    """The cap as drawn, dropped on the crest, then registered rigidly onto the skin."""
+    normals = normals_of(cap)
+    is_inner, inner_rule = inner_face(cap_points, normals, axis, apex, inner)
+    # The plate registers; the cloth on the same island hangs off it and would drag
+    # the plate down the arm if it were allowed a say in where the plate goes.
+    is_inner = is_inner & is_fixed
+    if int(is_inner.sum()) < MIN_INNER_VERTICES:
+        raise SocketError(f"socket gate: the {side} cap has no inner face to register")
+
+    scaled = cap_points * scale
+    wall = scaled[is_inner]
+    crest_source = wall[int(np.argmax(wall[:, 1]))]
+    crest_body = crest_of(skin, joint, CREST_RADIUS)
+    seated = crest_body + np.array([0.0, clearance, 0.0]) - crest_source
+
+    registered = (register(wall + seated, normals[is_inner], dressed.every, clearance)
+                  if stage in ("icp", "push")
+                  else {"rotation": np.eye(3), "translation": np.zeros(3), "placed": wall + seated,
+                        "iterations": 0, "bounded": False, "trace": [], "axis": [0.0, 1.0, 0.0],
+                        "degrees": 0.0, "residualMeanMillimetres": None,
+                        "residualP95Millimetres": None})
+    rotation, shift = registered["rotation"], registered["translation"]
+    lifted, passes = (push_out(registered["placed"], dressed.every, dressed)
+                      if stage == "push" else (np.zeros(3), []))
+    translation = rotation @ seated + shift + lifted
+
+    apply_similarity([obj for obj, _ in entries], scale, rotation, np.zeros(3), translation)
+    settled = depths(ring.points_of(cap)[is_fixed], dressed)
+    return {
+        "rule": "crest and rigid ICP",
+        "stage": stage,
+        "innerFace": {"vertices": int(is_inner.sum()), "rule": inner_rule,
+                      "ofCapVertices": int(len(cap_points))},
+        "crestSource": rounded_list(crest_source / scale),
+        "crestSourceScaled": rounded_list(crest_source),
+        "crestBody": rounded_list(crest_body),
+        "crestRadiusMetres": CREST_RADIUS,
+        "initialTranslation": rounded_list(seated),
+        "icpIterations": registered["iterations"],
+        "icpBounded": registered["bounded"],
+        "icpMaxDegrees": ICP_MAX_DEGREES,
+        "icpTrace": registered["trace"],
+        "rotationAxis": registered["axis"],
+        "rotationDegrees": registered["degrees"],
+        "rotationMatrix": [rounded_list(row) for row in rotation],
+        "residualMeanMillimetres": registered["residualMeanMillimetres"],
+        "residualP95Millimetres": registered["residualP95Millimetres"],
+        "pushPasses": len(passes),
+        "pushSteps": passes,
+        "pushMetres": round(float(np.linalg.norm(lifted)), 6),
+        "pushBounded": float(np.linalg.norm(lifted)) >= PUSH_LIMIT - 1e-9,
+        "translation": rounded_list(translation),
+        "crestPlaced": rounded_list(rotation @ (crest_source + seated) + shift + lifted),
+        "fixedCapDepthAfterMetres": round(float(settled.max(initial=0.0)), 6),
+        "fixedCapDeeperThan2mm": int((settled > CLEARANCE_DEPTH).sum()),
+    }
+
+
+def _deltoid_side(entries: list[tuple], side: str, cap, cap_points: np.ndarray,
+                  is_fixed: np.ndarray, axis: np.ndarray, apex: np.ndarray, scale: float,
+                  axis_arm: np.ndarray, joint: np.ndarray, region: np.ndarray,
+                  dressed: geometry.Surface, clearance: float, seat: str,
+                  anchor: str) -> dict:
+    """The first rule, kept for the comparison: stand the cap on the arm's own axis."""
+    fixed = cap_points[is_fixed]
     wanted = tilt_degrees(axis, axis_arm)
     tilt = max(-MAX_TILT_DEGREES, min(MAX_TILT_DEGREES, wanted))
     rotation = spin_z(tilt)
@@ -368,45 +683,30 @@ def place_side(entries: list[tuple], side: str, contract: dict, landmarks: dict,
 
     apex_now = placed_apex + moved
     return {
-        "side": side,
-        "anchor": anchor,
+        "rule": "arm axis tilt and deltoid centroid",
         "seat": seat,
-        "armAxis": [round(float(value), 6) for value in axis_arm],
-        "jointHead": [round(float(value), 6) for value in joint],
-        "capIsland": {"vertices": int(len(cap_points)), "triangles": ring.triangles_of(cap)},
-        "openingAxisSource": [round(float(value), 6) for value in axis],
-        "openingAxisPlaced": [round(float(value), 6) for value in placed_axis],
-        "axisTrace": trace,
+        "openingAxisPlaced": rounded_list(placed_axis),
         "axisToArmDegrees": round(float(np.degrees(np.arccos(np.clip(axis @ axis_arm, -1.0, 1.0)))), 4),
         "placedAxisToArmDegrees": round(
             float(np.degrees(np.arccos(np.clip(placed_axis @ axis_arm, -1.0, 1.0)))), 4),
-        "apexSource": [round(float(value), 6) for value in apex_before],
-        "capFraction": cap_fraction,
-        "capSpanAlongAxisMetres": round(span, 6),
-        "wholeIslandAlongAxisMetres": round(whole, 6),
-        "deltoid": muscle,
-        "deltoidFactor": DELTOID_FACTOR,
-        "scale": round(scale, 6),
         "tiltDegrees": round(tilt, 4),
         "tiltWantedDegrees": round(wanted, 4),
         "tiltClamped": abs(wanted) > MAX_TILT_DEGREES,
-        "clearanceMetres": clearance,
-        "jointRay": {"direction": [round(float(value), 6) for value in -placed_axis],
+        "rotationMatrix": [rounded_list(row) for row in rotation],
+        "jointRay": {"direction": rounded_list(-placed_axis),
                      "crossings": ray["crossings"], "firstHitMetres": ray["firstMetres"],
                      "outerHitMetres": ray["lastMetres"],
-                     "outerHit": [round(float(value), 6) for value in ray["point"]]},
-        "apexAnchorDestination": [round(float(value), 6) for value in apex_anchor["destination"]],
-        "deltoidCentroid": [round(float(value), 6) for value in muscle_centre],
-        "fixedCapCentroidSource": [round(float(value), 6) for value in deltoid_anchor["pivot"]],
-        "clearanceDirection": [round(float(value), 6) for value in outward],
-        "translation": [round(float(value), 6) for value in
-                        (chosen["destination"] - scale * rotation @ chosen["pivot"] + moved)],
-        "apexPlaced": [round(float(value), 6) for value in apex_now],
+                     "outerHit": rounded_list(ray["point"])},
+        "apexAnchorDestination": rounded_list(apex_anchor["destination"]),
+        "deltoidCentroid": rounded_list(muscle_centre),
+        "fixedCapCentroidSource": rounded_list(deltoid_anchor["pivot"]),
+        "clearanceDirection": rounded_list(outward),
+        "translation": rounded_list(chosen["destination"] - scale * rotation @ chosen["pivot"] + moved),
+        "apexPlaced": rounded_list(apex_now),
         "clearancePasses": len(passes),
         "clearanceSteps": passes,
         "clearanceTranslationMetres": round(float(np.linalg.norm(moved)), 6),
         "clearanceBounded": float(np.linalg.norm(moved)) >= MAX_CLEARANCE - 1e-9,
-        "fixedCapVertices": int(is_fixed.sum()),
         "fixedCapDepthBeforeMetres": round(first, 6),
         "fixedCapDepthAfterMetres": round(float(buried.max(initial=0.0)), 6),
         "fixedCapDeeperThan2mm": int((buried > CLEARANCE_DEPTH).sum()),
@@ -445,9 +745,14 @@ def run(args) -> dict:
     raw = {"islands": len(islands), "triangles": sum(ring.triangles_of(obj) for obj in islands),
            "vertices": sum(len(obj.data.vertices) for obj in islands)}
 
+    skin = skin_points(loaded["meshes"] + beneath)
     sided: dict[str, list[tuple]] = {"L": [], "R": []}
+    straps: list[tuple] = []
     for obj in islands:
         points = ring.points_of(obj)
+        if bridges_chest(points):
+            straps.append((obj, points))
+            continue
         sided["L" if float(points.mean(axis=0)[0]) >= 0.0 else "R"].append((obj, points))
     for side, entries in sided.items():
         if not entries:
@@ -458,7 +763,8 @@ def run(args) -> dict:
     placement = {}
     for side, entries in sided.items():
         placement[side] = place_side(entries, side, contract, landmarks, region[side], dressed,
-                                     clearance, args.cap, args.anchor, args.seat)
+                                     skin, clearance, args.cap, args.anchor, args.seat,
+                                     args.register, args.inner)
         placement[side]["islands"] = island_rows(entries)
         # Measured before the join, which is what makes the cap indistinguishable from
         # the hardware and the cloth welded to it. Nothing below moves a vertex again.
@@ -466,19 +772,24 @@ def run(args) -> dict:
         cap_points = ring.points_of(cap)
         cap_dressed = depths(cap_points, dressed)
         cap_bare = depths(cap_points, bare)
-        apex = np.array(placement[side]["apexPlaced"])
+        landed = np.array(placement[side].get("crestPlaced") or placement[side]["apexPlaced"])
         placement[side]["capClearance"] = {
             "vertices": int(len(cap_points)),
             "maxDepthDressedMetres": round(float(cap_dressed.max(initial=0.0)), 6),
             "deeperThan2mmDressed": int((cap_dressed > CLEARANCE_DEPTH).sum()),
             "maxDepthBareMetres": round(float(cap_bare.max(initial=0.0)), 6),
             "deeperThan2mmBare": int((cap_bare > CLEARANCE_DEPTH).sum()),
-            "apexToTargetMillimetres": round(float(np.linalg.norm(dressed.nearest(apex) - apex)) * 1000.0, 3),
-            "apexToBareMillimetres": round(float(np.linalg.norm(bare.nearest(apex) - apex)) * 1000.0, 3),
+            "anchorToTargetMillimetres": round(
+                float(np.linalg.norm(dressed.nearest(landed) - landed)) * 1000.0, 3),
+            "anchorToBareMillimetres": round(
+                float(np.linalg.norm(bare.nearest(landed) - landed)) * 1000.0, 3),
         }
         placement[side]["coverage"] = coverage(region[side], normals[side], cap_tree_of([cap]),
                                                COVERAGE_REACH)
 
+    strap_report = carry_straps(straps, placement, dressed, bare)
+    if straps:
+        sided["L"].extend(straps)
     per_side = [piece.join([obj for obj, _ in sided[side]], f"{args.piece}_{side}")
                 for side in ("L", "R")]
 
@@ -571,6 +882,7 @@ def run(args) -> dict:
         "source": manifest["source"],
         "raw": raw,
         "placement": placement,
+        "chestStraps": strap_report,
         "weights": weight_report,
         "drapes": drape_report,
         "rest": rest,
@@ -610,8 +922,10 @@ def parse(argv: list[str]):
     parser.add_argument("--weights", choices=("transfer", "stiff", "rigid"), default="stiff")
     parser.add_argument("--yaw", type=int, choices=(0, 180), default=0)
     parser.add_argument("--cap", type=float, default=CAP_FRACTION)
-    parser.add_argument("--anchor", choices=("deltoid", "apex"), default="deltoid")
+    parser.add_argument("--anchor", choices=("crest", "deltoid", "apex"), default="crest")
     parser.add_argument("--seat", choices=("none", "clear", "p95"), default="p95")
+    parser.add_argument("--register", choices=("crest", "icp", "push"), default="push")
+    parser.add_argument("--inner", choices=("normals", "nearest"), default="nearest")
     parser.add_argument("--drape", action="append", default=[])
     parser.add_argument("--outdir", required=True)
     return parser.parse_args(argv)

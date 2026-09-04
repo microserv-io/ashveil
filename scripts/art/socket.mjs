@@ -16,7 +16,7 @@ const ROOT = join(import.meta.dirname, '..', '..')
 const RUNNER = join(ROOT, 'scripts', 'art', 'gear', 'socket.py')
 const BLENDER_CANDIDATES = ['/opt/homebrew/bin/blender', '/usr/local/bin/blender', 'blender']
 const VALUES = new Set(['--input', '--slot', '--body', '--piece', '--under', '--weights', '--yaw',
-  '--cap', '--anchor', '--seat', '--outdir'])
+  '--cap', '--anchor', '--seat', '--register', '--inner', '--outdir'])
 const REPEATED = new Set(['--drape'])
 const NAME = /^[a-z0-9][a-z0-9-]*$/
 const DRAPE = /^[a-z][a-z0-9_]*:[A-Za-z0-9_]+:[01](\.[0-9]+)?:[01](\.[0-9]+)?(:[1-6](:[0-9]+(\.[0-9]+)?)?)?$/
@@ -46,8 +46,14 @@ export function parseArgs(argv) {
       throw new SocketError(`argument gate: --${name} "${parsed[name]}" is not a lowercase name a path can carry`)
     }
   }
-  if (parsed.anchor && !['deltoid', 'apex'].includes(parsed.anchor)) {
-    throw new SocketError(`anchor gate: "${parsed.anchor}" is not deltoid or apex`)
+  if (parsed.anchor && !['crest', 'deltoid', 'apex'].includes(parsed.anchor)) {
+    throw new SocketError(`anchor gate: "${parsed.anchor}" is not crest, deltoid or apex`)
+  }
+  if (parsed.register && !['crest', 'icp', 'push'].includes(parsed.register)) {
+    throw new SocketError(`register gate: "${parsed.register}" is not crest, icp or push`)
+  }
+  if (parsed.inner && !['normals', 'nearest'].includes(parsed.inner)) {
+    throw new SocketError(`inner gate: "${parsed.inner}" is not normals or nearest`)
   }
   if (parsed.seat && !['none', 'clear', 'p95'].includes(parsed.seat)) {
     throw new SocketError(`seat gate: "${parsed.seat}" is not none, clear or p95`)
@@ -93,6 +99,8 @@ export function blenderArgs(plan, runner = RUNNER) {
     ...(plan.cap ? ['--cap', plan.cap] : []),
     ...(plan.anchor ? ['--anchor', plan.anchor] : []),
     ...(plan.seat ? ['--seat', plan.seat] : []),
+    ...(plan.register ? ['--register', plan.register] : []),
+    ...(plan.inner ? ['--inner', plan.inner] : []),
     ...plan.drapes.flatMap((drape) => ['--drape', drape])]
 }
 
