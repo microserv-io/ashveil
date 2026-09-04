@@ -182,6 +182,12 @@ def under(root, names: list[str]) -> list:
     surface the shrinkwrap pushes out of and the bind gate measures against; the
     armature comes with them and is dropped, since both files share the body's
     bind pose and only the rest geometry is wanted.
+
+    Only what the file's own armature skins is kept. Importing any skinned glTF also
+    leaves a one-metre Icosphere at the origin - the importer's bone-widget mesh, in
+    no file and in no scene graph - and welded into the target it swallows the whole
+    lower body, so every piece hanging below the waist measured as buried in it.
+    `body.load` has always filtered by the same rule; this is that rule, here.
     """
     meshes = []
     for name in names:
@@ -191,8 +197,12 @@ def under(root, names: list[str]) -> list:
         before = set(bpy.context.scene.objects)
         bpy.ops.import_scene.gltf(filepath=str(path))
         added = [obj for obj in bpy.context.scene.objects if obj not in before]
+        armatures = {obj for obj in added if obj.type == "ARMATURE"}
+        skinned = [obj for obj in added if obj.type == "MESH"
+                   and any(modifier.type == "ARMATURE" and modifier.object in armatures
+                           for modifier in obj.modifiers)]
         for obj in added:
-            if obj.type != "MESH":
+            if obj not in skinned:
                 continue
             for modifier in list(obj.modifiers):
                 obj.modifiers.remove(modifier)
@@ -205,10 +215,10 @@ def under(root, names: list[str]) -> list:
             obj.hide_render = True
             meshes.append(obj)
         for obj in added:
-            if obj.type != "MESH" and obj.name in bpy.data.objects:
+            if obj not in skinned and obj.name in bpy.data.objects:
                 bpy.data.objects.remove(obj, do_unlink=True)
     if names and not meshes:
-        raise PieceError(f"under gate: {', '.join(names)} contain no mesh")
+        raise PieceError(f"under gate: {', '.join(names)} carry no skinned mesh")
     return meshes
 
 
