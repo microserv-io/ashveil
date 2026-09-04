@@ -256,11 +256,20 @@ At runtime `src/render/springbones.ts` is a thin adapter: one manager per actor,
 joints built from the manifest, colliders from the body profile. The order per frame
 is contractual: procedural pose, world matrices, spring steps at fixed `DT` from sim
 time with at most four catch-up steps (a stall drops time rather than exploding),
-skeleton update, render. Beyond the cosmetic distance or off screen the manager is
-not updated; on re-entry it is reset to rest, with hysteresis so a chain at the
-boundary does not pop. Two clients may see different cloth, which is fine for
-presentation. The frame budget is measured with a cohort of thirty cloaked actors,
-not one.
+skeleton update, render. At bind the chain is pre-rolled thirty steps in the bind
+pose so the first drawn frame is the settled one, not a snap out of the fitter's
+rest. Beyond the cosmetic distance or off screen the manager is not updated; on
+re-entry it is reset and pre-rolled, with hysteresis so a chain at the boundary does
+not pop. Two clients may see different cloth, which is fine for presentation.
+
+Collider capsules belong to the body, never to the piece: they are measured off the
+body's skin per bone by the body fitter and shipped in the body profile, with a
+piece allowed only to add capsules for its own fixed geometry (a pauldron cap for
+the cloth under it). The spike found the pendulum's per-piece table carried a 16 cm
+capsule on the upper arm that pulled both pauldron caps inward at rest. The spike's
+settings, stiffness 4, gravity 1, drag 0.4, hit radius 2 cm, settled the sash in a
+quarter second to within microns and hold there, where the pendulum never stopped
+wobbling; thirty cloaked actors at the four-step cap cost 0.22 ms a frame.
 
 ### 6. Bind, hide, verify
 
