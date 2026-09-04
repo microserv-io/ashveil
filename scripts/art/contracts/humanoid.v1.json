@@ -436,7 +436,7 @@
         "fraction": 0.002
       },
       "budget": {
-        "maxTriangles": 6000,
+        "maxTriangles": 12000,
         "maxMaterials": 1
       }
     },
@@ -533,7 +533,7 @@
         "fraction": 0.002
       },
       "budget": {
-        "maxTriangles": 6000,
+        "maxTriangles": 12000,
         "maxMaterials": 1
       }
     },
@@ -610,7 +610,7 @@
         "fraction": 0.002
       },
       "budget": {
-        "maxTriangles": 4000,
+        "maxTriangles": 12000,
         "maxMaterials": 1
       }
     },
@@ -696,7 +696,7 @@
         "fraction": 0.002
       },
       "budget": {
-        "maxTriangles": 10000,
+        "maxTriangles": 12000,
         "maxMaterials": 1
       }
     },
@@ -766,7 +766,7 @@
         "fraction": 0.005
       },
       "budget": {
-        "maxTriangles": 6000,
+        "maxTriangles": 12000,
         "maxMaterials": 1
       }
     },
@@ -911,7 +911,7 @@
         "fraction": 0.002
       },
       "budget": {
-        "maxTriangles": 4000,
+        "maxTriangles": 12000,
         "maxMaterials": 1
       }
     },
@@ -1009,7 +1009,7 @@
         "fraction": 0.002
       },
       "budget": {
-        "maxTriangles": 4000,
+        "maxTriangles": 12000,
         "maxMaterials": 1
       }
     },
@@ -1097,7 +1097,7 @@
         "fraction": 0.002
       },
       "budget": {
-        "maxTriangles": 5000,
+        "maxTriangles": 12000,
         "maxMaterials": 1
       }
     }

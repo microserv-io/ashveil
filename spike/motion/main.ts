@@ -44,7 +44,6 @@ const LEASH = 4.5
 const TURN_RATE = 2.6
 const TURN_DURATION = 0.8
 const PANEL_KEY = 'ashveil.motion.panel'
-const GEAR_KEY = 'ashveil.motion.gear.off'
 /** Below this the panel would cover the body, so it starts out of the way. */
 const NARROW_VIEWPORT = 640
 /** The bounds `art:socket` puts on an authored pose, so the page cannot ask for one it refuses. */
@@ -57,6 +56,13 @@ const OFFSET_LIMIT = 0.1
  */
 const ORIENT_STEP = 0.01
 const OFFSET_STEP = 0.0001
+/**
+ * Up here with the constants rather than down beside the pose panel it belongs to:
+ * the shipped shoulders are posed, so the first `rewear` reads these while a `const`
+ * declared below that call is still in its dead zone.
+ */
+type PoseKey = 'yaw' | 'pitch' | 'roll' | 'x' | 'y' | 'z'
+const POSE_KEYS = ['yaw', 'pitch', 'roll', 'x', 'y', 'z'] as const
 
 const sim = new Sim({ seed: SEED })
 await loadModels('models')
@@ -111,7 +117,7 @@ let stepQueued = false
 let previous = performance.now()
 let worn: WornPiece[] = []
 let bodyMaterials = 0
-const wearing = readGearPreference()
+const wearing = readGearQuery()
 // Declared before the panel is built: a `const` below that call is still in its
 // temporal dead zone when the first checkbox is made.
 const gearBoxes = new Map<string, HTMLInputElement>()
@@ -324,7 +330,6 @@ function rewear(): void {
   // one is a change to the pose that shipped rather than to an arbitrary zero.
   if (!poseAsked && posed[0]) setPose(posed[0].fitted.L)
   else writePose()
-  saveGear()
 }
 
 function buildGearPanel(): void {
@@ -352,8 +357,7 @@ function buildGearPanel(): void {
       return label
     }),
   )
-  element('gear-all').addEventListener('click', () =>
-    setGear(REVIEW_GEAR.filter((entry) => !entry.compare).map((entry) => entry.piece)))
+  element('gear-all').addEventListener('click', () => setGear(REVIEW_GEAR.map((entry) => entry.piece)))
   element('gear-bare').addEventListener('click', () => setGear([]))
 }
 
@@ -382,9 +386,6 @@ function setGear(pieces: readonly string[]): void {
  * swinging drape still swings about where the fitter hung it - the sliders are how a
  * pose is found, and the refit is what makes it true.
  */
-type PoseKey = 'yaw' | 'pitch' | 'roll' | 'x' | 'y' | 'z'
-const POSE_KEYS = ['yaw', 'pitch', 'roll', 'x', 'y', 'z'] as const
-
 interface BindPose {
   readonly position: Float32Array
   readonly normal: Float32Array | null
@@ -413,13 +414,10 @@ function poseRows(): readonly (readonly [PoseKey, string, number, number, number
   ]
 }
 
-/**
- * Only a comparison piece is re-posed: the shipped one in a slot is what it is, and
- * a piece fitted before the crest was written has no point to turn about.
- */
+/** A piece fitted before the crest was written down has no point to turn about. */
 function socketPieceOf(entry: ReviewGearPiece, piece: WornPiece): SocketPiece[] {
   const crests = gearSources.get(entry.piece)?.crests
-  if (entry.slot !== 'shoulders' || !entry.compare || !crests) return []
+  if (entry.slot !== 'shoulders' || !crests) return []
   // The geometry is shared with the loaded source and survives a rewear, so the bind
   // pose is taken the first time the piece is seen and never off an already-posed mesh.
   const geometry = piece.mesh.geometry
@@ -664,29 +662,21 @@ function wornSlots(): string {
   return worn.length === 0 ? 'bare' : worn.map((piece) => piece.slot).join(' ')
 }
 
-function saveGear(): void {
-  try {
-    const off = REVIEW_GEAR.filter((entry) => !wearing.has(entry.piece)).map((entry) => entry.piece)
-    localStorage.setItem(GEAR_KEY, JSON.stringify(off))
-  } catch {}
-}
-
 /**
- * Dressed unless the reviewer said otherwise, so the bare body is the special case.
- * A comparison entry is the exception and starts off: two pieces in one slot are a
- * side by side, not an outfit.
- * What is stored is what was taken off, not what was put on: a piece fitted since
- * the reviewer last set this is worn, rather than hidden by a preference written
- * before it existed.
+ * The whole set, every load. What a piece looks like on a moving body is the thing
+ * the page is for, so the outfit is the page's resting state and a reviewer who
+ * strips it back gets the full set again on refresh rather than yesterday's session.
+ *
+ * `?gear=none` opens on the bare body and `?gear=warden-hood,warden-tunic` on just
+ * those, so a link can still land on the one piece a question is about. An unknown
+ * name is ignored rather than refused: a link outlives the piece it was written for.
  */
-function readGearPreference(): Set<string> {
-  const off = new Set<string>()
-  try {
-    const stored = localStorage.getItem(GEAR_KEY)
-    if (stored) for (const piece of JSON.parse(stored) as string[]) off.add(piece)
-  } catch {}
-  return new Set(REVIEW_GEAR.filter((entry) => !entry.compare && !off.has(entry.piece))
-    .map((entry) => entry.piece))
+function readGearQuery(): Set<string> {
+  const asked = new URLSearchParams(location.search).get('gear')
+  const listed = REVIEW_GEAR.map((entry) => entry.piece)
+  if (asked === null) return new Set(listed)
+  const wanted = new Set(asked.split(',').map((piece) => piece.trim()))
+  return new Set(listed.filter((piece) => wanted.has(piece)))
 }
 
 function recentre(): void {

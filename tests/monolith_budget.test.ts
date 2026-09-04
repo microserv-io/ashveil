@@ -58,7 +58,7 @@ const BUDGETS: Readonly<Record<string, number>> = {
   // splitting the grid out would split the scratch arrays three readers share.
   // Raised once more when a drape's own triangles had to be kept out of the
   // covering surface: cloth that swings cannot be trusted to keep covering.
-  'src/render/gearcover.ts': 665,
+  'src/render/gearcover.ts': 657,
   'src/render/skeletonbones.ts': 60,
   'src/render/riginput.ts': 100,
   // The procedural pose generator. `clips.ts` is the pose table and so exempt;

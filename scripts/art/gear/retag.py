@@ -6,7 +6,7 @@ touches the manifest and nothing else: the GLB, the report and every gate stay a
 they were fitted.
 
     blender --background --factory-startup --python scripts/art/gear/retag.py -- \
-        --piece warden-tunic-full --body masculine-v3
+        --piece warden-tunic --body masculine-v3
 """
 
 from __future__ import annotations

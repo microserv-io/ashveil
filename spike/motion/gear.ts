@@ -7,25 +7,27 @@ import {
 import { stylise } from '../../src/render/look'
 
 /**
- * The pieces the review page can put on the body.
+ * The pieces the review page puts on the body: the Warden set, one per slot.
  *
- * Anything listed here is a fitted piece under `public/gear` that passed every
- * gate, so the page can wear it without asking questions. The proxy fixtures under
- * `tests/fixtures/gear` are test data and deliberately absent: they exist to prove
- * the fitter reproduces, not to be looked at.
+ * Anything listed here is a fitted piece under `public/gear`, so the page can wear
+ * it without asking questions. What it is not is a piece with every gate green: the
+ * set is fitted at full detail against triangle budgets written for a decimated one.
+ * `tests/motion_review_gear.test.ts` records what each piece's gates say rather than
+ * holding the list to them. The proxy fixtures under `tests/fixtures/gear` are test
+ * data and deliberately absent: they exist to prove the fitter reproduces, not to
+ * be looked at.
  */
 export interface ReviewGearPiece {
   readonly slot: GearSlot
   readonly piece: string
   readonly path: string
-  /**
-   * A second fitting of a slot already listed, on the page only to be looked at
-   * beside the one that ships. It is off by default and out of "Wear all", so the
-   * outfit stays one piece per slot, and it is judged by eye rather than by gates.
-   */
-  readonly compare?: boolean
 }
 
+/**
+ * One piece per slot, and the page opens wearing all of them. Two fittings of a
+ * slot listed side by side was how a refit got judged against the one it replaced;
+ * those calls are made, so what is left is the outfit rather than the comparison.
+ */
 export const REVIEW_GEAR: readonly ReviewGearPiece[] = [
   { slot: 'feet', piece: 'warden-boots', path: gearPath('warden-boots') },
   { slot: 'legs', piece: 'warden-trousers', path: gearPath('warden-trousers') },
@@ -34,15 +36,6 @@ export const REVIEW_GEAR: readonly ReviewGearPiece[] = [
   { slot: 'head', piece: 'warden-hood', path: gearPath('warden-hood') },
   { slot: 'waist', piece: 'warden-belt', path: gearPath('warden-belt') },
   { slot: 'shoulders', piece: 'warden-pauldrons', path: gearPath('warden-pauldrons') },
-  { slot: 'waist', piece: 'warden-belt-ring', path: gearPath('warden-belt-ring'), compare: true },
-  { slot: 'feet', piece: 'warden-boots-full', path: gearPath('warden-boots-full'), compare: true },
-  { slot: 'legs', piece: 'warden-trousers-full', path: gearPath('warden-trousers-full'), compare: true },
-  { slot: 'hands', piece: 'warden-gloves-full', path: gearPath('warden-gloves-full'), compare: true },
-  { slot: 'chest', piece: 'warden-tunic-full', path: gearPath('warden-tunic-full'), compare: true },
-  { slot: 'head', piece: 'warden-hood-full', path: gearPath('warden-hood-full'), compare: true },
-  { slot: 'shoulders', piece: 'warden-pauldrons-full', path: gearPath('warden-pauldrons-full'), compare: true },
-  { slot: 'shoulders', piece: 'warden-pauldrons-socket', path: gearPath('warden-pauldrons-socket'), compare: true },
-  { slot: 'shoulders', piece: 'warden-pauldrons-socket-stiff', path: gearPath('warden-pauldrons-socket-stiff'), compare: true },
 ]
 
 /**

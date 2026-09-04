@@ -759,7 +759,10 @@
             "radialFactorMin",
             "radialFactorMax",
             "radialFactorMean",
+            "centre",
             "centreShiftMaxMetres",
+            "centreStations",
+            "centreKnotShifts",
             "radial",
             "radialClampedLanes",
             "sliceStations",
@@ -834,9 +837,33 @@
               "type": "integer",
               "minimum": 0
             },
+            "centre": {
+              "enum": [
+                "limb",
+                "cuff",
+                "none"
+              ]
+            },
             "centreShiftMaxMetres": {
               "type": "number",
               "minimum": 0
+            },
+            "centreStations": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "centreKnotShifts": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              }
             },
             "sliceStations": {
               "type": "array",

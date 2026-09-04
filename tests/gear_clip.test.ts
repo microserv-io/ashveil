@@ -444,75 +444,57 @@ describe('the clipping gate on a piece with a drape', () => {
   })
 })
 
+/**
+ * The shipped pauldrons are the socketed fitting, and it answers the tunic
+ * differently from the draped cap it replaced. That one was held off the cloth and
+ * measured clear of it; this one plugs into the shoulder on purpose and the tunic
+ * beneath it stops drawing where it does. So the pin is the cut rather than the
+ * clearance, and asking this fitting for a zero overlap would be asking it not to be
+ * a socket. The pose it was authored with is pinned too: the review page's sliders
+ * start from those numbers, and the fitter refits from them.
+ */
 describe('the fitted Warden pauldrons', () => {
   const directory = join(import.meta.dirname, '..', 'public', 'gear', 'warden-pauldrons')
-  const clip = JSON.parse(readFileSync(join(directory, 'warden-pauldrons.clip.json'), 'utf8'))
   const manifest = JSON.parse(readFileSync(join(directory, 'warden-pauldrons.manifest.json'), 'utf8'))
-  const fitted = readGlb(join(directory, 'warden-pauldrons.glb'))
 
-  it('keeps the exact frost-nova and shoulder-helper regressions observable and clear', () => {
-    expect(clip.samples['frost_nova@0.375'].fraction).toBeLessThanOrEqual(clip.clip.fraction)
-    expect(clip.samples['abduct90@0'].fraction).toBeLessThanOrEqual(clip.clip.fraction)
-    expect(clip.gates.clears_the_body_through_motion_cycles).toBe(true)
-    expect(clip.gates.clears_the_body_through_stress_poses).toBe(true)
-  })
-
-  it('ships fitted torso and shoulder-girdle collider coverage', () => {
-    for (const drape of manifest.drapes) {
-      expect(drape.colliders).toEqual(expect.arrayContaining([
-        expect.objectContaining({ from: 'chest', to: 'neck' }),
-        expect.objectContaining({ from: 'clavicle_L', to: 'upper_arm_L' }),
-        expect.objectContaining({ from: 'clavicle_R', to: 'upper_arm_R' }),
-      ]))
-    }
-  })
-
-  it('records the lower chest layer and the measured cap seating', () => {
+  it('records the lower chest layer and an authored pose per side', () => {
     expect(manifest.under).toEqual(['warden-tunic'])
+    expect(manifest.weights).toBe('stiff')
     for (const side of ['L', 'R']) {
-      const seat = manifest.alignment[side].layerSeat
-      const direction = side === 'L' ? 1 : -1
-      expect(seat.axis).toBe('X')
-      expect(seat.bandAxis).toBe('Y')
-      expect(seat.direction).toBe(direction)
-      expect(seat.translationMetres[0] * direction).toBeGreaterThanOrEqual(seat.minimumMetres)
-      expect(seat.after.minimumClearanceMetres).toBeGreaterThanOrEqual(seat.clearanceMetres)
-    }
-  })
-
-  it('keeps the seated caps outside the tunic through bind and gait', () => {
-    const tunic = join(import.meta.dirname, '..', 'public', 'gear', 'warden-tunic')
-    const overlap = runSetAdvisory([tunic, directory])
-
-    for (const motion of ['bind', 'walk', 'run']) {
-      expect(overlap.worst[motion]).toEqual([
-        expect.objectContaining({ outer: 'warden-pauldrons', inner: 'warden-tunic', count: 0 }),
-      ])
-    }
-  })
-
-  it('keeps shoulder-helper transfer on the fixed cap when the cloth chain attaches to the upper arm', () => {
-    expect(manifest.weights).toBe('transfer')
-    expect(manifest.drapes.map((drape: { attachBone: string }) => drape.attachBone))
-      .toEqual(['upper_arm_L', 'upper_arm_R'])
-    const helperJoints = new Set(['shoulder_helper_L', 'shoulder_helper_R']
-      .map((name) => fitted.skin.jointNames.indexOf(name)))
-    const drapeJoints = new Set(manifest.drapes.flatMap((drape: { bones: string[] }) => drape.bones)
-      .map((name: string) => fitted.skin.jointNames.indexOf(name)))
-    let fixedHelperVertices = 0
-    for (const mesh of fitted.meshes) {
-      for (let vertex = 0; vertex < mesh.positions.length / 3; vertex++) {
-        let helperWeight = 0
-        let drapeWeight = 0
-        for (let lane = 0; lane < 4; lane++) {
-          const joint = mesh.joints[vertex * 4 + lane]!
-          const weight = mesh.weights[vertex * 4 + lane]!
-          if (helperJoints.has(joint)) helperWeight += weight
-          if (drapeJoints.has(joint)) drapeWeight += weight
-        }
-        if (helperWeight > 0 && drapeWeight === 0) fixedHelperVertices++
+      const alignment = manifest.alignment[side]
+      for (const name of ['crest', 'orient', 'offset']) {
+        expect(alignment[name], `${side}.${name}`).toHaveLength(3)
+        expect(alignment[name].every((value: unknown) => typeof value === 'number')).toBe(true)
       }
     }
-    expect(fixedHelperVertices).toBeGreaterThan(0)
+    // Mirrored halves of one source, so the crests sit either side of the centre line.
+    expect(manifest.alignment.L.crest[0]).toBeGreaterThan(0)
+    expect(manifest.alignment.R.crest[0]).toBeLessThan(0)
+  })
+
+  it('cuts the tunic where it seats, into vertices the tunic actually has', () => {
+    const tunic = readGlb(join(import.meta.dirname, '..', 'public', 'gear', 'warden-tunic', 'warden-tunic.glb'))
+    const vertices = tunic.meshes.reduce((most, mesh) => Math.max(most, mesh.positions.length / 3), 0)
+    const cut = manifest.hidesPieces['warden-tunic'] as number[]
+
+    expect(cut.length, 'a socketed cap that hides nothing is not seated').toBeGreaterThan(0)
+    expect(Math.min(...cut)).toBeGreaterThanOrEqual(0)
+    expect(Math.max(...cut)).toBeLessThan(vertices)
+  })
+
+  it('seats into the tunic rather than standing off it, the same amount through gait', () => {
+    const tunic = join(import.meta.dirname, '..', 'public', 'gear', 'warden-tunic')
+    const overlap = runSetAdvisory([tunic, directory])
+    const bind = overlap.worst.bind![0]!
+
+    for (const motion of ['bind', 'walk', 'run']) {
+      const worst = overlap.worst[motion]!
+      expect(worst).toEqual([
+        expect.objectContaining({ outer: 'warden-pauldrons', inner: 'warden-tunic' }),
+      ])
+      expect(worst[0]!.count, `${motion} seating`).toBeGreaterThan(0)
+      // A seat that deepens under motion is a cap being dragged through the cloth.
+      expect(worst[0]!.maxDepth - bind.maxDepth, `${motion} depth`).toBeLessThan(0.005)
+    }
   })
 })
