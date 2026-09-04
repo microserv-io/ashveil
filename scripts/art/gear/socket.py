@@ -34,6 +34,13 @@ pipeline already learned about this slot's neighbours: an orientation is authore
 item, not derived. Declaring one replaces the ICP, because a registration that argues
 with the author is not an author.
 
+Which way the source was drawn is a different question from the pose it is worn at,
+and `--yaw 180` answers it: a half turn of the whole piece about the vertical through
+its own centre, before the islands are handed to a side, so a pair drawn facing -Z
+hangs its cloth down the front of the shoulder rather than the back. It turns rather
+than mirrors, so the winding survives, and the run reports where the cloth landed
+relative to the plate on each side and refuses a turn that did not move it forward.
+
 The plate is measured against what it is worn over as well as what it is worn on:
 `hidesPieces` names the vertices of each piece beneath that stand behind the cap, so
 the tunic's shoulder stops drawing through the armour. That is a bind-pose fact about
@@ -710,6 +717,88 @@ def bridges_chest(points: np.ndarray) -> bool:
                 or abs(float(points[:, 0].mean())) < STRAP_MIDLINE)
 
 
+def turn_source(islands: list, degrees: int) -> dict:
+    """A half turn of the whole piece about the vertical through its own centre.
+
+    The fitter reads a source as drawn facing +Z, and a Tripo pair drawn facing -Z
+    wears its cloth down the back of the shoulder. The correction is a rotation, not
+    a mirror, so the winding and every outward normal survive it; and it has to land
+    before the islands are handed to a side, because a cap turned after the split is
+    a cap wearing the shoulder it was never drawn for.
+    """
+    points = np.concatenate([ring.points_of(obj) for obj in islands])
+    low, high = points.min(axis=0), points.max(axis=0)
+    centre = (low + high) * 0.5
+    report = {"degrees": int(degrees), "axis": "the runtime vertical through the piece's own centre",
+              "centre": rounded_list(centre), "boundsBefore": [rounded_list(low), rounded_list(high)]}
+    if not degrees:
+        return report
+    apply_similarity(islands, 1.0, turn_about(UP, float(degrees)), centre, centre)
+    after = np.concatenate([ring.points_of(obj) for obj in islands])
+    report["boundsAfter"] = [rounded_list(after.min(axis=0)), rounded_list(after.max(axis=0))]
+    return report
+
+
+def _hang(plate: np.ndarray, cloth: np.ndarray, hand: float) -> dict:
+    """Where the cloth's centroid sits against the plate's, in the body's own axes."""
+    return {"capCentroid": rounded_list(plate), "clothCentroid": rounded_list(cloth),
+            "clothAheadMetres": round(float(cloth[2] - plate[2]), 6),
+            "clothOutwardMetres": round(float(cloth[0] - plate[0]) * hand, 6),
+            "clothBelowMetres": round(float(plate[1] - cloth[1]), 6)}
+
+
+def source_facing(sided: dict[str, list[tuple]], cap_fraction: float) -> dict:
+    """Where the cloth hangs off the plate, and which way each cap faces, once sided.
+
+    The plate is the cap island above the cloth line and the cloth is what hangs below
+    it, so the two centroids say whether the drape falls in front of the plate or
+    behind it. Per side that reads the pair's own asymmetry rather than its facing:
+    this source welds the drape into the plate on one shoulder and leaves it a loose
+    island on the other, which moves the split by three centimetres and leaves the
+    loose side a coin flip. So the pair answers together, both halves mirrored onto one
+    - a pauldron pair is one decision here as it is at the seed - and the sides are
+    reported beside it rather than asked.
+
+    The shell's own area normal says each cap still presents its outside to the world,
+    which is the one thing a mirror would break where a turn cannot.
+    """
+    rows, pooled = {}, {"plate": [], "cloth": []}
+    for side, entries in sided.items():
+        cap, points = entries[0]
+        low, high = float(points[:, 1].min()), float(points[:, 1].max())
+        is_fixed = points[:, 1] >= low + cap_fraction * (high - low)
+        if not is_fixed.any() or is_fixed.all():
+            raise SocketError(f"facing gate: the {side} cap has no cloth line to read")
+        hand = hand_of(side)
+        outward = float(area_normal(cap)[0]) * hand
+        rows[side] = {**_hang(points[is_fixed].mean(axis=0), points[~is_fixed].mean(axis=0), hand),
+                      "capVertices": int(is_fixed.sum()), "clothVertices": int((~is_fixed).sum()),
+                      "capOutwardComponent": round(outward, 6),
+                      "capFacesOutward": bool(outward > 0.0)}
+        # Onto the left shoulder, so the two halves can be added rather than averaged.
+        onto_left = np.array([hand, 1.0, 1.0])
+        pooled["plate"].append(points[is_fixed] * onto_left)
+        pooled["cloth"].append(points[~is_fixed] * onto_left)
+    pair = _hang(np.concatenate(pooled["plate"]).mean(axis=0),
+                 np.concatenate(pooled["cloth"]).mean(axis=0), 1.0)
+    return {"rule": "the cap island above and below the cloth line, both halves onto the left",
+            "pair": pair, "perSide": rows}
+
+
+def check_facing(facing: dict, degrees: int) -> None:
+    """A turn that did not put the cloth in front is a turn that fixed nothing."""
+    if not degrees:
+        return
+    ahead = facing["pair"]["clothAheadMetres"]
+    if ahead <= 0.0:
+        raise SocketError(f"yaw gate: after the {degrees} degree turn the cloth still hangs"
+                          f" {abs(ahead) * 1000:.1f} mm behind the cap")
+    for side, row in facing["perSide"].items():
+        if not row["capFacesOutward"]:
+            raise SocketError(f"yaw gate: after the {degrees} degree turn the {side} cap faces"
+                              f" inward, {row['capOutwardComponent']} along its own side")
+
+
 def carry_straps(straps: list[tuple], placement: dict, dressed: geometry.Surface,
                  bare: geometry.Surface) -> dict:
     """Chest straps keep the pose they were drawn in, between the two caps.
@@ -1242,6 +1331,7 @@ def run(args) -> dict:
     islands = normalise._split_islands(objects)
     raw = {"islands": len(islands), "triangles": sum(ring.triangles_of(obj) for obj in islands),
            "vertices": sum(len(obj.data.vertices) for obj in islands)}
+    turn = turn_source(islands, args.yaw)
 
     skin = skin_points(loaded["meshes"] + beneath)
     sided: dict[str, list[tuple]] = {"L": [], "R": []}
@@ -1257,6 +1347,8 @@ def run(args) -> dict:
             raise SocketError(f"pair gate: no island on side {side}")
         # The cap is the largest island; the rest of the side is hardware or cloth.
         entries.sort(key=lambda entry: (-len(entry[1]), entry[0].name))
+    turn["facing"] = source_facing(sided, args.cap)
+    check_facing(turn["facing"], args.yaw)
 
     plans = {side: plan_side(entries, side, contract, landmarks, region[side], normals[side],
                              dressed, bare, skin, clearance, args.cap, args.anchor, args.seat,
@@ -1402,6 +1494,7 @@ def run(args) -> dict:
         "under": worn_under,
         "source": manifest["source"],
         "raw": raw,
+        "turn": turn,
         "authored": None if authored is None else {
             "flags": pair_flags(authored),
             "orientDegrees": rounded_list(authored["L"]["orient"]),
