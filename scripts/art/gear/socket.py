@@ -6,12 +6,22 @@ about where it goes - the top of the shoulder, and the width of the muscle under
 and no opinion at all about its shape. So nothing here deforms a vertex.
 
 The whole rule, per side: the largest island is the cap, everything else on that side
-rides it. The cap keeps the lean it was drawn with, is scaled so it spans the deltoid,
-and is dropped so its own crest - the highest vertex of its inner face - lands on the
-body's shoulder crest plus the slot's clearance. A rigid ICP then turns and slides it
-until its inner face stands one clearance off the skin all along, bounded to 45
-degrees, and a push out along the surface normal frees whatever is still buried. One
-rigid transform per side, applied to every island of that side alike.
+rides it. The cap is scaled so it spans the deltoid, and is dropped so its own crest -
+the highest vertex of its inner face - lands on the body's shoulder crest plus the
+slot's clearance. A rigid ICP then turns and slides it until its inner face stands one
+clearance off the skin all along, bounded to 45 degrees, and a push out along the
+surface normal frees whatever is still buried. One rigid transform per side, applied to
+every island of that side alike.
+
+Which way up the cap starts is measured, not assumed. The orientation a Tripo source is
+drawn in is one guess among several - a cap can come back presenting its opening at the
+camera - and a 45 degree ICP bound cannot walk out of a wrong one. So the whole
+placement is run from a grid of seed poses, yaw about the body's vertical crossed with
+pitch about the horizontal axis across the arm, and the seeds are scored: the mean gap
+of the inner face from its target clearance, plus a millimetre for every percent of the
+plate left inside the bare body, less half a millimetre for every percent of the
+deltoid the plate covers. Lowest score wins, and the two shoulders must agree on a
+seed, because a pair whose sides chose different poses is not a pair.
 
 The tilt this replaced stood the cap up on the upper arm's axis, which is 10 degrees
 from vertical where the cap is drawn leaning 35 degrees down the deltoid, and the
@@ -99,6 +109,19 @@ MIN_REGION_WIDTH = 0.04
 COVERAGE_REACH = 0.06
 RAY_NUDGE = 1e-5
 RAY_HIT_LIMIT = 64
+# The orientations the registration is started from. Quarter turns about the body's
+# vertical answer "is the cap facing the way it was drawn", and the pitch answers "is
+# it presenting its opening rather than its shell"; 45 degrees is the ICP's own bound,
+# so neighbouring seeds can reach each other and the grid has no gap in it.
+SEED_YAW_DEGREES = (0.0, 90.0, 180.0, 270.0)
+SEED_PITCH_DEGREES = (0.0, 45.0, -45.0)
+# A millimetre of residual is worth a percent of the plate buried in the body, and two
+# percent of the deltoid covered. Coverage is what a pauldron is for, penetration is
+# what makes one unshippable, and the residual only says the registration converged.
+SCORE_PENETRATION_PER_PERCENT = 1.0
+SCORE_COVERAGE_PER_PERCENT = 0.5
+UP = np.array([0.0, 1.0, 0.0])
+FORWARD = np.array([0.0, 0.0, 1.0])
 # Runtime (+Y up, +Z forward) from Blender (+Z up, -Y forward), as a linear map.
 TO_BLENDER = np.array([[1.0, 0.0, 0.0], [0.0, 0.0, -1.0], [0.0, 1.0, 0.0]])
 
@@ -148,6 +171,51 @@ def spin_z(degrees: float) -> np.ndarray:
     angle = math.radians(degrees)
     cos, sin = math.cos(angle), math.sin(angle)
     return np.array([[cos, -sin, 0.0], [sin, cos, 0.0], [0.0, 0.0, 1.0]])
+
+
+def turn_about(axis: np.ndarray, degrees: float) -> np.ndarray:
+    """A rotation about any axis, Rodrigues, exactly the identity at zero."""
+    axis = unit(axis)
+    angle = math.radians(degrees)
+    cross = np.array([[0.0, -axis[2], axis[1]],
+                      [axis[2], 0.0, -axis[0]],
+                      [-axis[1], axis[0], 0.0]])
+    return np.eye(3) + math.sin(angle) * cross + (1.0 - math.cos(angle)) * (cross @ cross)
+
+
+def seed_grid(side: str, axis_arm: np.ndarray, mode: str) -> list[dict]:
+    """The poses the registration starts from, named so the two sides share the names.
+
+    Yaw turns the cap about the body's vertical, pitch tips it about the horizontal
+    axis across the arm. Mirroring a rotation negates its axis' X and its angle, and
+    the pitch axis already flips with the arm, so only the yaw is negated on the right:
+    seed y90p45 on one shoulder is then the mirror of y90p45 on the other rather than a
+    different pose wearing the same name, and "did the sides agree" is a name test.
+    """
+    pitch_axis = unit(np.cross(UP, axis_arm))
+    hand = 1.0 if side == "L" else -1.0
+    yaws = SEED_YAW_DEGREES if mode == "grid" else (0.0,)
+    pitches = SEED_PITCH_DEGREES if mode == "grid" else (0.0,)
+    return [{"label": f"y{int(yaw)}p{int(pitch)}", "yawDegrees": yaw, "pitchDegrees": pitch,
+             "pitchAxis": rounded_list(pitch_axis),
+             "rotation": turn_about(UP, hand * yaw) @ turn_about(pitch_axis, pitch)}
+            for yaw in yaws for pitch in pitches]
+
+
+def faces_of(obj) -> list[tuple[int, int, int]]:
+    """One object's triangles as vertex indices, so a moved copy can be a tree."""
+    faces: list[tuple[int, int, int]] = []
+    for face in obj.data.polygons:
+        corners = list(face.vertices)
+        faces.extend((corners[0], corners[at], corners[at + 1])
+                     for at in range(1, len(corners) - 1))
+    return faces
+
+
+def tree_of_points(points: np.ndarray, faces: list) -> BVHTree:
+    """A cap's tree where a seed would put it, without moving the cap to find out."""
+    return BVHTree.FromPolygons([blender_from_runtime(point) for point in points],
+                                faces, all_triangles=True)
 
 
 def tilt_degrees(axis: np.ndarray, target: np.ndarray) -> float:
@@ -517,11 +585,17 @@ def island_rows(entries: list[tuple]) -> list[dict]:
     return rows
 
 
-def place_side(entries: list[tuple], side: str, contract: dict, landmarks: dict,
-               region: np.ndarray, dressed: geometry.Surface, skin: np.ndarray,
-               clearance: float, cap_fraction: float, anchor: str = "crest",
-               seat: str = "p95", stage: str = "push", inner: str = "nearest") -> dict:
-    """Everything the rule does to one shoulder, in one place, rigidly."""
+def plan_side(entries: list[tuple], side: str, contract: dict, landmarks: dict,
+              region: np.ndarray, region_normals: np.ndarray, dressed: geometry.Surface,
+              bare: geometry.Surface, skin: np.ndarray, clearance: float,
+              cap_fraction: float, anchor: str = "crest", seat: str = "p95",
+              stage: str = "push", inner: str = "nearest", seeds: str = "grid") -> dict:
+    """Everything measurable about one shoulder, before a vertex has been moved.
+
+    Split from the commit because the seed the pair wears is a decision about the pair:
+    one shoulder cannot know whether its own best pose is the one the other shoulder
+    found, and a piece whose sides chose different orientations is not a pair.
+    """
     axis_arm, joint = arm_axis(landmarks, contract, side)
     cap, cap_points = entries[0]
     axis, apex, trace = opening_axis(cap_points, -area_normal(cap))
@@ -549,22 +623,17 @@ def place_side(entries: list[tuple], side: str, contract: dict, landmarks: dict,
               "wholeIslandAlongAxisMetres": round(whole, 6),
               "deltoid": muscle, "deltoidFactor": DELTOID_FACTOR, "scale": round(scale, 6),
               "clearanceMetres": clearance, "fixedCapVertices": int(is_fixed.sum())}
-    if anchor == "crest":
-        return {**shared, **_crest_side(entries, side, cap, cap_points, is_fixed, axis, apex,
-                                        scale, dressed, skin, joint, clearance, stage, inner)}
-    return {**shared, **_deltoid_side(entries, side, cap, cap_points, is_fixed, axis, apex, scale,
-                                      axis_arm, joint, region, dressed, clearance, seat, anchor)}
+    plan = {"side": side, "entries": entries, "anchor": anchor, "seat": seat, "stage": stage,
+            "cap": cap, "capPoints": cap_points, "isFixed": is_fixed, "axis": axis,
+            "apex": apex, "scale": scale, "armAxis": axis_arm, "joint": joint,
+            "region": region, "regionNormals": region_normals, "dressed": dressed,
+            "bare": bare, "clearance": clearance, "shared": shared, "seeds": seeds}
+    if anchor != "crest":
+        # The first rule is one pose by construction: it turns the cap onto the arm.
+        plan["trials"] = [{"label": "y0p0", "yawDegrees": 0.0, "pitchDegrees": 0.0,
+                           "rotation": np.eye(3), "score": 0.0}]
+        return plan
 
-
-def rounded_list(values) -> list[float]:
-    return [round(float(value), 6) for value in values]
-
-
-def _crest_side(entries: list[tuple], side: str, cap, cap_points: np.ndarray,
-                is_fixed: np.ndarray, axis: np.ndarray, apex: np.ndarray, scale: float,
-                dressed: geometry.Surface, skin: np.ndarray, joint: np.ndarray,
-                clearance: float, stage: str = "push", inner: str = "nearest") -> dict:
-    """The cap as drawn, dropped on the crest, then registered rigidly onto the skin."""
     normals = normals_of(cap)
     is_inner, inner_rule = inner_face(cap_points, normals, axis, apex, inner)
     # The plate registers; the cloth on the same island hangs off it and would drag
@@ -572,54 +641,220 @@ def _crest_side(entries: list[tuple], side: str, cap, cap_points: np.ndarray,
     is_inner = is_inner & is_fixed
     if int(is_inner.sum()) < MIN_INNER_VERTICES:
         raise SocketError(f"socket gate: the {side} cap has no inner face to register")
+    plan["isInner"], plan["innerRule"] = is_inner, inner_rule
+    plan["normals"] = normals
+    plan["crestBody"] = crest_of(skin, joint, CREST_RADIUS)
+    plan["faces"] = faces_of(cap)
+    plan["trials"] = [{**seed, **_crest_trial(plan, seed["rotation"])}
+                      for seed in seed_grid(side, axis_arm, seeds)]
+    return plan
 
-    scaled = cap_points * scale
-    wall = scaled[is_inner]
+
+def rounded_list(values) -> list[float]:
+    return [round(float(value), 6) for value in values]
+
+
+def _crest_trial(plan: dict, seed: np.ndarray) -> dict:
+    """One seed all the way through: crest anchor, ICP, push out, and what it scored.
+
+    Nothing here touches the scene. A trial is the transform it would apply and the
+    numbers that transform earns, so twelve of them cost twelve registrations rather
+    than twelve rounds of moving a mesh and putting it back.
+    """
+    cap_points, is_inner, scale = plan["capPoints"], plan["isInner"], plan["scale"]
+    clearance, dressed = plan["clearance"], plan["dressed"]
+    wall = (cap_points @ seed.T)[is_inner] * scale
     crest_source = wall[int(np.argmax(wall[:, 1]))]
-    crest_body = crest_of(skin, joint, CREST_RADIUS)
-    seated = crest_body + np.array([0.0, clearance, 0.0]) - crest_source
-
-    registered = (register(wall + seated, normals[is_inner], dressed.every, clearance)
-                  if stage in ("icp", "push")
+    seated = plan["crestBody"] + np.array([0.0, clearance, 0.0]) - crest_source
+    registered = (register(wall + seated, (plan["normals"] @ seed.T)[is_inner],
+                           dressed.every, clearance)
+                  if plan["stage"] in ("icp", "push")
                   else {"rotation": np.eye(3), "translation": np.zeros(3), "placed": wall + seated,
                         "iterations": 0, "bounded": False, "trace": [], "axis": [0.0, 1.0, 0.0],
                         "degrees": 0.0, "residualMeanMillimetres": None,
                         "residualP95Millimetres": None})
     rotation, shift = registered["rotation"], registered["translation"]
     lifted, passes = (push_out(registered["placed"], dressed.every, dressed)
-                      if stage == "push" else (np.zeros(3), []))
-    translation = rotation @ seated + shift + lifted
+                      if plan["stage"] == "push" else (np.zeros(3), []))
+    trial = {"registered": registered, "pushSteps": passes, "lifted": lifted,
+             "seated": seated, "crestSource": crest_source,
+             "total": rotation @ seed, "translation": rotation @ seated + shift + lifted}
+    return {**trial, **_score_trial(plan, trial)}
 
-    apply_similarity([obj for obj, _ in entries], scale, rotation, np.zeros(3), translation)
-    settled = depths(ring.points_of(cap)[is_fixed], dressed)
+
+def _score_trial(plan: dict, trial: dict) -> dict:
+    """What a seed earned: how well it registered, what it buried, what it covers.
+
+    Measured where the trial would leave the cap, on the cap alone, and against the
+    bare body rather than the dressed one - a plate inside the tunic is a plate inside
+    the shoulder, and the tunic is not what holds it off the skin.
+    """
+    placed = plan["capPoints"] @ (plan["scale"] * trial["total"]).T + trial["translation"]
+    gaps = np.array([nearest_surface(plan["dressed"].every, point)[2]
+                     for point in placed[plan["isInner"]]])
+    residual = np.abs(gaps - plan["clearance"])
+    buried = depths(placed[plan["isFixed"]], plan["bare"])
+    deeper = int((buried > CLEARANCE_DEPTH).sum())
+    inside = 100.0 * deeper / max(1, int(plan["isFixed"].sum()))
+    covered = coverage(plan["region"], plan["regionNormals"],
+                       tree_of_points(placed, plan["faces"]), COVERAGE_REACH)
+    score = (float(residual.mean()) * 1000.0 + inside * SCORE_PENETRATION_PER_PERCENT
+             - covered["coveredFraction"] * 100.0 * SCORE_COVERAGE_PER_PERCENT)
     return {
-        "rule": "crest and rigid ICP",
-        "stage": stage,
-        "innerFace": {"vertices": int(is_inner.sum()), "rule": inner_rule,
-                      "ofCapVertices": int(len(cap_points))},
-        "crestSource": rounded_list(crest_source / scale),
-        "crestSourceScaled": rounded_list(crest_source),
-        "crestBody": rounded_list(crest_body),
+        "iterations": trial["registered"]["iterations"],
+        "icpBounded": trial["registered"]["bounded"],
+        "icpDegrees": trial["registered"]["degrees"],
+        "pushMetres": round(float(np.linalg.norm(trial["lifted"])), 6),
+        "residualMeanMillimetres": round(float(residual.mean()) * 1000.0, 4),
+        "residualP95Millimetres": round(float(np.percentile(residual, 95.0)) * 1000.0, 4),
+        "fixedCapDeeperThan2mmBare": deeper,
+        "fixedCapMaxDepthBareMetres": round(float(buried.max(initial=0.0)), 6),
+        "fixedCapInsidePercent": round(inside, 4),
+        "coveredFraction": covered["coveredFraction"],
+        "coveragePercent": round(covered["coveredFraction"] * 100.0, 4),
+        "score": round(score, 4),
+    }
+
+
+def choose_seed(plans: dict) -> dict:
+    """The one seed the pair wears, and whether the two shoulders asked for it.
+
+    Each side is scored on its own, and the sides are named so that agreeing on a name
+    is agreeing on a mirrored pose. When they disagree the better score wins the pair,
+    because a pauldron that faces one way on the left and another on the right is a
+    bug the eye finds before the numbers do.
+    """
+    best = {side: min(plan["trials"], key=lambda row: row["score"]) for side, plan in plans.items()}
+    agreed = len({row["label"] for row in best.values()}) == 1
+    winner = min(best, key=lambda side: best[side]["score"])
+    # What the same seed cost both shoulders together, reported and not obeyed: the rule
+    # is the better single score, and the pair sum is how far that rule reached.
+    pair = {label: round(sum(scores), 4) for label, scores in _pair_scores(plans).items()}
+    return {"chosen": best[winner]["label"], "sidesAgreed": agreed,
+            "bestPerSide": {side: row["label"] for side, row in best.items()},
+            "bestScorePerSide": {side: row["score"] for side, row in best.items()},
+            "decidedBy": "both sides" if agreed else f"the better score, on {winner}",
+            "bestPairSeed": min(pair, key=pair.get), "pairScores": pair}
+
+
+def _pair_scores(plans: dict) -> dict:
+    scores: dict[str, list[float]] = {}
+    for plan in plans.values():
+        for row in plan["trials"]:
+            scores.setdefault(row["label"], []).append(row["score"])
+    return scores
+
+
+def orientation_of(plan: dict, placed: np.ndarray) -> dict:
+    """Where the cap opens and where its cloth hangs, in body axes rather than a picture.
+
+    The opening is the direction from the cap's own inner apex to the middle of its
+    inner face: the way a hollow shell looks. The drape is the cloth's centroid against
+    the plate's. Both are said in the body's own axes so the pose can be read without
+    the render, and so a wrong one is a number rather than an argument.
+    """
+    lateral = np.array([1.0 if plan["side"] == "L" else -1.0, 0.0, 0.0])
+    apex = plan["scale"] * plan["chosen"]["total"] @ plan["apex"] + plan["chosen"]["translation"]
+    opening = unit(placed[plan["isInner"]].mean(axis=0) - apex)
+    skirt = placed[~plan["isFixed"]]
+    hang = (skirt.mean(axis=0) - placed[plan["isFixed"]].mean(axis=0)
+            if len(skirt) else np.zeros(3))
+    return {
+        "openingApex": rounded_list(apex),
+        "opening": rounded_list(opening),
+        "openingDownTheArm": round(float(opening @ plan["armAxis"]), 4),
+        "openingForward": round(float(opening @ FORWARD), 4),
+        "openingOutward": round(float(opening @ lateral), 4),
+        "openingUp": round(float(opening @ UP), 4),
+        "openingFaces": _facing_words(opening, plan["armAxis"], lateral),
+        "drapeVertices": int(len(skirt)),
+        "drapeFromCapCentimetres": [round(float(value) * 100.0, 2) for value in hang],
+        "drapeBehindCentimetres": round(float(-hang @ FORWARD) * 100.0, 2),
+        "drapeOutwardCentimetres": round(float(hang @ lateral) * 100.0, 2),
+        "drapeBelowCentimetres": round(float(-hang @ UP) * 100.0, 2),
+    }
+
+
+def _facing_words(direction: np.ndarray, axis_arm: np.ndarray, lateral: np.ndarray) -> str:
+    """The three body components of a direction, largest first, as words."""
+    named = [("down the arm", float(direction @ axis_arm)), ("up", float(direction @ UP)),
+             ("forward", float(direction @ FORWARD)), ("outward", float(direction @ lateral))]
+    ordered = sorted(named, key=lambda pair: -abs(pair[1]))[:2]
+    return ", ".join(f"{'' if value >= 0 else 'anti-'}{name} {abs(value):.2f}"
+                     for name, value in ordered)
+
+
+def commit_side(plan: dict, label: str) -> dict:
+    """Move the side onto the seed the pair chose, and report where it landed."""
+    if plan["anchor"] != "crest":
+        return {**plan["shared"],
+                **_deltoid_side(plan["entries"], plan["side"], plan["cap"], plan["capPoints"],
+                                plan["isFixed"], plan["axis"], plan["apex"], plan["scale"],
+                                plan["armAxis"], plan["joint"], plan["region"], plan["dressed"],
+                                plan["clearance"], plan["seat"], plan["anchor"])}
+    chosen = next(row for row in plan["trials"] if row["label"] == label)
+    plan["chosen"] = chosen
+    scale, entries = plan["scale"], plan["entries"]
+    registered, lifted = chosen["registered"], chosen["lifted"]
+    apply_similarity([obj for obj, _ in entries], scale, chosen["total"], np.zeros(3),
+                     chosen["translation"])
+    placed = ring.points_of(plan["cap"])
+    settled = depths(placed[plan["isFixed"]], plan["dressed"])
+    return {
+        **plan["shared"],
+        "rule": "multi-start seeds, crest and rigid ICP",
+        "stage": plan["stage"],
+        "innerFace": {"vertices": int(plan["isInner"].sum()), "rule": plan["innerRule"],
+                      "ofCapVertices": int(len(plan["capPoints"]))},
+        "seedRule": (f"yaw {list(SEED_YAW_DEGREES)} by pitch {list(SEED_PITCH_DEGREES)}"
+                     if plan["seeds"] == "grid" else "the source's own orientation only"),
+        "seedChosen": label,
+        "seedYawDegrees": chosen["yawDegrees"],
+        "seedPitchDegrees": chosen["pitchDegrees"],
+        "seedPitchAxis": chosen.get("pitchAxis"),
+        "seedRotationMatrix": [rounded_list(row) for row in chosen["rotation"]],
+        "seedScore": chosen["score"],
+        "seedTable": [_seed_row(row) for row in plan["trials"]],
+        "crestSource": rounded_list(chosen["rotation"].T @ (chosen["crestSource"] / scale)),
+        "crestSourceSeeded": rounded_list(chosen["crestSource"] / scale),
+        "crestSourceScaled": rounded_list(chosen["crestSource"]),
+        "crestBody": rounded_list(plan["crestBody"]),
         "crestRadiusMetres": CREST_RADIUS,
-        "initialTranslation": rounded_list(seated),
+        "initialTranslation": rounded_list(chosen["seated"]),
         "icpIterations": registered["iterations"],
         "icpBounded": registered["bounded"],
         "icpMaxDegrees": ICP_MAX_DEGREES,
         "icpTrace": registered["trace"],
-        "rotationAxis": registered["axis"],
-        "rotationDegrees": registered["degrees"],
-        "rotationMatrix": [rounded_list(row) for row in rotation],
-        "residualMeanMillimetres": registered["residualMeanMillimetres"],
-        "residualP95Millimetres": registered["residualP95Millimetres"],
-        "pushPasses": len(passes),
-        "pushSteps": passes,
+        "icpRotationAxis": registered["axis"],
+        "icpRotationDegrees": registered["degrees"],
+        "rotationAxis": rounded_list(axis_angle(chosen["total"])[0]),
+        "rotationDegrees": round(axis_angle(chosen["total"])[1], 4),
+        "rotationMatrix": [rounded_list(row) for row in chosen["total"]],
+        "residualMeanMillimetres": chosen["residualMeanMillimetres"],
+        "residualP95Millimetres": chosen["residualP95Millimetres"],
+        "pushPasses": len(chosen["pushSteps"]),
+        "pushSteps": chosen["pushSteps"],
         "pushMetres": round(float(np.linalg.norm(lifted)), 6),
         "pushBounded": float(np.linalg.norm(lifted)) >= PUSH_LIMIT - 1e-9,
-        "translation": rounded_list(translation),
-        "crestPlaced": rounded_list(rotation @ (crest_source + seated) + shift + lifted),
+        "translation": rounded_list(chosen["translation"]),
+        "crestPlaced": rounded_list(
+            registered["rotation"] @ (chosen["crestSource"] + chosen["seated"])
+            + registered["translation"] + lifted),
+        "orientation": orientation_of(plan, placed),
         "fixedCapDepthAfterMetres": round(float(settled.max(initial=0.0)), 6),
         "fixedCapDeeperThan2mm": int((settled > CLEARANCE_DEPTH).sum()),
+        "fixedCapDeeperThan2mmBare": chosen["fixedCapDeeperThan2mmBare"],
     }
+
+
+SEED_COLUMNS = ("label", "iterations", "icpDegrees", "icpBounded", "pushMetres",
+                "residualMeanMillimetres", "residualP95Millimetres",
+                "fixedCapDeeperThan2mmBare", "fixedCapMaxDepthBareMetres",
+                "fixedCapInsidePercent", "coveragePercent", "score")
+
+
+def _seed_row(trial: dict) -> dict:
+    return {name: trial[name] for name in SEED_COLUMNS}
 
 
 def _deltoid_side(entries: list[tuple], side: str, cap, cap_points: np.ndarray,
@@ -715,6 +950,25 @@ def _deltoid_side(entries: list[tuple], side: str, cap, cap_points: np.ndarray,
     }
 
 
+def print_seed_tables(plans: dict, choice: dict) -> None:
+    """Every seed on one line per side, because the losers are the evidence."""
+    header = ("seed      iters  icpDeg  push_mm  res_mean  res_p95  inside  maxDepth_mm"
+              "  inside%  cover%   score")
+    for side in ("L", "R"):
+        rows = sorted(plans[side]["trials"], key=lambda row: row["score"])
+        print(f"SEEDS {side} best={choice['bestPerSide'][side]} chosen={choice['chosen']}")
+        print(header)
+        for row in rows:
+            print(f"{row['label']:<9} {row['iterations']:>5}  {row['icpDegrees']:>6.2f}"
+                  f"  {row['pushMetres'] * 1000:>7.1f}  {row['residualMeanMillimetres']:>8.2f}"
+                  f"  {row['residualP95Millimetres']:>7.2f}"
+                  f"  {row['fixedCapDeeperThan2mmBare']:>6}"
+                  f"  {row['fixedCapMaxDepthBareMetres'] * 1000:>11.1f}"
+                  f"  {row['fixedCapInsidePercent']:>7.2f}  {row['coveragePercent']:>6.2f}"
+                  f"  {row['score']:>7.2f}")
+    print("SEEDCHOICE " + json.dumps(choice, separators=(",", ":")))
+
+
 def run(args) -> dict:
     contract = json.loads(CONTRACT_PATH.read_text())
     if args.slot not in contract["slots"]:
@@ -760,11 +1014,17 @@ def run(args) -> dict:
         # The cap is the largest island; the rest of the side is hardware or cloth.
         entries.sort(key=lambda entry: (-len(entry[1]), entry[0].name))
 
+    plans = {side: plan_side(entries, side, contract, landmarks, region[side], normals[side],
+                             dressed, bare, skin, clearance, args.cap, args.anchor, args.seat,
+                             args.register, args.inner, args.seeds)
+             for side, entries in sided.items()}
+    choice = choose_seed(plans)
+    print_seed_tables(plans, choice)
+
     placement = {}
     for side, entries in sided.items():
-        placement[side] = place_side(entries, side, contract, landmarks, region[side], dressed,
-                                     skin, clearance, args.cap, args.anchor, args.seat,
-                                     args.register, args.inner)
+        placement[side] = commit_side(plans[side], choice["chosen"])
+        placement[side]["seedChoice"] = choice
         placement[side]["islands"] = island_rows(entries)
         # Measured before the join, which is what makes the cap indistinguishable from
         # the hardware and the cloth welded to it. Nothing below moves a vertex again.
@@ -881,6 +1141,15 @@ def run(args) -> dict:
         "under": worn_under,
         "source": manifest["source"],
         "raw": raw,
+        "seeds": {"mode": args.seeds, "yawDegrees": list(SEED_YAW_DEGREES),
+                  "pitchDegrees": list(SEED_PITCH_DEGREES),
+                  "scoreRule": ("mean inner-face residual in millimetres"
+                                f" + {SCORE_PENETRATION_PER_PERCENT} per percent of the fixed cap"
+                                f" deeper than {CLEARANCE_DEPTH * 1000:.0f} mm in the bare body"
+                                f" - {SCORE_COVERAGE_PER_PERCENT} per percent of deltoid covered"),
+                  **choice,
+                  "table": {side: [_seed_row(row) for row in plans[side]["trials"]]
+                            for side in ("L", "R")}},
         "placement": placement,
         "chestStraps": strap_report,
         "weights": weight_report,
@@ -926,6 +1195,7 @@ def parse(argv: list[str]):
     parser.add_argument("--seat", choices=("none", "clear", "p95"), default="p95")
     parser.add_argument("--register", choices=("crest", "icp", "push"), default="push")
     parser.add_argument("--inner", choices=("normals", "nearest"), default="nearest")
+    parser.add_argument("--seeds", choices=("grid", "none"), default="grid")
     parser.add_argument("--drape", action="append", default=[])
     parser.add_argument("--outdir", required=True)
     return parser.parse_args(argv)

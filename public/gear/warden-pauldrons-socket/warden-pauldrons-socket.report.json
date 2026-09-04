@@ -18,6 +18,389 @@
     "triangles": 9615,
     "vertices": 5404
   },
+  "seeds": {
+    "mode": "grid",
+    "yawDegrees": [
+      0.0,
+      90.0,
+      180.0,
+      270.0
+    ],
+    "pitchDegrees": [
+      0.0,
+      45.0,
+      -45.0
+    ],
+    "scoreRule": "mean inner-face residual in millimetres + 1.0 per percent of the fixed cap deeper than 2 mm in the bare body - 0.5 per percent of deltoid covered",
+    "chosen": "y90p45",
+    "sidesAgreed": false,
+    "bestPerSide": {
+      "L": "y90p45",
+      "R": "y0p-45"
+    },
+    "bestScorePerSide": {
+      "L": 4.1497,
+      "R": 10.4704
+    },
+    "decidedBy": "the better score, on L",
+    "bestPairSeed": "y0p-45",
+    "pairScores": {
+      "y0p0": 23.5948,
+      "y0p45": 37.9603,
+      "y0p-45": 19.6066,
+      "y90p0": 29.265,
+      "y90p45": 25.7491,
+      "y90p-45": 50.263,
+      "y180p0": 60.3433,
+      "y180p45": 84.245,
+      "y180p-45": 54.0645,
+      "y270p0": 66.4253,
+      "y270p45": 48.2179,
+      "y270p-45": 70.5206
+    },
+    "table": {
+      "L": [
+        {
+          "label": "y0p0",
+          "iterations": 2,
+          "icpDegrees": 11.287,
+          "icpBounded": false,
+          "pushMetres": 0.022935,
+          "residualMeanMillimetres": 19.8191,
+          "residualP95Millimetres": 31.0847,
+          "fixedCapDeeperThan2mmBare": 27,
+          "fixedCapMaxDepthBareMetres": 0.021117,
+          "fixedCapInsidePercent": 3.466,
+          "coveragePercent": 22.3881,
+          "score": 12.0911
+        },
+        {
+          "label": "y0p45",
+          "iterations": 3,
+          "icpDegrees": 42.4922,
+          "icpBounded": true,
+          "pushMetres": 0.023666,
+          "residualMeanMillimetres": 13.5946,
+          "residualP95Millimetres": 25.1094,
+          "fixedCapDeeperThan2mmBare": 71,
+          "fixedCapMaxDepthBareMetres": 0.031883,
+          "fixedCapInsidePercent": 9.1142,
+          "coveragePercent": 20.1493,
+          "score": 12.6342
+        },
+        {
+          "label": "y0p-45",
+          "iterations": 4,
+          "icpDegrees": 28.9605,
+          "icpBounded": false,
+          "pushMetres": 0.017506,
+          "residualMeanMillimetres": 16.9447,
+          "residualP95Millimetres": 28.1189,
+          "fixedCapDeeperThan2mmBare": 38,
+          "fixedCapMaxDepthBareMetres": 0.03175,
+          "fixedCapInsidePercent": 4.878,
+          "coveragePercent": 25.3731,
+          "score": 9.1362
+        },
+        {
+          "label": "y90p0",
+          "iterations": 4,
+          "icpDegrees": 17.3851,
+          "icpBounded": false,
+          "pushMetres": 0.007982,
+          "residualMeanMillimetres": 9.2569,
+          "residualP95Millimetres": 17.6269,
+          "fixedCapDeeperThan2mmBare": 97,
+          "fixedCapMaxDepthBareMetres": 0.025357,
+          "fixedCapInsidePercent": 12.4519,
+          "coveragePercent": 23.1343,
+          "score": 10.1416
+        },
+        {
+          "label": "y90p45",
+          "iterations": 3,
+          "icpDegrees": 44.6607,
+          "icpBounded": false,
+          "pushMetres": 0.017024,
+          "residualMeanMillimetres": 16.3913,
+          "residualP95Millimetres": 28.1648,
+          "fixedCapDeeperThan2mmBare": 18,
+          "fixedCapMaxDepthBareMetres": 0.01095,
+          "fixedCapInsidePercent": 2.3107,
+          "coveragePercent": 29.1045,
+          "score": 4.1497
+        },
+        {
+          "label": "y90p-45",
+          "iterations": 3,
+          "icpDegrees": 12.592,
+          "icpBounded": false,
+          "pushMetres": 0.019632,
+          "residualMeanMillimetres": 16.1381,
+          "residualP95Millimetres": 27.9607,
+          "fixedCapDeeperThan2mmBare": 107,
+          "fixedCapMaxDepthBareMetres": 0.027624,
+          "fixedCapInsidePercent": 13.7356,
+          "coveragePercent": 14.9254,
+          "score": 22.411
+        },
+        {
+          "label": "y180p0",
+          "iterations": 4,
+          "icpDegrees": 41.9431,
+          "icpBounded": true,
+          "pushMetres": 0.03,
+          "residualMeanMillimetres": 20.0433,
+          "residualP95Millimetres": 34.6851,
+          "fixedCapDeeperThan2mmBare": 93,
+          "fixedCapMaxDepthBareMetres": 0.027031,
+          "fixedCapInsidePercent": 11.9384,
+          "coveragePercent": 4.4776,
+          "score": 29.7429
+        },
+        {
+          "label": "y180p45",
+          "iterations": 3,
+          "icpDegrees": 32.376,
+          "icpBounded": false,
+          "pushMetres": 0.029999,
+          "residualMeanMillimetres": 25.8739,
+          "residualP95Millimetres": 61.2566,
+          "fixedCapDeeperThan2mmBare": 128,
+          "fixedCapMaxDepthBareMetres": 0.043553,
+          "fixedCapInsidePercent": 16.4313,
+          "coveragePercent": 1.4925,
+          "score": 41.559
+        },
+        {
+          "label": "y180p-45",
+          "iterations": 4,
+          "icpDegrees": 17.3908,
+          "icpBounded": false,
+          "pushMetres": 0.022031,
+          "residualMeanMillimetres": 17.7015,
+          "residualP95Millimetres": 30.6379,
+          "fixedCapDeeperThan2mmBare": 67,
+          "fixedCapMaxDepthBareMetres": 0.031487,
+          "fixedCapInsidePercent": 8.6008,
+          "coveragePercent": 0.0,
+          "score": 26.3023
+        },
+        {
+          "label": "y270p0",
+          "iterations": 4,
+          "icpDegrees": 31.5576,
+          "icpBounded": false,
+          "pushMetres": 0.03,
+          "residualMeanMillimetres": 24.4305,
+          "residualP95Millimetres": 37.6723,
+          "fixedCapDeeperThan2mmBare": 101,
+          "fixedCapMaxDepthBareMetres": 0.047168,
+          "fixedCapInsidePercent": 12.9653,
+          "coveragePercent": 2.2388,
+          "score": 36.2764
+        },
+        {
+          "label": "y270p45",
+          "iterations": 4,
+          "icpDegrees": 42.854,
+          "icpBounded": true,
+          "pushMetres": 0.020981,
+          "residualMeanMillimetres": 15.917,
+          "residualP95Millimetres": 28.0629,
+          "fixedCapDeeperThan2mmBare": 117,
+          "fixedCapMaxDepthBareMetres": 0.042947,
+          "fixedCapInsidePercent": 15.0193,
+          "coveragePercent": 11.9403,
+          "score": 24.9661
+        },
+        {
+          "label": "y270p-45",
+          "iterations": 5,
+          "icpDegrees": 34.1155,
+          "icpBounded": false,
+          "pushMetres": 0.021371,
+          "residualMeanMillimetres": 16.9781,
+          "residualP95Millimetres": 29.3014,
+          "fixedCapDeeperThan2mmBare": 153,
+          "fixedCapMaxDepthBareMetres": 0.042081,
+          "fixedCapInsidePercent": 19.6406,
+          "coveragePercent": 0.0,
+          "score": 36.6187
+        }
+      ],
+      "R": [
+        {
+          "label": "y0p0",
+          "iterations": 2,
+          "icpDegrees": 17.3587,
+          "icpBounded": false,
+          "pushMetres": 0.011458,
+          "residualMeanMillimetres": 11.0049,
+          "residualP95Millimetres": 21.0814,
+          "fixedCapDeeperThan2mmBare": 44,
+          "fixedCapMaxDepthBareMetres": 0.023783,
+          "fixedCapInsidePercent": 6.3128,
+          "coveragePercent": 11.6279,
+          "score": 11.5037
+        },
+        {
+          "label": "y0p45",
+          "iterations": 2,
+          "icpDegrees": 26.4408,
+          "icpBounded": true,
+          "pushMetres": 0.023313,
+          "residualMeanMillimetres": 13.5914,
+          "residualP95Millimetres": 27.6251,
+          "fixedCapDeeperThan2mmBare": 98,
+          "fixedCapMaxDepthBareMetres": 0.0282,
+          "fixedCapInsidePercent": 14.0603,
+          "coveragePercent": 4.6512,
+          "score": 25.3261
+        },
+        {
+          "label": "y0p-45",
+          "iterations": 7,
+          "icpDegrees": 35.6515,
+          "icpBounded": false,
+          "pushMetres": 0.007124,
+          "residualMeanMillimetres": 11.4063,
+          "residualP95Millimetres": 21.3499,
+          "fixedCapDeeperThan2mmBare": 34,
+          "fixedCapMaxDepthBareMetres": 0.020117,
+          "fixedCapInsidePercent": 4.878,
+          "coveragePercent": 11.6279,
+          "score": 10.4704
+        },
+        {
+          "label": "y90p0",
+          "iterations": 4,
+          "icpDegrees": 12.0785,
+          "icpBounded": false,
+          "pushMetres": 0.012081,
+          "residualMeanMillimetres": 10.9177,
+          "residualP95Millimetres": 20.2709,
+          "fixedCapDeeperThan2mmBare": 68,
+          "fixedCapMaxDepthBareMetres": 0.027901,
+          "fixedCapInsidePercent": 9.7561,
+          "coveragePercent": 3.1008,
+          "score": 19.1234
+        },
+        {
+          "label": "y90p45",
+          "iterations": 5,
+          "icpDegrees": 32.7726,
+          "icpBounded": false,
+          "pushMetres": 0.018443,
+          "residualMeanMillimetres": 17.5972,
+          "residualP95Millimetres": 27.2136,
+          "fixedCapDeeperThan2mmBare": 36,
+          "fixedCapMaxDepthBareMetres": 0.022083,
+          "fixedCapInsidePercent": 5.165,
+          "coveragePercent": 2.3256,
+          "score": 21.5994
+        },
+        {
+          "label": "y90p-45",
+          "iterations": 4,
+          "icpDegrees": 17.5013,
+          "icpBounded": false,
+          "pushMetres": 0.015362,
+          "residualMeanMillimetres": 11.9266,
+          "residualP95Millimetres": 24.4511,
+          "fixedCapDeeperThan2mmBare": 111,
+          "fixedCapMaxDepthBareMetres": 0.027644,
+          "fixedCapInsidePercent": 15.9254,
+          "coveragePercent": 0.0,
+          "score": 27.852
+        },
+        {
+          "label": "y180p0",
+          "iterations": 4,
+          "icpDegrees": 39.0386,
+          "icpBounded": true,
+          "pushMetres": 0.03,
+          "residualMeanMillimetres": 18.4203,
+          "residualP95Millimetres": 33.3555,
+          "fixedCapDeeperThan2mmBare": 93,
+          "fixedCapMaxDepthBareMetres": 0.037593,
+          "fixedCapInsidePercent": 13.3429,
+          "coveragePercent": 2.3256,
+          "score": 30.6004
+        },
+        {
+          "label": "y180p45",
+          "iterations": 3,
+          "icpDegrees": 29.575,
+          "icpBounded": true,
+          "pushMetres": 0.03,
+          "residualMeanMillimetres": 24.0925,
+          "residualP95Millimetres": 48.7776,
+          "fixedCapDeeperThan2mmBare": 135,
+          "fixedCapMaxDepthBareMetres": 0.042715,
+          "fixedCapInsidePercent": 19.3687,
+          "coveragePercent": 1.5504,
+          "score": 42.686
+        },
+        {
+          "label": "y180p-45",
+          "iterations": 4,
+          "icpDegrees": 9.7561,
+          "icpBounded": false,
+          "pushMetres": 0.026786,
+          "residualMeanMillimetres": 21.306,
+          "residualP95Millimetres": 34.5089,
+          "fixedCapDeeperThan2mmBare": 45,
+          "fixedCapMaxDepthBareMetres": 0.029981,
+          "fixedCapInsidePercent": 6.4562,
+          "coveragePercent": 0.0,
+          "score": 27.7622
+        },
+        {
+          "label": "y270p0",
+          "iterations": 6,
+          "icpDegrees": 27.6821,
+          "icpBounded": false,
+          "pushMetres": 0.012874,
+          "residualMeanMillimetres": 12.2299,
+          "residualP95Millimetres": 24.8542,
+          "fixedCapDeeperThan2mmBare": 133,
+          "fixedCapMaxDepthBareMetres": 0.052105,
+          "fixedCapInsidePercent": 19.0818,
+          "coveragePercent": 2.3256,
+          "score": 30.1489
+        },
+        {
+          "label": "y270p45",
+          "iterations": 2,
+          "icpDegrees": 39.5875,
+          "icpBounded": false,
+          "pushMetres": 0.022779,
+          "residualMeanMillimetres": 13.5557,
+          "residualP95Millimetres": 25.6887,
+          "fixedCapDeeperThan2mmBare": 100,
+          "fixedCapMaxDepthBareMetres": 0.049889,
+          "fixedCapInsidePercent": 14.3472,
+          "coveragePercent": 9.3023,
+          "score": 23.2518
+        },
+        {
+          "label": "y270p-45",
+          "iterations": 6,
+          "icpDegrees": 29.2201,
+          "icpBounded": false,
+          "pushMetres": 0.018708,
+          "residualMeanMillimetres": 15.8244,
+          "residualP95Millimetres": 25.7691,
+          "fixedCapDeeperThan2mmBare": 126,
+          "fixedCapMaxDepthBareMetres": 0.045577,
+          "fixedCapInsidePercent": 18.0775,
+          "coveragePercent": 0.0,
+          "score": 33.9019
+        }
+      ]
+    }
+  },
   "placement": {
     "L": {
       "side": "L",
@@ -94,22 +477,224 @@
       "scale": 0.497671,
       "clearanceMetres": 0.016,
       "fixedCapVertices": 779,
-      "rule": "crest and rigid ICP",
+      "rule": "multi-start seeds, crest and rigid ICP",
       "stage": "push",
       "innerFace": {
         "vertices": 429,
         "rule": "the 40% of the cap nearest its own axis",
         "ofCapVertices": 1875
       },
+      "seedRule": "yaw [0.0, 90.0, 180.0, 270.0] by pitch [0.0, 45.0, -45.0]",
+      "seedChosen": "y90p45",
+      "seedYawDegrees": 90.0,
+      "seedPitchDegrees": 45.0,
+      "seedPitchAxis": [
+        -0.073914,
+        0.0,
+        -0.997265
+      ],
+      "seedRotationMatrix": [
+        [
+          0.02159,
+          -0.052265,
+          0.9984
+        ],
+        [
+          -0.705173,
+          0.707107,
+          0.052265
+        ],
+        [
+          -0.708707,
+          -0.705173,
+          -0.02159
+        ]
+      ],
+      "seedScore": 4.1497,
+      "seedTable": [
+        {
+          "label": "y0p0",
+          "iterations": 2,
+          "icpDegrees": 11.287,
+          "icpBounded": false,
+          "pushMetres": 0.022935,
+          "residualMeanMillimetres": 19.8191,
+          "residualP95Millimetres": 31.0847,
+          "fixedCapDeeperThan2mmBare": 27,
+          "fixedCapMaxDepthBareMetres": 0.021117,
+          "fixedCapInsidePercent": 3.466,
+          "coveragePercent": 22.3881,
+          "score": 12.0911
+        },
+        {
+          "label": "y0p45",
+          "iterations": 3,
+          "icpDegrees": 42.4922,
+          "icpBounded": true,
+          "pushMetres": 0.023666,
+          "residualMeanMillimetres": 13.5946,
+          "residualP95Millimetres": 25.1094,
+          "fixedCapDeeperThan2mmBare": 71,
+          "fixedCapMaxDepthBareMetres": 0.031883,
+          "fixedCapInsidePercent": 9.1142,
+          "coveragePercent": 20.1493,
+          "score": 12.6342
+        },
+        {
+          "label": "y0p-45",
+          "iterations": 4,
+          "icpDegrees": 28.9605,
+          "icpBounded": false,
+          "pushMetres": 0.017506,
+          "residualMeanMillimetres": 16.9447,
+          "residualP95Millimetres": 28.1189,
+          "fixedCapDeeperThan2mmBare": 38,
+          "fixedCapMaxDepthBareMetres": 0.03175,
+          "fixedCapInsidePercent": 4.878,
+          "coveragePercent": 25.3731,
+          "score": 9.1362
+        },
+        {
+          "label": "y90p0",
+          "iterations": 4,
+          "icpDegrees": 17.3851,
+          "icpBounded": false,
+          "pushMetres": 0.007982,
+          "residualMeanMillimetres": 9.2569,
+          "residualP95Millimetres": 17.6269,
+          "fixedCapDeeperThan2mmBare": 97,
+          "fixedCapMaxDepthBareMetres": 0.025357,
+          "fixedCapInsidePercent": 12.4519,
+          "coveragePercent": 23.1343,
+          "score": 10.1416
+        },
+        {
+          "label": "y90p45",
+          "iterations": 3,
+          "icpDegrees": 44.6607,
+          "icpBounded": false,
+          "pushMetres": 0.017024,
+          "residualMeanMillimetres": 16.3913,
+          "residualP95Millimetres": 28.1648,
+          "fixedCapDeeperThan2mmBare": 18,
+          "fixedCapMaxDepthBareMetres": 0.01095,
+          "fixedCapInsidePercent": 2.3107,
+          "coveragePercent": 29.1045,
+          "score": 4.1497
+        },
+        {
+          "label": "y90p-45",
+          "iterations": 3,
+          "icpDegrees": 12.592,
+          "icpBounded": false,
+          "pushMetres": 0.019632,
+          "residualMeanMillimetres": 16.1381,
+          "residualP95Millimetres": 27.9607,
+          "fixedCapDeeperThan2mmBare": 107,
+          "fixedCapMaxDepthBareMetres": 0.027624,
+          "fixedCapInsidePercent": 13.7356,
+          "coveragePercent": 14.9254,
+          "score": 22.411
+        },
+        {
+          "label": "y180p0",
+          "iterations": 4,
+          "icpDegrees": 41.9431,
+          "icpBounded": true,
+          "pushMetres": 0.03,
+          "residualMeanMillimetres": 20.0433,
+          "residualP95Millimetres": 34.6851,
+          "fixedCapDeeperThan2mmBare": 93,
+          "fixedCapMaxDepthBareMetres": 0.027031,
+          "fixedCapInsidePercent": 11.9384,
+          "coveragePercent": 4.4776,
+          "score": 29.7429
+        },
+        {
+          "label": "y180p45",
+          "iterations": 3,
+          "icpDegrees": 32.376,
+          "icpBounded": false,
+          "pushMetres": 0.029999,
+          "residualMeanMillimetres": 25.8739,
+          "residualP95Millimetres": 61.2566,
+          "fixedCapDeeperThan2mmBare": 128,
+          "fixedCapMaxDepthBareMetres": 0.043553,
+          "fixedCapInsidePercent": 16.4313,
+          "coveragePercent": 1.4925,
+          "score": 41.559
+        },
+        {
+          "label": "y180p-45",
+          "iterations": 4,
+          "icpDegrees": 17.3908,
+          "icpBounded": false,
+          "pushMetres": 0.022031,
+          "residualMeanMillimetres": 17.7015,
+          "residualP95Millimetres": 30.6379,
+          "fixedCapDeeperThan2mmBare": 67,
+          "fixedCapMaxDepthBareMetres": 0.031487,
+          "fixedCapInsidePercent": 8.6008,
+          "coveragePercent": 0.0,
+          "score": 26.3023
+        },
+        {
+          "label": "y270p0",
+          "iterations": 4,
+          "icpDegrees": 31.5576,
+          "icpBounded": false,
+          "pushMetres": 0.03,
+          "residualMeanMillimetres": 24.4305,
+          "residualP95Millimetres": 37.6723,
+          "fixedCapDeeperThan2mmBare": 101,
+          "fixedCapMaxDepthBareMetres": 0.047168,
+          "fixedCapInsidePercent": 12.9653,
+          "coveragePercent": 2.2388,
+          "score": 36.2764
+        },
+        {
+          "label": "y270p45",
+          "iterations": 4,
+          "icpDegrees": 42.854,
+          "icpBounded": true,
+          "pushMetres": 0.020981,
+          "residualMeanMillimetres": 15.917,
+          "residualP95Millimetres": 28.0629,
+          "fixedCapDeeperThan2mmBare": 117,
+          "fixedCapMaxDepthBareMetres": 0.042947,
+          "fixedCapInsidePercent": 15.0193,
+          "coveragePercent": 11.9403,
+          "score": 24.9661
+        },
+        {
+          "label": "y270p-45",
+          "iterations": 5,
+          "icpDegrees": 34.1155,
+          "icpBounded": false,
+          "pushMetres": 0.021371,
+          "residualMeanMillimetres": 16.9781,
+          "residualP95Millimetres": 29.3014,
+          "fixedCapDeeperThan2mmBare": 153,
+          "fixedCapMaxDepthBareMetres": 0.042081,
+          "fixedCapInsidePercent": 19.6406,
+          "coveragePercent": 0.0,
+          "score": 36.6187
+        }
+      ],
       "crestSource": [
-        0.288818,
-        0.480957,
-        -0.059814
+        0.211182,
+        0.447754,
+        0.004639
+      ],
+      "crestSourceSeeded": [
+        -0.014211,
+        0.167933,
+        -0.46551
       ],
       "crestSourceScaled": [
-        0.143736,
-        0.239358,
-        -0.029768
+        -0.007073,
+        0.083575,
+        -0.231671
       ],
       "crestBody": [
         0.149462,
@@ -118,99 +703,166 @@
       ],
       "crestRadiusMetres": 0.04,
       "initialTranslation": [
-        0.005726,
-        1.300141,
-        -0.030677
+        0.156535,
+        1.455924,
+        0.171226
       ],
-      "icpIterations": 2,
+      "icpIterations": 3,
       "icpBounded": false,
       "icpMaxDegrees": 45.0,
       "icpTrace": [
         {
-          "pairs": 108,
-          "frontFacingPairs": 44,
-          "meanResidualMillimetres": 6.4258,
-          "rotationDegrees": 7.4556
+          "pairs": 78,
+          "frontFacingPairs": 14,
+          "meanResidualMillimetres": 8.2405,
+          "rotationDegrees": 32.6485
         },
         {
           "pairs": 114,
-          "frontFacingPairs": 87,
-          "meanResidualMillimetres": 6.4834,
-          "rotationDegrees": 11.287
+          "frontFacingPairs": 75,
+          "meanResidualMillimetres": 5.8744,
+          "rotationDegrees": 41.9274
+        },
+        {
+          "pairs": 125,
+          "frontFacingPairs": 110,
+          "meanResidualMillimetres": 5.8666,
+          "rotationDegrees": 44.6607
         }
       ],
-      "rotationAxis": [
-        -0.321726,
-        0.057173,
-        0.945105
+      "icpRotationAxis": [
+        0.894489,
+        -0.315076,
+        0.317201
       ],
-      "rotationDegrees": 11.287,
+      "icpRotationDegrees": 44.6607,
+      "rotationAxis": [
+        -0.162292,
+        0.984933,
+        0.059733
+      ],
+      "rotationDegrees": 71.589,
       "rotationMatrix": [
         [
-          0.982661,
-          -0.185335,
-          0.005309
+          0.333851,
+          -0.166038,
+          0.927887
         ],
         [
-          0.184624,
-          0.980722,
-          0.064015
+          -0.052687,
+          0.979539,
+          0.194237
         ],
         [
-          -0.017071,
-          -0.061924,
-          0.997935
+          -0.941152,
+          -0.113733,
+          0.318272
         ]
       ],
-      "residualMeanMillimetres": 6.4834,
-      "residualP95Millimetres": 14.437,
+      "residualMeanMillimetres": 16.3913,
+      "residualP95Millimetres": 28.1648,
       "pushPasses": 3,
       "pushSteps": [
         {
-          "pushMetres": 0.007894,
+          "pushMetres": 0.005851,
           "alongNormal": [
-            0.793575,
-            0.569619,
-            0.213943
+            -0.142185,
+            0.245742,
+            -0.95885
           ],
-          "depthBeforeMetres": 0.004894,
-          "depthAfterMetres": 0.005266
+          "depthBeforeMetres": 0.002851,
+          "depthAfterMetres": 0.005268
         },
         {
-          "pushMetres": 0.008266,
+          "pushMetres": 0.008268,
           "alongNormal": [
-            0.124775,
-            0.855708,
-            0.50219
+            0.295449,
+            0.953117,
+            -0.065414
           ],
-          "depthBeforeMetres": 0.005266,
-          "depthAfterMetres": 0.005241
+          "depthBeforeMetres": 0.005268,
+          "depthAfterMetres": 0.003297
         },
         {
-          "pushMetres": 0.008241,
+          "pushMetres": 0.006297,
           "alongNormal": [
-            0.674755,
-            0.702172,
-            0.227288
+            0.295449,
+            0.953117,
+            -0.065414
           ],
-          "depthBeforeMetres": 0.005241,
-          "depthAfterMetres": 0.0
+          "depthBeforeMetres": 0.003297,
+          "depthAfterMetres": 0.002564
         }
       ],
-      "pushMetres": 0.022935,
+      "pushMetres": 0.017024,
       "pushBounded": false,
       "translation": [
-        0.068394,
-        1.304517,
-        -0.002348
+        0.148783,
+        1.34241,
+        0.057417
       ],
       "crestPlaced": [
-        0.165119,
-        1.563892,
-        -0.04933
+        0.149014,
+        1.555596,
+        -0.066106
       ],
-      "fixedCapDepthAfterMetres": 0.005019,
-      "fixedCapDeeperThan2mm": 6,
+      "orientation": {
+        "openingApex": [
+          0.13566,
+          1.556433,
+          -0.105296
+        ],
+        "opening": [
+          0.575044,
+          -0.627995,
+          -0.524354
+        ],
+        "openingDownTheArm": 0.8122,
+        "openingForward": -0.5244,
+        "openingOutward": 0.575,
+        "openingUp": -0.628,
+        "openingFaces": "down the arm 0.81, anti-up 0.63",
+        "drapeVertices": 1096,
+        "drapeFromCapCentimetres": [
+          2.03,
+          -8.93,
+          -0.37
+        ],
+        "drapeBehindCentimetres": 0.37,
+        "drapeOutwardCentimetres": 2.03,
+        "drapeBelowCentimetres": 8.93
+      },
+      "fixedCapDepthAfterMetres": 0.005666,
+      "fixedCapDeeperThan2mm": 14,
+      "fixedCapDeeperThan2mmBare": 18,
+      "seedChoice": {
+        "chosen": "y90p45",
+        "sidesAgreed": false,
+        "bestPerSide": {
+          "L": "y90p45",
+          "R": "y0p-45"
+        },
+        "bestScorePerSide": {
+          "L": 4.1497,
+          "R": 10.4704
+        },
+        "decidedBy": "the better score, on L",
+        "bestPairSeed": "y0p-45",
+        "pairScores": {
+          "y0p0": 23.5948,
+          "y0p45": 37.9603,
+          "y0p-45": 19.6066,
+          "y90p0": 29.265,
+          "y90p45": 25.7491,
+          "y90p-45": 50.263,
+          "y180p0": 60.3433,
+          "y180p45": 84.245,
+          "y180p-45": 54.0645,
+          "y270p0": 66.4253,
+          "y270p45": 48.2179,
+          "y270p-45": 70.5206
+        }
+      },
       "islands": [
         {
           "island": 0,
@@ -223,9 +875,9 @@
             -0.011289
           ],
           "centroid": [
-            0.212491,
-            1.464329,
-            -0.018996
+            0.179028,
+            1.460664,
+            -0.120578
           ]
         },
         {
@@ -239,9 +891,9 @@
             0.092986
           ],
           "centroid": [
-            0.243716,
-            1.370658,
-            0.038849
+            0.248129,
+            1.370928,
+            -0.10422
           ]
         },
         {
@@ -255,9 +907,9 @@
             0.016805
           ],
           "centroid": [
-            0.208416,
-            1.409588,
-            -0.001452
+            0.196159,
+            1.411227,
+            -0.096423
           ]
         },
         {
@@ -271,9 +923,9 @@
             0.114979
           ],
           "centroid": [
-            0.169861,
-            1.425603,
-            0.046685
+            0.226259,
+            1.442065,
+            -0.049484
           ]
         },
         {
@@ -287,9 +939,9 @@
             0.05779
           ],
           "centroid": [
-            0.227648,
-            1.387677,
-            0.02029
+            0.224303,
+            1.388567,
+            -0.100558
           ]
         },
         {
@@ -303,9 +955,9 @@
             0.186358
           ],
           "centroid": [
-            0.222402,
-            1.391267,
-            0.084205
+            0.281721,
+            1.401814,
+            -0.075
           ]
         },
         {
@@ -319,9 +971,9 @@
             0.16915
           ],
           "centroid": [
-            0.210209,
-            1.424513,
-            0.073556
+            0.265986,
+            1.435246,
+            -0.076438
           ]
         },
         {
@@ -335,9 +987,9 @@
             0.1398
           ],
           "centroid": [
-            0.178322,
-            1.455152,
-            0.057123
+            0.237815,
+            1.469966,
+            -0.061389
           ]
         },
         {
@@ -351,9 +1003,9 @@
             0.045456
           ],
           "centroid": [
-            0.28718,
-            1.386433,
-            0.013903
+            0.240067,
+            1.372684,
+            -0.156107
           ]
         },
         {
@@ -367,9 +1019,9 @@
             0.015777
           ],
           "centroid": [
-            0.27747,
-            1.42457,
-            -0.003293
+            0.218939,
+            1.409373,
+            -0.163311
           ]
         },
         {
@@ -383,9 +1035,9 @@
             -0.024777
           ],
           "centroid": [
-            0.267387,
-            1.459375,
-            -0.025696
+            0.192969,
+            1.442241,
+            -0.171069
           ]
         },
         {
@@ -399,27 +1051,27 @@
             0.102901
           ],
           "centroid": [
-            0.16462,
-            1.445265,
-            0.039429
+            0.216778,
+            1.461251,
+            -0.052439
           ]
         }
       ],
       "capClearance": {
         "vertices": 1875,
-        "maxDepthDressedMetres": 0.031509,
-        "deeperThan2mmDressed": 31,
-        "maxDepthBareMetres": 0.05562,
+        "maxDepthDressedMetres": 0.052556,
+        "deeperThan2mmDressed": 60,
+        "maxDepthBareMetres": 0.064307,
         "deeperThan2mmBare": 305,
-        "anchorToTargetMillimetres": 43.563,
-        "anchorToBareMillimetres": 55.611
+        "anchorToTargetMillimetres": 29.335,
+        "anchorToBareMillimetres": 39.977
       },
       "coverage": {
         "regionVertices": 134,
-        "coveredVertices": 30,
-        "coveredFraction": 0.223881,
+        "coveredVertices": 39,
+        "coveredFraction": 0.291045,
         "reachMetres": 0.06,
-        "medianGapMetres": 0.030004
+        "medianGapMetres": 0.035833
       }
     },
     "R": {
@@ -497,22 +1149,224 @@
       "scale": 0.491343,
       "clearanceMetres": 0.016,
       "fixedCapVertices": 697,
-      "rule": "crest and rigid ICP",
+      "rule": "multi-start seeds, crest and rigid ICP",
       "stage": "push",
       "innerFace": {
         "vertices": 316,
         "rule": "the 40% of the cap nearest its own axis",
         "ofCapVertices": 1526
       },
+      "seedRule": "yaw [0.0, 90.0, 180.0, 270.0] by pitch [0.0, 45.0, -45.0]",
+      "seedChosen": "y90p45",
+      "seedYawDegrees": 90.0,
+      "seedPitchDegrees": 45.0,
+      "seedPitchAxis": [
+        -0.073914,
+        0.0,
+        0.997265
+      ],
+      "seedRotationMatrix": [
+        [
+          0.02159,
+          0.052265,
+          -0.9984
+        ],
+        [
+          0.705173,
+          0.707107,
+          0.052265
+        ],
+        [
+          0.708707,
+          -0.705173,
+          -0.02159
+        ]
+      ],
+      "seedScore": 21.5994,
+      "seedTable": [
+        {
+          "label": "y0p0",
+          "iterations": 2,
+          "icpDegrees": 17.3587,
+          "icpBounded": false,
+          "pushMetres": 0.011458,
+          "residualMeanMillimetres": 11.0049,
+          "residualP95Millimetres": 21.0814,
+          "fixedCapDeeperThan2mmBare": 44,
+          "fixedCapMaxDepthBareMetres": 0.023783,
+          "fixedCapInsidePercent": 6.3128,
+          "coveragePercent": 11.6279,
+          "score": 11.5037
+        },
+        {
+          "label": "y0p45",
+          "iterations": 2,
+          "icpDegrees": 26.4408,
+          "icpBounded": true,
+          "pushMetres": 0.023313,
+          "residualMeanMillimetres": 13.5914,
+          "residualP95Millimetres": 27.6251,
+          "fixedCapDeeperThan2mmBare": 98,
+          "fixedCapMaxDepthBareMetres": 0.0282,
+          "fixedCapInsidePercent": 14.0603,
+          "coveragePercent": 4.6512,
+          "score": 25.3261
+        },
+        {
+          "label": "y0p-45",
+          "iterations": 7,
+          "icpDegrees": 35.6515,
+          "icpBounded": false,
+          "pushMetres": 0.007124,
+          "residualMeanMillimetres": 11.4063,
+          "residualP95Millimetres": 21.3499,
+          "fixedCapDeeperThan2mmBare": 34,
+          "fixedCapMaxDepthBareMetres": 0.020117,
+          "fixedCapInsidePercent": 4.878,
+          "coveragePercent": 11.6279,
+          "score": 10.4704
+        },
+        {
+          "label": "y90p0",
+          "iterations": 4,
+          "icpDegrees": 12.0785,
+          "icpBounded": false,
+          "pushMetres": 0.012081,
+          "residualMeanMillimetres": 10.9177,
+          "residualP95Millimetres": 20.2709,
+          "fixedCapDeeperThan2mmBare": 68,
+          "fixedCapMaxDepthBareMetres": 0.027901,
+          "fixedCapInsidePercent": 9.7561,
+          "coveragePercent": 3.1008,
+          "score": 19.1234
+        },
+        {
+          "label": "y90p45",
+          "iterations": 5,
+          "icpDegrees": 32.7726,
+          "icpBounded": false,
+          "pushMetres": 0.018443,
+          "residualMeanMillimetres": 17.5972,
+          "residualP95Millimetres": 27.2136,
+          "fixedCapDeeperThan2mmBare": 36,
+          "fixedCapMaxDepthBareMetres": 0.022083,
+          "fixedCapInsidePercent": 5.165,
+          "coveragePercent": 2.3256,
+          "score": 21.5994
+        },
+        {
+          "label": "y90p-45",
+          "iterations": 4,
+          "icpDegrees": 17.5013,
+          "icpBounded": false,
+          "pushMetres": 0.015362,
+          "residualMeanMillimetres": 11.9266,
+          "residualP95Millimetres": 24.4511,
+          "fixedCapDeeperThan2mmBare": 111,
+          "fixedCapMaxDepthBareMetres": 0.027644,
+          "fixedCapInsidePercent": 15.9254,
+          "coveragePercent": 0.0,
+          "score": 27.852
+        },
+        {
+          "label": "y180p0",
+          "iterations": 4,
+          "icpDegrees": 39.0386,
+          "icpBounded": true,
+          "pushMetres": 0.03,
+          "residualMeanMillimetres": 18.4203,
+          "residualP95Millimetres": 33.3555,
+          "fixedCapDeeperThan2mmBare": 93,
+          "fixedCapMaxDepthBareMetres": 0.037593,
+          "fixedCapInsidePercent": 13.3429,
+          "coveragePercent": 2.3256,
+          "score": 30.6004
+        },
+        {
+          "label": "y180p45",
+          "iterations": 3,
+          "icpDegrees": 29.575,
+          "icpBounded": true,
+          "pushMetres": 0.03,
+          "residualMeanMillimetres": 24.0925,
+          "residualP95Millimetres": 48.7776,
+          "fixedCapDeeperThan2mmBare": 135,
+          "fixedCapMaxDepthBareMetres": 0.042715,
+          "fixedCapInsidePercent": 19.3687,
+          "coveragePercent": 1.5504,
+          "score": 42.686
+        },
+        {
+          "label": "y180p-45",
+          "iterations": 4,
+          "icpDegrees": 9.7561,
+          "icpBounded": false,
+          "pushMetres": 0.026786,
+          "residualMeanMillimetres": 21.306,
+          "residualP95Millimetres": 34.5089,
+          "fixedCapDeeperThan2mmBare": 45,
+          "fixedCapMaxDepthBareMetres": 0.029981,
+          "fixedCapInsidePercent": 6.4562,
+          "coveragePercent": 0.0,
+          "score": 27.7622
+        },
+        {
+          "label": "y270p0",
+          "iterations": 6,
+          "icpDegrees": 27.6821,
+          "icpBounded": false,
+          "pushMetres": 0.012874,
+          "residualMeanMillimetres": 12.2299,
+          "residualP95Millimetres": 24.8542,
+          "fixedCapDeeperThan2mmBare": 133,
+          "fixedCapMaxDepthBareMetres": 0.052105,
+          "fixedCapInsidePercent": 19.0818,
+          "coveragePercent": 2.3256,
+          "score": 30.1489
+        },
+        {
+          "label": "y270p45",
+          "iterations": 2,
+          "icpDegrees": 39.5875,
+          "icpBounded": false,
+          "pushMetres": 0.022779,
+          "residualMeanMillimetres": 13.5557,
+          "residualP95Millimetres": 25.6887,
+          "fixedCapDeeperThan2mmBare": 100,
+          "fixedCapMaxDepthBareMetres": 0.049889,
+          "fixedCapInsidePercent": 14.3472,
+          "coveragePercent": 9.3023,
+          "score": 23.2518
+        },
+        {
+          "label": "y270p-45",
+          "iterations": 6,
+          "icpDegrees": 29.2201,
+          "icpBounded": false,
+          "pushMetres": 0.018708,
+          "residualMeanMillimetres": 15.8244,
+          "residualP95Millimetres": 25.7691,
+          "fixedCapDeeperThan2mmBare": 126,
+          "fixedCapMaxDepthBareMetres": 0.045577,
+          "fixedCapInsidePercent": 18.0775,
+          "coveragePercent": 0.0,
+          "score": 33.9019
+        }
+      ],
       "crestSource": [
-        -0.276123,
-        0.480957,
-        -0.047119
+        -0.211182,
+        0.447754,
+        0.004639
+      ],
+      "crestSourceSeeded": [
+        0.014211,
+        0.167933,
+        -0.46551
       ],
       "crestSourceScaled": [
-        -0.135671,
-        0.236315,
-        -0.023152
+        0.006983,
+        0.082513,
+        -0.228725
       ],
       "crestBody": [
         -0.149464,
@@ -521,89 +1375,178 @@
       ],
       "crestRadiusMetres": 0.04,
       "initialTranslation": [
-        -0.013793,
-        1.30318,
-        -0.043502
+        -0.156446,
+        1.456982,
+        0.162071
       ],
-      "icpIterations": 2,
+      "icpIterations": 5,
       "icpBounded": false,
       "icpMaxDegrees": 45.0,
       "icpTrace": [
         {
-          "pairs": 89,
-          "frontFacingPairs": 45,
-          "meanResidualMillimetres": 6.5865,
-          "rotationDegrees": 10.7022
+          "pairs": 75,
+          "frontFacingPairs": 14,
+          "meanResidualMillimetres": 7.5379,
+          "rotationDegrees": 30.5524
         },
         {
-          "pairs": 93,
-          "frontFacingPairs": 70,
-          "meanResidualMillimetres": 6.5254,
-          "rotationDegrees": 17.3587
+          "pairs": 101,
+          "frontFacingPairs": 65,
+          "meanResidualMillimetres": 5.0295,
+          "rotationDegrees": 36.6077
+        },
+        {
+          "pairs": 102,
+          "frontFacingPairs": 91,
+          "meanResidualMillimetres": 5.2639,
+          "rotationDegrees": 34.1262
+        },
+        {
+          "pairs": 106,
+          "frontFacingPairs": 97,
+          "meanResidualMillimetres": 5.5437,
+          "rotationDegrees": 33.2818
+        },
+        {
+          "pairs": 108,
+          "frontFacingPairs": 101,
+          "meanResidualMillimetres": 5.5937,
+          "rotationDegrees": 32.7726
         }
       ],
-      "rotationAxis": [
-        -0.805262,
-        -0.476998,
-        -0.352173
+      "icpRotationAxis": [
+        0.965492,
+        0.162484,
+        -0.20353
       ],
-      "rotationDegrees": 17.3587,
+      "icpRotationDegrees": 32.7726,
+      "rotationAxis": [
+        -0.190799,
+        -0.979987,
+        0.056763
+      ],
+      "rotationDegrees": 82.8212,
       "rotationMatrix": [
         [
-          0.983989,
-          0.122566,
-          -0.129398
+          0.156822,
+          0.107296,
+          -0.981781
         ],
         [
-          -0.087578,
-          0.964818,
-          0.247902
+          0.219932,
+          0.965326,
+          0.140628
         ],
         [
-          0.155229,
-          -0.232601,
-          0.960104
+          0.962828,
+          -0.237978,
+          0.127786
         ]
       ],
-      "residualMeanMillimetres": 6.5254,
-      "residualP95Millimetres": 14.5925,
-      "pushPasses": 2,
+      "residualMeanMillimetres": 17.5972,
+      "residualP95Millimetres": 27.2136,
+      "pushPasses": 3,
       "pushSteps": [
         {
-          "pushMetres": 0.007672,
+          "pushMetres": 0.006218,
           "alongNormal": [
-            -0.328142,
-            0.791816,
-            0.515121
+            -0.195994,
+            0.206199,
+            -0.95868
           ],
-          "depthBeforeMetres": 0.004672,
-          "depthAfterMetres": 0.002077
+          "depthBeforeMetres": 0.003218,
+          "depthAfterMetres": 0.002718
         },
         {
-          "pushMetres": 0.005077,
+          "pushMetres": 0.005718,
           "alongNormal": [
-            -0.865156,
-            0.483681,
-            -0.132506
+            -0.169022,
+            0.352698,
+            -0.920345
           ],
-          "depthBeforeMetres": 0.002077,
+          "depthBeforeMetres": 0.002718,
+          "depthAfterMetres": 0.003595
+        },
+        {
+          "pushMetres": 0.006595,
+          "alongNormal": [
+            -0.145927,
+            0.127699,
+            -0.981019
+          ],
+          "depthBeforeMetres": 0.003595,
           "depthAfterMetres": 0.0
         }
       ],
-      "pushMetres": 0.011458,
+      "pushMetres": 0.018443,
       "pushBounded": false,
       "translation": [
-        -0.058224,
-        1.320959,
-        0.035469
+        -0.161963,
+        1.354809,
+        0.056913
       ],
       "crestPlaced": [
-        -0.159763,
-        1.555102,
-        -0.062786
+        -0.156868,
+        1.544681,
+        -0.095056
       ],
-      "fixedCapDepthAfterMetres": 0.004152,
-      "fixedCapDeeperThan2mm": 12,
+      "orientation": {
+        "openingApex": [
+          -0.137474,
+          1.543268,
+          -0.129175
+        ],
+        "opening": [
+          -0.332038,
+          -0.744863,
+          -0.578731
+        ],
+        "openingDownTheArm": 0.8308,
+        "openingForward": -0.5787,
+        "openingOutward": 0.332,
+        "openingUp": -0.7449,
+        "openingFaces": "down the arm 0.83, anti-up 0.74",
+        "drapeVertices": 829,
+        "drapeFromCapCentimetres": [
+          0.28,
+          -9.36,
+          1.06
+        ],
+        "drapeBehindCentimetres": -1.06,
+        "drapeOutwardCentimetres": -0.28,
+        "drapeBelowCentimetres": 9.36
+      },
+      "fixedCapDepthAfterMetres": 0.022083,
+      "fixedCapDeeperThan2mm": 11,
+      "fixedCapDeeperThan2mmBare": 36,
+      "seedChoice": {
+        "chosen": "y90p45",
+        "sidesAgreed": false,
+        "bestPerSide": {
+          "L": "y90p45",
+          "R": "y0p-45"
+        },
+        "bestScorePerSide": {
+          "L": 4.1497,
+          "R": 10.4704
+        },
+        "decidedBy": "the better score, on L",
+        "bestPairSeed": "y0p-45",
+        "pairScores": {
+          "y0p0": 23.5948,
+          "y0p45": 37.9603,
+          "y0p-45": 19.6066,
+          "y90p0": 29.265,
+          "y90p45": 25.7491,
+          "y90p-45": 50.263,
+          "y180p0": 60.3433,
+          "y180p45": 84.245,
+          "y180p-45": 54.0645,
+          "y270p0": 66.4253,
+          "y270p45": 48.2179,
+          "y270p-45": 70.5206
+        }
+      },
       "islands": [
         {
           "island": 0,
@@ -616,9 +1559,9 @@
             -0.031748
           ],
           "centroid": [
-            -0.203099,
-            1.46119,
-            -0.036512
+            -0.158274,
+            1.445732,
+            -0.136875
           ]
         },
         {
@@ -632,9 +1575,9 @@
             0.084256
           ],
           "centroid": [
-            -0.218904,
-            1.448623,
-            0.023969
+            -0.218046,
+            1.425479,
+            -0.127772
           ]
         },
         {
@@ -648,9 +1591,9 @@
             0.093381
           ],
           "centroid": [
-            -0.23895,
-            1.376614,
-            0.04453
+            -0.232283,
+            1.349806,
+            -0.11879
           ]
         },
         {
@@ -664,9 +1607,9 @@
             0.016814
           ],
           "centroid": [
-            -0.202448,
-            1.409958,
-            0.001656
+            -0.186214,
+            1.395309,
+            -0.109327
           ]
         },
         {
@@ -680,9 +1623,9 @@
             0.057826
           ],
           "centroid": [
-            -0.222345,
-            1.391065,
-            0.024841
+            -0.211041,
+            1.369836,
+            -0.114344
           ]
         },
         {
@@ -696,9 +1639,9 @@
             0.04547
           ],
           "centroid": [
-            -0.279698,
-            1.383318,
-            0.012788
+            -0.215373,
+            1.345014,
+            -0.16782
           ]
         },
         {
@@ -712,9 +1655,9 @@
             0.015764
           ],
           "centroid": [
-            -0.270781,
-            1.417857,
-            -0.010131
+            -0.196434,
+            1.381813,
+            -0.177034
           ]
         },
         {
@@ -728,9 +1671,9 @@
             0.186359
           ],
           "centroid": [
-            -0.225023,
-            1.40676,
-            0.086205
+            -0.272121,
+            1.380453,
+            -0.101092
           ]
         },
         {
@@ -744,9 +1687,9 @@
             0.169189
           ],
           "centroid": [
-            -0.214134,
-            1.438012,
-            0.070817
+            -0.2592,
+            1.414346,
+            -0.105133
           ]
         },
         {
@@ -760,9 +1703,9 @@
             0.139787
           ],
           "centroid": [
-            -0.183117,
-            1.467463,
-            0.052346
+            -0.237166,
+            1.453076,
+            -0.091526
           ]
         },
         {
@@ -776,9 +1719,9 @@
             -0.02479
           ],
           "centroid": [
-            -0.260694,
-            1.448255,
-            -0.037374
+            -0.172436,
+            1.4153,
+            -0.18544
           ]
         },
         {
@@ -792,27 +1735,27 @@
             0.102867
           ],
           "centroid": [
-            -0.166928,
-            1.455881,
-            0.038624
+            -0.217677,
+            1.447993,
+            -0.078154
           ]
         }
       ],
       "capClearance": {
         "vertices": 1526,
-        "maxDepthDressedMetres": 0.017488,
-        "deeperThan2mmDressed": 53,
-        "maxDepthBareMetres": 0.056294,
-        "deeperThan2mmBare": 397,
-        "anchorToTargetMillimetres": 32.833,
-        "anchorToBareMillimetres": 44.566
+        "maxDepthDressedMetres": 0.062747,
+        "deeperThan2mmDressed": 38,
+        "maxDepthBareMetres": 0.067521,
+        "deeperThan2mmBare": 330,
+        "anchorToTargetMillimetres": 26.919,
+        "anchorToBareMillimetres": 38.491
       },
       "coverage": {
         "regionVertices": 129,
-        "coveredVertices": 15,
-        "coveredFraction": 0.116279,
+        "coveredVertices": 3,
+        "coveredFraction": 0.023256,
         "reachMetres": 0.06,
-        "medianGapMetres": 0.009088
+        "medianGapMetres": 0.034259
       }
     }
   },
@@ -870,29 +1813,31 @@
         "upper_arm_L"
       ]
     },
-    "orphanedVertices": {},
+    "orphanedVertices": {
+      "warden-pauldrons-socket_R": 3
+    },
     "band": {
       "warden-pauldrons-socket_L": {
         "vertices": 2701,
-        "bandVertices": 801,
-        "bandFraction": 0.296557,
+        "bandVertices": 698,
+        "bandFraction": 0.258423,
         "ceiling": 0.8,
-        "minPeakWeight": 0.5004,
-        "meanPeakWeight": 0.863182,
-        "bandHeightMetres": 0.18897,
-        "bandMinY": 1.340089,
-        "bandMaxY": 1.529059
+        "minPeakWeight": 0.500394,
+        "meanPeakWeight": 0.874358,
+        "bandHeightMetres": 0.157764,
+        "bandMinY": 1.353458,
+        "bandMaxY": 1.511222
       },
       "warden-pauldrons-socket_R": {
         "vertices": 2703,
-        "bandVertices": 773,
-        "bandFraction": 0.285979,
+        "bandVertices": 610,
+        "bandFraction": 0.225675,
         "ceiling": 0.8,
-        "minPeakWeight": 0.50006,
-        "meanPeakWeight": 0.863924,
-        "bandHeightMetres": 0.176935,
-        "bandMinY": 1.343174,
-        "bandMaxY": 1.520108
+        "minPeakWeight": 0.50076,
+        "meanPeakWeight": 0.889805,
+        "bandHeightMetres": 0.169132,
+        "bandMinY": 1.340038,
+        "bandMaxY": 1.50917
       }
     },
     "stiffness": 3.0
@@ -905,45 +1850,45 @@
         "drape_cloth_L_1",
         "drape_cloth_L_2"
       ],
-      "segmentLength": 0.054247,
+      "segmentLength": 0.054715,
       "restDegrees": 0.0,
       "root": [
-        0.205772,
-        1.441252,
-        -0.007251
+        0.195857,
+        1.441002,
+        -0.10441
       ],
       "toward": [
-        -0.46418,
+        -0.208642,
         0.0,
-        -0.885741
+        0.977992
       ],
       "island": "warden-pauldrons-socket_L",
       "from": 0.0,
       "to": 0.5,
       "segments": 2,
-      "islandHeightMetres": 0.231518,
+      "islandHeightMetres": 0.23431,
       "restTiltMetresAtTheHem": 0.0,
-      "toLineY": 1.448133,
-      "chainLengthMetres": 0.108494,
+      "toLineY": 1.448647,
+      "chainLengthMetres": 0.109429,
       "axis": [
-        0.080008,
-        -0.990354,
-        0.113128
+        0.091046,
+        -0.995738,
+        -0.014703
       ],
-      "towardMetres": 0.076579,
+      "towardMetres": 0.065992,
       "bandCentre": [
-        0.224546,
-        1.408412,
-        0.005445
+        0.202769,
+        1.403162,
+        -0.126924
       ],
-      "nearestSkinMetres": 0.010931,
+      "nearestSkinMetres": 0.023912,
       "nearestSkin": [
-        0.481495,
+        0.57061,
         0.0,
-        0.876449
+        -0.821221
       ],
-      "bandVertices": 1558,
-      "fadeVertices": 720
+      "bandVertices": 1506,
+      "fadeVertices": 542
     },
     {
       "name": "cloth_R",
@@ -952,61 +1897,61 @@
         "drape_cloth_R_1",
         "drape_cloth_R_2"
       ],
-      "segmentLength": 0.05422,
+      "segmentLength": 0.054962,
       "restDegrees": 0.0,
       "root": [
-        -0.191535,
-        1.436421,
-        0.004635
+        -0.188096,
+        1.423956,
+        -0.131111
       ],
       "toward": [
-        0.549905,
+        -0.023807,
         0.0,
-        -0.835227
+        0.999717
       ],
       "island": "warden-pauldrons-socket_R",
       "from": 0.0,
       "to": 0.5,
       "segments": 2,
-      "islandHeightMetres": 0.222284,
+      "islandHeightMetres": 0.237919,
       "restTiltMetresAtTheHem": 0.0,
-      "toLineY": 1.44413,
-      "chainLengthMetres": 0.108441,
+      "toLineY": 1.432539,
+      "chainLengthMetres": 0.109925,
       "axis": [
-        -0.248855,
-        -0.967034,
-        0.054008
+        -0.069456,
+        -0.997477,
+        0.014673
       ],
-      "towardMetres": 0.068934,
+      "towardMetres": 0.080783,
       "bandCentre": [
-        -0.226907,
-        1.405508,
-        -0.004809
+        -0.187077,
+        1.382437,
+        -0.143144
       ],
-      "nearestSkinMetres": 0.008021,
+      "nearestSkinMetres": 0.009404,
       "nearestSkin": [
-        -0.459152,
+        -0.292997,
         0.0,
-        0.888358
+        -0.956113
       ],
-      "bandVertices": 1500,
-      "fadeVertices": 663
+      "bandVertices": 1523,
+      "fadeVertices": 478
     }
   ],
   "rest": {
-    "maxRestRotationBefore": 1.990354,
+    "maxRestRotationBefore": 1.997478,
     "maxRestRotationAfter": 0.0,
     "joints": 28
   },
   "bindClearance": {
-    "insideVertices": 239,
-    "maxPenetrationMetres": 0.031508788,
-    "deeperThan2mm": 153
+    "insideVertices": 323,
+    "maxPenetrationMetres": 0.062747255,
+    "deeperThan2mm": 212
   },
   "bareBodyClearance": {
-    "insideVertices": 954,
-    "maxPenetrationMetres": 0.056293916,
-    "deeperThan2mm": 886
+    "insideVertices": 1355,
+    "maxPenetrationMetres": 0.067521252,
+    "deeperThan2mm": 1259
   },
   "runtime": {
     "bones": [
@@ -1087,8 +2032,8 @@
       "islands": 24
     },
     "maxInfluencesPerVertex": 4,
-    "minWeightSum": 0.999999876,
-    "maxWeightSum": 1.000000119,
+    "minWeightSum": 0.999999873,
+    "maxWeightSum": 1.000000133,
     "influencingBones": [
       "clavicle_L",
       "clavicle_R",
@@ -1109,9 +2054,9 @@
       "textures": true
     },
     "bindClearance": {
-      "insideVertices": 239,
-      "maxPenetrationMetres": 0.031508788,
-      "deeperThan2mm": 153
+      "insideVertices": 323,
+      "maxPenetrationMetres": 0.062747255,
+      "deeperThan2mm": 212
     }
   },
   "gates": {
@@ -1133,7 +2078,7 @@
     "glb": "warden-pauldrons-socket.glb",
     "manifest": "warden-pauldrons-socket.manifest.json",
     "report": "warden-pauldrons-socket.report.json",
-    "sha256": "55980d99f83a7bc571fc2bd30b1c7f047260d84f00d57a8d47dca23085ef08e4"
+    "sha256": "bc00423fefe2b719b8baa5d663b8a1b6f499b7050143db6431eb533dcee73879"
   },
   "gatesFailed": [
     "piece_sits_off_the_skin_at_bind",
