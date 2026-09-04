@@ -190,14 +190,21 @@ npm run art:gear -- --input <dressed.glb> --slot <slot> --piece <name> \
   and the piece carries the dressed body's own skin there, so the staircase a
   dominant-bone boundary leaves on the body is covered by the piece.
 - **Ring placement** (`--ring`) replaces register and extract for a ring piece. The
-  strap is the largest island whose vertices close a loop around the slot's bone
-  axis; its centre line is fitted to the body's cross section at the slot's `along`
-  range plus the slot clearance by a scale per horizontal axis and a vertical
-  placement, and every other island of the piece moves rigidly with the strap. The
-  contact-ring gate then reads the strap's inner face. The Warden belt is placed
-  this way from its existing Tripo source: its strap is 34.7 cm deep against a
-  24.9 cm torso today only because the old fitter scaled one axis and let the other
-  follow.
+  strap is the largest island that leaves a hole (its smallest inner radius at least
+  half its median outer radius, measured about its own ring centre); azimuth
+  coverage alone does not identify it, every blob covers every bin about its
+  centroid. The ring centre is re-fitted from one point per azimuth bin, not the
+  vertex mean, because Tripo spends triangles on the buckle and the mean sits in
+  front of the loop. The strap's inner ellipse is fitted to the target surface's
+  cross section at the strap's height plus 3 mm by a scale per horizontal axis and
+  a vertical placement, the target ellipse centred the same way, and every other
+  island moves rigidly with the strap. Then only the strap is seated; each other
+  island follows the mean displacement of the strap vertices it attaches to, so a
+  buckle or a pouch is never deformed. The contact-ring gate reads the strap's inner
+  face. The Warden belt goes on this way from its existing Tripo source, every one
+  of its 47 islands and 9,988 triangles kept; the old fitter had scaled one axis and
+  let the other follow, kept 10 islands, and left the strap 35% deeper than the
+  torso.
 - `--prefitted` skips register and extract for a piece already in body space. It
   still regenerates the manifest (authored regions instead of vertex indices, no
   `under`), reruns every gate and produces the review sheet, and the piece goes back
