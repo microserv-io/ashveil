@@ -16,7 +16,7 @@ const ROOT = join(import.meta.dirname, '..', '..')
 const RUNNER = join(ROOT, 'scripts', 'art', 'gear', 'ring.py')
 const BLENDER_CANDIDATES = ['/opt/homebrew/bin/blender', '/usr/local/bin/blender', 'blender']
 const VALUES = new Set(['--input', '--slot', '--body', '--piece', '--under', '--weights', '--yaw',
-  '--bins', '--passes', '--seat', '--outdir'])
+  '--bins', '--passes', '--seat', '--conform', '--outdir'])
 const SWITCHES = new Set(['--no-conform'])
 const NAME = /^[a-z0-9][a-z0-9-]*$/
 
@@ -49,6 +49,12 @@ export function parseArgs(argv) {
   if (parsed.seat && !['strap', 'merged', 'layers'].includes(parsed.seat)) {
     throw new RingError(`seat gate: "${parsed.seat}" is not strap, merged or layers`)
   }
+  if (parsed.conform && !['surface', 'azimuth'].includes(parsed.conform)) {
+    throw new RingError(`conform gate: "${parsed.conform}" is not surface or azimuth`)
+  }
+  if (parsed.conform && parsed['no-conform']) {
+    throw new RingError('conform gate: --conform and --no-conform ask for opposite things')
+  }
   return parsed
 }
 
@@ -80,6 +86,7 @@ export function blenderArgs(plan, runner = RUNNER) {
     ...(plan.bins ? ['--bins', plan.bins] : []),
     ...(plan.passes ? ['--passes', plan.passes] : []),
     ...(plan.seat ? ['--seat', plan.seat] : []),
+    ...(plan.conform ? ['--conform', plan.conform] : []),
     ...(plan['no-conform'] ? ['--no-conform'] : [])]
 }
 

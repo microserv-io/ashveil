@@ -40,7 +40,8 @@
     "waist"
   ],
   "under": [
-    "warden-tunic"
+    "warden-tunic",
+    "warden-trousers"
   ],
   "hidesPieces": true,
   "hides": {},

@@ -35,6 +35,7 @@ import math
 import sys
 import traceback
 from pathlib import Path
+from typing import NamedTuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -62,11 +63,16 @@ SHRINKWRAP_OFFSET = 0.003
 CONFORM_BINS = 72
 # What the conformed leather holds off the surface it now lies on.
 CONFORM_GAP = 0.002
-# One spike in the measured profile must not pull a whole column of the strap in.
+# One spike in the measured profile must not pull a whole column of the strap in,
+# and the same width tidies the surface up the band as tidies it around.
 CONFORM_KERNEL = 3
-# Heights across the strap's own band each azimuth is measured at: the band is what
-# the leather has to clear, so its widest point over that band is the target.
+# Heights across the strap's own band both the surface and the leather are read at.
+# A waist tapers, so one radius per azimuth makes the band ride its widest height.
 CONFORM_SAMPLES = 9
+# How far the displacement may change between neighbouring height slices. Past this
+# the band stops following the surface's slope and starts folding over itself.
+CONFORM_SLOPE = 0.006
+CONFORM_SLOPE_PASSES = 8
 # Past this a bin moved far enough to be worth naming rather than counting.
 CONFORM_LOUD = 0.015
 # A vertex the seat did not touch is not "moved"; float noise is not movement.
@@ -403,9 +409,58 @@ def circular_smooth(values: np.ndarray, width: int) -> np.ndarray:
     return np.convolve(padded, kernel, mode="same")[width:width + len(values)]
 
 
+def cell_fill(grid: np.ndarray) -> np.ndarray:
+    """Every cell of an (azimuth, height) field gets a value, up the band before around it.
+
+    Which neighbour to borrow from is not a toss-up. Across the band a radius changes
+    by a few millimetres and around the ring it changes by fifty, so a gap filled from
+    the same azimuth is close and one filled from the same height is a guess. It
+    matters most where the samples are sparse and biased: the strap only reaches a
+    given height at the azimuths where its band happens to pass through it, and those
+    are the widest ones, so filling around the ring first spreads the widest reading
+    over the whole waist and the leather is drawn onto a body two centimetres too fat.
+
+    An azimuth with nothing at any height has no column to borrow from, and only then
+    is the height row filled the short way round.
+    """
+    levels = np.arange(grid.shape[1], dtype=float)
+    filled = grid.copy()
+    for slot in range(grid.shape[0]):
+        known = np.flatnonzero(np.isfinite(grid[slot]))
+        if known.size:
+            filled[slot] = np.interp(levels, known.astype(float), grid[slot, known])
+    empty = ~np.isfinite(filled).any(axis=1)
+    if empty.all():
+        raise RingError("conform gate: no azimuth carries a radius at any height")
+    if empty.any():
+        for level in range(grid.shape[1]):
+            filled[:, level] = circular_fill(filled[:, level])
+    return filled
+
+
+def height_smooth(grid: np.ndarray, width: int) -> np.ndarray:
+    """A moving average up the band. The top and bottom rows repeat rather than wrap:
+    a waist is a loop around, and is not a loop from hem to hem."""
+    if width <= 1:
+        return grid.copy()
+    pad = width // 2
+    padded = np.concatenate([np.repeat(grid[:, :1], pad, axis=1), grid,
+                             np.repeat(grid[:, -1:], pad, axis=1)], axis=1)
+    kernel = np.ones(width) / float(width)
+    return np.stack([np.convolve(row, kernel, mode="valid") for row in padded])
+
+
+class Surface(NamedTuple):
+    """What the body reaches under the strap: a radius per azimuth and per height."""
+
+    grid: np.ndarray
+    ridge: np.ndarray
+    heights: np.ndarray
+
+
 def surface_radii(target: Solid, centre_xz: np.ndarray, band: tuple[float, float], near_torso,
-                  bins: int, samples: int, gap: float, kernel: int) -> tuple[np.ndarray, dict]:
-    """How far the surface under the strap reaches, per azimuth, plus the strap's gap.
+                  bins: int, samples: int, gap: float, kernel: int) -> tuple[Surface, dict]:
+    """How far the surface under the strap reaches, per azimuth and height, plus the gap.
 
     A cross section read off the target's own vertices is as sparse as the mesh is,
     and a belt conformed to it would follow the triangulation. A ray from the ring
@@ -414,8 +469,10 @@ def surface_radii(target: Solid, centre_xz: np.ndarray, band: tuple[float, float
     is. Hits that are not torso are dropped, because at waist height the arm is a
     wall the leather would otherwise be asked to wrap.
 
-    The band is sampled rather than sliced once, because the leather has to clear the
-    widest thing under it anywhere down its height and not only at its middle.
+    The band is sampled at several heights and every one of them is kept, because a
+    waist tapers and a belt drawn onto one radius per azimuth rides its widest height
+    and stands off everywhere else. The ridge - that widest height - is kept beside
+    the field so the older per-azimuth conform can still be asked for.
     """
     heights = np.linspace(band[0], band[1], samples)
     grid = np.full((bins, samples), np.nan)
@@ -433,28 +490,40 @@ def surface_radii(target: Solid, centre_xz: np.ndarray, band: tuple[float, float
                 if not np.isfinite(grid[slot, level]) or reach > grid[slot, level]:
                     grid[slot, level] = reach
     radii = np.where(np.isnan(grid).all(axis=1), np.nan, np.nanmax(grid, axis=1))
-    # The waist tapers across the strap's own height, and a straight band moved
-    # horizontally cannot follow that: this is the gap the conform cannot close.
+    # How much of the surface a single radius per azimuth has to throw away.
     spread = np.nanmax(grid, axis=1) - np.nanmin(grid, axis=1)
     measured = int(np.isfinite(radii).sum())
     if measured < bins // 2:
         raise RingError(f"conform gate: only {measured} of {bins} azimuths found the surface")
-    smoothed = circular_smooth(circular_fill(radii), kernel) + gap
-    return smoothed, {
+    reach = cell_fill(grid)
+    # Smoothing keeps one spike from pulling a whole column in, but a waist is convex
+    # and an average of a convex profile sits under it: smoothed alone would bury the
+    # leather in every belly and hip it crosses. A strap is a taut band, so it rides
+    # what sticks out and bridges what does not, and the smoothing only ever gets to
+    # lift the target, never to sink it below the surface it was measured from.
+    field = np.maximum(
+        height_smooth(np.stack([circular_smooth(row, kernel) for row in reach.T], axis=1), kernel),
+        reach) + gap
+    ridge = circular_smooth(circular_fill(radii), kernel) + gap
+    return Surface(field, ridge, heights), {
         "bins": bins, "samples": samples, "gapMetres": gap, "kernelBins": kernel,
         "band": [round(float(band[0]), 6), round(float(band[1]), 6)],
         "centreXZ": [round(float(centre_xz[0]), 6), round(float(centre_xz[1]), 6)],
         "binsMeasured": measured, "binsFilled": bins - measured,
+        "cellsMeasured": int(np.isfinite(grid).sum()), "cells": bins * samples,
         "torsoHits": int(per_bin_hits.sum()),
-        "rawMinMetres": round(float(np.nanmin(radii)), 6),
-        "rawMaxMetres": round(float(np.nanmax(radii)), 6),
-        "targetMinMetres": round(float(smoothed.min()), 6),
-        "targetMaxMetres": round(float(smoothed.max()), 6),
+        "rawMinMetres": round(float(np.nanmin(grid)), 6),
+        "rawMaxMetres": round(float(np.nanmax(grid)), 6),
+        "targetMinMetres": round(float(field.min()), 6),
+        "targetMaxMetres": round(float(field.max()), 6),
+        "ridgeMinMetres": round(float(ridge.min()), 6),
+        "ridgeMaxMetres": round(float(ridge.max()), 6),
         "bandSpreadMetres": {"min": round(float(np.nanmin(spread)), 6),
                              "median": round(float(np.nanmedian(spread)), 6),
                              "max": round(float(np.nanmax(spread)), 6)},
         "medianRadiusPerHeight": [[round(float(height), 6),
-                                   round(float(np.nanmedian(grid[:, level])), 6)]
+                                   round(float(np.nanmedian(grid[:, level])), 6),
+                                   round(float(np.median(field[:, level])), 6)]
                                   for level, height in enumerate(heights)],
     }
 
@@ -465,24 +534,123 @@ def bin_thickness(points: np.ndarray, centre_xz: np.ndarray, bins: int) -> np.nd
     return (outer - inner)[np.isfinite(inner)]
 
 
-def conform(obj, indices: list[int], centre_xz: np.ndarray, target_radius: np.ndarray,
-            bins: int) -> dict:
-    """Draw the strap's cross section onto the surface's, keeping the leather's depth.
+def buried_bins(points: np.ndarray, centre_xz: np.ndarray, bins: int, depths: np.ndarray,
+                limit: float) -> list[dict]:
+    """Which way round the ring the leather is still under the clothes, and how far.
 
-    Per azimuth the strap has an inner radius and the body has a reach, and the
-    difference is what the leather has to come in by. Every vertex in that direction
-    moves by it, horizontally and about the ring axis, so the outer face travels with
-    the inner one: the thickness and the edge profile are the same shape afterwards,
-    only wrapped around a waist rather than around an ellipse.
-
-    The move is a function of the azimuth alone and interpolated between bin centres,
-    so no column of vertices steps against its neighbour.
+    A total says how much is buried and never where, and where is the whole question
+    for a belt: eight vertices at one azimuth is a hole a reader sees and eight spread
+    around the waist is nothing.
     """
-    picked = np.array(sorted(indices), dtype=int)
-    strap = points_of(obj)[picked]
-    angles, radius = azimuth(strap, centre_xz)
-    if float(radius.min()) < 1e-9:
-        raise RingError("conform gate: a strap vertex sits on the ring's own axis")
+    angles, _ = azimuth(points, centre_xz)
+    which = bin_index(angles, bins)
+    centres = bin_angles(bins)
+    rows = []
+    for slot in range(bins):
+        picked = depths[which == slot]
+        if picked.size and float(picked.max()) > limit:
+            rows.append({"bin": slot, "degrees": round(math.degrees(centres[slot]), 1),
+                         "vertices": int((picked > limit).sum()),
+                         "maxDepthMetres": round(float(picked.max()), 6)})
+    return sorted(rows, key=lambda row: -row["maxDepthMetres"])
+
+
+def nearest_slice(heights_of: np.ndarray, heights: np.ndarray) -> np.ndarray:
+    """Which sampled height each vertex belongs to."""
+    return np.abs(heights_of[:, None] - heights[None, :]).argmin(axis=1)
+
+
+def slice_thickness(points: np.ndarray, centre_xz: np.ndarray, bins: int,
+                    heights: np.ndarray) -> np.ndarray:
+    """Per height slice, the median depth of the leather across the azimuths it covers.
+
+    The per-bin figure answers "is the strap still as thick", and this one answers
+    "is it still as thick everywhere up its height", which is what a conform that
+    moves the top of the band differently from the bottom can get wrong.
+    """
+    angles, radius = azimuth(points, centre_xz)
+    which = bin_index(angles, bins)
+    level_of = nearest_slice(points[:, 1], heights)
+    medians = np.full(len(heights), np.nan)
+    for level in range(len(heights)):
+        spans = []
+        for slot in range(bins):
+            picked = radius[(which == slot) & (level_of == level)]
+            if picked.size > 1:
+                spans.append(picked.max() - picked.min())
+        if spans:
+            medians[level] = float(np.median(spans))
+    return medians
+
+
+def strap_radii(points: np.ndarray, centre_xz: np.ndarray, bins: int,
+                heights: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Where the leather's inner face sits, per azimuth and per height, filled and as read.
+
+    Only the face that has to touch is measured: a cell holding nothing but outer
+    face would otherwise read a radius a strap thickness too far out and the conform
+    would leave a dent there. Cells the mesh left empty are filled the same way the
+    surface's are, so the field the displacement is built from has no holes.
+    """
+    angles, radius = azimuth(points, centre_xz)
+    which = bin_index(angles, bins)
+    face = inner_face(points, centre_xz, bins)
+    level_of = nearest_slice(points[:, 1], heights)
+    grid = np.full((bins, len(heights)), np.nan)
+    for slot in range(bins):
+        for level in range(len(heights)):
+            picked = radius[face & (which == slot) & (level_of == level)]
+            if picked.size:
+                grid[slot, level] = picked.min()
+    return cell_fill(grid), grid
+
+
+def slope_limit(field: np.ndarray, limit: float, passes: int) -> tuple[np.ndarray, list[dict]]:
+    """Hold the displacement's change up the band, so the leather bends and never folds.
+
+    Two neighbouring height slices pulled apart by more than a slice is tall turn the
+    band inside out. Only ever the outer of the pair is given way to: a limit that
+    could drag a slice further in would push that leather under the clothes it was
+    just drawn onto, and no fold is worth burying the belt to avoid. Raising only
+    settles, because nothing here ever comes back down.
+    """
+    steps = np.diff(field, axis=1)
+    engaged = [{"bin": int(slot), "slice": int(level),
+                "rawStepMetres": round(float(steps[slot, level]), 6)}
+               for slot, level in np.argwhere(np.abs(steps) > limit)]
+    limited = field.copy()
+    for _ in range(passes):
+        for level in range(limited.shape[1] - 1):
+            limited[:, level] = np.maximum(limited[:, level], limited[:, level + 1] - limit)
+            limited[:, level + 1] = np.maximum(limited[:, level + 1], limited[:, level] - limit)
+        for level in range(limited.shape[1] - 2, -1, -1):
+            limited[:, level] = np.maximum(limited[:, level], limited[:, level + 1] - limit)
+            limited[:, level + 1] = np.maximum(limited[:, level + 1], limited[:, level] - limit)
+        if float(np.abs(np.diff(limited, axis=1)).max()) <= limit + 1e-9:
+            break
+    return limited, engaged
+
+
+def bilinear(field: np.ndarray, angles: np.ndarray, heights_of: np.ndarray,
+             heights: np.ndarray, bins: int) -> np.ndarray:
+    """Read an (azimuth, height) field at a vertex, so no vertex steps against its neighbour."""
+    across = (angles + math.pi) / (2.0 * math.pi / bins) - 0.5
+    near = np.floor(across).astype(int)
+    weight_across = across - near
+    left, right = near % bins, (near + 1) % bins
+    span = max(float(heights[-1] - heights[0]), 1e-9)
+    up = np.clip((heights_of - heights[0]) / span * (len(heights) - 1), 0.0, len(heights) - 1)
+    below = np.clip(np.floor(up).astype(int), 0, len(heights) - 2)
+    weight_up = up - below
+    lower = field[left, below] * (1.0 - weight_across) + field[right, below] * weight_across
+    upper = field[left, below + 1] * (1.0 - weight_across) + field[right, below + 1] * weight_across
+    return lower * (1.0 - weight_up) + upper * weight_up
+
+
+def azimuth_shift(strap: np.ndarray, angles: np.ndarray, centre_xz: np.ndarray,
+                  ridge: np.ndarray, bins: int) -> tuple[np.ndarray, dict]:
+    """The older conform: one displacement per azimuth, so the band stays vertical."""
+    _, radius = azimuth(strap, centre_xz)
     which = bin_index(angles, bins)
     inner = np.full(bins, np.nan)
     for slot in range(bins):
@@ -490,42 +658,135 @@ def conform(obj, indices: list[int], centre_xz: np.ndarray, target_radius: np.nd
         if members.size:
             inner[slot] = members.min()
     filled = circular_fill(inner)
-    delta = target_radius - filled
+    delta = ridge - filled
     centres = bin_angles(bins)
     grid = np.concatenate([centres[-1:] - 2.0 * math.pi, centres, centres[:1] + 2.0 * math.pi])
     values = np.concatenate([delta[-1:], delta, delta[:1]])
-    shift = np.interp(angles, grid, values)
-    towards = np.stack([(strap[:, 0] - centre_xz[0]) / radius, np.zeros(len(strap)),
-                        (strap[:, 2] - centre_xz[1]) / radius], axis=1)
-    travel = towards * shift[:, None]
-    before = bin_thickness(strap, centre_xz, bins)
-    after = bin_thickness(strap + travel, centre_xz, bins)
-    basis = obj.matrix_world.to_3x3().inverted()
-    for at, index in enumerate(picked):
-        vertex = obj.data.vertices[int(index)]
-        vertex.co = vertex.co + (basis @ Vector(blender_from_runtime(travel[at])))
-    obj.data.update()
     loud = [slot for slot in range(bins) if abs(delta[slot]) > CONFORM_LOUD]
-    return {
-        "bins": bins,
-        "vertices": int(len(picked)),
+    return np.interp(angles, grid, values), {
         "emptyBins": int((~np.isfinite(inner)).sum()),
-        "displacementMetres": {
-            "min": round(float(delta.min()), 6),
-            "median": round(float(np.median(delta)), 6),
-            "max": round(float(delta.max()), 6),
-            "maxAbs": round(float(np.abs(delta).max()), 6),
-        },
-        "loudThresholdMetres": CONFORM_LOUD,
+        "displacementMetres": {"min": round(float(delta.min()), 6),
+                               "median": round(float(np.median(delta)), 6),
+                               "max": round(float(delta.max()), 6),
+                               "maxAbs": round(float(np.abs(delta).max()), 6)},
         "loudBins": [{"bin": slot, "degrees": round(math.degrees(centres[slot]), 2),
                       "displacementMetres": round(float(delta[slot]), 6)} for slot in loud],
         "loudBinCount": len(loud),
         "innerRadiusBeforeMetres": {"min": round(float(filled.min()), 6),
                                     "median": round(float(np.median(filled)), 6),
                                     "max": round(float(filled.max()), 6)},
-        "targetRadiusMetres": {"min": round(float(target_radius.min()), 6),
-                               "median": round(float(np.median(target_radius)), 6),
-                               "max": round(float(target_radius.max()), 6)},
+        "targetRadiusMetres": {"min": round(float(ridge.min()), 6),
+                               "median": round(float(np.median(ridge)), 6),
+                               "max": round(float(ridge.max()), 6)},
+    }
+
+
+def surface_shift(strap: np.ndarray, angles: np.ndarray, centre_xz: np.ndarray,
+                  surface: Surface, bins: int) -> tuple[np.ndarray, dict]:
+    """One displacement per azimuth and per height, so the band follows the surface's slope.
+
+    Inner and outer face at the same place around and up the ring move by the same
+    amount, so the leather keeps its radial depth and its edge profile; what changes
+    is that the top of the band can come in further than the bottom, which is the
+    only way a strap sits on a waist that is not a cylinder.
+    """
+    inner, raw_inner = strap_radii(strap, centre_xz, bins, surface.heights)
+    raw = surface.grid - inner
+    delta, engaged = slope_limit(raw, CONFORM_SLOPE, CONFORM_SLOPE_PASSES)
+    centres = bin_angles(bins)
+    loud = np.argwhere(np.abs(delta) > CONFORM_LOUD)
+    return bilinear(delta, angles, strap[:, 1], surface.heights, bins), {
+        "samples": len(surface.heights),
+        "heights": [round(float(height), 6) for height in surface.heights],
+        "emptyCells": int(np.isnan(raw_inner).sum()), "cells": int(delta.size),
+        "innerPerSliceMetres": [
+            [round(float(surface.heights[level]), 6),
+             int(np.isfinite(raw_inner[:, level]).sum()),
+             _rounded(np.nanmin(raw_inner[:, level]) if np.isfinite(raw_inner[:, level]).any() else np.nan),
+             _rounded(np.nanmedian(raw_inner[:, level]) if np.isfinite(raw_inner[:, level]).any() else np.nan),
+             _rounded(np.nanmax(raw_inner[:, level]) if np.isfinite(raw_inner[:, level]).any() else np.nan),
+             round(float(np.median(inner[:, level])), 6)] for level in range(inner.shape[1])],
+        "targetPerSliceMetres": [
+            [round(float(surface.heights[level]), 6),
+             round(float(surface.grid[:, level].min()), 6),
+             round(float(np.median(surface.grid[:, level])), 6),
+             round(float(surface.grid[:, level].max()), 6)] for level in range(surface.grid.shape[1])],
+        "displacementMetres": {"min": round(float(delta.min()), 6),
+                               "median": round(float(np.median(delta)), 6),
+                               "max": round(float(delta.max()), 6),
+                               "maxAbs": round(float(np.abs(delta).max()), 6)},
+        "displacementPerSliceMetres": [
+            [round(float(surface.heights[level]), 6),
+             round(float(delta[:, level].min()), 6),
+             round(float(np.median(delta[:, level])), 6),
+             round(float(delta[:, level].max()), 6)] for level in range(delta.shape[1])],
+        "loudCellCount": int(len(loud)),
+        "loudBins": sorted({int(slot) for slot, _ in loud}),
+        "loudSlices": sorted({int(level) for _, level in loud}),
+        "loudCells": [{"bin": int(slot), "degrees": round(math.degrees(centres[slot]), 2),
+                       "slice": int(level),
+                       "heightMetres": round(float(surface.heights[level]), 6),
+                       "displacementMetres": round(float(delta[slot, level]), 6)}
+                      for slot, level in loud[:16]],
+        "slopeLimitMetres": CONFORM_SLOPE,
+        "slopeEngagements": len(engaged),
+        "slopeEngagedBins": sorted({entry["bin"] for entry in engaged}),
+        "slopeEngagedSlices": sorted({entry["slice"] for entry in engaged}),
+        "slopeMaxRawStepMetres": round(float(np.abs(np.diff(raw, axis=1)).max()), 6),
+        "slopeMaxStepMetres": round(float(np.abs(np.diff(delta, axis=1)).max()), 6),
+        "slopeEngagementTable": engaged[:16],
+        "innerRadiusBeforeMetres": {"min": round(float(inner.min()), 6),
+                                    "median": round(float(np.median(inner)), 6),
+                                    "max": round(float(inner.max()), 6)},
+        "targetRadiusMetres": {"min": round(float(surface.grid.min()), 6),
+                               "median": round(float(np.median(surface.grid)), 6),
+                               "max": round(float(surface.grid.max()), 6)},
+    }
+
+
+def conform(obj, indices: list[int], centre_xz: np.ndarray, surface: Surface, bins: int,
+            mode: str) -> dict:
+    """Draw the strap onto the surface under it, keeping the leather's depth.
+
+    The strap has an inner radius and the body has a reach, and the difference is
+    what the leather has to come in by. Every vertex in that direction moves by it,
+    horizontally and about the ring axis, so the outer face travels with the inner
+    one: the thickness and the edge profile are the same shape afterwards, only
+    wrapped around a waist rather than around an ellipse.
+
+    In "surface" the difference is read per azimuth and per height and interpolated
+    bilinearly, so the band tilts to the surface's slope; in "azimuth" it is one
+    number per direction and the band stays vertical, riding the widest height it
+    covers. Neither ever moves a vertex up or down: the band's extent is the source's.
+    """
+    picked = np.array(sorted(indices), dtype=int)
+    strap = points_of(obj)[picked]
+    angles, radius = azimuth(strap, centre_xz)
+    if float(radius.min()) < 1e-9:
+        raise RingError("conform gate: a strap vertex sits on the ring's own axis")
+    if mode == "azimuth":
+        shift, detail = azimuth_shift(strap, angles, centre_xz, surface.ridge, bins)
+    else:
+        shift, detail = surface_shift(strap, angles, centre_xz, surface, bins)
+    towards = np.stack([(strap[:, 0] - centre_xz[0]) / radius, np.zeros(len(strap)),
+                        (strap[:, 2] - centre_xz[1]) / radius], axis=1)
+    travel = towards * shift[:, None]
+    moved = strap + travel
+    before = bin_thickness(strap, centre_xz, bins)
+    after = bin_thickness(moved, centre_xz, bins)
+    before_slices = slice_thickness(strap, centre_xz, bins, surface.heights)
+    after_slices = slice_thickness(moved, centre_xz, bins, surface.heights)
+    basis = obj.matrix_world.to_3x3().inverted()
+    for at, index in enumerate(picked):
+        vertex = obj.data.vertices[int(index)]
+        vertex.co = vertex.co + (basis @ Vector(blender_from_runtime(travel[at])))
+    obj.data.update()
+    return {
+        "mode": mode,
+        "bins": bins,
+        "vertices": int(len(picked)),
+        "loudThresholdMetres": CONFORM_LOUD,
+        **detail,
         "thicknessBeforeMetres": {"min": round(float(before.min()), 6),
                                   "median": round(float(np.median(before)), 6),
                                   "max": round(float(before.max()), 6)},
@@ -537,8 +798,20 @@ def conform(obj, indices: list[int], centre_xz: np.ndarray, target_radius: np.nd
         "thicknessChangeMetres": {"median": round(float(np.median(np.abs(after - before))), 6),
                                   "p90": round(float(np.percentile(np.abs(after - before), 90)), 6),
                                   "max": round(float(np.abs(after - before).max()), 6)},
+        "thicknessPerSliceMetres": [[round(float(height), 6), _rounded(before_slices[level]),
+                                     _rounded(after_slices[level])]
+                                    for level, height in enumerate(surface.heights)],
+        "bandMetres": {
+            "before": [round(float(strap[:, 1].min()), 6), round(float(strap[:, 1].max()), 6)],
+            "after": [round(float(moved[:, 1].min()), 6), round(float(moved[:, 1].max()), 6)],
+            "heightBefore": round(float(strap[:, 1].max() - strap[:, 1].min()), 6),
+            "heightAfter": round(float(moved[:, 1].max() - moved[:, 1].min()), 6)},
         "maxVertexMoveMetres": round(float(np.abs(shift).max()), 6),
     }
+
+
+def _rounded(value: float) -> float | None:
+    return None if not np.isfinite(value) else round(float(value), 6)
 
 
 def transform(objects: list, centre_xz: np.ndarray, centre_y: float, scale: tuple[float, float, float],
@@ -1018,15 +1291,17 @@ def run(args) -> dict:
         raise RingError("strap gate: the join lost the strap island")
     fitted_object.vertex_groups.new(name=STRAP_GROUP).add(strap_vertices, 1.0, "REPLACE")
 
+    placed_band = (float(placed_strap[:, 1].min()), float(placed_strap[:, 1].max()))
+    conform_heights = np.linspace(placed_band[0], placed_band[1], CONFORM_SAMPLES)
     conformed: dict | None = None
     after_conform = before_seat
     if args.conform:
-        placed_band = (float(placed_strap[:, 1].min()), float(placed_strap[:, 1].max()))
         before_conform_points = np.array([tuple(vertex.co)
                                           for vertex in fitted_object.data.vertices])
-        radii, profile = surface_radii(dressed, placed_centre, placed_band, near_torso,
-                                       CONFORM_BINS, CONFORM_SAMPLES, CONFORM_GAP, CONFORM_KERNEL)
-        conformed = conform(fitted_object, strap_vertices, placed_centre, radii, CONFORM_BINS)
+        surface, profile = surface_radii(dressed, placed_centre, placed_band, near_torso,
+                                         CONFORM_BINS, CONFORM_SAMPLES, CONFORM_GAP, CONFORM_KERNEL)
+        conformed = conform(fitted_object, strap_vertices, placed_centre, surface, CONFORM_BINS,
+                            args.conform)
         conformed["target"] = profile
         # The hardware is welded to leather that just changed shape, so it rides the
         # conform by the same rule it rides the seat by, and before the seat runs.
@@ -1074,6 +1349,7 @@ def run(args) -> dict:
     strap_after = after_points[strap_vertices]
     after_seat = measure_strap(strap_after, placed_centre, args.bins, dressed, bare)
     seated_thickness = bin_thickness(strap_after, placed_centre, CONFORM_BINS)
+    seated_slices = slice_thickness(strap_after, placed_centre, CONFORM_BINS, conform_heights)
 
     torso_band = surface_points[(surface_points[:, 1] >= band[0]) & (surface_points[:, 1] <= band[1])
                                 & is_torso]
@@ -1120,6 +1396,9 @@ def run(args) -> dict:
         "deeperThan2mmBefore": sum(entry["deeperThan2mmBefore"] for entry in cleared) + strap_buried,
         "deeperThan2mmAfter": sum(entry["deeperThan2mmAfter"] for entry in cleared) + strap_buried,
         "strapDeeperThan2mm": strap_buried,
+        "strapBuriedBins": buried_bins(strap_after, placed_centre, CONFORM_BINS,
+                                       depths[np.array(strap_vertices, dtype=int)],
+                                       CLEARANCE_DEPTH),
         "table": cleared,
     }
 
@@ -1190,6 +1469,7 @@ def run(args) -> dict:
                       "maxTranslationMetres": round(max((entry["translationMetres"]
                                                          for entry in transported), default=0.0), 6)},
         "clearance": clearance,
+        "conformMode": args.conform,
         "conform": conformed,
         "strapBeforeSeat": before_seat,
         "strapAfterConform": after_conform,
@@ -1197,7 +1477,9 @@ def run(args) -> dict:
         "strapThicknessAfterSeatMetres": {
             "min": round(float(seated_thickness.min()), 6),
             "median": round(float(np.median(seated_thickness)), 6),
-            "max": round(float(seated_thickness.max()), 6)},
+            "max": round(float(seated_thickness.max()), 6),
+            "perSlice": [[round(float(height), 6), _rounded(seated_slices[level])]
+                         for level, height in enumerate(conform_heights)]},
         "strapExtents": extents(strap_after),
         "torsoExtents": {"dressed": extents(torso_band), "bare": extents(bare_band),
                          "band": [round(band[0], 6), round(band[1], 6)]},
@@ -1241,7 +1523,10 @@ def parse(argv: list[str]):
     parser.add_argument("--bins", type=int, default=AZIMUTH_BINS)
     parser.add_argument("--passes", type=int, default=3)
     parser.add_argument("--seat", choices=("strap", "merged", "layers"), default="strap")
-    parser.add_argument("--no-conform", dest="conform", action="store_false",
+    parser.add_argument("--conform", choices=("surface", "azimuth"), default="surface",
+                        help="surface follows the body around and up the band; azimuth keeps "
+                             "the band vertical on the widest height it covers")
+    parser.add_argument("--no-conform", dest="conform", action="store_const", const=None,
                         help="place by the ellipse alone and leave the cross section unread")
     parser.add_argument("--outdir", required=True)
     return parser.parse_args(argv)
