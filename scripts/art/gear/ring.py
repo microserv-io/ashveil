@@ -20,8 +20,10 @@ rides the strap: the patch of leather it is welded to says how that leather turn
 as well as where it went, and the whole part is carried by that one rigid move and
 keeps its own shape to the millimetre. What that leaves inside the clothes
 underneath - the belt was generated against nothing, so a pouch back can start in
-the hem - is then pushed radially out of the waist, whole part by whole part, which
-is the same rigid move with the ring rather than the strap saying which way.
+the hem - is then swung out, whole part by whole part, about the line of leather the
+part is bolted along. Only what hangs below the strap's own bottom edge is measured:
+inside the band the part is welded to leather the seat has legitimately conformed
+onto the tunic, and a part cannot be asked to clear the surface its anchor lies on.
 
 Every island and every triangle the source had survives to the runtime file. The
 2% debris rule that ate the belt's buckle, the alignment search, the tube fit and
@@ -111,8 +113,15 @@ CLUSTER_RADIUS = 0.005
 CLEARANCE_DEPTH = 0.002
 # What a cleared part keeps beyond the surface it was buried in.
 CLEARANCE_MARGIN = 0.003
-# The skirt's flare is curved, so one push out can bury a tall part again.
+# The skirt's flare is curved, so one swing out can bury a tall part again.
 CLEARANCE_PASSES = 3
+# How far a part may be swung off the pose it was drawn in. Past a quarter turn the
+# belt stops being the belt that was drawn, and the drawing is the thing to fix.
+HINGE_MAX_DEGREES = 25.0
+# A vertex this close to the hinge line sits on it, and no angle would swing it out.
+HINGE_MIN_LEVER = 0.002
+# What "welded to the leather" means on the source mesh, where nothing has moved yet.
+FLUSH_RAW = 0.002
 ISLAND_GROUP = "ring_island"
 STRAP_GROUP = "ring_strap"
 
@@ -550,17 +559,33 @@ def edge_stats(values: np.ndarray) -> dict:
             "tiltMetres": round(float(values.max() - values.min()), 6)}
 
 
-def band_profile(points: np.ndarray, centre_xz: np.ndarray, bins: int,
-                 inset: float = PROFILE_INSET, kernel: int = CONFORM_KERNEL) -> dict:
-    """Where the strap's own edges run around the ring, and the band a hide rule cuts.
+class Band(NamedTuple):
+    """The strap's own top and bottom edge per azimuth, and which side of them a point is.
 
-    A surface conform tilts the strap, so the heights it covers at one azimuth are not
-    the heights it covers at the next: a flat band spanning the whole strap cuts hem
-    the leather is not behind at the azimuths where it rides low, and the band they
-    all share is a slab a millimetre high. `hideTop` and `hideBottom` are the edges
-    themselves, smoothed the way the conform target is and pulled `inset` into the
-    leather so the cut always ends under it.
+    A conformed strap tilts by nearly its own height around the waist, so "under the
+    leather" is a different height at every azimuth and one pair of numbers gets it
+    wrong wherever the band rides low.
     """
+
+    centre: np.ndarray
+    tops: np.ndarray
+    bottoms: np.ndarray
+    bins: int
+    empty_bins: int
+
+    def _at(self, points: np.ndarray) -> np.ndarray:
+        return bin_index(azimuth(points, self.centre)[0], self.bins)
+
+    def below(self, points: np.ndarray) -> np.ndarray:
+        return points[:, 1] < self.bottoms[self._at(points)]
+
+    def within(self, points: np.ndarray) -> np.ndarray:
+        at = self._at(points)
+        return (points[:, 1] >= self.bottoms[at]) & (points[:, 1] <= self.tops[at])
+
+
+def band_edges(points: np.ndarray, centre_xz: np.ndarray, bins: int) -> Band:
+    """Per azimuth, where the leather actually starts and stops."""
     at = bin_index(azimuth(points, centre_xz)[0], bins)
     tops = np.full(bins, np.nan)
     bottoms = np.full(bins, np.nan)
@@ -573,8 +598,22 @@ def band_profile(points: np.ndarray, centre_xz: np.ndarray, bins: int,
     if not np.isfinite(tops).any():
         raise RingError("band gate: the strap covers no azimuth bin")
     empty = int((~np.isfinite(tops)).sum())
-    tops = circular_fill(tops)
-    bottoms = circular_fill(bottoms)
+    return Band(centre_xz, circular_fill(tops), circular_fill(bottoms), bins, empty)
+
+
+def band_profile(points: np.ndarray, centre_xz: np.ndarray, bins: int,
+                 inset: float = PROFILE_INSET, kernel: int = CONFORM_KERNEL) -> dict:
+    """Where the strap's own edges run around the ring, and the band a hide rule cuts.
+
+    A surface conform tilts the strap, so the heights it covers at one azimuth are not
+    the heights it covers at the next: a flat band spanning the whole strap cuts hem
+    the leather is not behind at the azimuths where it rides low, and the band they
+    all share is a slab a millimetre high. `hideTop` and `hideBottom` are the edges
+    themselves, smoothed the way the conform target is and pulled `inset` into the
+    leather so the cut always ends under it.
+    """
+    edges = band_edges(points, centre_xz, bins)
+    tops, bottoms, empty = edges.tops, edges.bottoms, edges.empty_bins
     hide_top = circular_smooth(tops, kernel) - inset
     hide_bottom = circular_smooth(bottoms, kernel) + inset
     return {
@@ -1152,20 +1191,6 @@ def island_clusters(points: np.ndarray, members: list[list[int]], strap_at: int,
                   key=lambda group: -sum(len(members[at]) for at in group))
 
 
-def outward(points: np.ndarray, centre_xz: np.ndarray) -> np.ndarray:
-    """Away from the waist axis and level with it, in the runtime frame.
-
-    A part is buried across the body's own cross section, so out is out from the ring
-    and never up: lifting a pouch would only slide it up the strap it hangs from.
-    """
-    middle = points.mean(axis=0)
-    away = np.array([middle[0] - centre_xz[0], 0.0, middle[2] - centre_xz[1]])
-    length = float(np.linalg.norm(away))
-    if length < 1e-9:
-        raise RingError("clearance gate: a part sits on the ring's own axis")
-    return away / length
-
-
 def runtime_points(obj, indices: np.ndarray) -> np.ndarray:
     matrix = obj.matrix_world
     return np.array([runtime_from_blender(matrix @ obj.data.vertices[int(at)].co)
@@ -1177,10 +1202,10 @@ def depths_of(obj, indices: np.ndarray, solid: Solid) -> np.ndarray:
     return np.array([solid.depth(matrix @ obj.data.vertices[int(at)].co) for at in indices])
 
 
-def slide(obj, indices: np.ndarray, runtime_shift: np.ndarray) -> None:
-    shift = obj.matrix_world.to_3x3().inverted() @ Vector(blender_from_runtime(runtime_shift))
-    for at in indices:
-        obj.data.vertices[int(at)].co = obj.data.vertices[int(at)].co + shift
+def place(obj, indices: np.ndarray, runtime: np.ndarray) -> None:
+    matrix = obj.matrix_world.inverted()
+    for at, index in enumerate(indices):
+        obj.data.vertices[int(index)].co = matrix @ Vector(blender_from_runtime(runtime[at]))
 
 
 def nearest_strap(obj, indices: np.ndarray, tree: KDTree) -> float:
@@ -1188,54 +1213,194 @@ def nearest_strap(obj, indices: np.ndarray, tree: KDTree) -> float:
     return min(float(tree.find(obj.data.vertices[int(at)].co)[2]) for at in indices)
 
 
-def rigid_clearance(obj, members: list[list[int]], clusters: list[list[int]], target: Solid,
-                    strap: list[int], centre_xz: np.ndarray, limit: float, margin: float,
-                    passes: int) -> list[dict]:
-    """Push a buried part straight out of the waist, whole, until it is out of the cloth.
+def surface_tree(points: np.ndarray, faces: list[tuple[int, ...]]) -> BVHTree:
+    return BVHTree.FromPolygons([tuple(point) for point in points], faces, all_triangles=False)
 
-    The belt was generated against nothing, so a pouch back or a sash edge can start
-    inside the body and the hem it hangs against. Hardware may not be reshaped, which
-    leaves exactly one move: the ring says which way out is, and the part travels
-    along it by what it was buried by plus a margin. The waist is not a cylinder, so
-    a wide part can find a new worst vertex on the way out and the push repeats.
 
-    One worst vertex moves the whole part, so a deep vertex on a big cluster buys a
-    large move: the report carries the applied translation and how close the part
-    still comes to the strap, because that is what the move spends.
+def nearest_surface(tree: BVHTree, points: np.ndarray) -> float:
+    """How close a part comes to a surface rather than to its vertices.
+
+    A strap carries a vertex every few millimetres, so a vertex-to-vertex distance
+    reads a part welded flat onto the leather as standing a millimetre off it.
+    """
+    best = float("inf")
+    for point in points:
+        found = tree.find_nearest(Vector(tuple(point)))
+        if found[3] is not None:
+            best = min(best, float(found[3]))
+    return best
+
+
+def strap_surface(obj, points: np.ndarray, strap: list[int]) -> BVHTree:
+    """The leather's own faces, out of the joined mesh every part now shares."""
+    picked = set(strap)
+    return surface_tree(points, [tuple(face.vertices) for face in obj.data.polygons
+                                 if all(at in picked for at in face.vertices)])
+
+
+def raw_flush(islands: list, strap_at: int, limit: float) -> dict[int, float]:
+    """How close every island starts to the leather, before anything has moved it.
+
+    Only a part drawn welded to the strap can be said to have come off it later: a
+    stud floating a hand away in the source was drawn floating and stays that way.
+    """
+    strap = islands[strap_at]
+    tree = surface_tree(points_of(strap),
+                        [tuple(face.vertices) for face in strap.data.polygons])
+    gaps = {}
+    for at, island in enumerate(islands):
+        if at == strap_at:
+            continue
+        gap = nearest_surface(tree, points_of(island))
+        if gap < limit:
+            gaps[at] = gap
+    return gaps
+
+
+def island_gaps(obj, members: list[list[int]], strap: list[int],
+                wanted: dict[int, float]) -> dict[int, float]:
+    """The same measure on the fitted mesh: is the welded part still on the leather?"""
+    points = points_of(obj)
+    tree = strap_surface(obj, points, strap)
+    return {at: nearest_surface(tree, points[np.array(members[at], dtype=int)])
+            for at in sorted(wanted) if members[at]}
+
+
+def worst_gap(gaps: dict[int, float], islands: list[int]) -> float | None:
+    """The furthest off the leather any welded part of one cluster has come."""
+    picked = [gaps[at] for at in islands if at in gaps]
+    return round(max(picked), 6) if picked else None
+
+
+def hinge_frame(patch: np.ndarray, centre_xz: np.ndarray) -> tuple[np.ndarray, np.ndarray,
+                                                                   np.ndarray]:
+    """Where a part is bolted on, and the one line it can swing about there.
+
+    Level and along the leather. A hinge across the strap would peel the part off it
+    sideways, and a hinge on the radius would swing it round the waist instead of away
+    from the body, which is the only direction that empties a thigh.
+    """
+    pivot = patch.mean(axis=0)
+    away = np.array([pivot[0] - centre_xz[0], 0.0, pivot[2] - centre_xz[1]])
+    length = float(np.linalg.norm(away))
+    if length < 1e-9:
+        raise RingError("hinge gate: a part is bolted to the ring's own axis")
+    radial = away / length
+    return pivot, np.array([-radial[2], 0.0, radial[0]]), radial
+
+
+def swung(points: np.ndarray, pivot: np.ndarray, axis: np.ndarray, angle: float) -> np.ndarray:
+    """One rigid turn about a line, in the runtime frame."""
+    offsets = points - pivot
+    cos, sin = math.cos(angle), math.sin(angle)
+    return (pivot + offsets * cos + np.cross(axis, offsets) * sin
+            + np.outer(offsets @ axis, axis) * (1.0 - cos))
+
+
+def lever_arm(point: np.ndarray, pivot: np.ndarray, axis: np.ndarray) -> float:
+    offset = point - pivot
+    return float(np.linalg.norm(offset - (offset @ axis) * axis))
+
+
+def hinge_clearance(obj, members: list[list[int]], clusters: list[list[int]], target: Solid,
+                    strap: list[int], band: Band, limit: float, margin: float, passes: int,
+                    max_degrees: float) -> list[dict]:
+    """Swing a buried part out on the leather it is bolted to, never off it.
+
+    Pushing a part straight out of the waist cost the belt its hardware. The depth
+    that drove the push was read across the strap's own band as well as under it, and
+    inside that band a pouch back is welded to leather the conform has legitimately
+    laid onto the tunic - so the whole part paid, in a centimetres-long translation,
+    for a depth belonging to the strap. The band is exempt here and only what hangs
+    below the leather is measured; the in-band depth is reported and left alone.
+
+    The move is a rotation about the line the part is bolted along, so the anchor
+    stays where the strap put it while the hanging end swings clear. The angle is the
+    worst vertex's own depth over its own lever about that line, it is capped, and
+    what is left is reported rather than chased: a part needing more than a quarter
+    turn is a part drawn wrong, not a part to bend further.
     """
     leather = KDTree(len(strap))
     for at, index in enumerate(strap):
         leather.insert(obj.data.vertices[index].co, at)
     leather.balance()
+    # The strap never moves here, so one snapshot answers every part's anchor.
+    seated = points_of(obj)
+    anchor = KDTree(len(strap))
+    for at, index in enumerate(strap):
+        anchor.insert(Vector(tuple(seated[index])), at)
+    anchor.balance()
+    ceiling = math.radians(max_degrees)
     rows = []
-    for cluster in clusters:
+    for cluster_at, cluster in enumerate(clusters):
         indices = np.array(sorted(index for island in cluster for index in members[island]),
                            dtype=int)
+        points = seated[indices]
+        attached, borrowed, _ = attachment_patch(indices, strap, seated, anchor, ATTACH_RADIUS)
+        pivot, axis, radial = hinge_frame(seated[attached], band.centre)
+        # Frozen where the seat left the part, so before and after weigh the same
+        # vertices: swinging out lifts a hem, and a set read again sheds its worst.
+        under, within = band.below(points), band.within(points)
+        over = ~(under | within)
         depths = depths_of(obj, indices, target)
-        first, buried = float(depths.max(initial=0.0)), int((depths > limit).sum())
+        first, first_buried = float(depths[under].max(initial=0.0)), int((depths[under] > limit).sum())
+        advisory, advisory_buried = (float(depths[within].max(initial=0.0)),
+                                     int((depths[within] > limit).sum()))
+        crown, crown_buried = (float(depths[over].max(initial=0.0)),
+                               int((depths[over] > limit).sum()))
         touched = nearest_strap(obj, indices, leather)
-        applied = np.zeros(3)
-        steps = []
-        while len(steps) < passes and float(depths.max(initial=0.0)) > limit:
-            push = float(depths.max(initial=0.0)) + margin
-            step = outward(runtime_points(obj, indices), centre_xz) * push
-            slide(obj, indices, step)
-            applied = applied + step
-            depths = depths_of(obj, indices, target)
-            steps.append({"pushMetres": round(push, 6),
-                          "maxDepthAfterMetres": round(float(depths.max(initial=0.0)), 6)})
+        turned, steps, note = 0.0, [], None
+        if first_buried:
+            lift = np.cross(axis, points[under].mean(axis=0) - pivot)
+            sense = 1.0 if float(lift @ radial) >= 0.0 else -1.0
+            while (len(steps) < passes and float(depths[under].max(initial=0.0)) > limit
+                   and turned < ceiling - 1e-9):
+                worst = int(np.argmax(np.where(under, depths, -1.0)))
+                lever = lever_arm(points[worst], pivot, axis)
+                if lever < HINGE_MIN_LEVER:
+                    note = "the worst vertex sits on the hinge line"
+                    break
+                angle = min((float(depths[worst]) + margin) / lever, ceiling - turned)
+                points = swung(points, pivot, axis, sense * angle)
+                place(obj, indices, points)
+                turned += angle
+                depths = depths_of(obj, indices, target)
+                steps.append({"degrees": round(math.degrees(angle), 4),
+                              "leverMetres": round(lever, 6),
+                              "belowBandMaxDepthAfterMetres":
+                                  round(float(depths[under].max(initial=0.0)), 6)})
+        last = float(depths[under].max(initial=0.0))
+        if last > limit and note is None:
+            note = (f"the cap of {max_degrees:g} degrees was reached"
+                    if turned >= ceiling - 1e-9 else "the pass limit was reached")
         rows.append({
+            "cluster": cluster_at,
             "islands": cluster,
             "vertices": int(len(indices)),
-            "maxDepthBeforeMetres": round(first, 6),
-            "maxDepthAfterMetres": round(float(depths.max(initial=0.0)), 6),
-            "deeperThan2mmBefore": buried,
-            "deeperThan2mmAfter": int((depths > limit).sum()),
+            "belowBandVertices": int(under.sum()),
+            "inBandVertices": int(within.sum()),
+            "aboveBandVertices": int(over.sum()),
+            "attachmentVertices": int(len(attached)),
+            "fromNearestStrapVertex": borrowed,
+            "hingeMetres": [round(float(value), 6) for value in pivot],
+            "hingeAxis": [round(float(value), 6) for value in axis],
+            "belowBandMaxDepthBeforeMetres": round(first, 6),
+            "belowBandMaxDepthAfterMetres": round(last, 6),
+            "belowBandDeeperThan2mmBefore": first_buried,
+            "belowBandDeeperThan2mmAfter": int((depths[under] > limit).sum()),
+            "inBandMaxDepthBeforeMetres": round(advisory, 6),
+            "inBandMaxDepthAfterMetres": round(float(depths[within].max(initial=0.0)), 6),
+            "inBandDeeperThan2mmBefore": advisory_buried,
+            "inBandDeeperThan2mmAfter": int((depths[within] > limit).sum()),
+            "aboveBandMaxDepthBeforeMetres": round(crown, 6),
+            "aboveBandMaxDepthAfterMetres": round(float(depths[over].max(initial=0.0)), 6),
+            "aboveBandDeeperThan2mmBefore": crown_buried,
+            "aboveBandDeeperThan2mmAfter": int((depths[over] > limit).sum()),
+            "degreesApplied": round(math.degrees(turned), 4),
+            "passes": len(steps),
+            "residual": note,
             "toStrapBeforeMetres": round(touched, 6),
             "toStrapAfterMetres": round(nearest_strap(obj, indices, leather), 6),
-            "passes": len(steps),
-            "translationMetres": round(float(np.linalg.norm(applied)), 6),
-            "translation": [round(float(value), 6) for value in applied],
             "steps": steps,
         })
     obj.data.update()
@@ -1261,9 +1426,7 @@ def island_table(profiles: list[dict], members: list[list[int]], strap_at: int,
             row.update({key: value for key, value in move.items() if key != "islands"})
         push = pushed.get(at)
         if push:
-            row.update({"cluster": push[0],
-                        "clearanceMetres": push[1]["translationMetres"],
-                        "clearance": push[1]["translation"]})
+            row.update({"cluster": push[0], "hingeDegrees": push[1]["degreesApplied"]})
         rows.append(row)
     rows.sort(key=lambda entry: -entry["triangles"])
     return rows
@@ -1361,6 +1524,10 @@ def run(args) -> dict:
            "vertices": sum(len(obj.data.vertices) for obj in islands)}
     strap, chosen = strap_island(islands, args.bins)
     strap_points = points_of(strap)
+    strap_at = islands.index(strap)
+    # Read on the source, where nothing has moved yet: which parts were drawn welded
+    # to the leather is the only ground for saying one has come off it later.
+    flush = raw_flush(islands, strap_at, FLUSH_RAW)
 
     centre, vertex_mean = ring_centre(strap_points, args.bins)
     inner, outer = bin_extremes(strap_points, centre, args.bins)
@@ -1418,7 +1585,6 @@ def run(args) -> dict:
     placed_centre = np.array([destination[0], destination[2]])
     hardware = island_azimuths(islands, strap, placed_centre)
     profiles = island_profiles(islands, placed_centre)
-    strap_at = islands.index(strap)
     before_seat = measure_strap(placed_strap, placed_centre, args.bins, dressed, bare)
 
     # Joining renumbers vertices and both the contact measurement and the rigid
@@ -1469,6 +1635,7 @@ def run(args) -> dict:
 
     transported: list[dict] = []
     cleared: list[dict] = []
+    gaps_seated: dict[int, float] = {}
     ring_centre_xz = placed_centre
     if limited:
         after_seat_points = np.array([tuple(vertex.co) for vertex in fitted_object.data.vertices])
@@ -1477,9 +1644,12 @@ def run(args) -> dict:
                                       after_seat_points - before_seat_points, ATTACH_RADIUS)
         # The seated strap, not the placement destination, is where the waist now is.
         ring_centre_xz, _ = ring_centre(points_of(fitted_object)[strap_vertices], args.bins)
-        cleared = rigid_clearance(fitted_object, members, clusters, dressed, strap_vertices,
-                                  ring_centre_xz, CLEARANCE_DEPTH, CLEARANCE_MARGIN,
-                                  CLEARANCE_PASSES)
+        gaps_seated = island_gaps(fitted_object, members, strap_vertices, flush)
+        cleared = hinge_clearance(fitted_object, members, clusters, dressed, strap_vertices,
+                                  band_edges(points_of(fitted_object)[strap_vertices],
+                                             ring_centre_xz, CONFORM_BINS),
+                                  CLEARANCE_DEPTH, CLEARANCE_MARGIN, CLEARANCE_PASSES,
+                                  HINGE_MAX_DEGREES)
 
     after_points = points_of(fitted_object)
     strap_after = after_points[strap_vertices]
@@ -1529,28 +1699,54 @@ def run(args) -> dict:
         "maxPenetrationMetres": round(float(bare_depths.max(initial=0.0)), 9),
         "deeperThan2mm": int((bare_depths > 0.002).sum()),
     }
+    gaps_final = island_gaps(fitted_object, members, strap_vertices, flush) if limited else {}
+    for row in cleared:
+        welded = [island for island in row["islands"] if island in flush]
+        row["flushIslands"] = welded
+        row["attachmentGapBeforeMetres"] = worst_gap(gaps_seated, welded)
+        row["attachmentGapAfterMetres"] = worst_gap(gaps_final, welded)
     islands_table = island_table(profiles, members, strap_at, transported, cleared, depths,
                                  bare_depths)
     strap_buried = int((depths[np.array(strap_vertices, dtype=int)] > CLEARANCE_DEPTH).sum())
     clearance = {
+        "mode": "hinge",
         "clusterRadiusMetres": CLUSTER_RADIUS,
         "depthLimitMetres": CLEARANCE_DEPTH,
         "marginMetres": CLEARANCE_MARGIN,
         "maxPasses": CLEARANCE_PASSES,
+        "maxDegrees": HINGE_MAX_DEGREES,
+        "bandBins": CONFORM_BINS,
         "ringCentreXZ": [round(float(ring_centre_xz[0]), 6), round(float(ring_centre_xz[1]), 6)],
         "clusters": len(clusters),
-        "clustersMoved": sum(1 for entry in cleared if entry["passes"]),
-        "maxTranslationMetres": round(max((entry["translationMetres"] for entry in cleared),
-                                          default=0.0), 6),
+        "clustersTurned": sum(1 for entry in cleared if entry["passes"]),
+        "maxDegreesApplied": round(max((entry["degreesApplied"] for entry in cleared),
+                                       default=0.0), 4),
         # The strap is not a candidate and does not move here, so its own buried count
         # is the same on both sides of the step and belongs to both totals.
-        "deeperThan2mmBefore": sum(entry["deeperThan2mmBefore"] for entry in cleared) + strap_buried,
-        "deeperThan2mmAfter": sum(entry["deeperThan2mmAfter"] for entry in cleared) + strap_buried,
+        "belowBandDeeperThan2mmBefore": sum(entry["belowBandDeeperThan2mmBefore"]
+                                            for entry in cleared) + strap_buried,
+        "belowBandDeeperThan2mmAfter": sum(entry["belowBandDeeperThan2mmAfter"]
+                                           for entry in cleared) + strap_buried,
+        # Advisory: a part welded at or above the band shares whatever the leather is
+        # inside, and the leather is legitimately conformed onto the tunic.
+        "inBandDeeperThan2mmAdvisory": sum(entry["inBandDeeperThan2mmAfter"] for entry in cleared),
+        "aboveBandDeeperThan2mmAdvisory": sum(entry["aboveBandDeeperThan2mmAfter"]
+                                              for entry in cleared),
+        "residual": [entry["cluster"] for entry in cleared if entry["residual"]],
+        "attachmentGapAfterMetres": worst_gap(gaps_final, sorted(flush)),
         "strapDeeperThan2mm": strap_buried,
         "strapBuriedBins": buried_bins(strap_after, placed_centre, CONFORM_BINS,
                                        depths[np.array(strap_vertices, dtype=int)],
                                        CLEARANCE_DEPTH),
         "table": cleared,
+    }
+    attachment = {
+        "rawFlushLimitMetres": FLUSH_RAW,
+        "islands": sorted(flush),
+        "maxGapAfterMetres": worst_gap(gaps_final, sorted(flush)),
+        "table": [{"island": at, "rawMetres": round(flush[at], 6),
+                   "seatedMetres": worst_gap(gaps_seated, [at]),
+                   "finalMetres": worst_gap(gaps_final, [at])} for at in sorted(flush)],
     }
 
     measured = gate.measure(glb_path, str(loaded["path"]), contract, source_had, outside)
@@ -1628,6 +1824,7 @@ def run(args) -> dict:
                       "patchMinSpreadMetres": PATCH_MIN_SPREAD,
                       **transport_summary(transported)},
         "clearance": clearance,
+        "attachment": attachment,
         "conformMode": args.conform,
         "conform": conformed,
         "strapBeforeSeat": before_seat,

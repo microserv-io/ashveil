@@ -273,10 +273,10 @@
     "vertices": 11670,
     "bodyVertices": 17276,
     "counts": {
-      "legs": 4258,
-      "waist": 7323
+      "legs": 3413,
+      "waist": 8257
     },
-    "untagged": 89,
+    "untagged": 0,
     "hides": [
       "waist"
     ],
@@ -650,7 +650,7 @@
       "island": 23,
       "isStrap": false,
       "joinedVertices": 802,
-      "insideDressedDeeperThan2mm": 16,
+      "insideDressedDeeperThan2mm": 68,
       "insideBareDeeperThan2mm": 0,
       "cluster": 1,
       "clusterVertices": 1515,
@@ -667,12 +667,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 860,
@@ -703,12 +698,7 @@
         2.8e-05,
         8.8e-05
       ],
-      "clearanceMetres": 0.034219,
-      "clearance": [
-        -0.027264,
-        0.0,
-        0.020679
-      ]
+      "hingeDegrees": 9.2307
     },
     {
       "triangles": 843,
@@ -739,12 +729,7 @@
         2.8e-05,
         8.8e-05
       ],
-      "clearanceMetres": 0.034219,
-      "clearance": [
-        -0.027264,
-        0.0,
-        0.020679
-      ]
+      "hingeDegrees": 9.2307
     },
     {
       "triangles": 626,
@@ -758,7 +743,7 @@
       "island": 19,
       "isStrap": false,
       "joinedVertices": 314,
-      "insideDressedDeeperThan2mm": 0,
+      "insideDressedDeeperThan2mm": 6,
       "insideBareDeeperThan2mm": 0,
       "cluster": 2,
       "clusterVertices": 371,
@@ -775,12 +760,7 @@
         1.1e-05,
         8.3e-05
       ],
-      "clearanceMetres": 0.014316,
-      "clearance": [
-        -0.001662,
-        0.0,
-        0.01422
-      ]
+      "hingeDegrees": 0.0
     },
     {
       "triangles": 574,
@@ -794,7 +774,7 @@
       "island": 7,
       "isStrap": false,
       "joinedVertices": 290,
-      "insideDressedDeeperThan2mm": 0,
+      "insideDressedDeeperThan2mm": 5,
       "insideBareDeeperThan2mm": 0,
       "cluster": 0,
       "clusterVertices": 2473,
@@ -811,12 +791,7 @@
         2.8e-05,
         8.8e-05
       ],
-      "clearanceMetres": 0.034219,
-      "clearance": [
-        -0.027264,
-        0.0,
-        0.020679
-      ]
+      "hingeDegrees": 9.2307
     },
     {
       "triangles": 571,
@@ -830,7 +805,7 @@
       "island": 6,
       "isStrap": false,
       "joinedVertices": 288,
-      "insideDressedDeeperThan2mm": 0,
+      "insideDressedDeeperThan2mm": 1,
       "insideBareDeeperThan2mm": 0,
       "cluster": 0,
       "clusterVertices": 2473,
@@ -847,12 +822,7 @@
         2.8e-05,
         8.8e-05
       ],
-      "clearanceMetres": 0.034219,
-      "clearance": [
-        -0.027264,
-        0.0,
-        0.020679
-      ]
+      "hingeDegrees": 9.2307
     },
     {
       "triangles": 522,
@@ -866,7 +836,7 @@
       "island": 10,
       "isStrap": false,
       "joinedVertices": 263,
-      "insideDressedDeeperThan2mm": 0,
+      "insideDressedDeeperThan2mm": 44,
       "insideBareDeeperThan2mm": 0,
       "cluster": 0,
       "clusterVertices": 2473,
@@ -883,12 +853,7 @@
         2.8e-05,
         8.8e-05
       ],
-      "clearanceMetres": 0.034219,
-      "clearance": [
-        -0.027264,
-        0.0,
-        0.020679
-      ]
+      "hingeDegrees": 9.2307
     },
     {
       "triangles": 522,
@@ -902,7 +867,7 @@
       "island": 15,
       "isStrap": false,
       "joinedVertices": 263,
-      "insideDressedDeeperThan2mm": 0,
+      "insideDressedDeeperThan2mm": 55,
       "insideBareDeeperThan2mm": 0,
       "cluster": 0,
       "clusterVertices": 2473,
@@ -919,12 +884,7 @@
         2.8e-05,
         8.8e-05
       ],
-      "clearanceMetres": 0.034219,
-      "clearance": [
-        -0.027264,
-        0.0,
-        0.020679
-      ]
+      "hingeDegrees": 9.2307
     },
     {
       "triangles": 462,
@@ -938,7 +898,7 @@
       "island": 46,
       "isStrap": false,
       "joinedVertices": 233,
-      "insideDressedDeeperThan2mm": 0,
+      "insideDressedDeeperThan2mm": 3,
       "insideBareDeeperThan2mm": 0,
       "cluster": 1,
       "clusterVertices": 1515,
@@ -955,12 +915,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 180,
@@ -991,12 +946,7 @@
         2.8e-05,
         8.8e-05
       ],
-      "clearanceMetres": 0.034219,
-      "clearance": [
-        -0.027264,
-        0.0,
-        0.020679
-      ]
+      "hingeDegrees": 9.2307
     },
     {
       "triangles": 158,
@@ -1027,12 +977,7 @@
         2.8e-05,
         8.8e-05
       ],
-      "clearanceMetres": 0.034219,
-      "clearance": [
-        -0.027264,
-        0.0,
-        0.020679
-      ]
+      "hingeDegrees": 9.2307
     },
     {
       "triangles": 158,
@@ -1063,12 +1008,7 @@
         2.8e-05,
         8.8e-05
       ],
-      "clearanceMetres": 0.034219,
-      "clearance": [
-        -0.027264,
-        0.0,
-        0.020679
-      ]
+      "hingeDegrees": 9.2307
     },
     {
       "triangles": 156,
@@ -1099,12 +1039,7 @@
         2.8e-05,
         8.8e-05
       ],
-      "clearanceMetres": 0.034219,
-      "clearance": [
-        -0.027264,
-        0.0,
-        0.020679
-      ]
+      "hingeDegrees": 9.2307
     },
     {
       "triangles": 130,
@@ -1118,7 +1053,7 @@
       "island": 45,
       "isStrap": false,
       "joinedVertices": 65,
-      "insideDressedDeeperThan2mm": 0,
+      "insideDressedDeeperThan2mm": 11,
       "insideBareDeeperThan2mm": 0,
       "cluster": 3,
       "clusterVertices": 65,
@@ -1135,12 +1070,7 @@
         1.3e-05,
         0.00047
       ],
-      "clearanceMetres": 0.011721,
-      "clearance": [
-        0.00356,
-        0.0,
-        0.011168
-      ]
+      "hingeDegrees": 0.0
     },
     {
       "triangles": 106,
@@ -1171,12 +1101,7 @@
         1.1e-05,
         8.3e-05
       ],
-      "clearanceMetres": 0.014316,
-      "clearance": [
-        -0.001662,
-        0.0,
-        0.01422
-      ]
+      "hingeDegrees": 0.0
     },
     {
       "triangles": 36,
@@ -1207,12 +1132,7 @@
         2.8e-05,
         8.8e-05
       ],
-      "clearanceMetres": 0.034219,
-      "clearance": [
-        -0.027264,
-        0.0,
-        0.020679
-      ]
+      "hingeDegrees": 9.2307
     },
     {
       "triangles": 36,
@@ -1243,12 +1163,7 @@
         2.8e-05,
         8.8e-05
       ],
-      "clearanceMetres": 0.034219,
-      "clearance": [
-        -0.027264,
-        0.0,
-        0.020679
-      ]
+      "hingeDegrees": 9.2307
     },
     {
       "triangles": 36,
@@ -1279,12 +1194,7 @@
         2.8e-05,
         8.8e-05
       ],
-      "clearanceMetres": 0.034219,
-      "clearance": [
-        -0.027264,
-        0.0,
-        0.020679
-      ]
+      "hingeDegrees": 9.2307
     },
     {
       "triangles": 36,
@@ -1315,12 +1225,7 @@
         2.8e-05,
         8.8e-05
       ],
-      "clearanceMetres": 0.034219,
-      "clearance": [
-        -0.027264,
-        0.0,
-        0.020679
-      ]
+      "hingeDegrees": 9.2307
     },
     {
       "triangles": 30,
@@ -1351,12 +1256,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1387,12 +1287,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1423,12 +1318,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1459,12 +1349,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1495,12 +1380,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1531,12 +1411,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1567,12 +1442,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1603,12 +1473,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1622,7 +1487,7 @@
       "island": 29,
       "isStrap": false,
       "joinedVertices": 20,
-      "insideDressedDeeperThan2mm": 13,
+      "insideDressedDeeperThan2mm": 0,
       "insideBareDeeperThan2mm": 0,
       "cluster": 1,
       "clusterVertices": 1515,
@@ -1639,12 +1504,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1675,12 +1535,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1711,12 +1566,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1747,12 +1597,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1783,12 +1628,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1802,7 +1642,7 @@
       "island": 34,
       "isStrap": false,
       "joinedVertices": 20,
-      "insideDressedDeeperThan2mm": 11,
+      "insideDressedDeeperThan2mm": 0,
       "insideBareDeeperThan2mm": 0,
       "cluster": 1,
       "clusterVertices": 1515,
@@ -1819,12 +1659,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1838,7 +1673,7 @@
       "island": 35,
       "isStrap": false,
       "joinedVertices": 20,
-      "insideDressedDeeperThan2mm": 10,
+      "insideDressedDeeperThan2mm": 0,
       "insideBareDeeperThan2mm": 0,
       "cluster": 1,
       "clusterVertices": 1515,
@@ -1855,12 +1690,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1891,12 +1721,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1927,12 +1752,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1963,12 +1783,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -1999,12 +1814,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -2035,12 +1845,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -2054,7 +1859,7 @@
       "island": 41,
       "isStrap": false,
       "joinedVertices": 20,
-      "insideDressedDeeperThan2mm": 20,
+      "insideDressedDeeperThan2mm": 0,
       "insideBareDeeperThan2mm": 0,
       "cluster": 1,
       "clusterVertices": 1515,
@@ -2071,12 +1876,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -2090,7 +1890,7 @@
       "island": 42,
       "isStrap": false,
       "joinedVertices": 20,
-      "insideDressedDeeperThan2mm": 4,
+      "insideDressedDeeperThan2mm": 0,
       "insideBareDeeperThan2mm": 0,
       "cluster": 1,
       "clusterVertices": 1515,
@@ -2107,12 +1907,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -2143,12 +1938,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 30,
@@ -2179,12 +1969,7 @@
         2e-06,
         3.8e-05
       ],
-      "clearanceMetres": 0.035934,
-      "clearance": [
-        0.024351,
-        0.0,
-        0.026425
-      ]
+      "hingeDegrees": 20.6256
     },
     {
       "triangles": 24,
@@ -2215,12 +2000,7 @@
         2.8e-05,
         8.8e-05
       ],
-      "clearanceMetres": 0.034219,
-      "clearance": [
-        -0.027264,
-        0.0,
-        0.020679
-      ]
+      "hingeDegrees": 9.2307
     },
     {
       "triangles": 24,
@@ -2251,12 +2031,7 @@
         2.8e-05,
         8.8e-05
       ],
-      "clearanceMetres": 0.034219,
-      "clearance": [
-        -0.027264,
-        0.0,
-        0.020679
-      ]
+      "hingeDegrees": 9.2307
     },
     {
       "triangles": 23,
@@ -2287,12 +2062,7 @@
         2.8e-05,
         8.8e-05
       ],
-      "clearanceMetres": 0.034219,
-      "clearance": [
-        -0.027264,
-        0.0,
-        0.020679
-      ]
+      "hingeDegrees": 9.2307
     }
   ],
   "transport": {
@@ -2491,19 +2261,26 @@
     ]
   },
   "clearance": {
+    "mode": "hinge",
     "clusterRadiusMetres": 0.005,
     "depthLimitMetres": 0.002,
     "marginMetres": 0.003,
     "maxPasses": 3,
+    "maxDegrees": 25.0,
+    "bandBins": 72,
     "ringCentreXZ": [
       -0.000154,
       -0.01729
     ],
     "clusters": 4,
-    "clustersMoved": 4,
-    "maxTranslationMetres": 0.035934,
-    "deeperThan2mmBefore": 442,
-    "deeperThan2mmAfter": 109,
+    "clustersTurned": 2,
+    "maxDegreesApplied": 20.6256,
+    "belowBandDeeperThan2mmBefore": 258,
+    "belowBandDeeperThan2mmAfter": 35,
+    "inBandDeeperThan2mmAdvisory": 158,
+    "aboveBandDeeperThan2mmAdvisory": 35,
+    "residual": [],
+    "attachmentGapAfterMetres": 6.2e-05,
     "strapDeeperThan2mm": 35,
     "strapBuriedBins": [
       {
@@ -2599,6 +2376,7 @@
     ],
     "table": [
       {
+        "cluster": 0,
         "islands": [
           0,
           1,
@@ -2619,31 +2397,54 @@
           17
         ],
         "vertices": 2473,
-        "maxDepthBeforeMetres": 0.012444,
-        "maxDepthAfterMetres": 0.0,
-        "deeperThan2mmBefore": 194,
-        "deeperThan2mmAfter": 0,
-        "toStrapBeforeMetres": 0.000512,
-        "toStrapAfterMetres": 0.022202,
-        "passes": 2,
-        "translationMetres": 0.034219,
-        "translation": [
-          -0.027264,
-          0.0,
-          0.020679
+        "belowBandVertices": 1446,
+        "inBandVertices": 980,
+        "aboveBandVertices": 47,
+        "attachmentVertices": 91,
+        "fromNearestStrapVertex": false,
+        "hingeMetres": [
+          -0.121713,
+          0.984445,
+          0.082525
         ],
+        "hingeAxis": [
+          -0.634599,
+          0.0,
+          -0.772841
+        ],
+        "belowBandMaxDepthBeforeMetres": 0.00399,
+        "belowBandMaxDepthAfterMetres": 0.0,
+        "belowBandDeeperThan2mmBefore": 133,
+        "belowBandDeeperThan2mmAfter": 0,
+        "inBandMaxDepthBeforeMetres": 0.010563,
+        "inBandMaxDepthAfterMetres": 0.009705,
+        "inBandDeeperThan2mmBefore": 47,
+        "inBandDeeperThan2mmAfter": 76,
+        "aboveBandMaxDepthBeforeMetres": 0.012444,
+        "aboveBandMaxDepthAfterMetres": 0.011076,
+        "aboveBandDeeperThan2mmBefore": 14,
+        "aboveBandDeeperThan2mmAfter": 29,
+        "degreesApplied": 9.2307,
+        "passes": 1,
+        "residual": null,
+        "toStrapBeforeMetres": 0.000512,
+        "toStrapAfterMetres": 0.000679,
         "steps": [
           {
-            "pushMetres": 0.015444,
-            "maxDepthAfterMetres": 0.015775
-          },
-          {
-            "pushMetres": 0.018775,
-            "maxDepthAfterMetres": 0.0
+            "degrees": 9.2307,
+            "leverMetres": 0.04339,
+            "belowBandMaxDepthAfterMetres": 0.0
           }
-        ]
+        ],
+        "flushIslands": [
+          10,
+          15
+        ],
+        "attachmentGapBeforeMetres": 5e-05,
+        "attachmentGapAfterMetres": 2.7e-05
       },
       {
+        "cluster": 1,
         "islands": [
           20,
           21,
@@ -2673,84 +2474,210 @@
           46
         ],
         "vertices": 1515,
-        "maxDepthBeforeMetres": 0.011954,
-        "maxDepthAfterMetres": 0.003914,
-        "deeperThan2mmBefore": 196,
-        "deeperThan2mmAfter": 74,
-        "toStrapBeforeMetres": 0.001007,
-        "toStrapAfterMetres": 0.017031,
-        "passes": 3,
-        "translationMetres": 0.035934,
-        "translation": [
-          0.024351,
-          0.0,
-          0.026425
+        "belowBandVertices": 831,
+        "inBandVertices": 655,
+        "aboveBandVertices": 29,
+        "attachmentVertices": 43,
+        "fromNearestStrapVertex": false,
+        "hingeMetres": [
+          0.095321,
+          0.981555,
+          0.093665
         ],
+        "hingeAxis": [
+          -0.758002,
+          0.0,
+          0.652252
+        ],
+        "belowBandMaxDepthBeforeMetres": 0.004343,
+        "belowBandMaxDepthAfterMetres": 0.0,
+        "belowBandDeeperThan2mmBefore": 90,
+        "belowBandDeeperThan2mmAfter": 0,
+        "inBandMaxDepthBeforeMetres": 0.011954,
+        "inBandMaxDepthAfterMetres": 0.00925,
+        "inBandDeeperThan2mmBefore": 96,
+        "inBandDeeperThan2mmAfter": 67,
+        "aboveBandMaxDepthBeforeMetres": 0.010056,
+        "aboveBandMaxDepthAfterMetres": 0.00799,
+        "aboveBandDeeperThan2mmBefore": 10,
+        "aboveBandDeeperThan2mmAfter": 4,
+        "degreesApplied": 20.6256,
+        "passes": 3,
+        "residual": null,
+        "toStrapBeforeMetres": 0.001007,
+        "toStrapAfterMetres": 0.000294,
         "steps": [
           {
-            "pushMetres": 0.014954,
-            "maxDepthAfterMetres": 0.011199
+            "degrees": 1.9559,
+            "leverMetres": 0.215122,
+            "belowBandMaxDepthAfterMetres": 0.003951
           },
           {
-            "pushMetres": 0.014199,
-            "maxDepthAfterMetres": 0.003781
+            "degrees": 14.7016,
+            "leverMetres": 0.027091,
+            "belowBandMaxDepthAfterMetres": 0.003204
           },
           {
-            "pushMetres": 0.006781,
-            "maxDepthAfterMetres": 0.003914
+            "degrees": 3.9681,
+            "leverMetres": 0.089581,
+            "belowBandMaxDepthAfterMetres": 0.0
           }
-        ]
+        ],
+        "flushIslands": [
+          23,
+          46
+        ],
+        "attachmentGapBeforeMetres": 2e-06,
+        "attachmentGapAfterMetres": 2e-06
       },
       {
+        "cluster": 2,
         "islands": [
           18,
           19
         ],
         "vertices": 371,
-        "maxDepthBeforeMetres": 0.011316,
-        "maxDepthAfterMetres": 0.0,
-        "deeperThan2mmBefore": 6,
-        "deeperThan2mmAfter": 0,
-        "toStrapBeforeMetres": 0.00052,
-        "toStrapAfterMetres": 0.005364,
-        "passes": 1,
-        "translationMetres": 0.014316,
-        "translation": [
-          -0.001662,
-          0.0,
-          0.01422
+        "belowBandVertices": 99,
+        "inBandVertices": 186,
+        "aboveBandVertices": 86,
+        "attachmentVertices": 237,
+        "fromNearestStrapVertex": false,
+        "hingeMetres": [
+          -0.008679,
+          0.97922,
+          0.117094
         ],
-        "steps": [
-          {
-            "pushMetres": 0.014316,
-            "maxDepthAfterMetres": 0.0
-          }
-        ]
+        "hingeAxis": [
+          -0.997994,
+          0.0,
+          -0.063304
+        ],
+        "belowBandMaxDepthBeforeMetres": 0.0,
+        "belowBandMaxDepthAfterMetres": 0.0,
+        "belowBandDeeperThan2mmBefore": 0,
+        "belowBandDeeperThan2mmAfter": 0,
+        "inBandMaxDepthBeforeMetres": 0.011316,
+        "inBandMaxDepthAfterMetres": 0.011316,
+        "inBandDeeperThan2mmBefore": 5,
+        "inBandDeeperThan2mmAfter": 5,
+        "aboveBandMaxDepthBeforeMetres": 0.008363,
+        "aboveBandMaxDepthAfterMetres": 0.008363,
+        "aboveBandDeeperThan2mmBefore": 1,
+        "aboveBandDeeperThan2mmAfter": 1,
+        "degreesApplied": 0.0,
+        "passes": 0,
+        "residual": null,
+        "toStrapBeforeMetres": 0.00052,
+        "toStrapAfterMetres": 0.00052,
+        "steps": [],
+        "flushIslands": [
+          18,
+          19
+        ],
+        "attachmentGapBeforeMetres": 6.2e-05,
+        "attachmentGapAfterMetres": 6.2e-05
       },
       {
+        "cluster": 3,
         "islands": [
           45
         ],
         "vertices": 65,
-        "maxDepthBeforeMetres": 0.008721,
-        "maxDepthAfterMetres": 0.0,
-        "deeperThan2mmBefore": 11,
-        "deeperThan2mmAfter": 0,
-        "toStrapBeforeMetres": 0.000624,
-        "toStrapAfterMetres": 0.005038,
-        "passes": 1,
-        "translationMetres": 0.011721,
-        "translation": [
-          0.00356,
-          0.0,
-          0.011168
+        "belowBandVertices": 9,
+        "inBandVertices": 45,
+        "aboveBandVertices": 11,
+        "attachmentVertices": 50,
+        "fromNearestStrapVertex": false,
+        "hingeMetres": [
+          0.034746,
+          0.979713,
+          0.11084
         ],
-        "steps": [
-          {
-            "pushMetres": 0.011721,
-            "maxDepthAfterMetres": 0.0
-          }
-        ]
+        "hingeAxis": [
+          -0.964849,
+          0.0,
+          0.262806
+        ],
+        "belowBandMaxDepthBeforeMetres": 0.0,
+        "belowBandMaxDepthAfterMetres": 0.0,
+        "belowBandDeeperThan2mmBefore": 0,
+        "belowBandDeeperThan2mmAfter": 0,
+        "inBandMaxDepthBeforeMetres": 0.008721,
+        "inBandMaxDepthAfterMetres": 0.008721,
+        "inBandDeeperThan2mmBefore": 10,
+        "inBandDeeperThan2mmAfter": 10,
+        "aboveBandMaxDepthBeforeMetres": 0.004454,
+        "aboveBandMaxDepthAfterMetres": 0.004454,
+        "aboveBandDeeperThan2mmBefore": 1,
+        "aboveBandDeeperThan2mmAfter": 1,
+        "degreesApplied": 0.0,
+        "passes": 0,
+        "residual": null,
+        "toStrapBeforeMetres": 0.000624,
+        "toStrapAfterMetres": 0.000624,
+        "steps": [],
+        "flushIslands": [
+          45
+        ],
+        "attachmentGapBeforeMetres": 2.3e-05,
+        "attachmentGapAfterMetres": 2.3e-05
+      }
+    ]
+  },
+  "attachment": {
+    "rawFlushLimitMetres": 0.002,
+    "islands": [
+      10,
+      15,
+      18,
+      19,
+      23,
+      45,
+      46
+    ],
+    "maxGapAfterMetres": 6.2e-05,
+    "table": [
+      {
+        "island": 10,
+        "rawMetres": 3.2e-05,
+        "seatedMetres": 1.2e-05,
+        "finalMetres": 2.7e-05
+      },
+      {
+        "island": 15,
+        "rawMetres": 0.000201,
+        "seatedMetres": 5e-05,
+        "finalMetres": 1e-06
+      },
+      {
+        "island": 18,
+        "rawMetres": 0.000129,
+        "seatedMetres": 6.2e-05,
+        "finalMetres": 6.2e-05
+      },
+      {
+        "island": 19,
+        "rawMetres": 0.0,
+        "seatedMetres": 8e-06,
+        "finalMetres": 8e-06
+      },
+      {
+        "island": 23,
+        "rawMetres": 1.1e-05,
+        "seatedMetres": 0.0,
+        "finalMetres": 1e-06
+      },
+      {
+        "island": 45,
+        "rawMetres": 0.000102,
+        "seatedMetres": 2.3e-05,
+        "finalMetres": 2.3e-05
+      },
+      {
+        "island": 46,
+        "rawMetres": 0.00015,
+        "seatedMetres": 2e-06,
+        "finalMetres": 2e-06
       }
     ]
   },
@@ -3783,13 +3710,13 @@
     "band": {
       "warden-belt-ring": {
         "vertices": 5246,
-        "bandVertices": 3169,
-        "bandFraction": 0.604079,
+        "bandVertices": 3415,
+        "bandFraction": 0.650972,
         "ceiling": 0.8,
-        "minPeakWeight": 0.469855,
-        "meanPeakWeight": 0.720431,
-        "bandHeightMetres": 0.141009,
-        "bandMinY": 0.887774,
+        "minPeakWeight": 0.500077,
+        "meanPeakWeight": 0.718853,
+        "bandHeightMetres": 0.169525,
+        "bandMinY": 0.859259,
         "bandMaxY": 1.028784
       }
     }
@@ -3800,13 +3727,13 @@
     "joints": 24
   },
   "bindClearance": {
-    "insideVertices": 184,
-    "maxPenetrationMetres": 0.009866756,
-    "deeperThan2mm": 109
+    "insideVertices": 349,
+    "maxPenetrationMetres": 0.011316374,
+    "deeperThan2mm": 228
   },
   "bareBodyClearance": {
-    "insideVertices": 2,
-    "maxPenetrationMetres": 0.000527786,
+    "insideVertices": 0,
+    "maxPenetrationMetres": 0.0,
     "deeperThan2mm": 0
   },
   "runtime": {
@@ -3874,7 +3801,7 @@
       "islands": 47
     },
     "maxInfluencesPerVertex": 3,
-    "minWeightSum": 0.999999888,
+    "minWeightSum": 0.999999899,
     "maxWeightSum": 1.000000089,
     "influencingBones": [
       "pelvis",
@@ -3890,9 +3817,9 @@
       "textures": true
     },
     "bindClearance": {
-      "insideVertices": 184,
-      "maxPenetrationMetres": 0.009866756,
-      "deeperThan2mm": 109
+      "insideVertices": 349,
+      "maxPenetrationMetres": 0.011316374,
+      "deeperThan2mm": 228
     }
   },
   "gates": {
@@ -3914,6 +3841,6 @@
     "glb": "warden-belt-ring.glb",
     "manifest": "warden-belt-ring.manifest.json",
     "report": "warden-belt-ring.report.json",
-    "sha256": "4125c461ae74a9b11decf780d575d65e065ba9d19178906e124b89d580e39cf8"
+    "sha256": "7ad57e87f9196a67c1d6f3888a3703d94b9a3c0bf74bd6d333bb17180191a923"
   }
 }
