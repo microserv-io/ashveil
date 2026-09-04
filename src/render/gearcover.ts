@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { hiddenByRegion, hidesByRegion, type RegionHides } from './gearregions'
+import { hiddenByName, hiddenByRegion, hidesByRegion, type RegionHides } from './gearregions'
 
 /**
  * Which parts of one mesh another mesh covers, and the triangle grid both this and
@@ -343,11 +343,6 @@ export interface LayeredMesh extends RegionHides {
   readonly layer: number
   readonly mesh: THREE.SkinnedMesh
   /**
-   * False for an open piece that covers nothing below it however it is layered.
-   * Moving drape triangles are excluded independently from the fixed surface.
-   */
-  readonly hidesPieces?: boolean
-  /**
    * Where this piece's drape bones start in its skin, if it has any. Cloth that
    * swings cannot be trusted to keep covering what was behind it a frame ago, so
    * its triangles are left out of the covering surface even when the rest hides.
@@ -359,9 +354,9 @@ export interface LayeredMesh extends RegionHides {
  * Hides each worn piece under the pieces worn over it, by layer and never by the
  * order they were put on. A triangle goes only when all three of its vertices are
  * hidden; a piece nothing covers gets its own geometry straight back, so taking the
- * outer piece off restores what it hid. Which of the two rules answers "hidden" is
- * `gearregions.ts`: the authored one wherever both sides carry what it needs, burial
- * everywhere else.
+ * outer piece off restores what it hid. Which of the three rules answers "hidden" is
+ * `gearregions.ts`: the footprint the fitter measured for this exact pair, else the
+ * authored region wherever both sides carry what it needs, else burial.
  */
 export function applyPieceMasks(worn: readonly LayeredMesh[]): void {
   for (const wear of worn) {
@@ -371,9 +366,9 @@ export function applyPieceMasks(worn: readonly LayeredMesh[]): void {
     for (const other of worn) {
       if (other.layer <= wear.layer || other.mesh === wear.mesh) continue
       if (other.hidesPieces === false) continue
-      const hidden = hidesByRegion(wear, other)
+      const hidden = hiddenByName(wear, other) ?? (hidesByRegion(wear, other)
         ? hiddenByRegion(inner.positions, wear.regions!, other)
-        : coveredVertices(inner, coveringOf(other))
+        : coveredVertices(inner, coveringOf(other)))
       for (const vertex of hidden) covered.add(vertex)
     }
     wear.mesh.geometry = covered.size === 0 ? base : maskedGeometry(base, covered)

@@ -25,14 +25,35 @@ export interface HideProfile {
   readonly bottom: readonly number[]
 }
 
+/**
+ * What a piece hides on the pieces worn under it: nothing however it is layered,
+ * whatever is buried in it, or exactly these vertices of exactly these pieces.
+ */
+export type PieceCover = boolean | Readonly<Record<string, readonly number[]>>
+
 /** What a piece was tagged with, and what it claims from the pieces below it. */
 export interface RegionHides {
+  /** Its own name, so a piece worn over it can name what it hides on this one. */
+  piece?: string
   regions?: PieceRegions
   hidesRegions?: readonly string[]
+  hidesPieces?: PieceCover
   /** `[yMin, yMax]` of the fixed geometry doing the hiding, in bind pose. */
   hidesBand?: readonly [number, number]
   /** The same band followed around the ring, and preferred wherever it is carried. */
   hidesProfile?: HideProfile
+}
+
+/**
+ * The vertices an upper piece names on this lower piece, or nothing when it names
+ * none. A named footprint answers for that pair ahead of both other rules, because
+ * it is the fitter's measurement of two bind poses: burial sees one frame of two
+ * surfaces that cross at a run, and the region rule sees a band rather than a plate.
+ * A pair the upper piece says nothing about falls through to those unchanged.
+ */
+export function hiddenByName(under: RegionHides, over: RegionHides): ReadonlySet<number> | null {
+  const named = typeof over.hidesPieces === 'object' ? over.hidesPieces[under.piece ?? ''] : undefined
+  return named ? new Set(named) : null
 }
 
 /**

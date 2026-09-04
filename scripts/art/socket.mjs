@@ -17,7 +17,10 @@ const RUNNER = join(ROOT, 'scripts', 'art', 'gear', 'socket.py')
 const BLENDER_CANDIDATES = ['/opt/homebrew/bin/blender', '/usr/local/bin/blender', 'blender']
 const VALUES = new Set(['--input', '--slot', '--body', '--piece', '--under', '--weights', '--yaw',
   '--cap', '--anchor', '--seat', '--register', '--inner', '--seeds', '--orient', '--offset',
-  '--outdir'])
+  '--orient-right', '--offset-right', '--outdir'])
+/** The pose flags, each bounded the same way whichever shoulder it is spoken for. */
+const POSES = [['orient', 'degrees'], ['offset', 'metres'], ['orient-right', 'degrees'],
+  ['offset-right', 'metres']]
 const REPEATED = new Set(['--drape'])
 const NAME = /^[a-z0-9][a-z0-9-]*$/
 const DRAPE = /^[a-z][a-z0-9_]*:[A-Za-z0-9_]+:[01](\.[0-9]+)?:[01](\.[0-9]+)?(:[1-6](:[0-9]+(\.[0-9]+)?)?)?$/
@@ -70,8 +73,9 @@ export function parseArgs(argv) {
   if (parsed.yaw && !['0', '180'].includes(parsed.yaw)) {
     throw new SocketError(`yaw gate: "${parsed.yaw}" is not 0 or 180`)
   }
-  bounded(parsed.orient, 'orient', 'degrees', MAX_ORIENT_DEGREES)
-  bounded(parsed.offset, 'offset', 'metres', MAX_OFFSET_METRES)
+  for (const [flag, unit] of POSES) {
+    bounded(parsed[flag], flag, unit, unit === 'degrees' ? MAX_ORIENT_DEGREES : MAX_OFFSET_METRES)
+  }
   for (const drape of parsed.drapes) {
     if (!DRAPE.test(drape)) throw new SocketError(`drape gate: "${drape}" is not name:bone:from:to[:segments]`)
   }
@@ -126,8 +130,7 @@ export function blenderArgs(plan, runner = RUNNER) {
     ...(plan.register ? ['--register', plan.register] : []),
     ...(plan.inner ? ['--inner', plan.inner] : []),
     ...(plan.seeds ? ['--seeds', plan.seeds] : []),
-    ...(plan.orient ? ['--orient', plan.orient] : []),
-    ...(plan.offset ? ['--offset', plan.offset] : []),
+    ...POSES.flatMap(([flag]) => (plan[flag] ? [`--${flag}`, plan[flag]] : [])),
     ...plan.drapes.flatMap((drape) => ['--drape', drape])]
 }
 

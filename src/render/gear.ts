@@ -7,7 +7,7 @@ import { isBodyMaterial, type BodyMaterial } from './look'
 
 export { resetWornPieces, updateWornPieces } from './drapestep'
 export type { DrapeChain, DrapeDefinition } from './drapebones'
-export type { HideProfile, PieceRegions, RegionHides } from './gearregions'
+export type { HideProfile, PieceCover, PieceRegions, RegionHides } from './gearregions'
 
 /**
  * Gear on a fitted body: a second skinned mesh driven by the body's own bones, and
@@ -55,11 +55,6 @@ export interface GearPieceSource extends RegionHides {
   hides: GearHides
   /** The hanging cloth this piece carries, if any: one chain per manifest entry. */
   drapes?: readonly DrapeDefinition[]
-  /**
-   * Whether this piece hides the pieces it is worn over. Moving drape triangles are
-   * excluded separately, so fixed geometry covers unless the piece opts out.
-   */
-  hidesPieces?: boolean
 }
 
 export interface WornPiece extends RegionHides {
@@ -70,7 +65,6 @@ export interface WornPiece extends RegionHides {
   material: BodyMaterial
   /** Stepped by `updateWornPieces` once the body's own pose is written. */
   drapes: readonly DrapeChain[]
-  hidesPieces: boolean
 }
 
 export function skinnedMeshesOf(root: THREE.Object3D): THREE.SkinnedMesh[] {
@@ -123,6 +117,7 @@ export function wearPiece(body: THREE.Object3D, source: GearPieceSource): WornPi
     mesh,
     material,
     drapes: drapes.chains,
+    piece: source.piece,
     hidesPieces: source.hidesPieces ?? true,
     regions: source.regions,
     hidesRegions: source.hidesRegions,

@@ -205,6 +205,58 @@ describe('hiding a worn piece under the pieces over it', () => {
     })
 
     /**
+     * The plate's own footprint, measured at fit time and named per piece. A cap
+     * standing off a shoulder buries nothing and spans no band, so neither of the
+     * other two rules can find what it is nevertheless standing in front of.
+     */
+    describe('over the footprint the upper piece names', () => {
+      /** The upper piece stands beside the lower one, so burial answers nothing. */
+      function apart(hidesPieces: Record<string, readonly number[]>) {
+        const cap = shell(0.05)
+        cap.translate(0, 0, 0.4)
+        return { layer: SLOT_LAYERS.shoulders, mesh: meshOf(cap), hidesPieces }
+      }
+
+      it('drops only the triangles whose three corners it names', () => {
+        const lower = meshOf(shell(0.05))
+        const whole = triangles(lower)
+        const corners = lower.geometry.getIndex()!
+        const named = [corners.getX(0), corners.getX(1), corners.getX(2)]
+
+        applyPieceMasks([{ layer: SLOT_LAYERS.chest, mesh: lower, piece: 'tunic' },
+          apart({ tunic: named })])
+        expect(triangles(lower), 'the named triangle goes').toBe(whole - 1)
+
+        applyPieceMasks([{ layer: SLOT_LAYERS.chest, mesh: lower, piece: 'tunic' },
+          apart({ tunic: named.slice(0, 2) })])
+        expect(triangles(lower), 'two named corners is a rim, and rims stay').toBe(whole)
+
+        applyPieceMasks([{ layer: SLOT_LAYERS.chest, mesh: lower, piece: 'tunic' }])
+        expect(triangles(lower), 'taking the cap off puts the cloth back').toBe(whole)
+      })
+
+      it('says nothing about a piece it was not fitted over', () => {
+        const lower = meshOf(shell(0.05))
+        const whole = triangles(lower)
+        const every = Array.from({ length: lower.geometry.getAttribute('position').count }, (_, at) => at)
+        applyPieceMasks([{ layer: SLOT_LAYERS.chest, mesh: lower, piece: 'other-tunic' },
+          apart({ tunic: every })])
+        expect(triangles(lower)).toBe(whole)
+      })
+
+      /** A measured footprint is the fitter's answer for that pair, and beats burial. */
+      it('answers ahead of burial for the pair it names', () => {
+        const lower = meshOf(shell(0.05))
+        const whole = triangles(lower)
+        applyPieceMasks([
+          { layer: SLOT_LAYERS.chest, mesh: lower, piece: 'tunic' },
+          { layer: SLOT_LAYERS.shoulders, mesh: meshOf(shell(0.08)), hidesPieces: { tunic: [] } },
+        ])
+        expect(triangles(lower), 'burial would have taken all of it').toBe(whole)
+      })
+    })
+
+    /**
      * The tilted strap, which is what the conform actually produces: the leather
      * rides high at the front and low at the back, so the hem it is behind at one
      * azimuth is hem it has moved off at the opposite one. Four bins, and a point on

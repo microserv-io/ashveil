@@ -107,7 +107,16 @@
       }
     },
     "hidesPieces": {
-      "type": "boolean"
+      "oneOf": [
+        { "type": "boolean" },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0 }
+          }
+        }
+      ]
     },
     "twoSided": {
       "const": true
@@ -398,6 +407,12 @@
     }
   },
   "$defs": {
+    "triple": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "type": "number" }
+    },
     "region": {
       "enum": [
         "feet",
@@ -451,6 +466,9 @@
             "type": "number"
           }
         },
+        "crest": { "$ref": "#/$defs/triple" },
+        "orient": { "$ref": "#/$defs/triple" },
+        "offset": { "$ref": "#/$defs/triple" },
         "layerSeat": {
           "type": "object",
           "additionalProperties": false,

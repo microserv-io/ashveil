@@ -25,7 +25,7 @@ import {
   reviewBodyScale,
   type ReviewBodyDefinition,
 } from './body'
-import { loadReviewGear, REVIEW_GEAR, type ReviewGearPiece } from './gear'
+import { loadReviewGear, REVIEW_GEAR, type PieceCrests, type ReviewGearPiece } from './gear'
 
 /**
  * One body, the gameplay camera, and every knob the animation pipeline has.
@@ -50,7 +50,13 @@ const NARROW_VIEWPORT = 640
 /** The bounds `art:socket` puts on an authored pose, so the page cannot ask for one it refuses. */
 const ORIENT_LIMIT = 90
 const OFFSET_LIMIT = 0.1
-const OFFSET_STEP = 0.005
+/**
+ * Fine enough to say any pose the fitter can be told: `--orient` is printed to two
+ * decimals and `--offset` to four, so a coarser slider would round the fit it starts
+ * at and move a piece nobody touched.
+ */
+const ORIENT_STEP = 0.01
+const OFFSET_STEP = 0.0001
 
 const sim = new Sim({ seed: SEED })
 await loadModels('models')
@@ -297,6 +303,7 @@ function rewear(): void {
     const loaded = gearSources.get(entry.piece)!
     return wearPiece(body.group, {
       slot: entry.slot,
+      piece: entry.piece,
       scene: loaded.scene,
       covers: loaded.covers,
       hides: loaded.hides,
@@ -315,7 +322,7 @@ function rewear(): void {
   showSocketPanel()
   // With nothing asked for, the sliders start where the fit left the piece, so moving
   // one is a change to the pose that shipped rather than to an arbitrary zero.
-  if (!poseAsked && posed[0]) setPose(posed[0].fitted)
+  if (!poseAsked && posed[0]) setPose(posed[0].fitted.L)
   else writePose()
   saveGear()
 }
@@ -376,6 +383,7 @@ function setGear(pieces: readonly string[]): void {
  * pose is found, and the refit is what makes it true.
  */
 type PoseKey = 'yaw' | 'pitch' | 'roll' | 'x' | 'y' | 'z'
+const POSE_KEYS = ['yaw', 'pitch', 'roll', 'x', 'y', 'z'] as const
 
 interface BindPose {
   readonly position: Float32Array
@@ -387,16 +395,21 @@ interface SocketPiece {
   readonly mesh: THREE.SkinnedMesh
   readonly bind: BindPose
   readonly crest: Readonly<Record<'L' | 'R', THREE.Vector3>>
-  /** The pose the fitter already applied, which the sliders are stated against. */
-  readonly fitted: Record<PoseKey, number>
+  /**
+   * The pose the fitter already applied to each side. The sliders are stated against
+   * the left's, and the same turn rides both shoulders, so a pair authored as two
+   * poses keeps the eleven degrees between them while the sliders move it as one.
+   */
+  readonly fitted: Readonly<Record<'L' | 'R', Record<PoseKey, number>>>
 }
 
 /** A function, not a table: the panel is built above, where a `const` here is still dead. */
-function poseRows(): readonly (readonly [PoseKey, string, number, number])[] {
+function poseRows(): readonly (readonly [PoseKey, string, number, number, number])[] {
+  const turn = [ORIENT_LIMIT, ORIENT_STEP, 2] as const
+  const slide = [OFFSET_LIMIT, OFFSET_STEP, 4] as const
   return [
-    ['yaw', 'Yaw', ORIENT_LIMIT, 1], ['pitch', 'Pitch', ORIENT_LIMIT, 1], ['roll', 'Roll', ORIENT_LIMIT, 1],
-    ['x', 'Offset X', OFFSET_LIMIT, OFFSET_STEP], ['y', 'Offset Y', OFFSET_LIMIT, OFFSET_STEP],
-    ['z', 'Offset Z', OFFSET_LIMIT, OFFSET_STEP],
+    ['yaw', 'Yaw', ...turn], ['pitch', 'Pitch', ...turn], ['roll', 'Roll', ...turn],
+    ['x', 'Offset X', ...slide], ['y', 'Offset Y', ...slide], ['z', 'Offset Z', ...slide],
   ]
 }
 
@@ -422,11 +435,16 @@ function socketPieceOf(entry: ReviewGearPiece, piece: WornPiece): SocketPiece[] 
     mesh: piece.mesh,
     bind: stored,
     crest: { L: vectorOf(crests.L), R: vectorOf(crests.R) },
-    fitted: {
-      yaw: crests.orient[0]!, pitch: crests.orient[1]!, roll: crests.orient[2]!,
-      x: crests.offset[0]!, y: crests.offset[1]!, z: crests.offset[2]!,
-    },
+    fitted: { L: poseOf(crests, 'L'), R: poseOf(crests, 'R') },
   }]
+}
+
+function poseOf(crests: PieceCrests, side: 'L' | 'R'): Record<PoseKey, number> {
+  const [orient, offset] = [crests.orient[side], crests.offset[side]]
+  return {
+    yaw: orient[0]!, pitch: orient[1]!, roll: orient[2]!,
+    x: offset[0]!, y: offset[1]!, z: offset[2]!,
+  }
 }
 
 function vectorOf(values: readonly number[]): THREE.Vector3 {
@@ -449,6 +467,10 @@ function radians(degrees: number): number {
   return (degrees * Math.PI) / 180
 }
 
+function inDegrees(radians: number): number {
+  return (radians * 180) / Math.PI
+}
+
 /**
  * What is left to apply once the fit's own pose is taken off: `wanted` turned by the
  * inverse of `fitted`, which is exactly what refitting at `wanted` would have done.
@@ -462,14 +484,13 @@ function writePose(): void {
   for (const target of posed) {
     const sides = (['L', 'R'] as const).map((side) => {
       const hand = side === 'L' ? 1 : -1
-      return { side, hand, turn: poseDelta(hand, target.fitted) }
+      return { side, hand, turn: poseDelta(hand, target.fitted.L) }
     })
     const geometry = target.mesh.geometry
     const position = geometry.getAttribute('position') as THREE.BufferAttribute
     const normal = geometry.getAttribute('normal') as THREE.BufferAttribute | undefined
     const shifts = sides.map(({ side, hand, turn }) => target.crest[side].clone()
-      .add(new THREE.Vector3(hand * (pose.x - target.fitted.x), pose.y - target.fitted.y,
-        pose.z - target.fitted.z))
+      .add(nudge(hand, target.fitted.L))
       .sub(target.crest[side].clone().applyMatrix4(turn)))
     const point = new THREE.Vector3()
     for (let at = 0; at < position.count; at++) {
@@ -491,10 +512,40 @@ function writePose(): void {
   element('socket-flags').textContent = poseFlags()
 }
 
+/** How far the sliders have slid the piece, in the frame of one shoulder. */
+function nudge(hand: number, fitted: Record<PoseKey, number>): THREE.Vector3 {
+  return new THREE.Vector3(hand * (pose.x - fitted.x), pose.y - fitted.y, pose.z - fitted.z)
+}
+
 /** The flags that reproduce what is on screen, spelled the way `art:socket` prints them. */
 function poseFlags(): string {
-  return `--orient ${short(pose.yaw)}:${short(pose.pitch)}:${short(pose.roll)}`
-    + ` --offset ${short(pose.x, 4)}:${short(pose.y, 4)}:${short(pose.z, 4)}`
+  const left = flagsOf(pose)
+  const fitted = posed[0]?.fitted
+  if (!fitted || POSE_KEYS.every((key) => fitted.L[key] === fitted.R[key])) return left
+  return `${left} ${flagsOf(rightPose(fitted), '-right')}`
+}
+
+function flagsOf(values: Record<PoseKey, number>, suffix = ''): string {
+  return `--orient${suffix} ${short(values.yaw)}:${short(values.pitch)}:${short(values.roll)}`
+    + ` --offset${suffix} ${short(values.x, 4)}:${short(values.y, 4)}:${short(values.z, 4)}`
+}
+
+/**
+ * Where the right shoulder stands, said in its own authored numbers rather than as a
+ * delta. The sliders move both shoulders by one turn about the left's fit, so on a
+ * pair authored as two poses the right is that turn composed onto its own - read back
+ * out as a yaw, a pitch and a roll, because `--orient-right` takes a pose.
+ */
+function rightPose(fitted: SocketPiece['fitted']): Record<PoseKey, number> {
+  const turn = poseDelta(-1, fitted.L)
+  const euler = new THREE.Euler().setFromRotationMatrix(
+    turn.clone().multiply(poseTurn(-1, fitted.R)), 'YXZ')
+  const offset = new THREE.Vector3(-fitted.R.x, fitted.R.y, fitted.R.z)
+    .applyMatrix4(new THREE.Matrix4().extractRotation(turn)).add(nudge(-1, fitted.L))
+  return {
+    yaw: -inDegrees(euler.y), pitch: inDegrees(euler.x), roll: -inDegrees(euler.z),
+    x: -offset.x, y: offset.y, z: offset.z,
+  }
 }
 
 function short(value: number, places = 2): string {
@@ -524,7 +575,9 @@ function buildSocketPanel(): void {
   element('gear-panel').after(panel)
 }
 
-function poseSlider([key, label, limit, step]: readonly [PoseKey, string, number, number]): HTMLElement {
+function poseSlider(
+  [key, label, limit, step, places]: readonly [PoseKey, string, number, number, number],
+): HTMLElement {
   const wrapper = document.createElement('label')
   wrapper.className = 'block space-y-1'
   const name = document.createElement('span')
@@ -536,7 +589,7 @@ function poseSlider([key, label, limit, step]: readonly [PoseKey, string, number
   slider.step = String(step)
   slider.value = String(pose[key])
   slider.className = 'w-full accent-ember'
-  const show = () => (name.textContent = `${label} ${short(pose[key], step < 1 ? 3 : 0)}`)
+  const show = () => (name.textContent = `${label} ${short(pose[key], places)}`)
   slider.addEventListener('input', () => {
     pose[key] = Number(slider.value)
     show()

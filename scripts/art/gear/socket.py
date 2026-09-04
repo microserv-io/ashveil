@@ -27,10 +27,17 @@ Measuring it does not settle it. Three derivations - the arm's own tilt, an ICP 
 the drawn pose, a scored grid of seeds - each produced a pose that was rejected on
 sight, so the orientation is declared instead: `--orient yaw:pitch:roll` turns the cap
 about the crest the anchor put it on, `--offset dx:dy:dz` slides it, and the right
-shoulder wears the mirror of both without being told twice. That is how a game
-attaches a shoulder, and it is what the pipeline already learned about this slot's
-neighbours: an orientation is authored per item, not derived. Declaring one replaces
-the ICP, because a registration that argues with the author is not an author.
+shoulder wears the mirror of both without being told twice - or `--orient-right` and
+`--offset-right` when the two halves of a source are not the mirrors of each other
+they were drawn as. That is how a game attaches a shoulder, and it is what the
+pipeline already learned about this slot's neighbours: an orientation is authored per
+item, not derived. Declaring one replaces the ICP, because a registration that argues
+with the author is not an author.
+
+The plate is measured against what it is worn over as well as what it is worn on:
+`hidesPieces` names the vertices of each piece beneath that stand behind the cap, so
+the tunic's shoulder stops drawing through the armour. That is a bind-pose fact about
+two fitted pieces and cannot be left to burial, which sees one frame.
 
 The tilt this replaced stood the cap up on the upper arm's axis, which is 10 degrees
 from vertical where the cap is drawn leaning 35 degrees down the deltoid, and the
@@ -116,8 +123,13 @@ MIN_REGION_VERTICES = 50
 MIN_REGION_WIDTH = 0.04
 # How far a body vertex's own normal may travel before a cap over it stops covering it.
 COVERAGE_REACH = 0.06
+# How far a lower piece's own outward normal may travel before the plate over it
+# stops standing in front of it. The cap's clearance is 16 mm and the tunic under it
+# is a shell of its own, so a reach shorter than this leaves the cloth showing.
+HIDE_REACH = 0.03
 RAY_NUDGE = 1e-5
 RAY_HIT_LIMIT = 64
+RAY_AXES = (Vector((1.0, 0.0, 0.0)), Vector((0.0, 1.0, 0.0)), Vector((0.0, 0.0, 1.0)))
 # The orientations the registration is started from. Quarter turns about the body's
 # vertical answer "is the cap facing the way it was drawn", and the pitch answers "is
 # it presenting its opening rather than its shell"; 45 degrees is the ICP's own bound,
@@ -554,6 +566,95 @@ def coverage(region: np.ndarray, normals: np.ndarray, cap_tree: BVHTree, reach: 
             "medianGapMetres": round(float(np.median(distances)), 6) if distances else None}
 
 
+def fixed_cap_tree(plan: dict) -> tuple[BVHTree, tuple]:
+    """The plate alone, where it landed. The cloth on its island covers nothing fixed."""
+    points = ring.points_of(plan["cap"])
+    fixed = plan["isFixed"]
+    faces = [face for face in plan["faces"] if all(fixed[corner] for corner in face)]
+    return tree_of_points(points, faces), bounds_of(points[fixed])
+
+
+def bounds_of(points: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    return points.min(axis=0) - HIDE_REACH, points.max(axis=0) + HIDE_REACH
+
+
+def under_cap(tree: BVHTree, box: tuple, points: np.ndarray, normals: np.ndarray) -> list[int]:
+    """Which vertices of a piece worn beneath the plate stand behind it.
+
+    Two answers, because one alone leaves holes. A vertex whose own outward normal
+    runs into the plate within reach is behind it, which is the ordinary case: cloth
+    lying under a shoulder. And a vertex inside the plate outright is behind it
+    however its normal points, which is the tunic's own shoulder seam, pressed
+    against the cap's inner wall with its normal running along the plate rather than
+    into it. Parity for the second, not a nearest-face sign: a nearest face reads the
+    wrong side inside every concavity, and a cap is one.
+    """
+    low, high = box
+    inside_box = np.all((points >= low) & (points <= high), axis=1)
+    found: list[int] = []
+    for at in np.flatnonzero(inside_box).tolist():
+        origin = Vector(blender_from_runtime(points[at]))
+        hit, _, _, _ = tree.ray_cast(origin, Vector(blender_from_runtime(normals[at])), HIDE_REACH)
+        if hit is not None or _encloses(tree, origin):
+            found.append(at)
+    return found
+
+
+def _encloses(tree: BVHTree, origin: Vector) -> bool:
+    """Ray parity against the plate's shell: is this vertex inside the plate?"""
+    odd = 0
+    for direction in RAY_AXES:
+        crossings, at = 0, origin.copy()
+        while crossings <= RAY_HIT_LIMIT:
+            hit, _, _, _ = tree.ray_cast(at, direction)
+            if hit is None:
+                break
+            crossings += 1
+            at = hit + direction * RAY_NUDGE
+        if crossings % 2 == 1:
+            odd += 1
+    return odd >= 2
+
+
+def piece_vertices(glb_path: str) -> tuple[np.ndarray, np.ndarray]:
+    """One fitted piece's positions and normals, in the order the runtime masks by.
+
+    Off the exported file rather than off Blender's mesh, for the reason `regions.py`
+    gives: the exporter splits a vertex wherever a normal seam does, so a Blender
+    index is not a runtime one and a mask written in Blender indices hides the wrong
+    triangles.
+    """
+    glb = Glb(glb_path)
+    nodes = [node for node in glb.json["nodes"] if "mesh" in node]
+    if len(nodes) != 1:
+        raise SocketError(f"hide gate: {Path(glb_path).name} is {len(nodes)} meshes, expected one")
+    attributes = glb.json["meshes"][nodes[0]["mesh"]]["primitives"][0]["attributes"]
+    return (glb.accessor(attributes["POSITION"]).astype(np.float64),
+            glb.accessor(attributes["NORMAL"]).astype(np.float64))
+
+
+def hidden_under_caps(root: Path, names: list[str], plans: dict) -> tuple[dict, dict]:
+    """The footprint each cap leaves on every piece worn under it, and its counts.
+
+    A pauldron stands off the shoulder, so it hides no skin - but it sits *on* the
+    tunic, and the tunic's shoulder drawn through a plate is what "the cloth pokes
+    through the armour" looks like from the review camera. Measured here rather than
+    at runtime because the answer is a bind-pose fact about two fitted pieces, and
+    burial cannot see it: two surfaces six millimetres apart at bind cross at a run.
+    """
+    hides, counts = {}, {}
+    trees = {side: fixed_cap_tree(plan) for side, plan in plans.items() if "faces" in plan}
+    for name in names:
+        points, normals = piece_vertices(str(root / "public" / "gear" / name / f"{name}.glb"))
+        per_side = {side: under_cap(tree, box, points, normals) for side, (tree, box) in trees.items()}
+        found = sorted({at for side in per_side.values() for at in side})
+        if found:
+            hides[name] = found
+        counts[name] = {"vertices": int(len(points)), "hidden": len(found),
+                        **{side: len(members) for side, members in per_side.items()}}
+    return hides, counts
+
+
 def cap_tree_of(objects: list) -> BVHTree:
     vertices: list[tuple[float, float, float]] = []
     faces: list[tuple[int, int, int]] = []
@@ -934,7 +1035,7 @@ def _authored_report(plan: dict) -> dict | None:
     orient, offset = plan["orient"], plan["offset"]
     applied_orient = orient * np.array([hand_of(plan["side"]), 1.0, hand_of(plan["side"])])
     return {
-        "flags": flag_string(orient, offset),
+        "flags": flag_string(orient, offset, "" if plan["side"] == "L" else "-right"),
         "yawDegrees": float(orient[0]), "pitchDegrees": float(orient[1]),
         "rollDegrees": float(orient[2]),
         "offsetMetres": rounded_list(offset),
@@ -948,10 +1049,38 @@ def _authored_report(plan: dict) -> dict | None:
     }
 
 
-def flag_string(orient: np.ndarray, offset: np.ndarray) -> str:
+def flag_string(orient: np.ndarray, offset: np.ndarray, suffix: str = "") -> str:
     """The two flags that reproduce this placement, spelled the way they are typed."""
-    return (f"--orient {_short(orient[0])}:{_short(orient[1])}:{_short(orient[2])}"
-            f" --offset {_short(offset[0], 4)}:{_short(offset[1], 4)}:{_short(offset[2], 4)}")
+    return (f"--orient{suffix} {_short(orient[0])}:{_short(orient[1])}:{_short(orient[2])}"
+            f" --offset{suffix} {_short(offset[0], 4)}:{_short(offset[1], 4)}:{_short(offset[2], 4)}")
+
+
+def authored_poses(args) -> dict | None:
+    """The pose each shoulder was authored at, or nothing when none was.
+
+    The right shoulder wears the mirror of the left unless it is given its own
+    numbers. Two halves of one Tripo mesh are not exact mirrors of each other, and
+    the pose the eye accepted on this pair sits eleven degrees apart between them, so
+    a pair is allowed to be two poses - said in the same authored convention, so the
+    right's numbers still mean "and mirrored" rather than "in the other frame".
+    """
+    stated = {name: triple(getattr(args, name.replace("-", "_")), name)
+              for name in ("orient", "offset", "orient-right", "offset-right")
+              if getattr(args, name.replace("-", "_"))}
+    if not stated:
+        return None
+    left = {"orient": stated.get("orient", np.zeros(3)), "offset": stated.get("offset", np.zeros(3))}
+    return {"L": left,
+            "R": {"orient": stated.get("orient-right", left["orient"]),
+                  "offset": stated.get("offset-right", left["offset"])}}
+
+
+def pair_flags(authored: dict) -> str:
+    """Every flag the pair took: one pose when the sides share it, two when they do not."""
+    left = flag_string(authored["L"]["orient"], authored["L"]["offset"])
+    if all(np.array_equal(authored["L"][name], authored["R"][name]) for name in ("orient", "offset")):
+        return left
+    return f"{left} {flag_string(authored['R']['orient'], authored['R']['offset'], '-right')}"
 
 
 def _short(value: float, places: int = 2) -> str:
@@ -1095,14 +1224,8 @@ def run(args) -> dict:
             if bone not in slot["weights"]["allowedBones"]:
                 raise SocketError(f"drape gate: {bone} is not a bone the {args.slot} slot weights to")
 
-    # One flag is enough to declare the pose: an offset with no turn is still authored,
-    # and a placement that is half declared and half registered is neither.
-    orient = triple(args.orient, "orient") if args.orient else None
-    offset = triple(args.offset, "offset") if args.offset else None
-    if orient is not None or offset is not None:
-        orient = np.zeros(3) if orient is None else orient
-        offset = np.zeros(3) if offset is None else offset
-    if orient is not None and args.anchor != "crest":
+    authored = authored_poses(args)
+    if authored is not None and args.anchor != "crest":
         raise SocketError("orient gate: an authored pose turns about the crest anchor")
 
     loaded = body.load(ROOT, args.body)
@@ -1137,7 +1260,9 @@ def run(args) -> dict:
 
     plans = {side: plan_side(entries, side, contract, landmarks, region[side], normals[side],
                              dressed, bare, skin, clearance, args.cap, args.anchor, args.seat,
-                             args.register, args.inner, args.seeds, orient, offset)
+                             args.register, args.inner, args.seeds,
+                             None if authored is None else authored[side]["orient"],
+                             None if authored is None else authored[side]["offset"])
              for side, entries in sided.items()}
     choice = choose_seed(plans)
     print_seed_tables(plans, choice)
@@ -1167,6 +1292,10 @@ def run(args) -> dict:
         }
         placement[side]["coverage"] = coverage(region[side], normals[side], cap_tree_of([cap]),
                                                COVERAGE_REACH)
+
+    # Before the join, while the plate is still its own island and the cloth on it
+    # still separable: what the caps stand in front of on everything worn beneath.
+    hides_under, hides_report = hidden_under_caps(ROOT, worn_under, plans)
 
     strap_report = carry_straps(straps, placement, dressed, bare)
     if straps:
@@ -1226,13 +1355,13 @@ def run(args) -> dict:
     # The crest is where the piece was turned about, and the pose is what it was turned
     # by: together they let a further turn - the review page's sliders, or the next
     # author - be stated in the same numbers this run took rather than as a delta.
-    authored_pose = {} if orient is None else {"orient": rounded_list(orient),
-                                               "offset": rounded_list(offset)}
     alignment = {side: {"scale": placement[side]["scale"], "yawDegrees": args.yaw,
                         "translation": placement[side]["translation"],
                         **({"crest": placement[side]["crestPlaced"]}
                            if "crestPlaced" in placement[side] else {}),
-                        **authored_pose}
+                        **({} if authored is None
+                           else {"orient": rounded_list(authored[side]["orient"]),
+                                 "offset": rounded_list(authored[side]["offset"])})}
                  for side in ("L", "R")}
     manifest = {
         "schema": "ashveil.gear-manifest.v1",
@@ -1246,7 +1375,9 @@ def run(args) -> dict:
         "inverseBindSha256": _inverse_bind_sha(glb_path),
         "covers": [args.slot],
         "under": worn_under,
-        "hidesPieces": bool(slot.get("hidesPieces", True)),
+        # Named vertices where the caps were measured against what they are worn over,
+        # and the plain "hides whatever is buried in it" where they were not.
+        "hidesPieces": hides_under or bool(slot.get("hidesPieces", True)),
         # A cap standing 16 mm off the shoulder hides nothing: the skin under it is
         # skin the camera can still see past the plate's edge.
         "hides": {},
@@ -1271,9 +1402,12 @@ def run(args) -> dict:
         "under": worn_under,
         "source": manifest["source"],
         "raw": raw,
-        "authored": None if orient is None else {
-            "flags": flag_string(orient, offset),
-            "orientDegrees": rounded_list(orient), "offsetMetres": rounded_list(offset),
+        "authored": None if authored is None else {
+            "flags": pair_flags(authored),
+            "orientDegrees": rounded_list(authored["L"]["orient"]),
+            "offsetMetres": rounded_list(authored["L"]["offset"]),
+            "orientRightDegrees": rounded_list(authored["R"]["orient"]),
+            "offsetRightMetres": rounded_list(authored["R"]["offset"]),
             "perSide": {side: placement[side]["authored"] for side in ("L", "R")},
         },
         "seeds": {"mode": args.seeds, "yawDegrees": list(SEED_YAW_DEGREES),
@@ -1286,6 +1420,7 @@ def run(args) -> dict:
                   "table": {side: [_seed_row(row) for row in plans[side]["trials"]]
                             for side in ("L", "R")}},
         "placement": placement,
+        "hidesPieces": {"reachMetres": HIDE_REACH, "pieces": hides_report},
         "chestStraps": strap_report,
         "weights": weight_report,
         "drapes": drape_report,
@@ -1333,6 +1468,8 @@ def parse(argv: list[str]):
     parser.add_argument("--seeds", choices=("grid", "none"), default="grid")
     parser.add_argument("--orient", default="")
     parser.add_argument("--offset", default="")
+    parser.add_argument("--orient-right", default="")
+    parser.add_argument("--offset-right", default="")
     parser.add_argument("--drape", action="append", default=[])
     parser.add_argument("--outdir", required=True)
     return parser.parse_args(argv)

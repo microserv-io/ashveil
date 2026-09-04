@@ -19,35 +19,45 @@
     "vertices": 5404
   },
   "authored": {
-    "flags": "--orient 32:25:25 --offset 0.03:0.06:0.02",
+    "flags": "--orient 0.3:-3.67:10.66 --offset 0.0157:0.0244:-0.0139 --orient-right 7.68:-14.35:5.19 --offset-right 0.0103:0.0156:-0.0211",
     "orientDegrees": [
-      32.0,
-      25.0,
-      25.0
+      0.3,
+      -3.67,
+      10.66
     ],
     "offsetMetres": [
-      0.03,
-      0.06,
-      0.02
+      0.0157,
+      0.0244,
+      -0.0139
+    ],
+    "orientRightDegrees": [
+      7.68,
+      -14.35,
+      5.19
+    ],
+    "offsetRightMetres": [
+      0.0103,
+      0.0156,
+      -0.0211
     ],
     "perSide": {
       "L": {
-        "flags": "--orient 32:25:25 --offset 0.03:0.06:0.02",
-        "yawDegrees": 32.0,
-        "pitchDegrees": 25.0,
-        "rollDegrees": 25.0,
+        "flags": "--orient 0.3:-3.67:10.66 --offset 0.0157:0.0244:-0.0139",
+        "yawDegrees": 0.3,
+        "pitchDegrees": -3.67,
+        "rollDegrees": 10.66,
         "offsetMetres": [
-          0.03,
-          0.06,
-          0.02
+          0.0157,
+          0.0244,
+          -0.0139
         ],
-        "appliedYawDegrees": 32.0,
-        "appliedPitchDegrees": 25.0,
-        "appliedRollDegrees": 25.0,
+        "appliedYawDegrees": 0.3,
+        "appliedPitchDegrees": -3.67,
+        "appliedRollDegrees": 10.66,
         "appliedOffsetMetres": [
-          0.03,
-          0.06,
-          0.02
+          0.0157,
+          0.0244,
+          -0.0139
         ],
         "order": "yaw about up, then pitch about across, then roll about forward",
         "pivot": [
@@ -58,22 +68,22 @@
         "mirrored": false
       },
       "R": {
-        "flags": "--orient 32:25:25 --offset 0.03:0.06:0.02",
-        "yawDegrees": 32.0,
-        "pitchDegrees": 25.0,
-        "rollDegrees": 25.0,
+        "flags": "--orient-right 7.68:-14.35:5.19 --offset-right 0.0103:0.0156:-0.0211",
+        "yawDegrees": 7.68,
+        "pitchDegrees": -14.35,
+        "rollDegrees": 5.19,
         "offsetMetres": [
-          0.03,
-          0.06,
-          0.02
+          0.0103,
+          0.0156,
+          -0.0211
         ],
-        "appliedYawDegrees": -32.0,
-        "appliedPitchDegrees": 25.0,
-        "appliedRollDegrees": -25.0,
+        "appliedYawDegrees": -7.68,
+        "appliedPitchDegrees": -14.35,
+        "appliedRollDegrees": -5.19,
         "appliedOffsetMetres": [
-          -0.03,
-          0.06,
-          0.02
+          -0.0103,
+          0.0156,
+          -0.0211
         ],
         "order": "yaw about up, then pitch about across, then roll about forward",
         "pivot": [
@@ -106,45 +116,45 @@
       "R": "y0p0"
     },
     "bestScorePerSide": {
-      "L": 57.0972,
-      "R": 68.103
+      "L": 12.3399,
+      "R": 14.3068
     },
     "decidedBy": "both sides",
     "bestPairSeed": "y0p0",
     "pairScores": {
-      "y0p0": 125.2002
+      "y0p0": 26.6467
     },
     "table": {
       "L": [
         {
           "label": "y0p0",
           "iterations": 0,
-          "icpDegrees": 43.3968,
+          "icpDegrees": 11.2854,
           "icpBounded": false,
-          "pushMetres": 0.0,
-          "residualMeanMillimetres": 55.5773,
-          "residualP95Millimetres": 77.0704,
-          "fixedCapDeeperThan2mmBare": 38,
-          "fixedCapMaxDepthBareMetres": 0.033508,
-          "fixedCapInsidePercent": 4.878,
-          "coveragePercent": 6.7164,
-          "score": 57.0972
+          "pushMetres": 0.008612,
+          "residualMeanMillimetres": 21.1634,
+          "residualP95Millimetres": 33.9767,
+          "fixedCapDeeperThan2mmBare": 33,
+          "fixedCapMaxDepthBareMetres": 0.030674,
+          "fixedCapInsidePercent": 4.2362,
+          "coveragePercent": 26.1194,
+          "score": 12.3399
         }
       ],
       "R": [
         {
           "label": "y0p0",
           "iterations": 0,
-          "icpDegrees": 43.3968,
+          "icpDegrees": 17.359,
           "icpBounded": false,
-          "pushMetres": 0.0,
-          "residualMeanMillimetres": 63.0815,
-          "residualP95Millimetres": 84.0976,
-          "fixedCapDeeperThan2mmBare": 35,
-          "fixedCapMaxDepthBareMetres": 0.032433,
-          "fixedCapInsidePercent": 5.0215,
-          "coveragePercent": 0.0,
-          "score": 68.103
+          "pushMetres": 0.007878,
+          "residualMeanMillimetres": 16.6347,
+          "residualP95Millimetres": 27.7338,
+          "fixedCapDeeperThan2mmBare": 27,
+          "fixedCapMaxDepthBareMetres": 0.023527,
+          "fixedCapInsidePercent": 3.8737,
+          "coveragePercent": 12.4031,
+          "score": 14.3068
         }
       ]
     }
@@ -228,22 +238,22 @@
       "rule": "crest anchor and the authored orientation",
       "stage": "push",
       "authored": {
-        "flags": "--orient 32:25:25 --offset 0.03:0.06:0.02",
-        "yawDegrees": 32.0,
-        "pitchDegrees": 25.0,
-        "rollDegrees": 25.0,
+        "flags": "--orient 0.3:-3.67:10.66 --offset 0.0157:0.0244:-0.0139",
+        "yawDegrees": 0.3,
+        "pitchDegrees": -3.67,
+        "rollDegrees": 10.66,
         "offsetMetres": [
-          0.03,
-          0.06,
-          0.02
+          0.0157,
+          0.0244,
+          -0.0139
         ],
-        "appliedYawDegrees": 32.0,
-        "appliedPitchDegrees": 25.0,
-        "appliedRollDegrees": 25.0,
+        "appliedYawDegrees": 0.3,
+        "appliedPitchDegrees": -3.67,
+        "appliedRollDegrees": 10.66,
         "appliedOffsetMetres": [
-          0.03,
-          0.06,
-          0.02
+          0.0157,
+          0.0244,
+          -0.0139
         ],
         "order": "yaw about up, then pitch about across, then roll about forward",
         "pivot": [
@@ -284,21 +294,21 @@
           1.0
         ]
       ],
-      "seedScore": 57.0972,
+      "seedScore": 12.3399,
       "seedTable": [
         {
           "label": "y0p0",
           "iterations": 0,
-          "icpDegrees": 43.3968,
+          "icpDegrees": 11.2854,
           "icpBounded": false,
-          "pushMetres": 0.0,
-          "residualMeanMillimetres": 55.5773,
-          "residualP95Millimetres": 77.0704,
-          "fixedCapDeeperThan2mmBare": 38,
-          "fixedCapMaxDepthBareMetres": 0.033508,
-          "fixedCapInsidePercent": 4.878,
-          "coveragePercent": 6.7164,
-          "score": 57.0972
+          "pushMetres": 0.008612,
+          "residualMeanMillimetres": 21.1634,
+          "residualP95Millimetres": 33.9767,
+          "fixedCapDeeperThan2mmBare": 33,
+          "fixedCapMaxDepthBareMetres": 0.030674,
+          "fixedCapInsidePercent": 4.2362,
+          "coveragePercent": 26.1194,
+          "score": 12.3399
         }
       ],
       "crestSource": [
@@ -332,79 +342,90 @@
       "icpMaxDegrees": 45.0,
       "icpTrace": [],
       "icpRotationAxis": [
-        0.706933,
-        0.588805,
-        0.39186
+        -0.321788,
+        0.056749,
+        0.945109
       ],
-      "icpRotationDegrees": 43.3968,
+      "icpRotationDegrees": 11.2854,
       "rotationAxis": [
-        0.706933,
-        0.588805,
-        0.39186
+        -0.321788,
+        0.056749,
+        0.945109
       ],
-      "rotationDegrees": 43.3968,
+      "rotationDegrees": 11.2854,
       "rotationMatrix": [
         [
-          0.863239,
-          -0.15543,
-          0.48027
+          0.982667,
+          -0.185307,
+          0.005225
         ],
         [
-          0.383022,
-          0.821394,
-          -0.422618
+          0.184601,
+          0.980727,
+          0.06401
         ],
         [
-          -0.328803,
-          0.548775,
-          0.768593
+          -0.016986,
+          -0.061936,
+          0.997936
         ]
       ],
-      "residualMeanMillimetres": 55.5773,
-      "residualP95Millimetres": 77.0704,
-      "pushPasses": 0,
-      "pushSteps": [],
-      "pushMetres": 0.0,
+      "residualMeanMillimetres": 21.1634,
+      "residualP95Millimetres": 33.9767,
+      "pushPasses": 1,
+      "pushSteps": [
+        {
+          "pushMetres": 0.008612,
+          "alongNormal": [
+            0.27096,
+            0.609555,
+            0.744999
+          ],
+          "depthBeforeMetres": 0.005612,
+          "depthAfterMetres": 0.0
+        }
+      ],
+      "pushMetres": 0.008612,
       "pushBounded": false,
       "translation": [
-        0.106883,
-        1.335257,
-        -0.101658
+        0.070761,
+        1.309775,
+        -0.020956
       ],
       "crestPlaced": [
-        0.179462,
-        1.599499,
-        -0.040445
+        0.167496,
+        1.569149,
+        -0.067929
       ],
       "orientation": {
         "openingApex": [
-          0.179008,
-          1.586569,
-          -0.037675
+          0.16306,
+          1.55961,
+          -0.059903
         ],
         "opening": [
-          0.839001,
-          -0.362911,
-          -0.405429
+          0.828019,
+          -0.49013,
+          0.272319
         ],
-        "openingDownTheArm": 0.6624,
-        "openingForward": -0.4054,
-        "openingOutward": 0.839,
-        "openingUp": -0.3629,
-        "openingFaces": "outward 0.84, down the arm 0.66",
+        "openingDownTheArm": 0.7573,
+        "openingForward": 0.2723,
+        "openingOutward": 0.828,
+        "openingUp": -0.4901,
+        "openingFaces": "outward 0.83, down the arm 0.76",
         "drapeVertices": 1096,
         "drapeFromCapCentimetres": [
-          2.71,
-          -6.86,
-          -5.43
+          3.15,
+          -8.59,
+          0.56
         ],
-        "drapeBehindCentimetres": 5.43,
-        "drapeOutwardCentimetres": 2.71,
-        "drapeBelowCentimetres": 6.86
+        "drapeBehindCentimetres": -0.56,
+        "drapeOutwardCentimetres": 3.15,
+        "drapeBelowCentimetres": 8.59
       },
-      "fixedCapDepthAfterMetres": 0.004945,
-      "fixedCapDeeperThan2mm": 15,
-      "fixedCapDeeperThan2mmBare": 38,
+      "fixedCapDepthAfterMetres": 0.006472,
+      "fixedCapDeeperThan2mm": 7,
+      "fixedCapDeeperThan2mmBare": 33,
       "seedChoice": {
         "chosen": "y0p0",
         "sidesAgreed": true,
@@ -413,13 +434,13 @@
           "R": "y0p0"
         },
         "bestScorePerSide": {
-          "L": 57.0972,
-          "R": 68.103
+          "L": 12.3399,
+          "R": 14.3068
         },
         "decidedBy": "both sides",
         "bestPairSeed": "y0p0",
         "pairScores": {
-          "y0p0": 125.2002
+          "y0p0": 26.6467
         }
       },
       "islands": [
@@ -434,9 +455,9 @@
             -0.011289
           ],
           "centroid": [
-            0.231764,
-            1.510925,
-            -0.090409
+            0.214863,
+            1.469584,
+            -0.037591
           ]
         },
         {
@@ -450,9 +471,9 @@
             0.092986
           ],
           "centroid": [
-            0.283128,
-            1.410591,
-            -0.110156
+            0.246081,
+            1.375912,
+            0.020256
           ]
         },
         {
@@ -466,9 +487,9 @@
             0.016805
           ],
           "centroid": [
-            0.234435,
-            1.455128,
-            -0.104568
+            0.210785,
+            1.414843,
+            -0.020048
           ]
         },
         {
@@ -482,9 +503,9 @@
             0.114979
           ],
           "centroid": [
-            0.223949,
-            1.437108,
-            -0.044355
+            0.172226,
+            1.430859,
+            0.028086
           ]
         },
         {
@@ -498,9 +519,9 @@
             0.05779
           ],
           "centroid": [
-            0.260836,
-            1.43037,
-            -0.10814
+            0.230015,
+            1.392931,
+            0.001696
           ]
         },
         {
@@ -514,9 +535,9 @@
             0.186358
           ],
           "centroid": [
-            0.286663,
-            1.401631,
-            -0.056832
+            0.224764,
+            1.396522,
+            0.06561
           ]
         },
         {
@@ -530,9 +551,9 @@
             0.16915
           ],
           "centroid": [
-            0.272141,
-            1.432261,
-            -0.042058
+            0.212573,
+            1.429768,
+            0.05496
           ]
         },
         {
@@ -546,9 +567,9 @@
             0.1398
           ],
           "centroid": [
-            0.237455,
-            1.459078,
-            -0.024642
+            0.180687,
+            1.460408,
+            0.038525
           ]
         },
         {
@@ -562,9 +583,9 @@
             0.045456
           ],
           "centroid": [
-            0.310126,
-            1.445585,
-            -0.13856
+            0.289547,
+            1.391686,
+            -0.004687
           ]
         },
         {
@@ -578,9 +599,9 @@
             0.015777
           ],
           "centroid": [
-            0.294869,
-            1.484057,
-            -0.12709
+            0.27984,
+            1.429824,
+            -0.021883
           ]
         },
         {
@@ -594,9 +615,9 @@
             -0.024777
           ],
           "centroid": [
-            0.276688,
-            1.522111,
-            -0.121064
+            0.26976,
+            1.464629,
+            -0.044287
           ]
         },
         {
@@ -610,27 +631,27 @@
             0.102901
           ],
           "centroid": [
-            0.21664,
-            1.456119,
-            -0.037155
+            0.166987,
+            1.450521,
+            0.020829
           ]
         }
       ],
       "capClearance": {
         "vertices": 1875,
-        "maxDepthDressedMetres": 0.059488,
-        "deeperThan2mmDressed": 39,
-        "maxDepthBareMetres": 0.064203,
-        "deeperThan2mmBare": 286,
-        "anchorToTargetMillimetres": 82.544,
-        "anchorToBareMillimetres": 94.258
+        "maxDepthDressedMetres": 0.038959,
+        "deeperThan2mmDressed": 35,
+        "maxDepthBareMetres": 0.063258,
+        "deeperThan2mmBare": 265,
+        "anchorToTargetMillimetres": 49.426,
+        "anchorToBareMillimetres": 60.688
       },
       "coverage": {
         "regionVertices": 134,
-        "coveredVertices": 9,
-        "coveredFraction": 0.067164,
+        "coveredVertices": 35,
+        "coveredFraction": 0.261194,
         "reachMetres": 0.06,
-        "medianGapMetres": 0.048397
+        "medianGapMetres": 0.033884
       }
     },
     "R": {
@@ -711,22 +732,22 @@
       "rule": "crest anchor and the authored orientation",
       "stage": "push",
       "authored": {
-        "flags": "--orient 32:25:25 --offset 0.03:0.06:0.02",
-        "yawDegrees": 32.0,
-        "pitchDegrees": 25.0,
-        "rollDegrees": 25.0,
+        "flags": "--orient-right 7.68:-14.35:5.19 --offset-right 0.0103:0.0156:-0.0211",
+        "yawDegrees": 7.68,
+        "pitchDegrees": -14.35,
+        "rollDegrees": 5.19,
         "offsetMetres": [
-          0.03,
-          0.06,
-          0.02
+          0.0103,
+          0.0156,
+          -0.0211
         ],
-        "appliedYawDegrees": -32.0,
-        "appliedPitchDegrees": 25.0,
-        "appliedRollDegrees": -25.0,
+        "appliedYawDegrees": -7.68,
+        "appliedPitchDegrees": -14.35,
+        "appliedRollDegrees": -5.19,
         "appliedOffsetMetres": [
-          -0.03,
-          0.06,
-          0.02
+          -0.0103,
+          0.0156,
+          -0.0211
         ],
         "order": "yaw about up, then pitch about across, then roll about forward",
         "pivot": [
@@ -767,21 +788,21 @@
           1.0
         ]
       ],
-      "seedScore": 68.103,
+      "seedScore": 14.3068,
       "seedTable": [
         {
           "label": "y0p0",
           "iterations": 0,
-          "icpDegrees": 43.3968,
+          "icpDegrees": 17.359,
           "icpBounded": false,
-          "pushMetres": 0.0,
-          "residualMeanMillimetres": 63.0815,
-          "residualP95Millimetres": 84.0976,
-          "fixedCapDeeperThan2mmBare": 35,
-          "fixedCapMaxDepthBareMetres": 0.032433,
-          "fixedCapInsidePercent": 5.0215,
-          "coveragePercent": 0.0,
-          "score": 68.103
+          "pushMetres": 0.007878,
+          "residualMeanMillimetres": 16.6347,
+          "residualP95Millimetres": 27.7338,
+          "fixedCapDeeperThan2mmBare": 27,
+          "fixedCapMaxDepthBareMetres": 0.023527,
+          "fixedCapInsidePercent": 3.8737,
+          "coveragePercent": 12.4031,
+          "score": 14.3068
         }
       ],
       "crestSource": [
@@ -815,79 +836,90 @@
       "icpMaxDegrees": 45.0,
       "icpTrace": [],
       "icpRotationAxis": [
-        0.706933,
-        -0.588805,
-        -0.39186
+        -0.805023,
+        -0.477249,
+        -0.352379
       ],
-      "icpRotationDegrees": 43.3968,
+      "icpRotationDegrees": 17.359,
       "rotationAxis": [
-        0.706933,
-        -0.588805,
-        -0.39186
+        -0.805023,
+        -0.477249,
+        -0.352379
       ],
-      "rotationDegrees": 43.3968,
+      "rotationDegrees": 17.359,
       "rotationMatrix": [
         [
-          0.863239,
-          0.15543,
-          -0.48027
+          0.983971,
+          0.122634,
+          -0.129471
         ],
         [
-          -0.383022,
-          0.821394,
-          -0.422618
+          -0.087636,
+          0.964828,
+          0.247845
         ],
         [
-          0.328803,
-          0.548775,
-          0.768593
+          0.155311,
+          -0.232525,
+          0.96011
         ]
       ],
-      "residualMeanMillimetres": 63.0815,
-      "residualP95Millimetres": 84.0976,
-      "pushPasses": 0,
-      "pushSteps": [],
-      "pushMetres": 0.0,
+      "residualMeanMillimetres": 16.6347,
+      "residualP95Millimetres": 27.7338,
+      "pushPasses": 1,
+      "pushSteps": [
+        {
+          "pushMetres": 0.007878,
+          "alongNormal": [
+            -0.408461,
+            0.817976,
+            0.405061
+          ],
+          "depthBeforeMetres": 0.004878,
+          "depthAfterMetres": 0.001364
+        }
+      ],
+      "pushMetres": 0.007878,
       "pushBounded": false,
       "translation": [
-        -0.110197,
-        1.343638,
-        -0.113934
+        -0.061463,
+        1.327383,
+        0.013686
       ],
       "crestPlaced": [
-        -0.179464,
-        1.599495,
-        -0.046654
+        -0.162981,
+        1.561538,
+        -0.084563
       ],
       "orientation": {
         "openingApex": [
-          -0.179962,
-          1.591893,
-          -0.048761
+          -0.162376,
+          1.554621,
+          -0.080787
         ],
         "opening": [
-          -0.834005,
-          -0.272875,
-          -0.479556
+          -0.855442,
+          -0.490981,
+          0.164793
         ],
-        "openingDownTheArm": 0.5792,
-        "openingForward": -0.4796,
-        "openingOutward": 0.834,
-        "openingUp": -0.2729,
-        "openingFaces": "outward 0.83, down the arm 0.58",
+        "openingDownTheArm": 0.7714,
+        "openingForward": 0.1648,
+        "openingOutward": 0.8554,
+        "openingUp": -0.491,
+        "openingFaces": "outward 0.86, down the arm 0.77",
         "drapeVertices": 829,
         "drapeFromCapCentimetres": [
-          -1.6,
-          -6.61,
-          -6.53
+          -1.93,
+          -9.21,
+          0.6
         ],
-        "drapeBehindCentimetres": 6.53,
-        "drapeOutwardCentimetres": 1.6,
-        "drapeBelowCentimetres": 6.61
+        "drapeBehindCentimetres": -0.6,
+        "drapeOutwardCentimetres": 1.93,
+        "drapeBelowCentimetres": 9.21
       },
-      "fixedCapDepthAfterMetres": 0.021519,
+      "fixedCapDepthAfterMetres": 0.005286,
       "fixedCapDeeperThan2mm": 8,
-      "fixedCapDeeperThan2mmBare": 35,
+      "fixedCapDeeperThan2mmBare": 27,
       "seedChoice": {
         "chosen": "y0p0",
         "sidesAgreed": true,
@@ -896,13 +928,13 @@
           "R": "y0p0"
         },
         "bestScorePerSide": {
-          "L": 57.0972,
-          "R": 68.103
+          "L": 12.3399,
+          "R": 14.3068
         },
         "decidedBy": "both sides",
         "bestPairSeed": "y0p0",
         "pairScores": {
-          "y0p0": 125.2002
+          "y0p0": 26.6467
         }
       },
       "islands": [
@@ -917,9 +949,9 @@
             -0.031748
           ],
           "centroid": [
-            -0.225139,
-            1.524116,
-            -0.106816
+            -0.206324,
+            1.467627,
+            -0.058299
           ]
         },
         {
@@ -933,9 +965,9 @@
             0.084256
           ],
           "centroid": [
-            -0.261256,
-            1.47886,
-            -0.08011
+            -0.222135,
+            1.455056,
+            0.00218
           ]
         },
         {
@@ -949,9 +981,9 @@
             0.093381
           ],
           "centroid": [
-            -0.284162,
-            1.41787,
-            -0.122126
+            -0.242186,
+            1.383047,
+            0.022734
           ]
         },
         {
@@ -965,9 +997,9 @@
             0.016814
           ],
           "centroid": [
-            -0.236108,
-            1.46197,
-            -0.116798
+            -0.205678,
+            1.416391,
+            -0.020134
           ]
         },
         {
@@ -981,9 +1013,9 @@
             0.057826
           ],
           "centroid": [
-            -0.262203,
-            1.437535,
-            -0.120321
+            -0.225579,
+            1.397498,
+            0.003048
           ]
         },
         {
@@ -997,9 +1029,9 @@
             0.04547
           ],
           "centroid": [
-            -0.310851,
-            1.452563,
-            -0.150356
+            -0.282931,
+            1.389754,
+            -0.009011
           ]
         },
         {
@@ -1013,9 +1045,9 @@
             0.015764
           ],
           "centroid": [
-            -0.295772,
-            1.490541,
-            -0.139041
+            -0.274011,
+            1.424295,
+            -0.031926
           ]
         },
         {
@@ -1029,9 +1061,9 @@
             0.186359
           ],
           "centroid": [
-            -0.287688,
-            1.409178,
-            -0.069671
+            -0.228262,
+            1.413189,
+            0.064413
           ]
         },
         {
@@ -1045,9 +1077,9 @@
             0.169189
           ],
           "centroid": [
-            -0.273361,
-            1.439405,
-            -0.055073
+            -0.21737,
+            1.444442,
+            0.049028
           ]
         },
         {
@@ -1061,9 +1093,9 @@
             0.139787
           ],
           "centroid": [
-            -0.239103,
-            1.465898,
-            -0.037895
+            -0.186349,
+            1.473892,
+            0.030562
           ]
         },
         {
@@ -1077,9 +1109,9 @@
             -0.02479
           ],
           "centroid": [
-            -0.277847,
-            1.52811,
-            -0.133108
+            -0.26392,
+            1.454694,
+            -0.059166
           ]
         },
         {
@@ -1093,27 +1125,38 @@
             0.102867
           ],
           "centroid": [
-            -0.218535,
-            1.462964,
-            -0.050258
+            -0.17016,
+            1.462311,
+            0.01684
           ]
         }
       ],
       "capClearance": {
         "vertices": 1526,
-        "maxDepthDressedMetres": 0.062175,
-        "deeperThan2mmDressed": 21,
-        "maxDepthBareMetres": 0.064341,
-        "deeperThan2mmBare": 266,
-        "anchorToTargetMillimetres": 81.641,
-        "anchorToBareMillimetres": 93.585
+        "maxDepthDressedMetres": 0.037876,
+        "deeperThan2mmDressed": 44,
+        "maxDepthBareMetres": 0.060869,
+        "deeperThan2mmBare": 313,
+        "anchorToTargetMillimetres": 41.896,
+        "anchorToBareMillimetres": 53.867
       },
       "coverage": {
         "regionVertices": 129,
-        "coveredVertices": 0,
-        "coveredFraction": 0.0,
+        "coveredVertices": 16,
+        "coveredFraction": 0.124031,
         "reachMetres": 0.06,
-        "medianGapMetres": null
+        "medianGapMetres": 0.011547
+      }
+    }
+  },
+  "hidesPieces": {
+    "reachMetres": 0.03,
+    "pieces": {
+      "warden-tunic-full": {
+        "vertices": 8236,
+        "hidden": 231,
+        "L": 126,
+        "R": 105
       }
     }
   },
@@ -1175,139 +1218,44 @@
     "band": {
       "warden-pauldrons-socket_L": {
         "vertices": 2701,
-        "bandVertices": 659,
-        "bandFraction": 0.243984,
+        "bandVertices": 710,
+        "bandFraction": 0.262866,
         "ceiling": 0.8,
-        "minPeakWeight": 0.500237,
-        "meanPeakWeight": 0.878685,
-        "bandHeightMetres": 0.194083,
-        "bandMinY": 1.373856,
-        "bandMaxY": 1.56794
+        "minPeakWeight": 0.500045,
+        "meanPeakWeight": 0.871344,
+        "bandHeightMetres": 0.185749,
+        "bandMinY": 1.348334,
+        "bandMaxY": 1.534083
       },
       "warden-pauldrons-socket_R": {
         "vertices": 2703,
-        "bandVertices": 605,
-        "bandFraction": 0.223825,
+        "bandVertices": 785,
+        "bandFraction": 0.290418,
         "ceiling": 0.8,
-        "minPeakWeight": 0.502102,
-        "meanPeakWeight": 0.882175,
-        "bandHeightMetres": 0.194659,
-        "bandMinY": 1.378702,
-        "bandMaxY": 1.573362
+        "minPeakWeight": 0.500375,
+        "meanPeakWeight": 0.862073,
+        "bandHeightMetres": 0.177106,
+        "bandMinY": 1.349604,
+        "bandMaxY": 1.52671
       }
     },
     "stiffness": 3.0
   },
-  "drapes": [
-    {
-      "name": "cloth_L",
-      "attachBone": "upper_arm_L",
-      "bones": [
-        "drape_cloth_L_1",
-        "drape_cloth_L_2"
-      ],
-      "segmentLength": 0.05908,
-      "restDegrees": 0.0,
-      "root": [
-        0.265676,
-        1.482954,
-        -0.112692
-      ],
-      "toward": [
-        -0.94832,
-        0.0,
-        0.317315
-      ],
-      "island": "warden-pauldrons-socket_L",
-      "from": 0.0,
-      "to": 0.5,
-      "segments": 2,
-      "islandHeightMetres": 0.238078,
-      "restTiltMetresAtTheHem": 0.0,
-      "toLineY": 1.489813,
-      "chainLengthMetres": 0.11816,
-      "axis": [
-        -0.12679,
-        -0.959777,
-        0.250503
-      ],
-      "towardMetres": 0.061329,
-      "bandCentre": [
-        0.247159,
-        1.442762,
-        -0.081845
-      ],
-      "nearestSkinMetres": 0.031365,
-      "nearestSkin": [
-        -0.814306,
-        0.0,
-        0.580435
-      ],
-      "bandVertices": 1446,
-      "fadeVertices": 392
-    },
-    {
-      "name": "cloth_R",
-      "attachBone": "upper_arm_R",
-      "bones": [
-        "drape_cloth_R_1",
-        "drape_cloth_R_2"
-      ],
-      "segmentLength": 0.058341,
-      "restDegrees": 0.0,
-      "root": [
-        -0.266968,
-        1.489453,
-        -0.124822
-      ],
-      "toward": [
-        0.880812,
-        0.0,
-        0.473466
-      ],
-      "island": "warden-pauldrons-socket_R",
-      "from": 0.0,
-      "to": 0.5,
-      "segments": 2,
-      "islandHeightMetres": 0.235195,
-      "restTiltMetresAtTheHem": 0.0,
-      "toLineY": 1.4963,
-      "chainLengthMetres": 0.116682,
-      "axis": [
-        0.127113,
-        -0.959136,
-        0.252784
-      ],
-      "towardMetres": 0.067902,
-      "bandCentre": [
-        -0.248809,
-        1.449748,
-        -0.094534
-      ],
-      "nearestSkinMetres": 0.040287,
-      "nearestSkin": [
-        0.826797,
-        0.0,
-        0.5625
-      ],
-      "bandVertices": 1443,
-      "fadeVertices": 396
-    }
-  ],
+  "drapes": [],
   "rest": {
-    "maxRestRotationBefore": 1.959779,
+    "maxRestRotationBefore": 0.0,
     "maxRestRotationAfter": 0.0,
-    "joints": 28
+    "joints": 24
   },
   "bindClearance": {
-    "insideVertices": 208,
-    "maxPenetrationMetres": 0.062174521,
-    "deeperThan2mm": 133
+    "insideVertices": 293,
+    "maxPenetrationMetres": 0.038958512,
+    "deeperThan2mm": 185
   },
   "bareBodyClearance": {
-    "insideVertices": 1003,
-    "maxPenetrationMetres": 0.064340718,
-    "deeperThan2mm": 942
+    "insideVertices": 961,
+    "maxPenetrationMetres": 0.063257933,
+    "deeperThan2mm": 888
   },
   "runtime": {
     "bones": [
@@ -1334,11 +1282,7 @@
       "foot_L",
       "thigh_R",
       "shin_R",
-      "foot_R",
-      "drape_cloth_L_1",
-      "drape_cloth_L_2",
-      "drape_cloth_R_1",
-      "drape_cloth_R_2"
+      "foot_R"
     ],
     "bodyBones": [
       "root",
@@ -1366,18 +1310,8 @@
       "shin_R",
       "foot_R"
     ],
-    "extraBones": [
-      "drape_cloth_L_1",
-      "drape_cloth_L_2",
-      "drape_cloth_R_1",
-      "drape_cloth_R_2"
-    ],
-    "extraBoneParents": {
-      "drape_cloth_L_1": "upper_arm_L",
-      "drape_cloth_L_2": "drape_cloth_L_1",
-      "drape_cloth_R_1": "upper_arm_R",
-      "drape_cloth_R_2": "drape_cloth_R_1"
-    },
+    "extraBones": [],
+    "extraBoneParents": {},
     "inverseBindMaxAbsDifference": 1.79e-07,
     "triangles": 9615,
     "materials": 1,
@@ -1387,16 +1321,12 @@
       "R": 12,
       "islands": 24
     },
-    "maxInfluencesPerVertex": 4,
-    "minWeightSum": 0.999999884,
-    "maxWeightSum": 1.000000112,
+    "maxInfluencesPerVertex": 2,
+    "minWeightSum": 0.99999997,
+    "maxWeightSum": 1.00000003,
     "influencingBones": [
       "clavicle_L",
       "clavicle_R",
-      "drape_cloth_L_1",
-      "drape_cloth_L_2",
-      "drape_cloth_R_1",
-      "drape_cloth_R_2",
       "shoulder_helper_L",
       "shoulder_helper_R",
       "upper_arm_L",
@@ -1410,9 +1340,9 @@
       "textures": true
     },
     "bindClearance": {
-      "insideVertices": 208,
-      "maxPenetrationMetres": 0.062174521,
-      "deeperThan2mm": 133
+      "insideVertices": 293,
+      "maxPenetrationMetres": 0.038958512,
+      "deeperThan2mm": 185
     }
   },
   "gates": {
@@ -1434,7 +1364,7 @@
     "glb": "warden-pauldrons-socket.glb",
     "manifest": "warden-pauldrons-socket.manifest.json",
     "report": "warden-pauldrons-socket.report.json",
-    "sha256": "779152af5cc4c8ecc0ef9166d8a160dadea1fe9eded760e25b9b4c6fb7d18d9a"
+    "sha256": "b1faf42b09273b775187faedffa6f1cc50cfb82c0d7ac1eaef8676a67b698e3a"
   },
   "gatesFailed": [
     "piece_sits_off_the_skin_at_bind",

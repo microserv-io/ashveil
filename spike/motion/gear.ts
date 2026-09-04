@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import {
   GEAR_SLOTS, type DrapeDefinition, type GearHides, type GearSlot, type HideProfile,
-  type PieceRegions,
+  type PieceCover, type PieceRegions,
 } from '../../src/render/gear'
 import { stylise } from '../../src/render/look'
 
@@ -53,9 +53,13 @@ export const REVIEW_GEAR: readonly ReviewGearPiece[] = [
 export interface PieceCrests {
   readonly L: readonly number[]
   readonly R: readonly number[]
-  /** The `--orient` and `--offset` this piece was fitted with, so a pose can be stated. */
-  readonly orient: readonly number[]
-  readonly offset: readonly number[]
+  /**
+   * The `--orient` and `--offset` each side was fitted with. Per side, because two
+   * halves of one source are not the mirrors of each other they were drawn as, and a
+   * pair may be authored as two poses.
+   */
+  readonly orient: Readonly<Record<'L' | 'R', readonly number[]>>
+  readonly offset: Readonly<Record<'L' | 'R', readonly number[]>>
 }
 
 /** A piece with its manifest read: what to bind, and the body it hides. */
@@ -64,7 +68,7 @@ export interface LoadedGearPiece {
   readonly covers: readonly GearSlot[]
   readonly hides: GearHides
   readonly drapes: readonly DrapeDefinition[]
-  readonly hidesPieces: boolean | undefined
+  readonly hidesPieces: PieceCover | undefined
   readonly regions: PieceRegions | undefined
   readonly hidesRegions: readonly string[] | undefined
   readonly hidesBand: readonly [number, number] | undefined
@@ -106,7 +110,7 @@ export async function loadGearManifest(piece: string): Promise<Omit<LoadedGearPi
     covers: manifest.covers as GearSlot[],
     hides: hides as GearHides,
     drapes: drapesOf(manifest.drapes, url),
-    hidesPieces: typeof manifest.hidesPieces === 'boolean' ? manifest.hidesPieces : undefined,
+    hidesPieces: coverOf(manifest.hidesPieces, url),
     regions: regionsOf(manifest.regions, url),
     hidesRegions: hiddenRegionsOf(manifest.hidesRegions, url),
     hidesBand: bandOf(manifest.hidesBand, url),
@@ -129,11 +133,26 @@ function crestsOf(alignment: unknown): PieceCrests | undefined {
       ? (values as number[])
       : null
   }
-  const left = triple('L', 'crest')
-  const right = triple('R', 'crest')
-  const orient = triple('L', 'orient')
-  const offset = triple('L', 'offset')
-  return left && right && orient && offset ? { L: left, R: right, orient, offset } : undefined
+  const [left, right] = [triple('L', 'crest'), triple('R', 'crest')]
+  const [yawL, yawR] = [triple('L', 'orient'), triple('R', 'orient')]
+  const [offL, offR] = [triple('L', 'offset'), triple('R', 'offset')]
+  if (!left || !right || !yawL || !yawR || !offL || !offR) return undefined
+  return { L: left, R: right, orient: { L: yawL, R: yawR }, offset: { L: offL, R: offR } }
+}
+
+/**
+ * What a piece hides on the pieces beneath it: a flat yes or no, or the vertices the
+ * fitter measured under it, per piece it was fitted over.
+ */
+function coverOf(cover: unknown, url: string): PieceCover | undefined {
+  if (typeof cover === 'boolean' || cover === undefined) return cover
+  if (!cover || typeof cover !== 'object' || Array.isArray(cover)) {
+    throw new Error(`gear: ${url} has a "hidesPieces" that is neither a flag nor an object`)
+  }
+  for (const [piece, indices] of Object.entries(cover)) {
+    if (!Array.isArray(indices)) throw new Error(`gear: ${url} hidesPieces "${piece}" is not an array`)
+  }
+  return cover as PieceCover
 }
 
 /** A piece fitted before region tags existed has none, and falls back to burial. */
