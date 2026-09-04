@@ -38,6 +38,8 @@ export const REVIEW_GEAR: readonly ReviewGearPiece[] = [
   { slot: 'chest', piece: 'warden-tunic-full', path: gearPath('warden-tunic-full'), compare: true },
   { slot: 'head', piece: 'warden-hood-full', path: gearPath('warden-hood-full'), compare: true },
   { slot: 'shoulders', piece: 'warden-pauldrons-full', path: gearPath('warden-pauldrons-full'), compare: true },
+  { slot: 'shoulders', piece: 'warden-pauldrons-socket', path: gearPath('warden-pauldrons-socket'), compare: true },
+  { slot: 'shoulders', piece: 'warden-pauldrons-socket-stiff', path: gearPath('warden-pauldrons-socket-stiff'), compare: true },
 ]
 
 /** A piece with its manifest read: what to bind, and the body it hides. */

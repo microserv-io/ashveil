@@ -22,7 +22,8 @@
     "gate": "npm run typecheck && npm run test && npm run build",
     "gate:balance": "npm run gate && npm run sim -- sweep --seeds 6 --minutes 4",
     "gate:perf": "npm run gate && npm run perf",
-    "art:ring": "node scripts/art/ring.mjs"
+    "art:ring": "node scripts/art/ring.mjs",
+    "art:socket": "node scripts/art/socket.mjs"
   },
   "type": "module",
   "dependencies": {

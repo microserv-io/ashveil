@@ -1,0 +1,7467 @@
+{
+  "schema": "ashveil.gear-manifest.v1",
+  "family": "humanoid.v1",
+  "contractVersion": "1.3.0",
+  "body": "masculine-v3",
+  "slot": "shoulders",
+  "piece": "warden-pauldrons-socket",
+  "source": {
+    "file": "warden-pauldrons-tripo.glb",
+    "sha256": "bb23ed0fde6651f6b4f68182eb32f64d351484f73fffda17e11fb42e1cb71a64"
+  },
+  "bones": [
+    "root",
+    "pelvis",
+    "spine",
+    "chest",
+    "clavicle_L",
+    "shoulder_helper_L",
+    "upper_arm_L",
+    "forearm_L",
+    "hand_L",
+    "twist_upper_arm_L",
+    "clavicle_R",
+    "shoulder_helper_R",
+    "upper_arm_R",
+    "forearm_R",
+    "hand_R",
+    "twist_upper_arm_R",
+    "neck",
+    "head",
+    "thigh_L",
+    "shin_L",
+    "foot_L",
+    "thigh_R",
+    "shin_R",
+    "foot_R",
+    "drape_cloth_L_1",
+    "drape_cloth_L_2",
+    "drape_cloth_R_1",
+    "drape_cloth_R_2"
+  ],
+  "inverseBindSha256": "39dc388717d457a7e7901cf9b7d55c007d580eed54137a8aadc132ef64eb9725",
+  "covers": [
+    "shoulders"
+  ],
+  "under": [
+    "warden-tunic-full"
+  ],
+  "hidesPieces": true,
+  "hides": {},
+  "weights": "stiff",
+  "alignment": {
+    "L": {
+      "scale": 0.497671,
+      "yawDegrees": 0,
+      "translation": [
+        0.094668,
+        1.20669,
+        -0.053986
+      ]
+    },
+    "R": {
+      "scale": 0.491343,
+      "yawDegrees": 0,
+      "translation": [
+        -0.100335,
+        1.206852,
+        -0.055665
+      ]
+    }
+  },
+  "budget": {
+    "triangles": 9615,
+    "materials": 1,
+    "meshes": 1,
+    "maxInfluencesPerVertex": 4
+  },
+  "gates": {
+    "piece_joints_match_the_body": true,
+    "inverse_binds_match_the_body": true,
+    "at_most_four_influences_per_vertex": true,
+    "weights_sum_to_one": true,
+    "every_influence_is_an_allowed_bone": true,
+    "triangles_within_budget": false,
+    "materials_within_budget": true,
+    "uvs_survived_the_pipeline": true,
+    "textures_survived_the_pipeline": true,
+    "bones_rest_axis_aligned": true,
+    "piece_sits_off_the_skin_at_bind": false,
+    "pair_has_both_sides": true
+  },
+  "reportFile": "warden-pauldrons-socket.report.json",
+  "drapes": [
+    {
+      "name": "cloth_L",
+      "attachBone": "upper_arm_L",
+      "bones": [
+        "drape_cloth_L_1",
+        "drape_cloth_L_2"
+      ],
+      "segmentLength": 0.056837,
+      "restDegrees": 0.0,
+      "root": [
+        0.243847,
+        1.327705,
+        -0.041694
+      ],
+      "toward": [
+        -0.954216,
+        0.0,
+        -0.299118
+      ],
+      "colliders": [
+        {
+          "from": "pelvis",
+          "to": "chest",
+          "radius": 0.155009
+        },
+        {
+          "from": "chest",
+          "to": "neck",
+          "radius": 0.207724
+        },
+        {
+          "from": "clavicle_L",
+          "to": "upper_arm_L",
+          "radius": 0.147663
+        },
+        {
+          "from": "clavicle_R",
+          "to": "upper_arm_R",
+          "radius": 0.143574
+        },
+        {
+          "from": "upper_arm_L",
+          "to": "forearm_L",
+          "radius": 0.083634
+        },
+        {
+          "from": "upper_arm_R",
+          "to": "forearm_R",
+          "radius": 0.083607
+        },
+        {
+          "from": "thigh_L",
+          "to": "shin_L",
+          "radius": 0.101433
+        },
+        {
+          "from": "thigh_R",
+          "to": "shin_R",
+          "radius": 0.101318
+        },
+        {
+          "from": "shin_L",
+          "to": "foot_L",
+          "radius": 0.12058
+        },
+        {
+          "from": "shin_R",
+          "to": "foot_R",
+          "radius": 0.120644
+        }
+      ],
+      "supports": [
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.4387643,
+              "position": [
+                0.146103,
+                1.320786,
+                -0.031265
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0145631,
+              "position": [
+                0.146103,
+                1.320786,
+                -0.031265
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.5466725,
+              "position": [
+                0.146103,
+                1.320786,
+                -0.031265
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "chest",
+              "weight": 0.5463373,
+              "position": [
+                0.165529,
+                1.319823,
+                -0.027972
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.1066517,
+              "position": [
+                0.165529,
+                1.319823,
+                -0.027972
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.347011,
+              "position": [
+                0.165529,
+                1.319823,
+                -0.027972
+              ]
+            }
+          ],
+          "normal": [
+            -0.984754,
+            0.04884,
+            -0.166955
+          ],
+          "clearance": 0.019727
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0899562,
+              "position": [
+                0.171372,
+                1.33899,
+                -0.006236
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.2433771,
+              "position": [
+                0.171372,
+                1.33899,
+                -0.006236
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0858148,
+              "position": [
+                0.164551,
+                1.339096,
+                -0.011339
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.2475185,
+              "position": [
+                0.164551,
+                1.339096,
+                -0.011339
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0208935,
+              "position": [
+                0.162626,
+                1.329984,
+                -0.010124
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0332561,
+              "position": [
+                0.162626,
+                1.329984,
+                -0.010124
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.2791837,
+              "position": [
+                0.162626,
+                1.329984,
+                -0.010124
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "chest",
+              "weight": 0.5957035,
+              "position": [
+                0.15843,
+                1.343787,
+                -0.007557
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.1816226,
+              "position": [
+                0.15843,
+                1.343787,
+                -0.007557
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.2226739,
+              "position": [
+                0.15843,
+                1.343787,
+                -0.007557
+              ]
+            }
+          ],
+          "normal": [
+            0.698515,
+            -0.699482,
+            -0.151003
+          ],
+          "clearance": 0.0111
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.3244909,
+              "position": [
+                0.171526,
+                1.314417,
+                -0.052164
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.0490162,
+              "position": [
+                0.171526,
+                1.314417,
+                -0.052164
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0020978,
+              "position": [
+                0.171526,
+                1.314417,
+                -0.052164
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.1243951,
+              "position": [
+                0.171526,
+                1.314417,
+                -0.052164
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.2522613,
+              "position": [
+                0.167131,
+                1.31904,
+                -0.047789
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.0107165,
+              "position": [
+                0.167131,
+                1.31904,
+                -0.047789
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0070882,
+              "position": [
+                0.167131,
+                1.31904,
+                -0.047789
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.229934,
+              "position": [
+                0.167131,
+                1.31904,
+                -0.047789
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "chest",
+              "weight": 0.2370038,
+              "position": [
+                0.170853,
+                1.319823,
+                -0.059924
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.1621716,
+              "position": [
+                0.170853,
+                1.319823,
+                -0.059924
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.6008246,
+              "position": [
+                0.170853,
+                1.319823,
+                -0.059924
+              ]
+            }
+          ],
+          "normal": [
+            -0.144704,
+            -0.293807,
+            0.944848
+          ],
+          "clearance": 0.010529
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.2773567,
+              "position": [
+                0.184363,
+                1.298097,
+                -0.065529
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.2226433,
+              "position": [
+                0.184363,
+                1.298097,
+                -0.065529
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.2256289,
+              "position": [
+                0.188799,
+                1.292747,
+                -0.070146
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.2743711,
+              "position": [
+                0.188799,
+                1.292747,
+                -0.070146
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "chest",
+              "weight": 0.0845935,
+              "position": [
+                0.183278,
+                1.299408,
+                -0.065251
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.05512,
+              "position": [
+                0.183278,
+                1.299408,
+                -0.065251
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.8602864,
+              "position": [
+                0.183278,
+                1.299408,
+                -0.065251
+              ]
+            }
+          ],
+          "normal": [
+            0.570722,
+            -0.688859,
+            -0.446933
+          ],
+          "clearance": 0.005787
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.3649254,
+              "position": [
+                0.18591,
+                1.309623,
+                -0.012311
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.0971511,
+              "position": [
+                0.18591,
+                1.309623,
+                -0.012311
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0003446,
+              "position": [
+                0.18591,
+                1.309623,
+                -0.012311
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.0375789,
+              "position": [
+                0.18591,
+                1.309623,
+                -0.012311
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.3327172,
+              "position": [
+                0.187378,
+                1.313842,
+                -0.011582
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.053289,
+              "position": [
+                0.187378,
+                1.313842,
+                -0.011582
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0010215,
+              "position": [
+                0.187378,
+                1.313842,
+                -0.011582
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.1129722,
+              "position": [
+                0.187378,
+                1.313842,
+                -0.011582
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "chest",
+              "weight": 0.0156174,
+              "position": [
+                0.19482,
+                1.318047,
+                -0.01466
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.1420661,
+              "position": [
+                0.19482,
+                1.318047,
+                -0.01466
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.8423165,
+              "position": [
+                0.19482,
+                1.318047,
+                -0.01466
+              ]
+            }
+          ],
+          "normal": [
+            -0.765425,
+            -0.591255,
+            0.254053
+          ],
+          "clearance": 0.010681
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.1758728,
+              "position": [
+                0.211242,
+                1.29619,
+                0.004456
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.1574605,
+              "position": [
+                0.211242,
+                1.29619,
+                0.004456
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.173271,
+              "position": [
+                0.210069,
+                1.295395,
+                0.011017
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.1600624,
+              "position": [
+                0.210069,
+                1.295395,
+                0.011017
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.1762051,
+              "position": [
+                0.207373,
+                1.295731,
+                0.009316
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.1571283,
+              "position": [
+                0.207373,
+                1.295731,
+                0.009316
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0051215,
+              "position": [
+                0.219672,
+                1.294083,
+                -0.00401
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0045294,
+              "position": [
+                0.219672,
+                1.294083,
+                -0.00401
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9903491,
+              "position": [
+                0.219672,
+                1.294083,
+                -0.00401
+              ]
+            }
+          ],
+          "normal": [
+            -0.632305,
+            0.105626,
+            0.767485
+          ],
+          "clearance": 0.015991
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0123841,
+              "position": [
+                0.211325,
+                1.3383,
+                0.018307
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.4876159,
+              "position": [
+                0.211325,
+                1.3383,
+                0.018307
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0008851,
+              "position": [
+                0.209628,
+                1.333824,
+                0.019036
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0087846,
+              "position": [
+                0.209628,
+                1.333824,
+                0.019036
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.4903303,
+              "position": [
+                0.209628,
+                1.333824,
+                0.019036
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.1655121,
+              "position": [
+                0.22056,
+                1.331361,
+                -0.001348
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.8344879,
+              "position": [
+                0.22056,
+                1.331361,
+                -0.001348
+              ]
+            }
+          ],
+          "normal": [
+            -0.440254,
+            0.205259,
+            0.874097
+          ],
+          "clearance": 0.022903
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0937087,
+              "position": [
+                0.235362,
+                1.326256,
+                0.014419
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.001032,
+              "position": [
+                0.235362,
+                1.326256,
+                0.014419
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.4052593,
+              "position": [
+                0.235362,
+                1.326256,
+                0.014419
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.2092271,
+              "position": [
+                0.239582,
+                1.320407,
+                0.011989
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.0196042,
+              "position": [
+                0.239582,
+                1.320407,
+                0.011989
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0002548,
+              "position": [
+                0.239582,
+                1.320407,
+                0.011989
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.2709139,
+              "position": [
+                0.239582,
+                1.320407,
+                0.011989
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.1376441,
+              "position": [
+                0.237424,
+                1.334024,
+                -0.007562
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.8623559,
+              "position": [
+                0.237424,
+                1.334024,
+                -0.007562
+              ]
+            }
+          ],
+          "normal": [
+            0.002067,
+            -0.457763,
+            0.889072
+          ],
+          "clearance": 0.023356
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.2542605,
+              "position": [
+                0.235814,
+                1.296345,
+                0.027056
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.2457395,
+              "position": [
+                0.235814,
+                1.296345,
+                0.027056
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.2703172,
+              "position": [
+                0.240559,
+                1.298557,
+                0.027785
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.2296828,
+              "position": [
+                0.240559,
+                1.298557,
+                0.027785
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0067561,
+              "position": [
+                0.234761,
+                1.301183,
+                -0.001348
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0034795,
+              "position": [
+                0.234761,
+                1.301183,
+                -0.001348
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9897644,
+              "position": [
+                0.234761,
+                1.301183,
+                -0.001348
+              ]
+            }
+          ],
+          "normal": [
+            0.117238,
+            -0.127776,
+            0.984849
+          ],
+          "clearance": 0.029211
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.5442231,
+              "position": [
+                0.249157,
+                1.305851,
+                -0.134785
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.4503689,
+              "position": [
+                0.249157,
+                1.305851,
+                -0.134785
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.0054081,
+              "position": [
+                0.249157,
+                1.305851,
+                -0.134785
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0007831,
+              "position": [
+                0.242742,
+                1.302959,
+                -0.13271
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0101346,
+              "position": [
+                0.242742,
+                1.302959,
+                -0.13271
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9890823,
+              "position": [
+                0.242742,
+                1.302959,
+                -0.13271
+              ]
+            }
+          ],
+          "normal": [
+            0.874397,
+            0.394238,
+            -0.282855
+          ],
+          "clearance": 0.007337
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0096568,
+              "position": [
+                0.25965,
+                1.331506,
+                0.027299
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0001549,
+              "position": [
+                0.25965,
+                1.331506,
+                0.027299
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3235217,
+              "position": [
+                0.25965,
+                1.331506,
+                0.027299
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 9.76e-05,
+              "position": [
+                0.269422,
+                1.335215,
+                0.025355
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3332357,
+              "position": [
+                0.269422,
+                1.335215,
+                0.025355
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0016595,
+              "position": [
+                0.254228,
+                1.345806,
+                0.021466
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3316738,
+              "position": [
+                0.254228,
+                1.345806,
+                0.021466
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.1376441,
+              "position": [
+                0.237424,
+                1.334024,
+                -0.007562
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.8623559,
+              "position": [
+                0.237424,
+                1.334024,
+                -0.007562
+              ]
+            }
+          ],
+          "normal": [
+            0.589339,
+            0.086754,
+            0.803214
+          ],
+          "clearance": 0.040174
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0002256,
+              "position": [
+                0.265526,
+                1.335241,
+                -0.136
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3331078,
+              "position": [
+                0.265526,
+                1.335241,
+                -0.136
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0002839,
+              "position": [
+                0.261173,
+                1.334754,
+                -0.136972
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3330494,
+              "position": [
+                0.261173,
+                1.334754,
+                -0.136972
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0004672,
+              "position": [
+                0.26341,
+                1.333906,
+                -0.13843
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0002248,
+              "position": [
+                0.26341,
+                1.333906,
+                -0.13843
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3326413,
+              "position": [
+                0.26341,
+                1.333906,
+                -0.13843
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.1187745,
+              "position": [
+                0.248955,
+                1.339349,
+                -0.133598
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.8812255,
+              "position": [
+                0.248955,
+                1.339349,
+                -0.133598
+              ]
+            }
+          ],
+          "normal": [
+            0.92562,
+            -0.302766,
+            -0.227071
+          ],
+          "clearance": 0.015574
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.1506321,
+              "position": [
+                0.285804,
+                1.316415,
+                -0.115587
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.0676609,
+              "position": [
+                0.285804,
+                1.316415,
+                -0.115587
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.1150404,
+              "position": [
+                0.285804,
+                1.316415,
+                -0.115587
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.1515803,
+              "position": [
+                0.280453,
+                1.31636,
+                -0.123849
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.0675932,
+              "position": [
+                0.280453,
+                1.31636,
+                -0.123849
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 9e-07,
+              "position": [
+                0.280453,
+                1.31636,
+                -0.123849
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.1141589,
+              "position": [
+                0.280453,
+                1.31636,
+                -0.123849
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.1720101,
+              "position": [
+                0.285064,
+                1.312237,
+                -0.117774
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.107002,
+              "position": [
+                0.285064,
+                1.312237,
+                -0.117774
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.0543213,
+              "position": [
+                0.285064,
+                1.312237,
+                -0.117774
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0022301,
+              "position": [
+                0.276471,
+                1.318047,
+                -0.116735
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0074099,
+              "position": [
+                0.276471,
+                1.318047,
+                -0.116735
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9903601,
+              "position": [
+                0.276471,
+                1.318047,
+                -0.116735
+              ]
+            }
+          ],
+          "normal": [
+            0.885328,
+            -0.368924,
+            -0.282999
+          ],
+          "clearance": 0.008249
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.1781023,
+              "position": [
+                0.286458,
+                1.291627,
+                0.036533
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3218977,
+              "position": [
+                0.286458,
+                1.291627,
+                0.036533
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.3007129,
+              "position": [
+                0.290497,
+                1.310836,
+                0.023654
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.1427763,
+              "position": [
+                0.290497,
+                1.310836,
+                0.023654
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.0565108,
+              "position": [
+                0.290497,
+                1.310836,
+                0.023654
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0832778,
+              "position": [
+                0.264051,
+                1.281657,
+                -0.011113
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9167222,
+              "position": [
+                0.264051,
+                1.281657,
+                -0.011113
+              ]
+            }
+          ],
+          "normal": [
+            0.472028,
+            0.378282,
+            0.796299
+          ],
+          "clearance": 0.051747
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0028761,
+              "position": [
+                0.288536,
+                1.332875,
+                -0.15544
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.0001587,
+              "position": [
+                0.288536,
+                1.332875,
+                -0.15544
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 7.53e-05,
+              "position": [
+                0.288536,
+                1.332875,
+                -0.15544
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3302233,
+              "position": [
+                0.288536,
+                1.332875,
+                -0.15544
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0001017,
+              "position": [
+                0.289115,
+                1.335584,
+                -0.156655
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3332316,
+              "position": [
+                0.289115,
+                1.335584,
+                -0.156655
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 8.15e-05,
+              "position": [
+                0.29231,
+                1.335032,
+                -0.156412
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3332518,
+              "position": [
+                0.29231,
+                1.335032,
+                -0.156412
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0012995,
+              "position": [
+                0.260493,
+                1.310947,
+                -0.132711
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0089458,
+              "position": [
+                0.260493,
+                1.310947,
+                -0.132711
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9897547,
+              "position": [
+                0.260493,
+                1.310947,
+                -0.132711
+              ]
+            }
+          ],
+          "normal": [
+            0.663698,
+            0.529951,
+            -0.52788
+          ],
+          "clearance": 0.044438
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0356101,
+              "position": [
+                0.292864,
+                1.329465,
+                -0.084726
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.0027371,
+              "position": [
+                0.292864,
+                1.329465,
+                -0.084726
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 6.2e-06,
+              "position": [
+                0.292864,
+                1.329465,
+                -0.084726
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.4616465,
+              "position": [
+                0.292864,
+                1.329465,
+                -0.084726
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 3.55e-05,
+              "position": [
+                0.291569,
+                1.335234,
+                -0.084726
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.4999645,
+              "position": [
+                0.291569,
+                1.335234,
+                -0.084726
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0023446,
+              "position": [
+                0.28446,
+                1.32071,
+                -0.093659
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0072531,
+              "position": [
+                0.28446,
+                1.32071,
+                -0.093659
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9904023,
+              "position": [
+                0.28446,
+                1.32071,
+                -0.093659
+              ]
+            }
+          ],
+          "normal": [
+            0.467344,
+            0.701323,
+            0.538271
+          ],
+          "clearance": 0.016596
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0005145,
+              "position": [
+                0.293348,
+                1.333873,
+                0.01612
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 1e-06,
+              "position": [
+                0.293348,
+                1.333873,
+                0.01612
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3328178,
+              "position": [
+                0.293348,
+                1.333873,
+                0.01612
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0007316,
+              "position": [
+                0.299684,
+                1.33374,
+                0.010774
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3326018,
+              "position": [
+                0.299684,
+                1.33374,
+                0.010774
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 3.7e-06,
+              "position": [
+                0.298429,
+                1.338781,
+                0.009316
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3333297,
+              "position": [
+                0.298429,
+                1.338781,
+                0.009316
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0051408,
+              "position": [
+                0.262275,
+                1.311834,
+                -0.019989
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0045153,
+              "position": [
+                0.262275,
+                1.311834,
+                -0.019989
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9903439,
+              "position": [
+                0.262275,
+                1.311834,
+                -0.019989
+              ]
+            }
+          ],
+          "normal": [
+            0.658829,
+            0.44636,
+            0.605564
+          ],
+          "clearance": 0.052941
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.5210215,
+              "position": [
+                0.305824,
+                1.306581,
+                -0.055323
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.4659656,
+              "position": [
+                0.305824,
+                1.306581,
+                -0.055323
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.0130129,
+              "position": [
+                0.305824,
+                1.306581,
+                -0.055323
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0765494,
+              "position": [
+                0.29245,
+                1.296746,
+                -0.07147
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9234506,
+              "position": [
+                0.29245,
+                1.296746,
+                -0.07147
+              ]
+            }
+          ],
+          "normal": [
+            0.577504,
+            0.424692,
+            0.697227
+          ],
+          "clearance": 0.023159
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0011141,
+              "position": [
+                0.317463,
+                1.333516,
+                -0.114372
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 6.75e-05,
+              "position": [
+                0.317463,
+                1.333516,
+                -0.114372
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 7e-07,
+              "position": [
+                0.317463,
+                1.333516,
+                -0.114372
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3321511,
+              "position": [
+                0.317463,
+                1.333516,
+                -0.114372
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 5.93e-05,
+              "position": [
+                0.31258,
+                1.346872,
+                -0.114858
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.333274,
+              "position": [
+                0.31258,
+                1.346872,
+                -0.114858
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 3.33e-05,
+              "position": [
+                0.315114,
+                1.345067,
+                -0.11097
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3333,
+              "position": [
+                0.315114,
+                1.345067,
+                -0.11097
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0023446,
+              "position": [
+                0.28446,
+                1.32071,
+                -0.093659
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0072531,
+              "position": [
+                0.28446,
+                1.32071,
+                -0.093659
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9904023,
+              "position": [
+                0.28446,
+                1.32071,
+                -0.093659
+              ]
+            }
+          ],
+          "normal": [
+            0.726914,
+            0.501559,
+            -0.469079
+          ],
+          "clearance": 0.042085
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.534134,
+              "position": [
+                0.317039,
+                1.306233,
+                -0.004292
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.4568711,
+              "position": [
+                0.317039,
+                1.306233,
+                -0.004292
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.008995,
+              "position": [
+                0.317039,
+                1.306233,
+                -0.004292
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0806274,
+              "position": [
+                0.274701,
+                1.286982,
+                -0.021765
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9193726,
+              "position": [
+                0.274701,
+                1.286982,
+                -0.021765
+              ]
+            }
+          ],
+          "normal": [
+            0.852163,
+            0.387471,
+            0.351688
+          ],
+          "clearance": 0.049683
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0938274,
+              "position": [
+                0.320592,
+                1.325415,
+                -0.041228
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.0172029,
+              "position": [
+                0.320592,
+                1.325415,
+                -0.041228
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3889697,
+              "position": [
+                0.320592,
+                1.325415,
+                -0.041228
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 2.4e-06,
+              "position": [
+                0.316436,
+                1.343194,
+                -0.03734
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.4999976,
+              "position": [
+                0.316436,
+                1.343194,
+                -0.03734
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0013604,
+              "position": [
+                0.277362,
+                1.315385,
+                -0.050167
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0088266,
+              "position": [
+                0.277362,
+                1.315385,
+                -0.050167
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.989813,
+              "position": [
+                0.277362,
+                1.315385,
+                -0.050167
+              ]
+            }
+          ],
+          "normal": [
+            0.883424,
+            0.406171,
+            0.233639
+          ],
+          "clearance": 0.046582
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0002987,
+              "position": [
+                0.322302,
+                1.334029,
+                -0.078165
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 9.6e-06,
+              "position": [
+                0.322302,
+                1.334029,
+                -0.078165
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 4e-07,
+              "position": [
+                0.322302,
+                1.334029,
+                -0.078165
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3330246,
+              "position": [
+                0.322302,
+                1.334029,
+                -0.078165
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 4e-07,
+              "position": [
+                0.323717,
+                1.334838,
+                -0.080838
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3333329,
+              "position": [
+                0.323717,
+                1.334838,
+                -0.080838
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 1.23e-05,
+              "position": [
+                0.319872,
+                1.347036,
+                -0.080352
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.333321,
+              "position": [
+                0.319872,
+                1.347036,
+                -0.080352
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0023446,
+              "position": [
+                0.28446,
+                1.32071,
+                -0.093659
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0072531,
+              "position": [
+                0.28446,
+                1.32071,
+                -0.093659
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9904023,
+              "position": [
+                0.28446,
+                1.32071,
+                -0.093659
+              ]
+            }
+          ],
+          "normal": [
+            0.855839,
+            0.409024,
+            0.316605
+          ],
+          "clearance": 0.043821
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.4737511,
+              "position": [
+                0.322672,
+                1.309955,
+                -0.120933
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.4408316,
+              "position": [
+                0.322672,
+                1.309955,
+                -0.120933
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.0854173,
+              "position": [
+                0.322672,
+                1.309955,
+                -0.120933
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0788497,
+              "position": [
+                0.292448,
+                1.296746,
+                -0.091884
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9211503,
+              "position": [
+                0.292448,
+                1.296746,
+                -0.091884
+              ]
+            }
+          ],
+          "normal": [
+            0.68765,
+            0.300542,
+            -0.660918
+          ],
+          "clearance": 0.043952
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.4833888,
+              "position": [
+                0.328873,
+                1.307867,
+                -0.078651
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.4828112,
+              "position": [
+                0.328873,
+                1.307867,
+                -0.078651
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.0338,
+              "position": [
+                0.328873,
+                1.307867,
+                -0.078651
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0765494,
+              "position": [
+                0.29245,
+                1.296746,
+                -0.07147
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9234506,
+              "position": [
+                0.29245,
+                1.296746,
+                -0.07147
+              ]
+            }
+          ],
+          "normal": [
+            0.939848,
+            0.286971,
+            -0.185291
+          ],
+          "clearance": 0.038755
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.4729498,
+              "position": [
+                0.180752,
+                1.293028,
+                -0.063099
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.5270502,
+              "position": [
+                0.180752,
+                1.293028,
+                -0.063099
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "chest",
+              "weight": 0.0845935,
+              "position": [
+                0.183278,
+                1.299408,
+                -0.065251
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.05512,
+              "position": [
+                0.183278,
+                1.299408,
+                -0.065251
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.8602864,
+              "position": [
+                0.183278,
+                1.299408,
+                -0.065251
+              ]
+            }
+          ],
+          "normal": [
+            -0.351283,
+            -0.887179,
+            0.299189
+          ],
+          "clearance": 0.007192
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0263557,
+              "position": [
+                0.206328,
+                1.270848,
+                -0.013526
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3069777,
+              "position": [
+                0.206328,
+                1.270848,
+                -0.013526
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0601074,
+              "position": [
+                0.207958,
+                1.276536,
+                -0.007451
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.273226,
+              "position": [
+                0.207958,
+                1.276536,
+                -0.007451
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0604655,
+              "position": [
+                0.211584,
+                1.276982,
+                -0.009395
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.2728678,
+              "position": [
+                0.211584,
+                1.276982,
+                -0.009395
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0031399,
+              "position": [
+                0.207246,
+                1.28787,
+                -0.016436
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0062922,
+              "position": [
+                0.207246,
+                1.28787,
+                -0.016436
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9905679,
+              "position": [
+                0.207246,
+                1.28787,
+                -0.016436
+              ]
+            }
+          ],
+          "normal": [
+            0.094406,
+            -0.89662,
+            0.43262
+          ],
+          "clearance": 0.014589
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 1.0,
+              "position": [
+                0.210588,
+                1.268652,
+                -0.09153
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.1165069,
+              "position": [
+                0.203691,
+                1.251479,
+                -0.089216
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.8834931,
+              "position": [
+                0.203691,
+                1.251479,
+                -0.089216
+              ]
+            }
+          ],
+          "normal": [
+            0.369805,
+            0.92079,
+            -0.124056
+          ],
+          "clearance": 0.01865
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.216422,
+                1.229549,
+                0.004213
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.21463,
+                1.226772,
+                -0.005021
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.220183,
+                1.227569,
+                -0.00575
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.2571673,
+              "position": [
+                0.232985,
+                1.23284,
+                -0.019987
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.7428327,
+              "position": [
+                0.232985,
+                1.23284,
+                -0.019987
+              ]
+            }
+          ],
+          "normal": [
+            -0.652836,
+            -0.200167,
+            0.730574
+          ],
+          "clearance": 0.024366
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.219597,
+                1.251144,
+                -0.048518
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.222926,
+                1.252547,
+                -0.046574
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.228399,
+                1.250419,
+                -0.053379
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.1097129,
+              "position": [
+                0.213457,
+                1.255917,
+                -0.052826
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.8902871,
+              "position": [
+                0.213457,
+                1.255917,
+                -0.052826
+              ]
+            }
+          ],
+          "normal": [
+            0.874817,
+            -0.390592,
+            0.286589
+          ],
+          "clearance": 0.011642
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.235235,
+                1.245689,
+                0.034589
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.23122,
+                1.239137,
+                0.029972
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.236084,
+                1.243546,
+                0.035561
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.2567244,
+              "position": [
+                0.244524,
+                1.237278,
+                -0.009337
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.7432756,
+              "position": [
+                0.244524,
+                1.237278,
+                -0.009337
+              ]
+            }
+          ],
+          "normal": [
+            -0.233555,
+            0.124472,
+            0.964344
+          ],
+          "clearance": 0.04429
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.1552116,
+              "position": [
+                0.237635,
+                1.294256,
+                0.02171
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.1781217,
+              "position": [
+                0.237635,
+                1.294256,
+                0.02171
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.169507,
+              "position": [
+                0.235814,
+                1.296345,
+                0.027056
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.1638263,
+              "position": [
+                0.235814,
+                1.296345,
+                0.027056
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.1751777,
+              "position": [
+                0.235275,
+                1.297288,
+                0.02657
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.1581557,
+              "position": [
+                0.235275,
+                1.297288,
+                0.02657
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0067561,
+              "position": [
+                0.234761,
+                1.301183,
+                -0.001348
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0034795,
+              "position": [
+                0.234761,
+                1.301183,
+                -0.001348
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9897644,
+              "position": [
+                0.234761,
+                1.301183,
+                -0.001348
+              ]
+            }
+          ],
+          "normal": [
+            0.054779,
+            -0.193272,
+            0.979615
+          ],
+          "clearance": 0.027011
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0705264,
+              "position": [
+                0.240523,
+                1.281761,
+                -0.130411
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.4294736,
+              "position": [
+                0.240523,
+                1.281761,
+                -0.130411
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0417932,
+              "position": [
+                0.23369,
+                1.277729,
+                -0.126037
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.4582068,
+              "position": [
+                0.23369,
+                1.277729,
+                -0.126037
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.1071761,
+              "position": [
+                0.239192,
+                1.269231,
+                -0.129159
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.8928239,
+              "position": [
+                0.239192,
+                1.269231,
+                -0.129159
+              ]
+            }
+          ],
+          "normal": [
+            -0.193846,
+            0.977173,
+            0.086923
+          ],
+          "clearance": 0.01076
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.256989,
+                1.252745,
+                -0.078408
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.248376,
+                1.250073,
+                -0.074034
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.24975,
+                1.251611,
+                -0.070875
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.2726042,
+              "position": [
+                0.223219,
+                1.227515,
+                -0.070578
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.7273958,
+              "position": [
+                0.223219,
+                1.227515,
+                -0.070578
+              ]
+            }
+          ],
+          "normal": [
+            0.761188,
+            0.640274,
+            -0.103159
+          ],
+          "clearance": 0.037423
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.5,
+              "position": [
+                0.255893,
+                1.21569,
+                -0.061884
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.5,
+              "position": [
+                0.265355,
+                1.216218,
+                -0.063828
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.4084982,
+              "position": [
+                0.237421,
+                1.207101,
+                -0.054603
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.5915018,
+              "position": [
+                0.237421,
+                1.207101,
+                -0.054603
+              ]
+            }
+          ],
+          "normal": [
+            0.886623,
+            0.338301,
+            -0.315361
+          ],
+          "clearance": 0.02617
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0831388,
+              "position": [
+                0.269597,
+                1.284114,
+                0.035804
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.2501946,
+              "position": [
+                0.269597,
+                1.284114,
+                0.035804
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0986041,
+              "position": [
+                0.269219,
+                1.286527,
+                0.04115
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.2347292,
+              "position": [
+                0.269219,
+                1.286527,
+                0.04115
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0969476,
+              "position": [
+                0.261482,
+                1.285609,
+                0.040421
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.2363858,
+              "position": [
+                0.261482,
+                1.285609,
+                0.040421
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0882578,
+              "position": [
+                0.248075,
+                1.273669,
+                -0.003124
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9117422,
+              "position": [
+                0.248075,
+                1.273669,
+                -0.003124
+              ]
+            }
+          ],
+          "normal": [
+            0.392098,
+            0.246454,
+            0.886295
+          ],
+          "clearance": 0.04767
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.5,
+              "position": [
+                0.267368,
+                1.249917,
+                0.048197
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.5,
+              "position": [
+                0.277262,
+                1.251442,
+                0.048683
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.2547243,
+              "position": [
+                0.261388,
+                1.244379,
+                -0.005788
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.7452757,
+              "position": [
+                0.261388,
+                1.244379,
+                -0.005788
+              ]
+            }
+          ],
+          "normal": [
+            0.196257,
+            0.113162,
+            0.974001
+          ],
+          "clearance": 0.055675
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 1.0,
+              "position": [
+                0.284509,
+                1.269857,
+                -0.083268
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.2316186,
+              "position": [
+                0.301324,
+                1.267456,
+                -0.09011
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.7683814,
+              "position": [
+                0.301324,
+                1.267456,
+                -0.09011
+              ]
+            }
+          ],
+          "normal": [
+            -0.918266,
+            0.131133,
+            0.373619
+          ],
+          "clearance": 0.018312
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.302011,
+                1.248443,
+                -0.061884
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.283483,
+                1.222827,
+                -0.062127
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.287011,
+                1.238114,
+                -0.067716
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.3525246,
+              "position": [
+                0.303102,
+                1.244379,
+                -0.051057
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.6474754,
+              "position": [
+                0.303102,
+                1.244379,
+                -0.051057
+              ]
+            }
+          ],
+          "normal": [
+            -0.630639,
+            -0.407056,
+            -0.660758
+          ],
+          "clearance": 0.019451
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.1447027,
+              "position": [
+                0.30197,
+                1.301498,
+                -0.071118
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.1886307,
+              "position": [
+                0.30197,
+                1.301498,
+                -0.071118
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 2e-05,
+              "position": [
+                0.295167,
+                1.336165,
+                -0.084969
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3333133,
+              "position": [
+                0.295167,
+                1.336165,
+                -0.084969
+              ]
+            },
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0001454,
+              "position": [
+                0.293197,
+                1.345304,
+                -0.085212
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.3331879,
+              "position": [
+                0.293197,
+                1.345304,
+                -0.085212
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_L",
+              "weight": 0.0016699,
+              "position": [
+                0.283574,
+                1.318935,
+                -0.07147
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0082679,
+              "position": [
+                0.283574,
+                1.318935,
+                -0.07147
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9900622,
+              "position": [
+                0.283574,
+                1.318935,
+                -0.07147
+              ]
+            }
+          ],
+          "normal": [
+            0.726041,
+            0.479535,
+            -0.49286
+          ],
+          "clearance": 0.018187
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.3007129,
+              "position": [
+                0.290497,
+                1.310836,
+                0.023654
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.1427763,
+              "position": [
+                0.290497,
+                1.310836,
+                0.023654
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.0565108,
+              "position": [
+                0.290497,
+                1.310836,
+                0.023654
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.1535878,
+              "position": [
+                0.30355,
+                1.290634,
+                0.027542
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3464122,
+              "position": [
+                0.30355,
+                1.290634,
+                0.027542
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0832778,
+              "position": [
+                0.264051,
+                1.281657,
+                -0.011113
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9167222,
+              "position": [
+                0.264051,
+                1.281657,
+                -0.011113
+              ]
+            }
+          ],
+          "normal": [
+            0.623243,
+            0.360616,
+            0.69392
+          ],
+          "clearance": 0.052904
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.2428771,
+              "position": [
+                0.31712,
+                1.304778,
+                -0.045602
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.2570438,
+              "position": [
+                0.31712,
+                1.304778,
+                -0.045602
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 7.92e-05,
+              "position": [
+                0.31712,
+                1.304778,
+                -0.045602
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.2356982,
+              "position": [
+                0.316446,
+                1.303766,
+                -0.0422
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.2643018,
+              "position": [
+                0.316446,
+                1.303766,
+                -0.0422
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0800236,
+              "position": [
+                0.28535,
+                1.292308,
+                -0.050168
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9199764,
+              "position": [
+                0.28535,
+                1.292308,
+                -0.050168
+              ]
+            }
+          ],
+          "normal": [
+            0.918774,
+            0.349713,
+            0.18318
+          ],
+          "clearance": 0.034212
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.322612,
+                1.232556,
+                -0.035882
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.316965,
+                1.229077,
+                -0.043901
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.316465,
+                1.233673,
+                -0.045602
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.4365295,
+              "position": [
+                0.312865,
+                1.231953,
+                -0.052832
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.5634705,
+              "position": [
+                0.312865,
+                1.231953,
+                -0.052832
+              ]
+            }
+          ],
+          "normal": [
+            0.466139,
+            -0.01472,
+            0.884589
+          ],
+          "clearance": 0.012477
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.319921,
+                1.263316,
+                -0.05265
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.322307,
+                1.264179,
+                -0.049004
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.3333333,
+              "position": [
+                0.320686,
+                1.275771,
+                -0.052164
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.2217457,
+              "position": [
+                0.295113,
+                1.265681,
+                -0.051944
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.7782543,
+              "position": [
+                0.295113,
+                1.265681,
+                -0.051944
+              ]
+            }
+          ],
+          "normal": [
+            0.996464,
+            0.079942,
+            0.025844
+          ],
+          "clearance": 0.025949
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.4031903,
+              "position": [
+                0.321569,
+                1.303566,
+                -0.127738
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.5968097,
+              "position": [
+                0.321569,
+                1.303566,
+                -0.127738
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0878871,
+              "position": [
+                0.283571,
+                1.29142,
+                -0.112298
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9121129,
+              "position": [
+                0.283571,
+                1.29142,
+                -0.112298
+              ]
+            }
+          ],
+          "normal": [
+            0.888305,
+            0.283946,
+            -0.360956
+          ],
+          "clearance": 0.042775
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 1.0,
+              "position": [
+                0.324643,
+                1.248489,
+                0.018064
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.3988488,
+              "position": [
+                0.288015,
+                1.228402,
+                -0.018215
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.6011512,
+              "position": [
+                0.288015,
+                1.228402,
+                -0.018215
+              ]
+            }
+          ],
+          "normal": [
+            0.662008,
+            0.36304,
+            0.655704
+          ],
+          "clearance": 0.055329
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.053037,
+              "position": [
+                0.327842,
+                1.282741,
+                -0.012068
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.446963,
+              "position": [
+                0.327842,
+                1.282741,
+                -0.012068
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.0736226,
+              "position": [
+                0.325793,
+                1.284574,
+                -0.003077
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.4263774,
+              "position": [
+                0.325793,
+                1.284574,
+                -0.003077
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.2283517,
+              "position": [
+                0.287127,
+                1.260355,
+                -0.024428
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.7716483,
+              "position": [
+                0.287127,
+                1.260355,
+                -0.024428
+              ]
+            }
+          ],
+          "normal": [
+            0.809769,
+            0.475411,
+            0.343888
+          ],
+          "clearance": 0.049014
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.2396345,
+              "position": [
+                0.325045,
+                1.30668,
+                -0.077193
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.2532208,
+              "position": [
+                0.325045,
+                1.30668,
+                -0.077193
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.0071447,
+              "position": [
+                0.325045,
+                1.30668,
+                -0.077193
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_1",
+              "weight": 0.2416944,
+              "position": [
+                0.328873,
+                1.307867,
+                -0.078651
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.2414056,
+              "position": [
+                0.328873,
+                1.307867,
+                -0.078651
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.0169,
+              "position": [
+                0.328873,
+                1.307867,
+                -0.078651
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.0765494,
+              "position": [
+                0.29245,
+                1.296746,
+                -0.07147
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.9234506,
+              "position": [
+                0.29245,
+                1.296746,
+                -0.07147
+              ]
+            }
+          ],
+          "normal": [
+            0.941548,
+            0.287229,
+            -0.176032
+          ],
+          "clearance": 0.036652
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.5,
+              "position": [
+                0.33786,
+                1.273322,
+                -0.082782
+              ]
+            },
+            {
+              "joint": "drape_cloth_L_2",
+              "weight": 0.5,
+              "position": [
+                0.339921,
+                1.275627,
+                -0.084969
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_L",
+              "weight": 0.2231616,
+              "position": [
+                0.3031,
+                1.269231,
+                -0.071471
+              ]
+            },
+            {
+              "joint": "upper_arm_L",
+              "weight": 0.7768384,
+              "position": [
+                0.3031,
+                1.269231,
+                -0.071471
+              ]
+            }
+          ],
+          "normal": [
+            0.935932,
+            0.13714,
+            -0.324384
+          ],
+          "clearance": 0.03824
+        }
+      ]
+    },
+    {
+      "name": "cloth_R",
+      "attachBone": "upper_arm_R",
+      "bones": [
+        "drape_cloth_R_1",
+        "drape_cloth_R_2"
+      ],
+      "segmentLength": 0.056142,
+      "restDegrees": 0.0,
+      "root": [
+        -0.246917,
+        1.326423,
+        -0.043079
+      ],
+      "toward": [
+        0.963803,
+        0.0,
+        -0.266617
+      ],
+      "colliders": [
+        {
+          "from": "pelvis",
+          "to": "chest",
+          "radius": 0.155009
+        },
+        {
+          "from": "chest",
+          "to": "neck",
+          "radius": 0.207724
+        },
+        {
+          "from": "clavicle_L",
+          "to": "upper_arm_L",
+          "radius": 0.147663
+        },
+        {
+          "from": "clavicle_R",
+          "to": "upper_arm_R",
+          "radius": 0.143574
+        },
+        {
+          "from": "upper_arm_L",
+          "to": "forearm_L",
+          "radius": 0.083634
+        },
+        {
+          "from": "upper_arm_R",
+          "to": "forearm_R",
+          "radius": 0.083607
+        },
+        {
+          "from": "thigh_L",
+          "to": "shin_L",
+          "radius": 0.101433
+        },
+        {
+          "from": "thigh_R",
+          "to": "shin_R",
+          "radius": 0.101318
+        },
+        {
+          "from": "shin_L",
+          "to": "foot_L",
+          "radius": 0.12058
+        },
+        {
+          "from": "shin_R",
+          "to": "foot_R",
+          "radius": 0.120644
+        }
+      ],
+      "supports": [
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.4696336,
+              "position": [
+                -0.333038,
+                1.307926,
+                -0.083135
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.4668119,
+              "position": [
+                -0.333038,
+                1.307926,
+                -0.083135
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.0635545,
+              "position": [
+                -0.333038,
+                1.307926,
+                -0.083135
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0788692,
+              "position": [
+                -0.292463,
+                1.296746,
+                -0.09185
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9211308,
+              "position": [
+                -0.292463,
+                1.296746,
+                -0.09185
+              ]
+            }
+          ],
+          "normal": [
+            -0.944043,
+            0.260131,
+            0.202766
+          ],
+          "clearance": 0.04298
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.1699068,
+              "position": [
+                -0.317736,
+                1.306567,
+                -0.050507
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.1525401,
+              "position": [
+                -0.317736,
+                1.306567,
+                -0.050507
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.0108864,
+              "position": [
+                -0.317736,
+                1.306567,
+                -0.050507
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.1382105,
+              "position": [
+                -0.324856,
+                1.299767,
+                -0.024117
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.1951228,
+              "position": [
+                -0.324856,
+                1.299767,
+                -0.024117
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.1310838,
+              "position": [
+                -0.320471,
+                1.317538,
+                -0.033473
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.0485608,
+              "position": [
+                -0.320471,
+                1.317538,
+                -0.033473
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.1536888,
+              "position": [
+                -0.320471,
+                1.317538,
+                -0.033473
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0800359,
+              "position": [
+                -0.28536,
+                1.292308,
+                -0.050134
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9199641,
+              "position": [
+                -0.28536,
+                1.292308,
+                -0.050134
+              ]
+            }
+          ],
+          "normal": [
+            -0.860995,
+            0.377833,
+            0.340485
+          ],
+          "clearance": 0.041419
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.2318058,
+              "position": [
+                -0.316586,
+                1.309865,
+                -0.129199
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.2071327,
+              "position": [
+                -0.316586,
+                1.309865,
+                -0.129199
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.0610615,
+              "position": [
+                -0.316586,
+                1.309865,
+                -0.129199
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.2285979,
+              "position": [
+                -0.316737,
+                1.307231,
+                -0.131358
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.2480997,
+              "position": [
+                -0.316737,
+                1.307231,
+                -0.131358
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.0233024,
+              "position": [
+                -0.316737,
+                1.307231,
+                -0.131358
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0879114,
+              "position": [
+                -0.283588,
+                1.29142,
+                -0.112265
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9120886,
+              "position": [
+                -0.283588,
+                1.29142,
+                -0.112265
+              ]
+            }
+          ],
+          "normal": [
+            -0.799388,
+            0.413993,
+            -0.435419
+          ],
+          "clearance": 0.041372
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 1.79e-05,
+              "position": [
+                -0.311866,
+                1.350207,
+                -0.018359
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3333154,
+              "position": [
+                -0.311866,
+                1.350207,
+                -0.018359
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.0002367,
+              "position": [
+                -0.319351,
+                1.332854,
+                -0.018598
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3330966,
+              "position": [
+                -0.319351,
+                1.332854,
+                -0.018598
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3333333,
+              "position": [
+                -0.31662,
+                1.334379,
+                -0.012601
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0027861,
+              "position": [
+                -0.27027,
+                1.313609,
+                -0.034159
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0066949,
+              "position": [
+                -0.27027,
+                1.313609,
+                -0.034159
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.990519,
+              "position": [
+                -0.27027,
+                1.313609,
+                -0.034159
+              ]
+            }
+          ],
+          "normal": [
+            -0.827112,
+            0.462441,
+            0.319429
+          ],
+          "clearance": 0.055223
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.1428494,
+              "position": [
+                -0.314734,
+                1.325379,
+                -0.103048
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.0301541,
+              "position": [
+                -0.314734,
+                1.325379,
+                -0.103048
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.8269965,
+              "position": [
+                -0.314734,
+                1.325379,
+                -0.103048
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0023395,
+              "position": [
+                -0.284475,
+                1.32071,
+                -0.093626
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.00726,
+              "position": [
+                -0.284475,
+                1.32071,
+                -0.093626
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9904005,
+              "position": [
+                -0.284475,
+                1.32071,
+                -0.093626
+              ]
+            }
+          ],
+          "normal": [
+            -0.944585,
+            0.145748,
+            -0.294136
+          ],
+          "clearance": 0.032034
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 1.55e-05,
+              "position": [
+                -0.312265,
+                1.343261,
+                -0.068501
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.4999845,
+              "position": [
+                -0.312265,
+                1.343261,
+                -0.068501
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.011481,
+              "position": [
+                -0.316601,
+                1.330533,
+                -0.059144
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.0006427,
+              "position": [
+                -0.316601,
+                1.330533,
+                -0.059144
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.4878763,
+              "position": [
+                -0.316601,
+                1.330533,
+                -0.059144
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0016664,
+              "position": [
+                -0.283586,
+                1.318935,
+                -0.071436
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0082738,
+              "position": [
+                -0.283586,
+                1.318935,
+                -0.071436
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9900598,
+              "position": [
+                -0.283586,
+                1.318935,
+                -0.071436
+              ]
+            }
+          ],
+          "normal": [
+            -0.84516,
+            0.492133,
+            0.208591
+          ],
+          "clearance": 0.036498
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.2848525,
+              "position": [
+                -0.308695,
+                1.309172,
+                0.008992
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.1654521,
+              "position": [
+                -0.308695,
+                1.309172,
+                0.008992
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.0496954,
+              "position": [
+                -0.308695,
+                1.309172,
+                0.008992
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.2647232,
+              "position": [
+                -0.319721,
+                1.30548,
+                -0.006603
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.2278598,
+              "position": [
+                -0.319721,
+                1.30548,
+                -0.006603
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.007417,
+              "position": [
+                -0.319721,
+                1.30548,
+                -0.006603
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0806347,
+              "position": [
+                -0.274707,
+                1.286982,
+                -0.021733
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9193653,
+              "position": [
+                -0.274707,
+                1.286982,
+                -0.021733
+              ]
+            }
+          ],
+          "normal": [
+            -0.790038,
+            0.406886,
+            0.458566
+          ],
+          "clearance": 0.049998
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.4993742,
+              "position": [
+                -0.2967,
+                1.304638,
+                -0.083615
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.4949809,
+              "position": [
+                -0.2967,
+                1.304638,
+                -0.083615
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.0056449,
+              "position": [
+                -0.2967,
+                1.304638,
+                -0.083615
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0788692,
+              "position": [
+                -0.292463,
+                1.296746,
+                -0.09185
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9211308,
+              "position": [
+                -0.292463,
+                1.296746,
+                -0.09185
+              ]
+            }
+          ],
+          "normal": [
+            -0.34822,
+            0.648629,
+            0.676774
+          ],
+          "clearance": 0.012168
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.0003774,
+              "position": [
+                -0.296288,
+                1.332731,
+                0.01355
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.332956,
+              "position": [
+                -0.296288,
+                1.332731,
+                0.01355
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.0018064,
+              "position": [
+                -0.288159,
+                1.332024,
+                0.018828
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 2.4e-06,
+              "position": [
+                -0.288159,
+                1.332024,
+                0.018828
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3315246,
+              "position": [
+                -0.288159,
+                1.332024,
+                0.018828
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 1.5e-05,
+              "position": [
+                -0.286672,
+                1.336985,
+                0.017389
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3333183,
+              "position": [
+                -0.286672,
+                1.336985,
+                0.017389
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0051382,
+              "position": [
+                -0.262281,
+                1.311834,
+                -0.019958
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0045172,
+              "position": [
+                -0.262281,
+                1.311834,
+                -0.019958
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9903446,
+              "position": [
+                -0.262281,
+                1.311834,
+                -0.019958
+              ]
+            }
+          ],
+          "normal": [
+            -0.549626,
+            0.431976,
+            0.715058
+          ],
+          "clearance": 0.051111
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.0058999,
+              "position": [
+                -0.293511,
+                1.330889,
+                -0.111205
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.0002983,
+              "position": [
+                -0.293511,
+                1.330889,
+                -0.111205
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 9.5e-06,
+              "position": [
+                -0.293511,
+                1.330889,
+                -0.111205
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3271256,
+              "position": [
+                -0.293511,
+                1.330889,
+                -0.111205
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0001449,
+              "position": [
+                -0.293602,
+                1.346034,
+                -0.102568
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3331884,
+              "position": [
+                -0.293602,
+                1.346034,
+                -0.102568
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0007843,
+              "position": [
+                -0.283273,
+                1.354332,
+                -0.116963
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.332549,
+              "position": [
+                -0.283273,
+                1.354332,
+                -0.116963
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0845633,
+              "position": [
+                -0.273824,
+                1.342012,
+                -0.093626
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9154367,
+              "position": [
+                -0.273824,
+                1.342012,
+                -0.093626
+              ]
+            }
+          ],
+          "normal": [
+            -0.698388,
+            0.074532,
+            -0.711828
+          ],
+          "clearance": 0.023347
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0001118,
+              "position": [
+                -0.285585,
+                1.335,
+                -0.155349
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3332215,
+              "position": [
+                -0.285585,
+                1.335,
+                -0.155349
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.001605,
+              "position": [
+                -0.288877,
+                1.332065,
+                -0.155349
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 8.97e-05,
+              "position": [
+                -0.288877,
+                1.332065,
+                -0.155349
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 6.82e-05,
+              "position": [
+                -0.288877,
+                1.332065,
+                -0.155349
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3315706,
+              "position": [
+                -0.288877,
+                1.332065,
+                -0.155349
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 9.51e-05,
+              "position": [
+                -0.288726,
+                1.3347,
+                -0.156549
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3332383,
+              "position": [
+                -0.288726,
+                1.3347,
+                -0.156549
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0012943,
+              "position": [
+                -0.260513,
+                1.310947,
+                -0.13268
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0089562,
+              "position": [
+                -0.260513,
+                1.310947,
+                -0.13268
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9897495,
+              "position": [
+                -0.260513,
+                1.310947,
+                -0.13268
+              ]
+            }
+          ],
+          "normal": [
+            -0.641361,
+            0.541416,
+            -0.543622
+          ],
+          "clearance": 0.042435
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.11478,
+              "position": [
+                -0.278321,
+                1.319203,
+                -0.129918
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.0371435,
+              "position": [
+                -0.278321,
+                1.319203,
+                -0.129918
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 5.2e-06,
+              "position": [
+                -0.278321,
+                1.319203,
+                -0.129918
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.1814046,
+              "position": [
+                -0.278321,
+                1.319203,
+                -0.129918
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.1465866,
+              "position": [
+                -0.283585,
+                1.31542,
+                -0.12464
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.0677692,
+              "position": [
+                -0.283585,
+                1.31542,
+                -0.12464
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.1189775,
+              "position": [
+                -0.283585,
+                1.31542,
+                -0.12464
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.1388186,
+              "position": [
+                -0.288348,
+                1.316174,
+                -0.128239
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.063326,
+              "position": [
+                -0.288348,
+                1.316174,
+                -0.128239
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.1311888,
+              "position": [
+                -0.288348,
+                1.316174,
+                -0.128239
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.002224,
+              "position": [
+                -0.276488,
+                1.318047,
+                -0.116703
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0074183,
+              "position": [
+                -0.276488,
+                1.318047,
+                -0.116703
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9903577,
+              "position": [
+                -0.276488,
+                1.318047,
+                -0.116703
+              ]
+            }
+          ],
+          "normal": [
+            -0.534671,
+            -0.086057,
+            -0.840667
+          ],
+          "clearance": 0.012961
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.2105435,
+              "position": [
+                -0.25256,
+                1.303306,
+                0.024106
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.1227898,
+              "position": [
+                -0.25256,
+                1.303306,
+                0.024106
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.2117425,
+              "position": [
+                -0.275601,
+                1.307993,
+                0.027465
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.0998281,
+              "position": [
+                -0.275601,
+                1.307993,
+                0.027465
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.0217628,
+              "position": [
+                -0.275601,
+                1.307993,
+                0.027465
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.1104777,
+              "position": [
+                -0.280082,
+                1.288545,
+                0.032503
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.2228556,
+              "position": [
+                -0.280082,
+                1.288545,
+                0.032503
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0060047,
+              "position": [
+                -0.250742,
+                1.307397,
+                -0.00842
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0039282,
+              "position": [
+                -0.250742,
+                1.307397,
+                -0.00842
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9900671,
+              "position": [
+                -0.250742,
+                1.307397,
+                -0.00842
+              ]
+            }
+          ],
+          "normal": [
+            -0.448608,
+            -0.178957,
+            0.875628
+          ],
+          "clearance": 0.041622
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.503881,
+              "position": [
+                -0.25425,
+                1.303162,
+                -0.138795
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.496119,
+              "position": [
+                -0.25425,
+                1.303162,
+                -0.138795
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0012943,
+              "position": [
+                -0.260513,
+                1.310947,
+                -0.13268
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0089562,
+              "position": [
+                -0.260513,
+                1.310947,
+                -0.13268
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9897495,
+              "position": [
+                -0.260513,
+                1.310947,
+                -0.13268
+              ]
+            }
+          ],
+          "normal": [
+            0.534635,
+            -0.664581,
+            -0.522013
+          ],
+          "clearance": 0.011714
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0156725,
+              "position": [
+                -0.248301,
+                1.360735,
+                0.011871
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3176609,
+              "position": [
+                -0.248301,
+                1.360735,
+                0.011871
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0012077,
+              "position": [
+                -0.257647,
+                1.34445,
+                0.018828
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3321257,
+              "position": [
+                -0.257647,
+                1.34445,
+                0.018828
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.0003295,
+              "position": [
+                -0.238372,
+                1.33277,
+                0.017389
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0012612,
+              "position": [
+                -0.238372,
+                1.33277,
+                0.017389
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3317427,
+              "position": [
+                -0.238372,
+                1.33277,
+                0.017389
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.1376359,
+              "position": [
+                -0.237428,
+                1.334024,
+                -0.007534
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.8623641,
+              "position": [
+                -0.237428,
+                1.334024,
+                -0.007534
+              ]
+            }
+          ],
+          "normal": [
+            -0.374678,
+            0.41968,
+            0.826732
+          ],
+          "clearance": 0.028501
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.6470604,
+              "position": [
+                -0.236441,
+                1.311992,
+                0.023386
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.1504557,
+              "position": [
+                -0.236441,
+                1.311992,
+                0.023386
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 3.1e-05,
+              "position": [
+                -0.236441,
+                1.311992,
+                0.023386
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.2024529,
+              "position": [
+                -0.236441,
+                1.311992,
+                0.023386
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0067543,
+              "position": [
+                -0.234765,
+                1.301183,
+                -0.001321
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0034805,
+              "position": [
+                -0.234765,
+                1.301183,
+                -0.001321
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9897651,
+              "position": [
+                -0.234765,
+                1.301183,
+                -0.001321
+              ]
+            }
+          ],
+          "normal": [
+            -0.062019,
+            0.400026,
+            0.914403
+          ],
+          "clearance": 0.02702
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.165161,
+              "position": [
+                -0.216593,
+                1.29355,
+                -0.005163
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.1681723,
+              "position": [
+                -0.216593,
+                1.29355,
+                -0.005163
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.1626559,
+              "position": [
+                -0.218776,
+                1.293195,
+                -0.002044
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.1706774,
+              "position": [
+                -0.218776,
+                1.293195,
+                -0.002044
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.1969721,
+              "position": [
+                -0.218446,
+                1.298944,
+                -0.001325
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.1363612,
+              "position": [
+                -0.218446,
+                1.298944,
+                -0.001325
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0051198,
+              "position": [
+                -0.219677,
+                1.294083,
+                -0.003984
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0045307,
+              "position": [
+                -0.219677,
+                1.294083,
+                -0.003984
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9903495,
+              "position": [
+                -0.219677,
+                1.294083,
+                -0.003984
+              ]
+            }
+          ],
+          "normal": [
+            0.732151,
+            0.483058,
+            0.480218
+          ],
+          "clearance": 0.002375
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.0821532,
+              "position": [
+                -0.214031,
+                1.325605,
+                -0.005403
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0024132,
+              "position": [
+                -0.214031,
+                1.325605,
+                -0.005403
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.4154336,
+              "position": [
+                -0.214031,
+                1.325605,
+                -0.005403
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.2047567,
+              "position": [
+                -0.214122,
+                1.319842,
+                -0.004684
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.0072512,
+              "position": [
+                -0.214122,
+                1.319842,
+                -0.004684
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0008846,
+              "position": [
+                -0.214122,
+                1.319842,
+                -0.004684
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.2871075,
+              "position": [
+                -0.214122,
+                1.319842,
+                -0.004684
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.1701917,
+              "position": [
+                -0.205475,
+                1.326035,
+                -0.003985
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.8298083,
+              "position": [
+                -0.205475,
+                1.326035,
+                -0.003985
+              ]
+            }
+          ],
+          "normal": [
+            -0.927131,
+            -0.356936,
+            -0.114123
+          ],
+          "clearance": 0.009278
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0069567,
+              "position": [
+                -0.207788,
+                1.333897,
+                0.020028
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3263766,
+              "position": [
+                -0.207788,
+                1.333897,
+                0.020028
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.0009889,
+              "position": [
+                -0.206194,
+                1.332364,
+                0.019788
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.006077,
+              "position": [
+                -0.206194,
+                1.332364,
+                0.019788
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3262674,
+              "position": [
+                -0.206194,
+                1.332364,
+                0.019788
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0094924,
+              "position": [
+                -0.200759,
+                1.334936,
+                0.016909
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3238409,
+              "position": [
+                -0.200759,
+                1.334936,
+                0.016909
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.1701917,
+              "position": [
+                -0.205475,
+                1.326035,
+                -0.003985
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.8298083,
+              "position": [
+                -0.205475,
+                1.326035,
+                -0.003985
+              ]
+            }
+          ],
+          "normal": [
+            0.023241,
+            0.318579,
+            0.947611
+          ],
+          "clearance": 0.024159
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.2278517,
+              "position": [
+                -0.193134,
+                1.291963,
+                -0.071619
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.2721483,
+              "position": [
+                -0.193134,
+                1.291963,
+                -0.071619
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.2820205,
+              "position": [
+                -0.188732,
+                1.297478,
+                -0.067061
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.2179795,
+              "position": [
+                -0.188732,
+                1.297478,
+                -0.067061
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "chest",
+              "weight": 0.0831759,
+              "position": [
+                -0.18329,
+                1.299408,
+                -0.065229
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0551879,
+              "position": [
+                -0.18329,
+                1.299408,
+                -0.065229
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.8616362,
+              "position": [
+                -0.18329,
+                1.299408,
+                -0.065229
+              ]
+            }
+          ],
+          "normal": [
+            -0.774862,
+            -0.475294,
+            -0.416754
+          ],
+          "clearance": 0.009864
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0338873,
+              "position": [
+                -0.202351,
+                1.34488,
+                -0.012121
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.299446,
+              "position": [
+                -0.202351,
+                1.34488,
+                -0.012121
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.0045561,
+              "position": [
+                -0.190878,
+                1.331244,
+                -0.01404
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0112446,
+              "position": [
+                -0.190878,
+                1.331244,
+                -0.01404
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3175327,
+              "position": [
+                -0.190878,
+                1.331244,
+                -0.01404
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0413359,
+              "position": [
+                -0.178873,
+                1.339446,
+                -0.028195
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.2919974,
+              "position": [
+                -0.178873,
+                1.339446,
+                -0.028195
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "chest",
+              "weight": 0.1034345,
+              "position": [
+                -0.185062,
+                1.347337,
+                -0.016412
+              ]
+            },
+            {
+              "joint": "neck",
+              "weight": 3e-07,
+              "position": [
+                -0.185062,
+                1.347337,
+                -0.016412
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.3492529,
+              "position": [
+                -0.185062,
+                1.347337,
+                -0.016412
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.5473123,
+              "position": [
+                -0.185062,
+                1.347337,
+                -0.016412
+              ]
+            }
+          ],
+          "normal": [
+            -0.531877,
+            -0.831383,
+            -0.160964
+          ],
+          "clearance": 0.010602
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.7389065,
+              "position": [
+                -0.186635,
+                1.308892,
+                -0.009962
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.1703383,
+              "position": [
+                -0.186635,
+                1.308892,
+                -0.009962
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0008108,
+              "position": [
+                -0.186635,
+                1.308892,
+                -0.009962
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.0899444,
+              "position": [
+                -0.186635,
+                1.308892,
+                -0.009962
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "chest",
+              "weight": 0.0151186,
+              "position": [
+                -0.194825,
+                1.318047,
+                -0.014637
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.1421269,
+              "position": [
+                -0.194825,
+                1.318047,
+                -0.014637
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.8427545,
+              "position": [
+                -0.194825,
+                1.318047,
+                -0.014637
+              ]
+            }
+          ],
+          "normal": [
+            0.623133,
+            -0.696568,
+            0.355666
+          ],
+          "clearance": 0.013144
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.3240405,
+              "position": [
+                -0.176046,
+                1.313331,
+                -0.053866
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.0460379,
+              "position": [
+                -0.176046,
+                1.313331,
+                -0.053866
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0008763,
+              "position": [
+                -0.176046,
+                1.313331,
+                -0.053866
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.1290453,
+              "position": [
+                -0.176046,
+                1.313331,
+                -0.053866
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.2520669,
+              "position": [
+                -0.1717,
+                1.317887,
+                -0.049547
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.0086854,
+              "position": [
+                -0.1717,
+                1.317887,
+                -0.049547
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0044666,
+              "position": [
+                -0.1717,
+                1.317887,
+                -0.049547
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.234781,
+              "position": [
+                -0.1717,
+                1.317887,
+                -0.049547
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "chest",
+              "weight": 0.2361317,
+              "position": [
+                -0.170863,
+                1.319823,
+                -0.059904
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.1623349,
+              "position": [
+                -0.170863,
+                1.319823,
+                -0.059904
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.6015334,
+              "position": [
+                -0.170863,
+                1.319823,
+                -0.059904
+              ]
+            }
+          ],
+          "normal": [
+            -0.310377,
+            -0.434535,
+            0.845486
+          ],
+          "clearance": 0.009697
+        },
+        {
+          "segment": 0,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.2746887,
+              "position": [
+                -0.151462,
+                1.322973,
+                -0.030594
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0215209,
+              "position": [
+                -0.151462,
+                1.322973,
+                -0.030594
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.7037904,
+              "position": [
+                -0.151462,
+                1.322973,
+                -0.030594
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "chest",
+              "weight": 0.5831298,
+              "position": [
+                -0.165536,
+                1.319823,
+                -0.027952
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0979943,
+              "position": [
+                -0.165536,
+                1.319823,
+                -0.027952
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3188759,
+              "position": [
+                -0.165536,
+                1.319823,
+                -0.027952
+              ]
+            }
+          ],
+          "normal": [
+            0.959878,
+            0.214867,
+            -0.180185
+          ],
+          "clearance": 0.014662
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 1.0,
+              "position": [
+                -0.342389,
+                1.27482,
+                -0.083135
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.2231835,
+              "position": [
+                -0.303113,
+                1.269231,
+                -0.071435
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.7768165,
+              "position": [
+                -0.303113,
+                1.269231,
+                -0.071435
+              ]
+            }
+          ],
+          "normal": [
+            -0.949592,
+            0.13513,
+            -0.28287
+          ],
+          "clearance": 0.041361
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.1587065,
+              "position": [
+                -0.320391,
+                1.310565,
+                -0.09753
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.1256701,
+              "position": [
+                -0.320391,
+                1.310565,
+                -0.09753
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.0489568,
+              "position": [
+                -0.320391,
+                1.310565,
+                -0.09753
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.0953874,
+              "position": [
+                -0.332754,
+                1.296135,
+                -0.092252
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.2379459,
+              "position": [
+                -0.332754,
+                1.296135,
+                -0.092252
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.1571328,
+              "position": [
+                -0.329602,
+                1.309171,
+                -0.090812
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.1430828,
+              "position": [
+                -0.329602,
+                1.309171,
+                -0.090812
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.0331178,
+              "position": [
+                -0.329602,
+                1.309171,
+                -0.090812
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0788692,
+              "position": [
+                -0.292463,
+                1.296746,
+                -0.09185
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9211308,
+              "position": [
+                -0.292463,
+                1.296746,
+                -0.09185
+              ]
+            }
+          ],
+          "normal": [
+            -0.970606,
+            0.236148,
+            -0.046461
+          ],
+          "clearance": 0.036183
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.0727295,
+              "position": [
+                -0.328398,
+                1.28411,
+                -0.005403
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.4272705,
+              "position": [
+                -0.328398,
+                1.28411,
+                -0.005403
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.2647232,
+              "position": [
+                -0.319721,
+                1.30548,
+                -0.006603
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.2278598,
+              "position": [
+                -0.319721,
+                1.30548,
+                -0.006603
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.007417,
+              "position": [
+                -0.319721,
+                1.30548,
+                -0.006603
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0816057,
+              "position": [
+                -0.280921,
+                1.289645,
+                -0.035046
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9183943,
+              "position": [
+                -0.280921,
+                1.289645,
+                -0.035046
+              ]
+            }
+          ],
+          "normal": [
+            -0.825487,
+            0.098549,
+            0.555751
+          ],
+          "clearance": 0.052259
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.1959753,
+              "position": [
+                -0.324198,
+                1.302853,
+                -0.128479
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.3040247,
+              "position": [
+                -0.324198,
+                1.302853,
+                -0.128479
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.2138133,
+              "position": [
+                -0.3212,
+                1.304844,
+                -0.130158
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.2824371,
+              "position": [
+                -0.3212,
+                1.304844,
+                -0.130158
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.0037496,
+              "position": [
+                -0.3212,
+                1.304844,
+                -0.130158
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0879114,
+              "position": [
+                -0.283588,
+                1.29142,
+                -0.112265
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9120886,
+              "position": [
+                -0.283588,
+                1.29142,
+                -0.112265
+              ]
+            }
+          ],
+          "normal": [
+            -0.88007,
+            0.279653,
+            -0.383758
+          ],
+          "clearance": 0.04444
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 1.0,
+              "position": [
+                -0.322635,
+                1.263112,
+                -0.054346
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.352072,
+              "position": [
+                -0.304887,
+                1.245266,
+                -0.053684
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.647928,
+              "position": [
+                -0.304887,
+                1.245266,
+                -0.053684
+              ]
+            }
+          ],
+          "normal": [
+            -0.704926,
+            0.708793,
+            -0.026313
+          ],
+          "clearance": 0.025178
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.4181276,
+              "position": [
+                -0.320954,
+                1.300744,
+                -0.050987
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.5818724,
+              "position": [
+                -0.320954,
+                1.300744,
+                -0.050987
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0765651,
+              "position": [
+                -0.292462,
+                1.296746,
+                -0.071436
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9234349,
+              "position": [
+                -0.292462,
+                1.296746,
+                -0.071436
+              ]
+            }
+          ],
+          "normal": [
+            -0.807193,
+            0.113277,
+            0.579317
+          ],
+          "clearance": 0.035298
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 1.0,
+              "position": [
+                -0.320508,
+                1.233192,
+                -0.035392
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.4449335,
+              "position": [
+                -0.304886,
+                1.226627,
+                -0.041257
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.5550665,
+              "position": [
+                -0.304886,
+                1.226627,
+                -0.041257
+              ]
+            }
+          ],
+          "normal": [
+            -0.871194,
+            0.366097,
+            0.327099
+          ],
+          "clearance": 0.017932
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.5,
+              "position": [
+                -0.322612,
+                1.24677,
+                0.01331
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.5,
+              "position": [
+                -0.317725,
+                1.248172,
+                0.020507
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.3988574,
+              "position": [
+                -0.288021,
+                1.228402,
+                -0.018182
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.6011426,
+              "position": [
+                -0.288021,
+                1.228402,
+                -0.018182
+              ]
+            }
+          ],
+          "normal": [
+            -0.627053,
+            0.371945,
+            0.684443
+          ],
+          "clearance": 0.051267
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.0591787,
+              "position": [
+                -0.30422,
+                1.282481,
+                0.023146
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.2741547,
+              "position": [
+                -0.30422,
+                1.282481,
+                0.023146
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.0723136,
+              "position": [
+                -0.30745,
+                1.284829,
+                0.027225
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.2610197,
+              "position": [
+                -0.30745,
+                1.284829,
+                0.027225
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.0592118,
+              "position": [
+                -0.314971,
+                1.283579,
+                0.020747
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.2741215,
+              "position": [
+                -0.314971,
+                1.283579,
+                0.020747
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0832833,
+              "position": [
+                -0.264056,
+                1.281657,
+                -0.011082
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9167167,
+              "position": [
+                -0.264056,
+                1.281657,
+                -0.011082
+              ]
+            }
+          ],
+          "normal": [
+            -0.789514,
+            0.034754,
+            0.612747
+          ],
+          "clearance": 0.056774
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 8.49e-05,
+              "position": [
+                -0.296121,
+                1.344016,
+                -0.086494
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3332484,
+              "position": [
+                -0.296121,
+                1.344016,
+                -0.086494
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 9.1e-06,
+              "position": [
+                -0.298081,
+                1.334997,
+                -0.086254
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.3333242,
+              "position": [
+                -0.298081,
+                1.334997,
+                -0.086254
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.1429456,
+              "position": [
+                -0.304852,
+                1.300781,
+                -0.072579
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.1903877,
+              "position": [
+                -0.304852,
+                1.300781,
+                -0.072579
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0023395,
+              "position": [
+                -0.284475,
+                1.32071,
+                -0.093626
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.00726,
+              "position": [
+                -0.284475,
+                1.32071,
+                -0.093626
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9904005,
+              "position": [
+                -0.284475,
+                1.32071,
+                -0.093626
+              ]
+            }
+          ],
+          "normal": [
+            -0.75447,
+            0.292059,
+            0.587772
+          ],
+          "clearance": 0.02016
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.3333333,
+              "position": [
+                -0.290183,
+                1.238179,
+                -0.06922
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.3333333,
+              "position": [
+                -0.286724,
+                1.223082,
+                -0.063702
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.3333333,
+              "position": [
+                -0.303777,
+                1.227425,
+                -0.057225
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.4426209,
+              "position": [
+                -0.307549,
+                1.228402,
+                -0.048358
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.5573791,
+              "position": [
+                -0.307549,
+                1.228402,
+                -0.048358
+              ]
+            }
+          ],
+          "normal": [
+            0.680338,
+            0.056401,
+            -0.730726
+          ],
+          "clearance": 0.020561
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.3333333,
+              "position": [
+                -0.28171,
+                1.264367,
+                -0.084575
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.3333333,
+              "position": [
+                -0.285397,
+                1.271307,
+                -0.081456
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.3333333,
+              "position": [
+                -0.280149,
+                1.26644,
+                -0.081216
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.2316452,
+              "position": [
+                -0.301339,
+                1.267456,
+                -0.090074
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.7683548,
+              "position": [
+                -0.301339,
+                1.267456,
+                -0.090074
+              ]
+            }
+          ],
+          "normal": [
+            0.926933,
+            -0.00415,
+            0.375204
+          ],
+          "clearance": 0.020411
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.3176137,
+              "position": [
+                -0.275601,
+                1.307993,
+                0.027465
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.1497422,
+              "position": [
+                -0.275601,
+                1.307993,
+                0.027465
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.0326441,
+              "position": [
+                -0.275601,
+                1.307993,
+                0.027465
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.1657166,
+              "position": [
+                -0.280082,
+                1.288545,
+                0.032503
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.3342834,
+              "position": [
+                -0.280082,
+                1.288545,
+                0.032503
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0832833,
+              "position": [
+                -0.264056,
+                1.281657,
+                -0.011082
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9167167,
+              "position": [
+                -0.264056,
+                1.281657,
+                -0.011082
+              ]
+            }
+          ],
+          "normal": [
+            -0.297131,
+            0.358063,
+            0.885158
+          ],
+          "clearance": 0.046394
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.5,
+              "position": [
+                -0.280523,
+                1.251562,
+                0.045698
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.5,
+              "position": [
+                -0.270771,
+                1.249801,
+                0.045458
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.2547307,
+              "position": [
+                -0.261393,
+                1.244379,
+                -0.005757
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.7452693,
+              "position": [
+                -0.261393,
+                1.244379,
+                -0.005757
+              ]
+            }
+          ],
+          "normal": [
+            -0.265695,
+            0.117492,
+            0.956871
+          ],
+          "clearance": 0.053649
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.3333333,
+              "position": [
+                -0.252932,
+                1.217296,
+                -0.055305
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.3333333,
+              "position": [
+                -0.26085,
+                1.217511,
+                -0.058424
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.3333333,
+              "position": [
+                -0.259496,
+                1.215991,
+                -0.063462
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.4085164,
+              "position": [
+                -0.237431,
+                1.207101,
+                -0.054575
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.5914836,
+              "position": [
+                -0.237431,
+                1.207101,
+                -0.054575
+              ]
+            }
+          ],
+          "normal": [
+            -0.882946,
+            0.427071,
+            -0.194979
+          ],
+          "clearance": 0.023023
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.4679437,
+              "position": [
+                -0.256995,
+                1.301397,
+                -0.139035
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.5320563,
+              "position": [
+                -0.256995,
+                1.301397,
+                -0.139035
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0012943,
+              "position": [
+                -0.260513,
+                1.310947,
+                -0.13268
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0089562,
+              "position": [
+                -0.260513,
+                1.310947,
+                -0.13268
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9897495,
+              "position": [
+                -0.260513,
+                1.310947,
+                -0.13268
+              ]
+            }
+          ],
+          "normal": [
+            0.293182,
+            -0.795939,
+            -0.529646
+          ],
+          "clearance": 0.011998
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 1.0,
+              "position": [
+                -0.25202,
+                1.249926,
+                -0.075458
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.2726279,
+              "position": [
+                -0.223231,
+                1.227515,
+                -0.070552
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.7273721,
+              "position": [
+                -0.223231,
+                1.227515,
+                -0.070552
+              ]
+            }
+          ],
+          "normal": [
+            -0.782054,
+            0.608796,
+            -0.133265
+          ],
+          "clearance": 0.036812
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.0056291,
+              "position": [
+                -0.237083,
+                1.267332,
+                0.020747
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.3277043,
+              "position": [
+                -0.237083,
+                1.267332,
+                0.020747
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.3333333,
+              "position": [
+                -0.244336,
+                1.24564,
+                0.032023
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.3333333,
+              "position": [
+                -0.229816,
+                1.239039,
+                0.017149
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.094641,
+              "position": [
+                -0.232103,
+                1.265681,
+                -0.005759
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.905359,
+              "position": [
+                -0.232103,
+                1.265681,
+                -0.005759
+              ]
+            }
+          ],
+          "normal": [
+            -0.150362,
+            -0.453652,
+            0.878403
+          ],
+          "clearance": 0.033088
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 1.0,
+              "position": [
+                -0.223605,
+                1.250938,
+                -0.050267
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.1097283,
+              "position": [
+                -0.213467,
+                1.255917,
+                -0.052801
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.8902717,
+              "position": [
+                -0.213467,
+                1.255917,
+                -0.052801
+              ]
+            }
+          ],
+          "normal": [
+            -0.875819,
+            -0.43013,
+            0.218928
+          ],
+          "clearance": 0.011576
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 1.0,
+              "position": [
+                -0.223444,
+                1.266308,
+                -0.103288
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "chest",
+              "weight": 0.023758,
+              "position": [
+                -0.203707,
+                1.252367,
+                -0.111382
+              ]
+            },
+            {
+              "joint": "spine",
+              "weight": 0.0011567,
+              "position": [
+                -0.203707,
+                1.252367,
+                -0.111382
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.1126892,
+              "position": [
+                -0.203707,
+                1.252367,
+                -0.111382
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.8623962,
+              "position": [
+                -0.203707,
+                1.252367,
+                -0.111382
+              ]
+            }
+          ],
+          "normal": [
+            -0.774505,
+            0.547056,
+            0.317604
+          ],
+          "clearance": 0.025484
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.2114172,
+              "position": [
+                -0.227379,
+                1.289844,
+                0.008992
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.2885828,
+              "position": [
+                -0.227379,
+                1.289844,
+                0.008992
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.2256093,
+              "position": [
+                -0.216505,
+                1.290902,
+                -0.001805
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.2743908,
+              "position": [
+                -0.216505,
+                1.290902,
+                -0.001805
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0051198,
+              "position": [
+                -0.219677,
+                1.294083,
+                -0.003984
+              ]
+            },
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0045307,
+              "position": [
+                -0.219677,
+                1.294083,
+                -0.003984
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9903495,
+              "position": [
+                -0.219677,
+                1.294083,
+                -0.003984
+              ]
+            }
+          ],
+          "normal": [
+            -0.259323,
+            -0.424682,
+            0.867408
+          ],
+          "clearance": 0.008736
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 1.0,
+              "position": [
+                -0.21874,
+                1.226868,
+                -0.007323
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.2571778,
+              "position": [
+                -0.232991,
+                1.23284,
+                -0.01996
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.7428222,
+              "position": [
+                -0.232991,
+                1.23284,
+                -0.01996
+              ]
+            }
+          ],
+          "normal": [
+            0.713939,
+            -0.299193,
+            0.633068
+          ],
+          "clearance": 0.019961
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.0135686,
+              "position": [
+                -0.211823,
+                1.267804,
+                -0.01356
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.3197647,
+              "position": [
+                -0.211823,
+                1.267804,
+                -0.01356
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.3333333,
+              "position": [
+                -0.211647,
+                1.262507,
+                -0.020518
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.3333333,
+              "position": [
+                -0.210537,
+                1.265087,
+                -0.022677
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "twist_upper_arm_R",
+              "weight": 0.0973473,
+              "position": [
+                -0.219677,
+                1.260355,
+                -0.018186
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.9026527,
+              "position": [
+                -0.219677,
+                1.260355,
+                -0.018186
+              ]
+            }
+          ],
+          "normal": [
+            0.865228,
+            0.49559,
+            -0.075973
+          ],
+          "clearance": 0.009641
+        },
+        {
+          "segment": 1,
+          "terms": [
+            {
+              "joint": "drape_cloth_R_1",
+              "weight": 0.4785956,
+              "position": [
+                -0.185188,
+                1.292228,
+                -0.064662
+              ]
+            },
+            {
+              "joint": "drape_cloth_R_2",
+              "weight": 0.5214044,
+              "position": [
+                -0.185188,
+                1.292228,
+                -0.064662
+              ]
+            }
+          ],
+          "bodyTerms": [
+            {
+              "joint": "chest",
+              "weight": 0.0831759,
+              "position": [
+                -0.18329,
+                1.299408,
+                -0.065229
+              ]
+            },
+            {
+              "joint": "shoulder_helper_R",
+              "weight": 0.0551879,
+              "position": [
+                -0.18329,
+                1.299408,
+                -0.065229
+              ]
+            },
+            {
+              "joint": "upper_arm_R",
+              "weight": 0.8616362,
+              "position": [
+                -0.18329,
+                1.299408,
+                -0.065229
+              ]
+            }
+          ],
+          "normal": [
+            -0.254848,
+            -0.963979,
+            0.076138
+          ],
+          "clearance": 0.007449
+        }
+      ]
+    }
+  ]
+}

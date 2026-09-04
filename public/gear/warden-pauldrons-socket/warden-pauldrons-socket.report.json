@@ -1,0 +1,1106 @@
+{
+  "schema": "ashveil.gear-report.v1",
+  "rule": "socket",
+  "family": "humanoid.v1",
+  "contractVersion": "1.3.0",
+  "body": "masculine-v3",
+  "slot": "shoulders",
+  "piece": "warden-pauldrons-socket",
+  "under": [
+    "warden-tunic-full"
+  ],
+  "source": {
+    "file": "warden-pauldrons-tripo.glb",
+    "sha256": "bb23ed0fde6651f6b4f68182eb32f64d351484f73fffda17e11fb42e1cb71a64"
+  },
+  "raw": {
+    "islands": 24,
+    "triangles": 9615,
+    "vertices": 5404
+  },
+  "placement": {
+    "L": {
+      "side": "L",
+      "anchor": "deltoid",
+      "seat": "p95",
+      "armAxis": [
+        0.375315,
+        -0.92648,
+        -0.027817
+      ],
+      "jointHead": [
+        0.189,
+        1.459305,
+        -0.062384
+      ],
+      "capIsland": {
+        "vertices": 1875,
+        "triangles": 3394
+      },
+      "openingAxisSource": [
+        0.319167,
+        -0.934453,
+        0.157894
+      ],
+      "openingAxisPlaced": [
+        0.37075,
+        -0.915212,
+        0.157894
+      ],
+      "axisTrace": [
+        {
+          "axis": [
+            -0.336915,
+            -0.913084,
+            -0.229706
+          ],
+          "turnDegrees": 26.0172
+        },
+        {
+          "axis": [
+            0.161311,
+            -0.981458,
+            0.103532
+          ],
+          "turnDegrees": 35.1125
+        },
+        {
+          "axis": [
+            0.293854,
+            -0.941005,
+            0.167805
+          ],
+          "turnDegrees": 8.761
+        },
+        {
+          "axis": [
+            0.319167,
+            -0.934453,
+            0.157894
+          ],
+          "turnDegrees": 1.6022
+        }
+      ],
+      "axisToArmDegrees": 11.1431,
+      "placedAxisToArmDegrees": 10.6787,
+      "apexSource": [
+        0.276248,
+        0.462813,
+        -0.044995
+      ],
+      "capFraction": 0.5,
+      "capSpanAlongAxisMetres": 0.264215,
+      "wholeIslandAlongAxisMetres": 0.457423,
+      "deltoid": {
+        "regionVertices": 134,
+        "regionWidthMetres": 0.114341,
+        "helperToSkinTwiceMetres": 0.097775,
+        "source": "shoulders region",
+        "widthMetres": 0.11434077502618822
+      },
+      "deltoidFactor": 1.15,
+      "scale": 0.497671,
+      "tiltDegrees": 3.1949,
+      "tiltWantedDegrees": 3.1949,
+      "tiltClamped": false,
+      "clearanceMetres": 0.016,
+      "jointRay": {
+        "direction": [
+          -0.37075,
+          0.915212,
+          -0.157894
+        ],
+        "crossings": 3,
+        "firstHitMetres": 0.047956,
+        "outerHitMetres": 0.063239,
+        "outerHit": [
+          0.165554,
+          1.517182,
+          -0.072369
+        ]
+      },
+      "apexAnchorDestination": [
+        0.159622,
+        1.531826,
+        -0.074895
+      ],
+      "deltoidCentroid": [
+        0.209641,
+        1.399366,
+        -0.059761
+      ],
+      "fixedCapCentroidSource": [
+        0.326785,
+        0.369518,
+        -0.011604
+      ],
+      "clearanceDirection": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "translation": [
+        0.094668,
+        1.20669,
+        -0.053986
+      ],
+      "apexPlaced": [
+        0.219098,
+        1.444323,
+        -0.076379
+      ],
+      "clearancePasses": 6,
+      "clearanceSteps": [
+        {
+          "pushMetres": 0.006096,
+          "maxDepthAfterMetres": 0.066171,
+          "seatDepthAfterMetres": 0.003982
+        },
+        {
+          "pushMetres": 0.006982,
+          "maxDepthAfterMetres": 0.071149,
+          "seatDepthAfterMetres": 0.003191
+        },
+        {
+          "pushMetres": 0.006191,
+          "maxDepthAfterMetres": 0.065368,
+          "seatDepthAfterMetres": 0.002753
+        },
+        {
+          "pushMetres": 0.005753,
+          "maxDepthAfterMetres": 0.057217,
+          "seatDepthAfterMetres": 0.002917
+        },
+        {
+          "pushMetres": 0.005917,
+          "maxDepthAfterMetres": 0.045787,
+          "seatDepthAfterMetres": 0.003217
+        },
+        {
+          "pushMetres": 0.006217,
+          "maxDepthAfterMetres": 0.010017,
+          "seatDepthAfterMetres": 0.001518
+        }
+      ],
+      "clearanceTranslationMetres": 0.037157,
+      "clearanceBounded": false,
+      "fixedCapVertices": 779,
+      "fixedCapDepthBeforeMetres": 0.058182,
+      "fixedCapDepthAfterMetres": 0.010017,
+      "fixedCapDeeperThan2mm": 35,
+      "fixedCapSeatDepthMetres": 0.001518,
+      "seatPercentile": 95.0,
+      "islands": [
+        {
+          "island": 0,
+          "role": "cap",
+          "vertices": 1875,
+          "triangles": 3394,
+          "sourceCentroid": [
+            0.344379,
+            0.263338,
+            -0.011289
+          ],
+          "centroid": [
+            0.258485,
+            1.347094,
+            -0.059604
+          ]
+        },
+        {
+          "island": 1,
+          "role": "rides the cap",
+          "vertices": 234,
+          "triangles": 429,
+          "sourceCentroid": [
+            0.369299,
+            0.059923,
+            0.092986
+          ],
+          "centroid": [
+            0.27651,
+            1.246709,
+            -0.007709
+          ]
+        },
+        {
+          "island": 2,
+          "role": "rides the cap",
+          "vertices": 168,
+          "triangles": 328,
+          "sourceCentroid": [
+            0.315424,
+            0.1548,
+            0.016805
+          ],
+          "centroid": [
+            0.247108,
+            1.292358,
+            -0.045623
+          ]
+        },
+        {
+          "island": 3,
+          "role": "rides the cap",
+          "vertices": 91,
+          "triangles": 160,
+          "sourceCentroid": [
+            0.243585,
+            0.194728,
+            0.114979
+          ],
+          "centroid": [
+            0.210304,
+            1.310206,
+            0.003236
+          ]
+        },
+        {
+          "island": 4,
+          "role": "rides the cap",
+          "vertices": 82,
+          "triangles": 111,
+          "sourceCentroid": [
+            0.344524,
+            0.101753,
+            0.05779
+          ],
+          "centroid": [
+            0.263039,
+            1.266807,
+            -0.025226
+          ]
+        },
+        {
+          "island": 5,
+          "role": "rides the cap",
+          "vertices": 37,
+          "triangles": 58,
+          "sourceCentroid": [
+            0.333305,
+            0.102829,
+            0.186358
+          ],
+          "centroid": [
+            0.257434,
+            1.26703,
+            0.038759
+          ]
+        },
+        {
+          "island": 6,
+          "role": "rides the cap",
+          "vertices": 37,
+          "triangles": 58,
+          "sourceCentroid": [
+            0.321929,
+            0.174211,
+            0.16915
+          ],
+          "centroid": [
+            0.249802,
+            1.302184,
+            0.030195
+          ]
+        },
+        {
+          "island": 7,
+          "role": "rides the cap",
+          "vertices": 37,
+          "triangles": 58,
+          "sourceCentroid": [
+            0.270897,
+            0.248509,
+            0.1398
+          ],
+          "centroid": [
+            0.222384,
+            1.337687,
+            0.015588
+          ]
+        },
+        {
+          "island": 8,
+          "role": "rides the cap",
+          "vertices": 37,
+          "triangles": 58,
+          "sourceCentroid": [
+            0.461828,
+            0.077927,
+            0.045456
+          ],
+          "centroid": [
+            0.321988,
+            1.258221,
+            -0.031364
+          ]
+        },
+        {
+          "island": 9,
+          "role": "rides the cap",
+          "vertices": 37,
+          "triangles": 58,
+          "sourceCentroid": [
+            0.457394,
+            0.158837,
+            0.015777
+          ],
+          "centroid": [
+            0.317541,
+            1.298302,
+            -0.046134
+          ]
+        },
+        {
+          "island": 10,
+          "role": "rides the cap",
+          "vertices": 37,
+          "triangles": 58,
+          "sourceCentroid": [
+            0.451165,
+            0.233966,
+            -0.024777
+          ],
+          "centroid": [
+            0.312362,
+            1.335461,
+            -0.066317
+          ]
+        },
+        {
+          "island": 11,
+          "role": "rides the cap",
+          "vertices": 29,
+          "triangles": 37,
+          "sourceCentroid": [
+            0.240782,
+            0.236328,
+            0.102901
+          ],
+          "centroid": [
+            0.207757,
+            1.330799,
+            -0.002775
+          ]
+        }
+      ],
+      "capClearance": {
+        "vertices": 1875,
+        "maxDepthDressedMetres": 0.01428,
+        "deeperThan2mmDressed": 123,
+        "maxDepthBareMetres": 0.062052,
+        "deeperThan2mmBare": 375,
+        "apexToTargetMillimetres": 21.392,
+        "apexToBareMillimetres": 21.392
+      },
+      "coverage": {
+        "regionVertices": 134,
+        "coveredVertices": 44,
+        "coveredFraction": 0.328358,
+        "reachMetres": 0.06,
+        "medianGapMetres": 0.015195
+      }
+    },
+    "R": {
+      "side": "R",
+      "anchor": "deltoid",
+      "seat": "p95",
+      "armAxis": [
+        -0.375315,
+        -0.92648,
+        -0.027817
+      ],
+      "jointHead": [
+        -0.189,
+        1.459305,
+        -0.062384
+      ],
+      "capIsland": {
+        "vertices": 1526,
+        "triangles": 2836
+      },
+      "openingAxisSource": [
+        -0.321186,
+        -0.945288,
+        0.057189
+      ],
+      "openingAxisPlaced": [
+        -0.374846,
+        -0.925322,
+        0.057189
+      ],
+      "axisTrace": [
+        {
+          "axis": [
+            0.412139,
+            -0.905762,
+            -0.098675
+          ],
+          "turnDegrees": 20.8303
+        },
+        {
+          "axis": [
+            -0.101981,
+            -0.986909,
+            0.124946
+          ],
+          "turnDegrees": 32.9079
+        },
+        {
+          "axis": [
+            -0.266666,
+            -0.957397,
+            0.110815
+          ],
+          "turnDegrees": 9.6315
+        },
+        {
+          "axis": [
+            -0.321186,
+            -0.945288,
+            0.057189
+          ],
+          "turnDegrees": 4.4373
+        }
+      ],
+      "axisToArmDegrees": 5.8764,
+      "placedAxisToArmDegrees": 4.8725,
+      "apexSource": [
+        -0.272483,
+        0.465738,
+        -0.04339
+      ],
+      "capFraction": 0.5,
+      "capSpanAlongAxisMetres": 0.251093,
+      "wholeIslandAlongAxisMetres": 0.458807,
+      "deltoid": {
+        "regionVertices": 129,
+        "regionWidthMetres": 0.107281,
+        "helperToSkinTwiceMetres": 0.097436,
+        "source": "shoulders region",
+        "widthMetres": 0.10728088171296668
+      },
+      "deltoidFactor": 1.15,
+      "scale": 0.491343,
+      "tiltDegrees": -3.2862,
+      "tiltWantedDegrees": -3.2862,
+      "tiltClamped": false,
+      "clearanceMetres": 0.016,
+      "jointRay": {
+        "direction": [
+          0.374846,
+          0.925322,
+          -0.057189
+        ],
+        "crossings": 3,
+        "firstHitMetres": 0.047798,
+        "outerHitMetres": 0.063448,
+        "outerHit": [
+          -0.165217,
+          1.518015,
+          -0.066012
+        ]
+      },
+      "apexAnchorDestination": [
+        -0.159219,
+        1.53282,
+        -0.066928
+      ],
+      "deltoidCentroid": [
+        -0.211644,
+        1.400344,
+        -0.06337
+      ],
+      "fixedCapCentroidSource": [
+        -0.326828,
+        0.375684,
+        -0.015681
+      ],
+      "clearanceDirection": [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      "translation": [
+        -0.100335,
+        1.206852,
+        -0.055665
+      ],
+      "apexPlaced": [
+        -0.22088,
+        1.442988,
+        -0.076985
+      ],
+      "clearancePasses": 6,
+      "clearanceSteps": [
+        {
+          "pushMetres": 0.006614,
+          "maxDepthAfterMetres": 0.072583,
+          "seatDepthAfterMetres": 0.003429
+        },
+        {
+          "pushMetres": 0.006429,
+          "maxDepthAfterMetres": 0.07061,
+          "seatDepthAfterMetres": 0.003926
+        },
+        {
+          "pushMetres": 0.006926,
+          "maxDepthAfterMetres": 0.065855,
+          "seatDepthAfterMetres": 0.003016
+        },
+        {
+          "pushMetres": 0.006016,
+          "maxDepthAfterMetres": 0.043332,
+          "seatDepthAfterMetres": 0.00344
+        },
+        {
+          "pushMetres": 0.00644,
+          "maxDepthAfterMetres": 0.017252,
+          "seatDepthAfterMetres": 0.003006
+        },
+        {
+          "pushMetres": 0.006006,
+          "maxDepthAfterMetres": 0.021228,
+          "seatDepthAfterMetres": 0.002402
+        }
+      ],
+      "clearanceTranslationMetres": 0.03843,
+      "clearanceBounded": false,
+      "fixedCapVertices": 697,
+      "fixedCapDepthBeforeMetres": 0.064565,
+      "fixedCapDepthAfterMetres": 0.021228,
+      "fixedCapDeeperThan2mm": 38,
+      "fixedCapSeatDepthMetres": 0.002402,
+      "seatPercentile": 95.0,
+      "islands": [
+        {
+          "island": 0,
+          "role": "cap",
+          "vertices": 1526,
+          "triangles": 2836,
+          "sourceCentroid": [
+            -0.337869,
+            0.2733,
+            -0.031748
+          ],
+          "centroid": [
+            -0.258374,
+            1.350432,
+            -0.071264
+          ]
+        },
+        {
+          "island": 1,
+          "role": "rides the cap",
+          "vertices": 441,
+          "triangles": 719,
+          "sourceCentroid": [
+            -0.348173,
+            0.216047,
+            0.084256
+          ],
+          "centroid": [
+            -0.265041,
+            1.322638,
+            -0.014266
+          ]
+        },
+        {
+          "island": 2,
+          "role": "rides the cap",
+          "vertices": 235,
+          "triangles": 429,
+          "sourceCentroid": [
+            -0.368988,
+            0.059915,
+            0.093381
+          ],
+          "centroid": [
+            -0.279649,
+            1.246636,
+            -0.009783
+          ]
+        },
+        {
+          "island": 3,
+          "role": "rides the cap",
+          "vertices": 168,
+          "triangles": 328,
+          "sourceCentroid": [
+            -0.315374,
+            0.154791,
+            0.016814
+          ],
+          "centroid": [
+            -0.250678,
+            1.291665,
+            -0.047404
+          ]
+        },
+        {
+          "island": 4,
+          "role": "rides the cap",
+          "vertices": 82,
+          "triangles": 111,
+          "sourceCentroid": [
+            -0.34453,
+            0.101753,
+            0.057826
+          ],
+          "centroid": [
+            -0.266473,
+            1.26647,
+            -0.027253
+          ]
+        },
+        {
+          "island": 5,
+          "role": "rides the cap",
+          "vertices": 37,
+          "triangles": 58,
+          "sourceCentroid": [
+            -0.461815,
+            0.07794,
+            0.04547
+          ],
+          "centroid": [
+            -0.324676,
+            1.258092,
+            -0.033324
+          ]
+        },
+        {
+          "island": 6,
+          "role": "rides the cap",
+          "vertices": 37,
+          "triangles": 58,
+          "sourceCentroid": [
+            -0.457355,
+            0.158837,
+            0.015764
+          ],
+          "centroid": [
+            -0.32021,
+            1.297649,
+            -0.04792
+          ]
+        },
+        {
+          "island": 7,
+          "role": "rides the cap",
+          "vertices": 37,
+          "triangles": 58,
+          "sourceCentroid": [
+            -0.333305,
+            0.102856,
+            0.186359
+          ],
+          "centroid": [
+            -0.260936,
+            1.266694,
+            0.035901
+          ]
+        },
+        {
+          "island": 8,
+          "role": "rides the cap",
+          "vertices": 37,
+          "triangles": 58,
+          "sourceCentroid": [
+            -0.321929,
+            0.174224,
+            0.169189
+          ],
+          "centroid": [
+            -0.253346,
+            1.301383,
+            0.027465
+          ]
+        },
+        {
+          "island": 9,
+          "role": "rides the cap",
+          "vertices": 37,
+          "triangles": 58,
+          "sourceCentroid": [
+            -0.270897,
+            0.248535,
+            0.139787
+          ],
+          "centroid": [
+            -0.22622,
+            1.336397,
+            0.013018
+          ]
+        },
+        {
+          "island": 10,
+          "role": "rides the cap",
+          "vertices": 37,
+          "triangles": 58,
+          "sourceCentroid": [
+            -0.451178,
+            0.23394,
+            -0.02479
+          ],
+          "centroid": [
+            -0.315065,
+            1.334316,
+            -0.067846
+          ]
+        },
+        {
+          "island": 11,
+          "role": "rides the cap",
+          "vertices": 29,
+          "triangles": 37,
+          "sourceCentroid": [
+            -0.240748,
+            0.236328,
+            0.102867
+          ],
+          "centroid": [
+            -0.211774,
+            1.32956,
+            -0.005122
+          ]
+        }
+      ],
+      "capClearance": {
+        "vertices": 1526,
+        "maxDepthDressedMetres": 0.021228,
+        "deeperThan2mmDressed": 111,
+        "maxDepthBareMetres": 0.060702,
+        "deeperThan2mmBare": 330,
+        "apexToTargetMillimetres": 20.484,
+        "apexToBareMillimetres": 20.484
+      },
+      "coverage": {
+        "regionVertices": 129,
+        "coveredVertices": 30,
+        "coveredFraction": 0.232558,
+        "reachMetres": 0.06,
+        "medianGapMetres": 0.016808
+      }
+    }
+  },
+  "weights": {
+    "mode": "stiff",
+    "strippedGroups": {
+      "warden-pauldrons-socket_L": [
+        "chest",
+        "clavicle_R",
+        "foot_L",
+        "foot_R",
+        "forearm_L",
+        "forearm_R",
+        "hand_L",
+        "hand_R",
+        "head",
+        "neck",
+        "pelvis",
+        "root",
+        "shin_L",
+        "shin_R",
+        "shoulder_helper_R",
+        "spine",
+        "thigh_L",
+        "thigh_R",
+        "twist_upper_arm_L",
+        "twist_upper_arm_R",
+        "upper_arm_R"
+      ],
+      "warden-pauldrons-socket_R": [
+        "chest",
+        "clavicle_L",
+        "foot_L",
+        "foot_R",
+        "forearm_L",
+        "forearm_R",
+        "hand_L",
+        "hand_R",
+        "head",
+        "neck",
+        "pelvis",
+        "root",
+        "shin_L",
+        "shin_R",
+        "shoulder_helper_L",
+        "spine",
+        "thigh_L",
+        "thigh_R",
+        "twist_upper_arm_L",
+        "twist_upper_arm_R",
+        "upper_arm_L"
+      ]
+    },
+    "orphanedVertices": {},
+    "band": {
+      "warden-pauldrons-socket_L": {
+        "vertices": 2701,
+        "bandVertices": 348,
+        "bandFraction": 0.128841,
+        "ceiling": 0.8,
+        "minPeakWeight": 0.500096,
+        "meanPeakWeight": 0.941101,
+        "bandHeightMetres": 0.121714,
+        "bandMinY": 1.327695,
+        "bandMaxY": 1.449409
+      },
+      "warden-pauldrons-socket_R": {
+        "vertices": 2703,
+        "bandVertices": 353,
+        "bandFraction": 0.130596,
+        "ceiling": 0.8,
+        "minPeakWeight": 0.500109,
+        "meanPeakWeight": 0.941373,
+        "bandHeightMetres": 0.076535,
+        "bandMinY": 1.337547,
+        "bandMaxY": 1.414082
+      }
+    },
+    "stiffness": 3.0
+  },
+  "drapes": [
+    {
+      "name": "cloth_L",
+      "attachBone": "upper_arm_L",
+      "bones": [
+        "drape_cloth_L_1",
+        "drape_cloth_L_2"
+      ],
+      "segmentLength": 0.056837,
+      "restDegrees": 0.0,
+      "root": [
+        0.243847,
+        1.327705,
+        -0.041694
+      ],
+      "toward": [
+        -0.954216,
+        0.0,
+        -0.299118
+      ],
+      "island": "warden-pauldrons-socket_L",
+      "from": 0.0,
+      "to": 0.5,
+      "segments": 2,
+      "islandHeightMetres": 0.238256,
+      "restTiltMetresAtTheHem": 0.0,
+      "toLineY": 1.334559,
+      "chainLengthMetres": 0.113673,
+      "axis": [
+        0.085275,
+        -0.995637,
+        -0.037876
+      ],
+      "towardMetres": 0.080182,
+      "bandCentre": [
+        0.265511,
+        1.291151,
+        -0.0384
+      ],
+      "nearestSkinMetres": 0.020312,
+      "nearestSkin": [
+        0.779682,
+        0.0,
+        0.626175
+      ],
+      "bandVertices": 1660,
+      "fadeVertices": 669
+    },
+    {
+      "name": "cloth_R",
+      "attachBone": "upper_arm_R",
+      "bones": [
+        "drape_cloth_R_1",
+        "drape_cloth_R_2"
+      ],
+      "segmentLength": 0.056142,
+      "restDegrees": 0.0,
+      "root": [
+        -0.246917,
+        1.326423,
+        -0.043079
+      ],
+      "toward": [
+        0.963803,
+        0.0,
+        -0.266617
+      ],
+      "island": "warden-pauldrons-socket_R",
+      "from": 0.0,
+      "to": 0.5,
+      "segments": 2,
+      "islandHeightMetres": 0.235192,
+      "restTiltMetresAtTheHem": 0.0,
+      "toLineY": 1.333318,
+      "chainLengthMetres": 0.112285,
+      "axis": [
+        -0.091665,
+        -0.994895,
+        -0.042201
+      ],
+      "towardMetres": 0.082951,
+      "bandCentre": [
+        -0.268948,
+        1.290375,
+        -0.040268
+      ],
+      "nearestSkinMetres": 0.018618,
+      "nearestSkin": [
+        -0.905752,
+        0.0,
+        0.423808
+      ],
+      "bandVertices": 1656,
+      "fadeVertices": 672
+    }
+  ],
+  "rest": {
+    "maxRestRotationBefore": 1.99564,
+    "maxRestRotationAfter": 0.0,
+    "joints": 28
+  },
+  "bindClearance": {
+    "insideVertices": 888,
+    "maxPenetrationMetres": 0.043543495,
+    "deeperThan2mm": 645
+  },
+  "bareBodyClearance": {
+    "insideVertices": 1073,
+    "maxPenetrationMetres": 0.062051717,
+    "deeperThan2mm": 990
+  },
+  "runtime": {
+    "bones": [
+      "root",
+      "pelvis",
+      "spine",
+      "chest",
+      "clavicle_L",
+      "shoulder_helper_L",
+      "upper_arm_L",
+      "forearm_L",
+      "hand_L",
+      "twist_upper_arm_L",
+      "clavicle_R",
+      "shoulder_helper_R",
+      "upper_arm_R",
+      "forearm_R",
+      "hand_R",
+      "twist_upper_arm_R",
+      "neck",
+      "head",
+      "thigh_L",
+      "shin_L",
+      "foot_L",
+      "thigh_R",
+      "shin_R",
+      "foot_R",
+      "drape_cloth_L_1",
+      "drape_cloth_L_2",
+      "drape_cloth_R_1",
+      "drape_cloth_R_2"
+    ],
+    "bodyBones": [
+      "root",
+      "pelvis",
+      "spine",
+      "chest",
+      "clavicle_L",
+      "shoulder_helper_L",
+      "upper_arm_L",
+      "forearm_L",
+      "hand_L",
+      "twist_upper_arm_L",
+      "clavicle_R",
+      "shoulder_helper_R",
+      "upper_arm_R",
+      "forearm_R",
+      "hand_R",
+      "twist_upper_arm_R",
+      "neck",
+      "head",
+      "thigh_L",
+      "shin_L",
+      "foot_L",
+      "thigh_R",
+      "shin_R",
+      "foot_R"
+    ],
+    "extraBones": [
+      "drape_cloth_L_1",
+      "drape_cloth_L_2",
+      "drape_cloth_R_1",
+      "drape_cloth_R_2"
+    ],
+    "extraBoneParents": {
+      "drape_cloth_L_1": "upper_arm_L",
+      "drape_cloth_L_2": "drape_cloth_L_1",
+      "drape_cloth_R_1": "upper_arm_R",
+      "drape_cloth_R_2": "drape_cloth_R_1"
+    },
+    "inverseBindMaxAbsDifference": 1.79e-07,
+    "triangles": 9615,
+    "materials": 1,
+    "meshes": 1,
+    "sides": {
+      "L": 12,
+      "R": 12,
+      "islands": 24
+    },
+    "maxInfluencesPerVertex": 4,
+    "minWeightSum": 0.999999887,
+    "maxWeightSum": 1.000000114,
+    "influencingBones": [
+      "clavicle_L",
+      "clavicle_R",
+      "drape_cloth_L_1",
+      "drape_cloth_L_2",
+      "drape_cloth_R_1",
+      "drape_cloth_R_2",
+      "shoulder_helper_L",
+      "shoulder_helper_R",
+      "upper_arm_L",
+      "upper_arm_R"
+    ],
+    "hasUvs": true,
+    "textures": 1,
+    "maxRestRotation": 0.0,
+    "sourceHad": {
+      "uvs": true,
+      "textures": true
+    },
+    "bindClearance": {
+      "insideVertices": 888,
+      "maxPenetrationMetres": 0.043543495,
+      "deeperThan2mm": 645
+    }
+  },
+  "gates": {
+    "piece_joints_match_the_body": true,
+    "inverse_binds_match_the_body": true,
+    "at_most_four_influences_per_vertex": true,
+    "weights_sum_to_one": true,
+    "every_influence_is_an_allowed_bone": true,
+    "triangles_within_budget": false,
+    "materials_within_budget": true,
+    "uvs_survived_the_pipeline": true,
+    "textures_survived_the_pipeline": true,
+    "bones_rest_axis_aligned": true,
+    "piece_sits_off_the_skin_at_bind": false,
+    "pair_has_both_sides": true
+  },
+  "gatesPass": false,
+  "outputs": {
+    "glb": "warden-pauldrons-socket.glb",
+    "manifest": "warden-pauldrons-socket.manifest.json",
+    "report": "warden-pauldrons-socket.report.json",
+    "sha256": "21d01362fb4ff75b7dd177ab2d7e88ca7ec0e2b22c443ccb7149742863fbc55b"
+  },
+  "gatesFailed": [
+    "piece_sits_off_the_skin_at_bind",
+    "triangles_within_budget"
+  ]
+}
