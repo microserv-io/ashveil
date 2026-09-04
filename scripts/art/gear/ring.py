@@ -11,7 +11,10 @@ Smooth tidies only what moved.
 Only the strap is ever reshaped. The body has an opinion about a band of leather
 lying on it and none at all about the buckle bolted through it, so every other
 island is translated by what the seat did to the strap under it and keeps its own
-shape to the millimetre.
+shape to the millimetre. What that leaves inside the clothes underneath - the belt
+was generated against nothing, so a pouch back can start in the hem - is then pushed
+radially out of the waist, whole part by whole part, which is the same rigid move
+with the ring rather than the strap saying which way.
 
 Every island and every triangle the source had survives to the runtime file. The
 2% debris rule that ate the belt's buckle, the alignment search, the tube fit and
@@ -69,6 +72,15 @@ RAY_HIT_LIMIT = 64
 RAY_NUDGE = 1e-5
 # How close an island has to sit to the strap to count as welded to that leather.
 ATTACH_RADIUS = 0.02
+# How close two islands' vertices come before they are one part: a flap on its pouch,
+# a keeper loop on its strap, the knot on the sash.
+CLUSTER_RADIUS = 0.005
+# Below this a vertex grazes the cloth rather than sits inside it.
+CLEARANCE_DEPTH = 0.002
+# What a cleared part keeps beyond the surface it was buried in.
+CLEARANCE_MARGIN = 0.003
+# The skirt's flare is curved, so one push out can bury a tall part again.
+CLEARANCE_PASSES = 3
 ISLAND_GROUP = "ring_island"
 STRAP_GROUP = "ring_strap"
 
@@ -507,11 +519,143 @@ def rigid_transport(obj, members: list[list[int]], strap_at: int, before: np.nda
     return moved
 
 
+def island_clusters(points: np.ndarray, members: list[list[int]], strap_at: int,
+                    radius: float) -> list[list[int]]:
+    """Islands that touch are one part, and one part has to move as one thing.
+
+    A flap sits on its pouch, a keeper loop on its pouch strap and the knot on the
+    sash; clearing either half on its own opens a seam the camera looks straight
+    through. The strap is no candidate: it is seated on the body and nothing may
+    carry it off again.
+    """
+    movable = [at for at, indices in enumerate(members) if at != strap_at and indices]
+    if not movable:
+        return []
+    owner: list[int] = []
+    tree = KDTree(sum(len(members[at]) for at in movable))
+    for island in movable:
+        for index in members[island]:
+            tree.insert(Vector(tuple(points[index])), len(owner))
+            owner.append(island)
+    tree.balance()
+    parent = {island: island for island in movable}
+
+    def root(at: int) -> int:
+        while parent[at] != at:
+            parent[at] = parent[parent[at]]
+            at = parent[at]
+        return at
+
+    for island in movable:
+        for index in members[island]:
+            for _, found, _ in tree.find_range(Vector(tuple(points[index])), radius):
+                here, other = root(island), root(owner[found])
+                if here != other:
+                    parent[other] = here
+    grouped: dict[int, list[int]] = {}
+    for island in movable:
+        grouped.setdefault(root(island), []).append(island)
+    return sorted((sorted(group) for group in grouped.values()),
+                  key=lambda group: -sum(len(members[at]) for at in group))
+
+
+def outward(points: np.ndarray, centre_xz: np.ndarray) -> np.ndarray:
+    """Away from the waist axis and level with it, in the runtime frame.
+
+    A part is buried across the body's own cross section, so out is out from the ring
+    and never up: lifting a pouch would only slide it up the strap it hangs from.
+    """
+    middle = points.mean(axis=0)
+    away = np.array([middle[0] - centre_xz[0], 0.0, middle[2] - centre_xz[1]])
+    length = float(np.linalg.norm(away))
+    if length < 1e-9:
+        raise RingError("clearance gate: a part sits on the ring's own axis")
+    return away / length
+
+
+def runtime_points(obj, indices: np.ndarray) -> np.ndarray:
+    matrix = obj.matrix_world
+    return np.array([runtime_from_blender(matrix @ obj.data.vertices[int(at)].co)
+                     for at in indices], dtype=np.float64)
+
+
+def depths_of(obj, indices: np.ndarray, solid: Solid) -> np.ndarray:
+    matrix = obj.matrix_world
+    return np.array([solid.depth(matrix @ obj.data.vertices[int(at)].co) for at in indices])
+
+
+def slide(obj, indices: np.ndarray, runtime_shift: np.ndarray) -> None:
+    shift = obj.matrix_world.to_3x3().inverted() @ Vector(blender_from_runtime(runtime_shift))
+    for at in indices:
+        obj.data.vertices[int(at)].co = obj.data.vertices[int(at)].co + shift
+
+
+def nearest_strap(obj, indices: np.ndarray, tree: KDTree) -> float:
+    """The closest a part comes to the leather, which is how a part coming off shows."""
+    return min(float(tree.find(obj.data.vertices[int(at)].co)[2]) for at in indices)
+
+
+def rigid_clearance(obj, members: list[list[int]], clusters: list[list[int]], target: Solid,
+                    strap: list[int], centre_xz: np.ndarray, limit: float, margin: float,
+                    passes: int) -> list[dict]:
+    """Push a buried part straight out of the waist, whole, until it is out of the cloth.
+
+    The belt was generated against nothing, so a pouch back or a sash edge can start
+    inside the body and the hem it hangs against. Hardware may not be reshaped, which
+    leaves exactly one move: the ring says which way out is, and the part travels
+    along it by what it was buried by plus a margin. The waist is not a cylinder, so
+    a wide part can find a new worst vertex on the way out and the push repeats.
+
+    One worst vertex moves the whole part, so a deep vertex on a big cluster buys a
+    large move: the report carries the applied translation and how close the part
+    still comes to the strap, because that is what the move spends.
+    """
+    leather = KDTree(len(strap))
+    for at, index in enumerate(strap):
+        leather.insert(obj.data.vertices[index].co, at)
+    leather.balance()
+    rows = []
+    for cluster in clusters:
+        indices = np.array(sorted(index for island in cluster for index in members[island]),
+                           dtype=int)
+        depths = depths_of(obj, indices, target)
+        first, buried = float(depths.max(initial=0.0)), int((depths > limit).sum())
+        touched = nearest_strap(obj, indices, leather)
+        applied = np.zeros(3)
+        steps = []
+        while len(steps) < passes and float(depths.max(initial=0.0)) > limit:
+            push = float(depths.max(initial=0.0)) + margin
+            step = outward(runtime_points(obj, indices), centre_xz) * push
+            slide(obj, indices, step)
+            applied = applied + step
+            depths = depths_of(obj, indices, target)
+            steps.append({"pushMetres": round(push, 6),
+                          "maxDepthAfterMetres": round(float(depths.max(initial=0.0)), 6)})
+        rows.append({
+            "islands": cluster,
+            "vertices": int(len(indices)),
+            "maxDepthBeforeMetres": round(first, 6),
+            "maxDepthAfterMetres": round(float(depths.max(initial=0.0)), 6),
+            "deeperThan2mmBefore": buried,
+            "deeperThan2mmAfter": int((depths > limit).sum()),
+            "toStrapBeforeMetres": round(touched, 6),
+            "toStrapAfterMetres": round(nearest_strap(obj, indices, leather), 6),
+            "passes": len(steps),
+            "translationMetres": round(float(np.linalg.norm(applied)), 6),
+            "translation": [round(float(value), 6) for value in applied],
+            "steps": steps,
+        })
+    obj.data.update()
+    return rows
+
+
 def island_table(profiles: list[dict], members: list[list[int]], strap_at: int,
-                 transported: list[dict], depths: np.ndarray,
+                 transported: list[dict], cleared: list[dict], depths: np.ndarray,
                  bare_depths: np.ndarray) -> list[dict]:
     """Every island on one line: what it is, what carried it, and where it ended up."""
     carried = {entry["island"]: entry for entry in transported}
+    pushed = {island: (at, entry) for at, entry in enumerate(cleared)
+              for island in entry["islands"]}
     rows = []
     for at, profile in enumerate(profiles):
         indices = np.array(members[at], dtype=int)
@@ -522,6 +666,11 @@ def island_table(profiles: list[dict], members: list[list[int]], strap_at: int,
         move = carried.get(at)
         if move:
             row.update({key: value for key, value in move.items() if key != "island"})
+        push = pushed.get(at)
+        if push:
+            row.update({"cluster": push[0],
+                        "clearanceMetres": push[1]["translationMetres"],
+                        "clearance": push[1]["translation"]})
         rows.append(row)
     rows.sort(key=lambda entry: -entry["triangles"])
     return rows
@@ -695,10 +844,20 @@ def run(args) -> dict:
     fitted_object.vertex_groups.remove(fitted_object.vertex_groups[STRAP_GROUP])
 
     transported: list[dict] = []
+    clusters: list[list[int]] = []
+    cleared: list[dict] = []
+    ring_centre_xz = placed_centre
     if limited:
         after_seat_points = np.array([tuple(vertex.co) for vertex in fitted_object.data.vertices])
         transported = rigid_transport(fitted_object, members, strap_at, before_seat_points,
                                       after_seat_points - before_seat_points, ATTACH_RADIUS)
+        # The seated strap, not the placement destination, is where the waist now is.
+        ring_centre_xz, _ = ring_centre(points_of(fitted_object)[strap_vertices], args.bins)
+        carried_points = np.array([tuple(vertex.co) for vertex in fitted_object.data.vertices])
+        clusters = island_clusters(carried_points, members, strap_at, CLUSTER_RADIUS)
+        cleared = rigid_clearance(fitted_object, members, clusters, dressed, strap_vertices,
+                                  ring_centre_xz, CLEARANCE_DEPTH, CLEARANCE_MARGIN,
+                                  CLEARANCE_PASSES)
 
     after_points = points_of(fitted_object)
     strap_after = after_points[strap_vertices]
@@ -731,7 +890,26 @@ def run(args) -> dict:
         "maxPenetrationMetres": round(float(bare_depths.max(initial=0.0)), 9),
         "deeperThan2mm": int((bare_depths > 0.002).sum()),
     }
-    islands_table = island_table(profiles, members, strap_at, transported, depths, bare_depths)
+    islands_table = island_table(profiles, members, strap_at, transported, cleared, depths,
+                                 bare_depths)
+    strap_buried = int((depths[np.array(strap_vertices, dtype=int)] > CLEARANCE_DEPTH).sum())
+    clearance = {
+        "clusterRadiusMetres": CLUSTER_RADIUS,
+        "depthLimitMetres": CLEARANCE_DEPTH,
+        "marginMetres": CLEARANCE_MARGIN,
+        "maxPasses": CLEARANCE_PASSES,
+        "ringCentreXZ": [round(float(ring_centre_xz[0]), 6), round(float(ring_centre_xz[1]), 6)],
+        "clusters": len(clusters),
+        "clustersMoved": sum(1 for entry in cleared if entry["passes"]),
+        "maxTranslationMetres": round(max((entry["translationMetres"] for entry in cleared),
+                                          default=0.0), 6),
+        # The strap is not a candidate and does not move here, so its own buried count
+        # is the same on both sides of the step and belongs to both totals.
+        "deeperThan2mmBefore": sum(entry["deeperThan2mmBefore"] for entry in cleared) + strap_buried,
+        "deeperThan2mmAfter": sum(entry["deeperThan2mmAfter"] for entry in cleared) + strap_buried,
+        "strapDeeperThan2mm": strap_buried,
+        "table": cleared,
+    }
 
     measured = gate.measure(glb_path, str(loaded["path"]), contract, source_had, outside)
     gates_table = gate.gates(measured, slot, None, [])
@@ -799,6 +977,7 @@ def run(args) -> dict:
                                                     if entry["fromNearestStrapVertex"]),
                       "maxTranslationMetres": round(max((entry["translationMetres"]
                                                          for entry in transported), default=0.0), 6)},
+        "clearance": clearance,
         "strapBeforeSeat": before_seat,
         "strapAfterSeat": after_seat,
         "strapExtents": extents(strap_after),
