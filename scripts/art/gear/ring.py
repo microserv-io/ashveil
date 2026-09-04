@@ -15,8 +15,9 @@ the edge profile come along unchanged. One Shrinkwrap pushes back out what the
 conform left inside, and a Corrective Smooth tidies only what moved.
 
 Only the strap is ever reshaped. The body has an opinion about a band of leather
-lying on it and none at all about the buckle bolted through it, so every other
-island is translated by what the conform and the seat did to the strap under it and
+lying on it and none at all about the buckle bolted through it, so every other part
+rides the strap: the patch of leather it is welded to says how that leather turned
+as well as where it went, and the whole part is carried by that one rigid move and
 keeps its own shape to the millimetre. What that leaves inside the clothes
 underneath - the belt was generated against nothing, so a pouch back can start in
 the hem - is then pushed radially out of the waist, whole part by whole part, which
@@ -99,6 +100,10 @@ RAY_HIT_LIMIT = 64
 RAY_NUDGE = 1e-5
 # How close an island has to sit to the strap to count as welded to that leather.
 ATTACH_RADIUS = 0.02
+# What an attachment patch has to be before it can say which way its part turned:
+# fewer points than this, or all of them on one line, and only the shift is known.
+PATCH_MIN_VERTICES = 4
+PATCH_MIN_SPREAD = 0.001
 # How close two islands' vertices come before they are one part: a flap on its pouch,
 # a keeper loop on its strap, the knot on the sash.
 CLUSTER_RADIUS = 0.005
@@ -984,52 +989,127 @@ def island_members(obj, names: list[str]) -> list[list[int]]:
     return members
 
 
-def rigid_transport(obj, members: list[list[int]], strap_at: int, before: np.ndarray,
-                    displacement: np.ndarray, radius: float) -> list[dict]:
-    """Every island but the strap rides it: translated by what moved under it, never
-    reshaped.
+def kabsch(before: np.ndarray, after: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """The rotation and shift that best carry one cloud onto the other, no scale.
 
-    A buckle, a pouch and a hanging sash are welded to the leather, so the strap's
-    own move is the whole of the answer for them, and the mean over the strap
-    vertices they touch is that move. An island near enough nothing (a loose rivet,
-    the fringe of the sash) follows the single strap vertex it is nearest, which is
-    the same rule with the neighbourhood shrunk to one.
+    The reflection the raw SVD can return is a mirrored part, which is worse than any
+    residual it saves, so the determinant is forced positive.
+    """
+    mid_before, mid_after = before.mean(axis=0), after.mean(axis=0)
+    left, _, right = np.linalg.svd((before - mid_before).T @ (after - mid_after))
+    handed = np.diag([1.0, 1.0, float(np.sign(np.linalg.det(right.T @ left.T)) or 1.0)])
+    rotation = right.T @ handed @ left.T
+    return rotation, mid_after - rotation @ mid_before
+
+
+def patch_spread(points: np.ndarray) -> float:
+    """How wide the patch is across its second axis: a line is nearly zero here.
+
+    A patch on one line pins the part's shift and nothing about its spin around that
+    line, and Kabsch answers such a patch with whatever the noise says.
+    """
+    values = np.linalg.svd(points - points.mean(axis=0), compute_uv=False)
+    return float(values[1]) / math.sqrt(len(points))
+
+
+def attachment_patch(indices: np.ndarray, strap: list[int], before: np.ndarray, tree: KDTree,
+                     radius: float) -> tuple[np.ndarray, bool, float]:
+    """The strap vertices a part is welded to, in the frame before the strap moved."""
+    touching: set[int] = set()
+    nearest_distance, nearest_slot = float("inf"), 0
+    for index in indices:
+        point = Vector(tuple(before[int(index)]))
+        for _, slot, _ in tree.find_range(point, radius):
+            touching.add(slot)
+        found = tree.find(point)
+        if found[2] is not None and found[2] < nearest_distance:
+            nearest_distance, nearest_slot = float(found[2]), found[1]
+    borrowed = not touching
+    if borrowed:
+        touching = {nearest_slot}
+    return (np.array([strap[slot] for slot in sorted(touching)], dtype=int), borrowed,
+            nearest_distance)
+
+
+def rigid_transport(obj, members: list[list[int]], clusters: list[list[int]], strap_at: int,
+                    before: np.ndarray, displacement: np.ndarray, radius: float) -> list[dict]:
+    """Every part but the strap rides it, by one rigid move each, never reshaped.
+
+    A buckle, a pouch and a hanging sash are welded to the leather, so what that
+    leather did is the whole of the answer for them - and the leather did not only
+    move, it turned. The patch it is welded to is read before and after, and the
+    rigid transform that best carries the patch across carries the part with it: a
+    pouch hanging a hand below the strap swings out with the band it hangs from
+    instead of standing off the curve the band was bent onto.
+
+    A patch too small or all on one line says nothing about the spin, and such a part
+    falls back to the patch's mean shift, which is the same rule with the rotation
+    dropped. Clusters, not islands: a flap and its pouch are one part and one move.
     """
     strap = members[strap_at]
     tree = KDTree(len(strap))
     for at, index in enumerate(strap):
         tree.insert(Vector(tuple(before[index])), at)
     tree.balance()
+    after = before + displacement
     moved = []
-    for island_at, indices in enumerate(members):
-        if island_at == strap_at or not indices:
+    for cluster_at, cluster in enumerate(clusters):
+        indices = np.array(sorted(index for island in cluster for index in members[island]),
+                           dtype=int)
+        if not len(indices):
             continue
-        touching: set[int] = set()
-        nearest_distance, nearest_slot = float("inf"), 0
-        for index in indices:
-            point = Vector(tuple(before[index]))
-            for _, slot, _ in tree.find_range(point, radius):
-                touching.add(slot)
-            found = tree.find(point)
-            if found[2] is not None and found[2] < nearest_distance:
-                nearest_distance, nearest_slot = float(found[2]), found[1]
-        borrowed = not touching
-        if borrowed:
-            touching = {nearest_slot}
-        attached = np.array([strap[slot] for slot in sorted(touching)], dtype=int)
-        shift = displacement[attached].mean(axis=0)
-        for index in indices:
-            obj.data.vertices[index].co = Vector(tuple(before[index] + shift))
+        attached, borrowed, nearest_distance = attachment_patch(indices, strap, before, tree,
+                                                                radius)
+        patch_before, patch_after = before[attached], after[attached]
+        spread = patch_spread(patch_before) if len(attached) >= PATCH_MIN_VERTICES else 0.0
+        turned = spread >= PATCH_MIN_SPREAD
+        if turned:
+            rotation, shift = kabsch(patch_before, patch_after)
+        else:
+            rotation, shift = np.eye(3), displacement[attached].mean(axis=0)
+        carried = before[indices] @ rotation.T + shift
+        for at, index in enumerate(indices):
+            obj.data.vertices[int(index)].co = Vector(tuple(carried[at]))
+        residual = np.linalg.norm(patch_before @ rotation.T + shift - patch_after, axis=1)
+        travel = carried.mean(axis=0) - before[indices].mean(axis=0)
         moved.append({
-            "island": island_at,
+            "cluster": cluster_at,
+            "islands": cluster,
+            "clusterVertices": int(len(indices)),
             "attachmentVertices": int(len(attached)),
             "fromNearestStrapVertex": borrowed,
             "nearestStrapMetres": round(nearest_distance, 6),
-            "translationMetres": round(float(np.linalg.norm(shift)), 6),
-            "translation": [round(float(value), 6) for value in runtime_from_blender(shift)],
+            "patchSpreadMetres": round(spread, 6),
+            "rotationFitted": turned,
+            "rotationDegrees": round(math.degrees(math.acos(
+                float(np.clip((np.trace(rotation) - 1.0) * 0.5, -1.0, 1.0)))), 4),
+            "patchResidualMetres": round(float(np.sqrt((residual ** 2).mean())), 6),
+            "translationMetres": round(float(np.linalg.norm(travel)), 6),
+            "translation": [round(float(value), 6) for value in runtime_from_blender(travel)],
         })
     obj.data.update()
     return moved
+
+
+def transport_summary(carried: list[dict]) -> dict:
+    """What the ride cost, per deformation: how far, how much spin, how well it fitted."""
+    return {
+        "clustersMoved": len(carried),
+        "fellBackToTranslation": [entry["cluster"] for entry in carried
+                                  if not entry["rotationFitted"]],
+        "fromNearestStrapVertex": [entry["cluster"] for entry in carried
+                                   if entry["fromNearestStrapVertex"]],
+        "maxTranslationMetres": round(max((entry["translationMetres"] for entry in carried),
+                                          default=0.0), 6),
+        "meanTranslationMetres": round(float(np.mean([entry["translationMetres"]
+                                                      for entry in carried]))
+                                       if carried else 0.0, 6),
+        "maxRotationDegrees": round(max((entry["rotationDegrees"] for entry in carried),
+                                        default=0.0), 4),
+        "maxPatchResidualMetres": round(max((entry["patchResidualMetres"] for entry in carried),
+                                            default=0.0), 6),
+        "table": carried,
+    }
 
 
 def island_clusters(points: np.ndarray, members: list[list[int]], strap_at: int,
@@ -1166,7 +1246,7 @@ def island_table(profiles: list[dict], members: list[list[int]], strap_at: int,
                  transported: list[dict], cleared: list[dict], depths: np.ndarray,
                  bare_depths: np.ndarray) -> list[dict]:
     """Every island on one line: what it is, what carried it, and where it ended up."""
-    carried = {entry["island"]: entry for entry in transported}
+    carried = {island: entry for entry in transported for island in entry["islands"]}
     pushed = {island: (at, entry) for at, entry in enumerate(cleared)
               for island in entry["islands"]}
     rows = []
@@ -1178,7 +1258,7 @@ def island_table(profiles: list[dict], members: list[list[int]], strap_at: int,
                "insideBareDeeperThan2mm": int((bare_depths[indices] > 0.002).sum())}
         move = carried.get(at)
         if move:
-            row.update({key: value for key, value in move.items() if key != "island"})
+            row.update({key: value for key, value in move.items() if key != "islands"})
         push = pushed.get(at)
         if push:
             row.update({"cluster": push[0],
@@ -1351,6 +1431,11 @@ def run(args) -> dict:
     if not strap_vertices:
         raise RingError("strap gate: the join lost the strap island")
     fitted_object.vertex_groups.new(name=STRAP_GROUP).add(strap_vertices, 1.0, "REPLACE")
+    # Read on the placed piece, before anything deforms: touching islands are one part
+    # for every move that follows, and the source's own contacts are what decide that.
+    clusters = island_clusters(np.array([tuple(vertex.co) for vertex in
+                                         fitted_object.data.vertices]),
+                               members, strap_at, CLUSTER_RADIUS)
 
     placed_band = (float(placed_strap[:, 1].min()), float(placed_strap[:, 1].max()))
     conform_heights = np.linspace(placed_band[0], placed_band[1], CONFORM_SAMPLES)
@@ -1367,18 +1452,10 @@ def run(args) -> dict:
         # The hardware is welded to leather that just changed shape, so it rides the
         # conform by the same rule it rides the seat by, and before the seat runs.
         carried = rigid_transport(
-            fitted_object, members, strap_at, before_conform_points,
+            fitted_object, members, clusters, strap_at, before_conform_points,
             np.array([tuple(vertex.co) for vertex in fitted_object.data.vertices])
             - before_conform_points, ATTACH_RADIUS)
-        conformed["transport"] = {
-            "islandsMoved": len(carried),
-            "fromNearestStrapVertex": sum(1 for entry in carried
-                                          if entry["fromNearestStrapVertex"]),
-            "maxTranslationMetres": round(max((entry["translationMetres"] for entry in carried),
-                                              default=0.0), 6),
-            "meanTranslationMetres": round(float(np.mean([entry["translationMetres"]
-                                                          for entry in carried])) if carried else 0.0, 6),
-        }
+        conformed["transport"] = transport_summary(carried)
         after_conform = measure_strap(points_of(fitted_object)[strap_vertices], placed_centre,
                                       args.bins, dressed, bare)
 
@@ -1391,17 +1468,15 @@ def run(args) -> dict:
     fitted_object.vertex_groups.remove(fitted_object.vertex_groups[STRAP_GROUP])
 
     transported: list[dict] = []
-    clusters: list[list[int]] = []
     cleared: list[dict] = []
     ring_centre_xz = placed_centre
     if limited:
         after_seat_points = np.array([tuple(vertex.co) for vertex in fitted_object.data.vertices])
-        transported = rigid_transport(fitted_object, members, strap_at, before_seat_points,
+        transported = rigid_transport(fitted_object, members, clusters, strap_at,
+                                      before_seat_points,
                                       after_seat_points - before_seat_points, ATTACH_RADIUS)
         # The seated strap, not the placement destination, is where the waist now is.
         ring_centre_xz, _ = ring_centre(points_of(fitted_object)[strap_vertices], args.bins)
-        carried_points = np.array([tuple(vertex.co) for vertex in fitted_object.data.vertices])
-        clusters = island_clusters(carried_points, members, strap_at, CLUSTER_RADIUS)
         cleared = rigid_clearance(fitted_object, members, clusters, dressed, strap_vertices,
                                   ring_centre_xz, CLEARANCE_DEPTH, CLEARANCE_MARGIN,
                                   CLEARANCE_PASSES)
@@ -1547,11 +1622,11 @@ def run(args) -> dict:
                     "bandProfile": strap_profile, "hidesProfileCentre": hides_profile["centre"]},
         "islandTable": islands_table,
         "transport": {"mode": args.seat, "attachRadiusMetres": ATTACH_RADIUS,
-                      "strapIsland": strap_at, "islandsMoved": len(transported),
-                      "fromNearestStrapVertex": sum(1 for entry in transported
-                                                    if entry["fromNearestStrapVertex"]),
-                      "maxTranslationMetres": round(max((entry["translationMetres"]
-                                                         for entry in transported), default=0.0), 6)},
+                      "strapIsland": strap_at, "clusters": len(clusters),
+                      "clusterIslands": clusters,
+                      "patchMinVertices": PATCH_MIN_VERTICES,
+                      "patchMinSpreadMetres": PATCH_MIN_SPREAD,
+                      **transport_summary(transported)},
         "clearance": clearance,
         "conformMode": args.conform,
         "conform": conformed,
