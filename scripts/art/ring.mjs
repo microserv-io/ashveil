@@ -41,8 +41,8 @@ export function parseArgs(argv) {
   if (parsed.yaw && !['0', '180'].includes(parsed.yaw)) {
     throw new RingError(`yaw gate: "${parsed.yaw}" is not 0 or 180`)
   }
-  if (parsed.seat && !['merged', 'layers'].includes(parsed.seat)) {
-    throw new RingError(`seat gate: "${parsed.seat}" is not merged or layers`)
+  if (parsed.seat && !['strap', 'merged', 'layers'].includes(parsed.seat)) {
+    throw new RingError(`seat gate: "${parsed.seat}" is not strap, merged or layers`)
   }
   return parsed
 }

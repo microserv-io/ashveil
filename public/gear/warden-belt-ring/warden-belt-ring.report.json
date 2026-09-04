@@ -267,6 +267,1135 @@
       }
     ]
   },
+  "islandTable": [
+    {
+      "triangles": 1626,
+      "vertices": 822,
+      "degrees": 96.77,
+      "yMetres": [
+        0.959382,
+        1.028784
+      ],
+      "heightMetres": 0.069402,
+      "island": 12,
+      "isStrap": true,
+      "joinedVertices": 822,
+      "insideDressedDeeperThan2mm": 12,
+      "insideBareDeeperThan2mm": 0
+    },
+    {
+      "triangles": 1559,
+      "vertices": 802,
+      "degrees": 48.48,
+      "yMetres": [
+        0.752989,
+        1.005227
+      ],
+      "heightMetres": 0.252238,
+      "island": 23,
+      "isStrap": false,
+      "joinedVertices": 802,
+      "insideDressedDeeperThan2mm": 264,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 42,
+      "fromNearestStrapVertex": false,
+      "nearestStrapMetres": 0.000942,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 860,
+      "vertices": 427,
+      "degrees": 135.33,
+      "yMetres": [
+        0.915349,
+        0.984207
+      ],
+      "heightMetres": 0.068858,
+      "island": 1,
+      "isStrap": false,
+      "joinedVertices": 427,
+      "insideDressedDeeperThan2mm": 271,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 52,
+      "fromNearestStrapVertex": false,
+      "nearestStrapMetres": 0.005305,
+      "translationMetres": 3.6e-05,
+      "translation": [
+        -1.7e-05,
+        2e-06,
+        3.2e-05
+      ]
+    },
+    {
+      "triangles": 843,
+      "vertices": 420,
+      "degrees": 150.59,
+      "yMetres": [
+        0.917886,
+        0.988919
+      ],
+      "heightMetres": 0.071033,
+      "island": 0,
+      "isStrap": false,
+      "joinedVertices": 420,
+      "insideDressedDeeperThan2mm": 233,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 29,
+      "fromNearestStrapVertex": false,
+      "nearestStrapMetres": 0.006278,
+      "translationMetres": 0.000422,
+      "translation": [
+        -0.000293,
+        2.1e-05,
+        0.000303
+      ]
+    },
+    {
+      "triangles": 626,
+      "vertices": 314,
+      "degrees": 95.17,
+      "yMetres": [
+        0.946335,
+        1.01175
+      ],
+      "heightMetres": 0.065415,
+      "island": 19,
+      "isStrap": false,
+      "joinedVertices": 314,
+      "insideDressedDeeperThan2mm": 22,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 216,
+      "fromNearestStrapVertex": false,
+      "nearestStrapMetres": 0.000444,
+      "translationMetres": 1.9e-05,
+      "translation": [
+        4e-06,
+        1.8e-05,
+        3e-06
+      ]
+    },
+    {
+      "triangles": 574,
+      "vertices": 290,
+      "degrees": 134.33,
+      "yMetres": [
+        0.954671,
+        0.995986
+      ],
+      "heightMetres": 0.041315,
+      "island": 7,
+      "isStrap": false,
+      "joinedVertices": 290,
+      "insideDressedDeeperThan2mm": 1,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 59,
+      "fromNearestStrapVertex": false,
+      "nearestStrapMetres": 0.004728,
+      "translationMetres": 0.000153,
+      "translation": [
+        -8e-05,
+        1.1e-05,
+        0.00013
+      ]
+    },
+    {
+      "triangles": 571,
+      "vertices": 288,
+      "degrees": 148.94,
+      "yMetres": [
+        0.958114,
+        1.001059
+      ],
+      "heightMetres": 0.042946,
+      "island": 6,
+      "isStrap": false,
+      "joinedVertices": 288,
+      "insideDressedDeeperThan2mm": 0,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 38,
+      "fromNearestStrapVertex": false,
+      "nearestStrapMetres": 0.010158,
+      "translationMetres": 0.001085,
+      "translation": [
+        -0.000736,
+        9.2e-05,
+        0.000792
+      ]
+    },
+    {
+      "triangles": 522,
+      "vertices": 263,
+      "degrees": 136.15,
+      "yMetres": [
+        0.929121,
+        1.005589
+      ],
+      "heightMetres": 0.076469,
+      "island": 10,
+      "isStrap": false,
+      "joinedVertices": 263,
+      "insideDressedDeeperThan2mm": 143,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 48,
+      "fromNearestStrapVertex": false,
+      "nearestStrapMetres": 0.000572,
+      "translationMetres": 0.00031,
+      "translation": [
+        -0.000169,
+        2.5e-05,
+        0.000259
+      ]
+    },
+    {
+      "triangles": 522,
+      "vertices": 263,
+      "degrees": 152.37,
+      "yMetres": [
+        0.932745,
+        1.009395
+      ],
+      "heightMetres": 0.07665,
+      "island": 15,
+      "isStrap": false,
+      "joinedVertices": 263,
+      "insideDressedDeeperThan2mm": 111,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 23,
+      "fromNearestStrapVertex": false,
+      "nearestStrapMetres": 0.000666,
+      "translationMetres": 0.001814,
+      "translation": [
+        -0.00124,
+        0.000156,
+        0.001314
+      ]
+    },
+    {
+      "triangles": 462,
+      "vertices": 233,
+      "degrees": 48.59,
+      "yMetres": [
+        0.964456,
+        0.976778
+      ],
+      "heightMetres": 0.012322,
+      "island": 46,
+      "isStrap": false,
+      "joinedVertices": 233,
+      "insideDressedDeeperThan2mm": 0,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 22,
+      "fromNearestStrapVertex": false,
+      "nearestStrapMetres": 0.00088,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 180,
+      "vertices": 107,
+      "degrees": 134.56,
+      "yMetres": [
+        0.94253,
+        0.959563
+      ],
+      "heightMetres": 0.017033,
+      "island": 9,
+      "isStrap": false,
+      "joinedVertices": 107,
+      "insideDressedDeeperThan2mm": 0,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.030011,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 158,
+      "vertices": 84,
+      "degrees": 149.15,
+      "yMetres": [
+        0.929483,
+        0.963731
+      ],
+      "heightMetres": 0.034248,
+      "island": 2,
+      "isStrap": false,
+      "joinedVertices": 84,
+      "insideDressedDeeperThan2mm": 18,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.032383,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 158,
+      "vertices": 84,
+      "degrees": 134.28,
+      "yMetres": [
+        0.926403,
+        0.959926
+      ],
+      "heightMetres": 0.033523,
+      "island": 8,
+      "isStrap": false,
+      "joinedVertices": 84,
+      "insideDressedDeeperThan2mm": 41,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.031707,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 156,
+      "vertices": 88,
+      "degrees": 149.04,
+      "yMetres": [
+        0.94561,
+        0.952134
+      ],
+      "heightMetres": 0.006523,
+      "island": 3,
+      "isStrap": false,
+      "joinedVertices": 88,
+      "insideDressedDeeperThan2mm": 0,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.037053,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 130,
+      "vertices": 65,
+      "degrees": 72.31,
+      "yMetres": [
+        0.957751,
+        1.001059
+      ],
+      "heightMetres": 0.043308,
+      "island": 45,
+      "isStrap": false,
+      "joinedVertices": 65,
+      "insideDressedDeeperThan2mm": 11,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 45,
+      "fromNearestStrapVertex": false,
+      "nearestStrapMetres": 0.001585,
+      "translationMetres": 0.000319,
+      "translation": [
+        2.5e-05,
+        0.000304,
+        9.3e-05
+      ]
+    },
+    {
+      "triangles": 106,
+      "vertices": 57,
+      "degrees": 100.69,
+      "yMetres": [
+        0.974784,
+        0.981127
+      ],
+      "heightMetres": 0.006342,
+      "island": 18,
+      "isStrap": false,
+      "joinedVertices": 57,
+      "insideDressedDeeperThan2mm": 0,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 100,
+      "fromNearestStrapVertex": false,
+      "nearestStrapMetres": 0.001157,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 36,
+      "vertices": 25,
+      "degrees": 139.41,
+      "yMetres": [
+        0.99508,
+        0.999972
+      ],
+      "heightMetres": 0.004893,
+      "island": 13,
+      "isStrap": false,
+      "joinedVertices": 25,
+      "insideDressedDeeperThan2mm": 0,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 12,
+      "fromNearestStrapVertex": false,
+      "nearestStrapMetres": 0.005578,
+      "translationMetres": 0.000522,
+      "translation": [
+        -0.00025,
+        4.3e-05,
+        0.000456
+      ]
+    },
+    {
+      "triangles": 36,
+      "vertices": 25,
+      "degrees": 131.86,
+      "yMetres": [
+        0.994717,
+        0.999428
+      ],
+      "heightMetres": 0.004711,
+      "island": 14,
+      "isStrap": false,
+      "joinedVertices": 25,
+      "insideDressedDeeperThan2mm": 0,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 13,
+      "fromNearestStrapVertex": false,
+      "nearestStrapMetres": 0.005519,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 36,
+      "vertices": 25,
+      "degrees": 150.29,
+      "yMetres": [
+        0.997435,
+        1.002328
+      ],
+      "heightMetres": 0.004892,
+      "island": 16,
+      "isStrap": false,
+      "joinedVertices": 25,
+      "insideDressedDeeperThan2mm": 0,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 11,
+      "fromNearestStrapVertex": false,
+      "nearestStrapMetres": 0.003563,
+      "translationMetres": 0.002748,
+      "translation": [
+        -0.001789,
+        0.000219,
+        0.002074
+      ]
+    },
+    {
+      "triangles": 36,
+      "vertices": 25,
+      "degrees": 154.05,
+      "yMetres": [
+        0.998885,
+        1.003777
+      ],
+      "heightMetres": 0.004893,
+      "island": 17,
+      "isStrap": false,
+      "joinedVertices": 25,
+      "insideDressedDeeperThan2mm": 0,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 13,
+      "fromNearestStrapVertex": false,
+      "nearestStrapMetres": 0.002866,
+      "translationMetres": 0.002483,
+      "translation": [
+        -0.001787,
+        0.000207,
+        0.001711
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 57.63,
+      "yMetres": [
+        0.777452,
+        0.796116
+      ],
+      "heightMetres": 0.018664,
+      "island": 20,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.166599,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 56.31,
+      "yMetres": [
+        0.772921,
+        0.791404
+      ],
+      "heightMetres": 0.018483,
+      "island": 21,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.171139,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 53.13,
+      "yMetres": [
+        0.768391,
+        0.787055
+      ],
+      "heightMetres": 0.018664,
+      "island": 22,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.174398,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 51.16,
+      "yMetres": [
+        0.765311,
+        0.783975
+      ],
+      "heightMetres": 0.018664,
+      "island": 24,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.177814,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 53.68,
+      "yMetres": [
+        0.764224,
+        0.785243
+      ],
+      "heightMetres": 0.02102,
+      "island": 25,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.177545,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 52.23,
+      "yMetres": [
+        0.759875,
+        0.778358
+      ],
+      "heightMetres": 0.018483,
+      "island": 26,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.184629,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 50.46,
+      "yMetres": [
+        0.753532,
+        0.772197
+      ],
+      "heightMetres": 0.018664,
+      "island": 27,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.19145,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 54.97,
+      "yMetres": [
+        0.768572,
+        0.787418
+      ],
+      "heightMetres": 0.018845,
+      "island": 28,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.175179,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 40.06,
+      "yMetres": [
+        0.736861,
+        0.755707
+      ],
+      "heightMetres": 0.018845,
+      "island": 29,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.207789,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 48.65,
+      "yMetres": [
+        0.759512,
+        0.777995
+      ],
+      "heightMetres": 0.018483,
+      "island": 30,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.186367,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 45.73,
+      "yMetres": [
+        0.753895,
+        0.773465
+      ],
+      "heightMetres": 0.01957,
+      "island": 31,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.18908,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 49.14,
+      "yMetres": [
+        0.760962,
+        0.779807
+      ],
+      "heightMetres": 0.018845,
+      "island": 32,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.182148,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 47.2,
+      "yMetres": [
+        0.756975,
+        0.775458
+      ],
+      "heightMetres": 0.018483,
+      "island": 33,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.186798,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 44.21,
+      "yMetres": [
+        0.750089,
+        0.770022
+      ],
+      "heightMetres": 0.019933,
+      "island": 34,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.19268,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 42.28,
+      "yMetres": [
+        0.74411,
+        0.764042
+      ],
+      "heightMetres": 0.019933,
+      "island": 35,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.198972,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 47.22,
+      "yMetres": [
+        0.764042,
+        0.782525
+      ],
+      "heightMetres": 0.018483,
+      "island": 36,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.182308,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 45.56,
+      "yMetres": [
+        0.768572,
+        0.787055
+      ],
+      "heightMetres": 0.018483,
+      "island": 37,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.178264,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 43.83,
+      "yMetres": [
+        0.771653,
+        0.790136
+      ],
+      "heightMetres": 0.018483,
+      "island": 38,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.175178,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 42.17,
+      "yMetres": [
+        0.77419,
+        0.792673
+      ],
+      "heightMetres": 0.018483,
+      "island": 39,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.172881,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 40.65,
+      "yMetres": [
+        0.775096,
+        0.79376
+      ],
+      "heightMetres": 0.018664,
+      "island": 40,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.172563,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 38.65,
+      "yMetres": [
+        0.744653,
+        0.763499
+      ],
+      "heightMetres": 0.018845,
+      "island": 41,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.200283,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 37.81,
+      "yMetres": [
+        0.750996,
+        0.769841
+      ],
+      "heightMetres": 0.018845,
+      "island": 42,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.194303,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 37.18,
+      "yMetres": [
+        0.756975,
+        0.775458
+      ],
+      "heightMetres": 0.018483,
+      "island": 43,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.189079,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 30,
+      "vertices": 20,
+      "degrees": 36.61,
+      "yMetres": [
+        0.762955,
+        0.781619
+      ],
+      "heightMetres": 0.018664,
+      "island": 44,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 20,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.183428,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 24,
+      "vertices": 20,
+      "degrees": 147.42,
+      "yMetres": [
+        0.949416,
+        0.9621
+      ],
+      "heightMetres": 0.012684,
+      "island": 5,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 0,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.030904,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 24,
+      "vertices": 20,
+      "degrees": 132.44,
+      "yMetres": [
+        0.946154,
+        0.958838
+      ],
+      "heightMetres": 0.012684,
+      "island": 11,
+      "isStrap": false,
+      "joinedVertices": 20,
+      "insideDressedDeeperThan2mm": 0,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.029838,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    },
+    {
+      "triangles": 23,
+      "vertices": 19,
+      "degrees": 150.73,
+      "yMetres": [
+        0.950865,
+        0.963369
+      ],
+      "heightMetres": 0.012503,
+      "island": 4,
+      "isStrap": false,
+      "joinedVertices": 19,
+      "insideDressedDeeperThan2mm": 0,
+      "insideBareDeeperThan2mm": 0,
+      "attachmentVertices": 1,
+      "fromNearestStrapVertex": true,
+      "nearestStrapMetres": 0.030727,
+      "translationMetres": 0.0,
+      "translation": [
+        0.0,
+        0.0,
+        -0.0
+      ]
+    }
+  ],
+  "transport": {
+    "mode": "strap",
+    "attachRadiusMetres": 0.02,
+    "strapIsland": 12,
+    "islandsMoved": 46,
+    "fromNearestStrapVertex": 31,
+    "maxTranslationMetres": 0.002748
+  },
   "strapBeforeSeat": {
     "innerFaceVertices": 325,
     "toDressedSurface": {
@@ -331,17 +1460,19 @@
     "targets": [
       "GearFitSurface"
     ],
-    "vertices": 5246,
-    "movedVertices": 1164,
-    "movedFraction": 0.221883,
-    "meanMoveMetres": 0.010086,
-    "maxMoveMetres": 0.038296,
+    "limitGroup": "ring_strap",
+    "pieceVertices": 5246,
+    "vertices": 822,
+    "movedVertices": 58,
+    "movedFraction": 0.07056,
+    "meanMoveMetres": 0.003326,
+    "maxMoveMetres": 0.024608,
     "smoothed": true,
     "smoothFactor": 0.5,
     "smoothIterations": 5,
-    "mode": "merged"
+    "mode": "strap"
   },
-  "seatMode": "merged",
+  "seatMode": "strap",
   "weights": {
     "mode": "stiff",
     "strippedGroups": {
@@ -369,16 +1500,16 @@
       ]
     },
     "orphanedVertices": {
-      "warden-belt-ring": 1884
+      "warden-belt-ring": 1900
     },
     "band": {
       "warden-belt-ring": {
         "vertices": 5246,
-        "bandVertices": 1813,
-        "bandFraction": 0.345597,
+        "bandVertices": 1811,
+        "bandFraction": 0.345215,
         "ceiling": 0.8,
-        "minPeakWeight": 0.500042,
-        "meanPeakWeight": 0.849808,
+        "minPeakWeight": 0.500001,
+        "meanPeakWeight": 0.850085,
         "bandHeightMetres": 0.05255,
         "bandMinY": 0.967899,
         "bandMaxY": 1.020448
@@ -392,9 +1523,9 @@
     "joints": 24
   },
   "bindClearance": {
-    "insideVertices": 1159,
+    "insideVertices": 1783,
     "maxPenetrationMetres": 0.056284595,
-    "deeperThan2mm": 1073
+    "deeperThan2mm": 1607
   },
   "bareBodyClearance": {
     "insideVertices": 0,
@@ -482,9 +1613,9 @@
       "textures": true
     },
     "bindClearance": {
-      "insideVertices": 1159,
+      "insideVertices": 1783,
       "maxPenetrationMetres": 0.056284595,
-      "deeperThan2mm": 1073
+      "deeperThan2mm": 1607
     }
   },
   "gates": {
@@ -506,6 +1637,6 @@
     "glb": "warden-belt-ring.glb",
     "manifest": "warden-belt-ring.manifest.json",
     "report": "warden-belt-ring.report.json",
-    "sha256": "faaa7432ef1297ffa55dcba9e5b432909f7cebb4169cd45c98992afb95222c74"
+    "sha256": "8aba43565c530490c3125efb63579b26da9b12c615a23c0af5b1a8deb5f17dfd"
   }
 }

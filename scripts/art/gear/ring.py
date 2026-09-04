@@ -2,11 +2,16 @@
 
 A belt strap, a collar or a cuff closes a loop about the vertical axis, and the
 body's cross section at that height plus a clearance says where the loop goes.
-Nothing here reshapes the piece: the strap's own inner ellipse is measured, the
-body's outer ellipse at the same height is measured, and the whole piece - buckle,
+Nothing here reshapes the piece to place it: the strap's own inner ellipse is
+measured, the body's outer ellipse at the same height too, and the whole piece - buckle,
 pouches, sash, rivets - is moved by one rigid transform with a scale per horizontal
-axis. Then one Shrinkwrap pushes what is still inside the body back out, and a
-Corrective Smooth tidies only what moved.
+axis. Then one Shrinkwrap pushes the strap back out of the body, and a Corrective
+Smooth tidies only what moved.
+
+Only the strap is ever reshaped. The body has an opinion about a band of leather
+lying on it and none at all about the buckle bolted through it, so every other
+island is translated by what the seat did to the strap under it and keeps its own
+shape to the millimetre.
 
 Every island and every triangle the source had survives to the runtime file. The
 2% debris rule that ate the belt's buckle, the alignment search, the tube fit and
@@ -62,6 +67,10 @@ LOOP_HOLE = 0.5
 RAY_DIRECTIONS = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
 RAY_HIT_LIMIT = 64
 RAY_NUDGE = 1e-5
+# How close an island has to sit to the strap to count as welded to that leather.
+ATTACH_RADIUS = 0.02
+ISLAND_GROUP = "ring_island"
+STRAP_GROUP = "ring_strap"
 
 
 class RingError(RuntimeError):
@@ -362,13 +371,18 @@ def transform(objects: list, centre_xz: np.ndarray, centre_y: float, scale: tupl
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
 
-def seat(obj, targets: list, offset: float) -> dict:
+def seat(obj, targets: list, offset: float, limit_group: str | None = None,
+         scope: np.ndarray | None = None) -> dict:
     """One Shrinkwrap outward per layer, then a Corrective Smooth on what moved.
 
     One shrinkwrap against body and tunic welded into a single mesh does not do it:
     the mode's inside test reads the nearest surface's normal, and for a vertex
     between the two shells the nearest surface is the skin, whose normal says the
     vertex is already out. A modifier per layer asks each shell its own question.
+
+    `limit_group` narrows both modifiers to one island. A shrinkwrap that reshapes a
+    buckle to the body's cross section is the one thing a fitted belt must not do,
+    and the body has an opinion about the strap alone; the hardware rides it.
     """
     before = np.array([tuple(vertex.co) for vertex in obj.data.vertices])
     for at, target in enumerate(targets):
@@ -377,22 +391,27 @@ def seat(obj, targets: list, offset: float) -> dict:
         shrink.wrap_mode = "OUTSIDE"
         shrink.offset = offset
         shrink.target = target
+        if limit_group:
+            shrink.vertex_group = limit_group
     depsgraph = bpy.context.evaluated_depsgraph_get()
     evaluated = obj.evaluated_get(depsgraph)
     mesh = evaluated.to_mesh()
     after = np.array([tuple(vertex.co) for vertex in mesh.vertices])
     evaluated.to_mesh_clear()
     moves = np.linalg.norm(after - before, axis=1)
-    moved = np.flatnonzero(moves > MOVE_EPSILON)
-    fraction = float(len(moved) / max(1, len(moves)))
+    watched = np.arange(len(moves)) if scope is None else np.asarray(scope, dtype=int)
+    moved = watched[moves[watched] > MOVE_EPSILON]
+    fraction = float(len(moved) / max(1, len(watched)))
     report = {
         "offsetMetres": offset,
         "targets": [target.name for target in targets],
-        "vertices": int(len(moves)),
+        "limitGroup": limit_group,
+        "pieceVertices": int(len(moves)),
+        "vertices": int(len(watched)),
         "movedVertices": int(len(moved)),
         "movedFraction": round(fraction, 6),
         "meanMoveMetres": round(float(moves[moved].mean()) if len(moved) else 0.0, 6),
-        "maxMoveMetres": round(float(moves.max()) if len(moves) else 0.0, 6),
+        "maxMoveMetres": round(float(moves[watched].max()) if len(watched) else 0.0, 6),
         "smoothed": fraction >= SMOOTH_FLOOR,
     }
     if report["smoothed"]:
@@ -413,6 +432,99 @@ def seat(obj, targets: list, offset: float) -> dict:
     if report["smoothed"] and obj.vertex_groups.get("ring_seat_moved"):
         obj.vertex_groups.remove(obj.vertex_groups["ring_seat_moved"])
     return report
+
+
+def tag_islands(islands: list) -> list[str]:
+    """Name every island on itself, because joining is what forgets which is which."""
+    names = []
+    for at, obj in enumerate(islands):
+        name = f"{ISLAND_GROUP}_{at:03d}"
+        obj.vertex_groups.new(name=name).add(range(len(obj.data.vertices)), 1.0, "REPLACE")
+        names.append(name)
+    return names
+
+
+def island_members(obj, names: list[str]) -> list[list[int]]:
+    """The joined mesh's vertices back in island order, and the tags then removed."""
+    slot_of = {obj.vertex_groups[name].index: at for at, name in enumerate(names)}
+    members: list[list[int]] = [[] for _ in names]
+    for vertex in obj.data.vertices:
+        for element in vertex.groups:
+            at = slot_of.get(element.group)
+            if at is not None and element.weight > 0.5:
+                members[at].append(vertex.index)
+                break
+    for name in names:
+        obj.vertex_groups.remove(obj.vertex_groups[name])
+    return members
+
+
+def rigid_transport(obj, members: list[list[int]], strap_at: int, before: np.ndarray,
+                    displacement: np.ndarray, radius: float) -> list[dict]:
+    """Every island but the strap rides it: translated by what moved under it, never
+    reshaped.
+
+    A buckle, a pouch and a hanging sash are welded to the leather, so the strap's
+    own move is the whole of the answer for them, and the mean over the strap
+    vertices they touch is that move. An island near enough nothing (a loose rivet,
+    the fringe of the sash) follows the single strap vertex it is nearest, which is
+    the same rule with the neighbourhood shrunk to one.
+    """
+    strap = members[strap_at]
+    tree = KDTree(len(strap))
+    for at, index in enumerate(strap):
+        tree.insert(Vector(tuple(before[index])), at)
+    tree.balance()
+    moved = []
+    for island_at, indices in enumerate(members):
+        if island_at == strap_at or not indices:
+            continue
+        touching: set[int] = set()
+        nearest_distance, nearest_slot = float("inf"), 0
+        for index in indices:
+            point = Vector(tuple(before[index]))
+            for _, slot, _ in tree.find_range(point, radius):
+                touching.add(slot)
+            found = tree.find(point)
+            if found[2] is not None and found[2] < nearest_distance:
+                nearest_distance, nearest_slot = float(found[2]), found[1]
+        borrowed = not touching
+        if borrowed:
+            touching = {nearest_slot}
+        attached = np.array([strap[slot] for slot in sorted(touching)], dtype=int)
+        shift = displacement[attached].mean(axis=0)
+        for index in indices:
+            obj.data.vertices[index].co = Vector(tuple(before[index] + shift))
+        moved.append({
+            "island": island_at,
+            "attachmentVertices": int(len(attached)),
+            "fromNearestStrapVertex": borrowed,
+            "nearestStrapMetres": round(nearest_distance, 6),
+            "translationMetres": round(float(np.linalg.norm(shift)), 6),
+            "translation": [round(float(value), 6) for value in runtime_from_blender(shift)],
+        })
+    obj.data.update()
+    return moved
+
+
+def island_table(profiles: list[dict], members: list[list[int]], strap_at: int,
+                 transported: list[dict], depths: np.ndarray,
+                 bare_depths: np.ndarray) -> list[dict]:
+    """Every island on one line: what it is, what carried it, and where it ended up."""
+    carried = {entry["island"]: entry for entry in transported}
+    rows = []
+    for at, profile in enumerate(profiles):
+        indices = np.array(members[at], dtype=int)
+        row = {**profile, "island": at, "isStrap": at == strap_at,
+               "joinedVertices": int(len(indices)),
+               "insideDressedDeeperThan2mm": int((depths[indices] > 0.002).sum()),
+               "insideBareDeeperThan2mm": int((bare_depths[indices] > 0.002).sum())}
+        move = carried.get(at)
+        if move:
+            row.update({key: value for key, value in move.items() if key != "island"})
+        rows.append(row)
+    rows.sort(key=lambda entry: -entry["triangles"])
+    return rows
 
 
 def measure_strap(points: np.ndarray, centre: np.ndarray, bins: int, dressed: Solid,
@@ -456,6 +568,27 @@ def island_azimuths(objects: list, strap, centre: np.ndarray) -> dict:
             back += count
     listed.sort(key=lambda entry: -entry["triangles"])
     return {"forwardTriangles": front, "backwardTriangles": back, "islands": listed[:12]}
+
+
+def island_profiles(islands: list, centre: np.ndarray) -> list[dict]:
+    """One row per island, in island order, so a reader can tell them apart.
+
+    Triangles alone do not say which island is the buckle and which is the sash, so
+    the row carries where it sits around the ring and how far down it hangs.
+    """
+    rows = []
+    for obj in islands:
+        points = points_of(obj)
+        middle = np.array([points[:, 0].mean(), points[:, 2].mean()])
+        rows.append({
+            "triangles": triangles_of(obj),
+            "vertices": int(len(points)),
+            "degrees": round(math.degrees(math.atan2(middle[1] - centre[1],
+                                                     middle[0] - centre[0])), 2),
+            "yMetres": [round(float(points[:, 1].min()), 6), round(float(points[:, 1].max()), 6)],
+            "heightMetres": round(float(points[:, 1].max() - points[:, 1].min()), 6),
+        })
+    return rows
 
 
 def run(args) -> dict:
@@ -538,21 +671,34 @@ def run(args) -> dict:
     placed_strap = points_of(strap)
     placed_centre = np.array([destination[0], destination[2]])
     hardware = island_azimuths(islands, strap, placed_centre)
+    profiles = island_profiles(islands, placed_centre)
+    strap_at = islands.index(strap)
     before_seat = measure_strap(placed_strap, placed_centre, args.bins, dressed, bare)
 
-    # Joining renumbers vertices and the contact measurement has to keep looking at
-    # the face that touches, so the strap says who it is before the join does.
-    strap.vertex_groups.new(name="ring_strap").add(
-        range(len(strap.data.vertices)), 1.0, "REPLACE")
+    # Joining renumbers vertices and both the contact measurement and the rigid
+    # transport have to keep looking at the same island, so every island says who it
+    # is before the join does.
+    tags = tag_islands(islands)
     fitted_object = piece.join(islands, args.piece)
-    marker = fitted_object.vertex_groups["ring_strap"].index
-    strap_vertices = [vertex.index for vertex in fitted_object.data.vertices
-                      if any(element.group == marker and element.weight > 0.5
-                             for element in vertex.groups)]
-    fitted_object.vertex_groups.remove(fitted_object.vertex_groups["ring_strap"])
+    members = island_members(fitted_object, tags)
+    strap_vertices = members[strap_at]
+    if not strap_vertices:
+        raise RingError("strap gate: the join lost the strap island")
+    fitted_object.vertex_groups.new(name=STRAP_GROUP).add(strap_vertices, 1.0, "REPLACE")
+
+    before_seat_points = np.array([tuple(vertex.co) for vertex in fitted_object.data.vertices])
+    limited = args.seat == "strap"
     shrinkwrap = seat(fitted_object, seat_targets if args.seat == "layers" else [dressed_target],
-                      SHRINKWRAP_OFFSET)
+                      SHRINKWRAP_OFFSET, STRAP_GROUP if limited else None,
+                      np.array(strap_vertices, dtype=int) if limited else None)
     shrinkwrap["mode"] = args.seat
+    fitted_object.vertex_groups.remove(fitted_object.vertex_groups[STRAP_GROUP])
+
+    transported: list[dict] = []
+    if limited:
+        after_seat_points = np.array([tuple(vertex.co) for vertex in fitted_object.data.vertices])
+        transported = rigid_transport(fitted_object, members, strap_at, before_seat_points,
+                                      after_seat_points - before_seat_points, ATTACH_RADIUS)
 
     after_points = points_of(fitted_object)
     strap_after = after_points[strap_vertices]
@@ -585,6 +731,7 @@ def run(args) -> dict:
         "maxPenetrationMetres": round(float(bare_depths.max(initial=0.0)), 9),
         "deeperThan2mm": int((bare_depths > 0.002).sum()),
     }
+    islands_table = island_table(profiles, members, strap_at, transported, depths, bare_depths)
 
     measured = gate.measure(glb_path, str(loaded["path"]), contract, source_had, outside)
     gates_table = gate.gates(measured, slot, None, [])
@@ -645,6 +792,13 @@ def run(args) -> dict:
                       "clearanceMetres": RING_CLEARANCE,
                       "translation": manifest["alignment"]["translation"]},
         "hardware": hardware,
+        "islandTable": islands_table,
+        "transport": {"mode": args.seat, "attachRadiusMetres": ATTACH_RADIUS,
+                      "strapIsland": strap_at, "islandsMoved": len(transported),
+                      "fromNearestStrapVertex": sum(1 for entry in transported
+                                                    if entry["fromNearestStrapVertex"]),
+                      "maxTranslationMetres": round(max((entry["translationMetres"]
+                                                         for entry in transported), default=0.0), 6)},
         "strapBeforeSeat": before_seat,
         "strapAfterSeat": after_seat,
         "strapExtents": extents(strap_after),
@@ -689,7 +843,7 @@ def parse(argv: list[str]):
     parser.add_argument("--yaw", type=int, choices=(0, 180), default=0)
     parser.add_argument("--bins", type=int, default=AZIMUTH_BINS)
     parser.add_argument("--passes", type=int, default=3)
-    parser.add_argument("--seat", choices=("merged", "layers"), default="merged")
+    parser.add_argument("--seat", choices=("strap", "merged", "layers"), default="strap")
     parser.add_argument("--outdir", required=True)
     return parser.parse_args(argv)
 
