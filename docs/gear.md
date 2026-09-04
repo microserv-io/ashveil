@@ -231,9 +231,12 @@ npm run art:gear -- --input <dressed.glb> --slot <slot> --piece <name> \
   cross section it sits on, per azimuth and per height, so the leather follows the
   waist around and up and down while keeping its thickness; each other island
   follows the rigid transform, rotation included, that best maps the strap patch it
-  attaches to from before to after, so a buckle or a pouch is never deformed and
-  never left floating off a strap that curved away under it. A translation alone
-  was tried first and left the pouches standing off the conformed strap from above. Hardware that still sits inside the target
+  attaches to from before to after, so a buckle or a pouch is never deformed.
+  Hardware that hangs below the strap and sinks into the hip is swung outward on a
+  hinge through its attachment, at most 25 degrees, never translated: a radial
+  push of the whole cluster was what left the pouches floating off the strap from
+  above, because it read hardware welded to a strap that sits on the tunic as
+  buried. Vertices inside the strap's own band are never clearance candidates. Hardware that still sits inside the target
   after that (a pouch hanging into a lower layer) is cleared as a cluster: islands
   within 5 mm of each other move together, radially out from the ring centre by
   the cluster's worst depth plus 3 mm, at most three passes, and the pass count is
