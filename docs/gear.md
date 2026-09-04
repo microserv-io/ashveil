@@ -310,8 +310,13 @@ wobbling; thirty cloaked actors at the four-step cap cost 0.22 ms a frame.
   `THREE.Skeleton` plus its chain bones, sharing geometry, cloning only the material.
 - **Hide.** The manifest carries the resolved region rules; the runtime resolves them
   against the worn body's `<body>.masks.json` and drops body triangles whose three
-  corners are hidden. `hidesSlots` hides whole lower pieces. No burial or coverage
-  computation at runtime; `SLOT_LAYERS` is generated from the contract.
+  corners are hidden. The same rules hide lower pieces: at fit time every piece
+  vertex is tagged with the body region nearest it, so a belt that hides the waist
+  band also drops the tunic's triangles under its strap, and the two can never
+  clip there whatever the pose. `hidesSlots` hides whole lower pieces. A piece worn
+  over another takes the same weight mode as the piece beneath it in the band they
+  share, so they move together. No burial or coverage computation at runtime;
+  `SLOT_LAYERS` is generated from the contract.
 - **Verify.** The gate fails closed on: the registration gate above; joints and
   inverse binds match the body; influences at most four, summing to one, on allowed
   bones; the source's triangle and island counts survive into the default GLB; UVs
