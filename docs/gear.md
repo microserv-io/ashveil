@@ -216,11 +216,20 @@ npm run art:gear -- --input <dressed.glb> --slot <slot> --piece <name> \
   of its 47 islands and 9,988 triangles kept; the old fitter had scaled one axis and
   let the other follow, kept 10 islands, and left the strap 35% deeper than the
   torso.
-- `--prefitted` skips register and extract for a piece already in body space. It
-  still regenerates the manifest (authored regions instead of vertex indices, no
-  `under`), reruns every gate and produces the review sheet, and the piece goes back
-  to Rocco for a side-by-side approval. This is how the five accepted Warden pieces
-  (boots, trousers, gloves, tunic, hood) enter the new path without regeneration.
+- **Full-detail refit** (`--full-detail`) is how the accepted Warden pieces (boots,
+  trousers, gloves, tunic, hood) enter the new path without regeneration and get
+  their hardware back. The old fitter's placement, which Rocco accepted, is kept as
+  a frozen tool for these pieces only: its similarity steps apply to every island,
+  its non-rigid stages run on the shell islands alone (the ones it used to keep),
+  nothing is decimated, and every hardware island rides rigidly by the residual
+  displacement of the shell vertices it attaches to, clustered at 5 mm. The spike
+  restored all six pieces at the raw triangle count with 0.0 mm hardware distortion
+  and shells within a millimetre of the accepted fits, the tunic's chest star
+  included. The tunic and hood need `--weld-under`, because the fitter at PR 28's
+  head cannot reproduce them otherwise (a later commit split the fit target and the
+  committed pieces predate it). The refit regenerates the manifest with authored
+  regions, reruns every gate, and goes back to Rocco side by side with the shipped
+  fit.
 
 ### 4. Seat and skin
 
@@ -360,20 +369,22 @@ parametric outfits do with several source sizes.
 | `--covers`, `--span`, `--yaw`, `--thumb`, `--under`, the 2% debris rule, computed coverage, the rim rule | delete |
 | byte-for-byte fixture tests of fitted output, the one-sided standoff gate | delete |
 
-The five accepted Warden pieces stay as pre-fitted inputs and the belt keeps its
-Tripo source through ring placement, so the first two slices spend no Tripo credits.
-Pauldrons and cloak are regenerated on the layer-1 mannequin: the pauldrons prove
-registration, extraction, a pair and a drape per side; the cloak proves three panels
-and collision.
+The five accepted Warden pieces are refit at full detail from their raw sources and
+the belt keeps its Tripo source through ring placement, so the first slices spend no
+Tripo credits. Pauldrons and cloak are regenerated on the layer-1 mannequin: the
+pauldrons prove registration, extraction, a pair and a drape per side (the shipped
+pauldrons are torn shards and full detail only adds studs to a broken shell); the
+cloak proves three panels and collision.
 
 ## Slices, one PR each
 
 1. **Salvage.** Split PR 28 along the table above: merge the kept parts, close the
-   rest. The five pieces go through `--prefitted` and back to Rocco.
-2. **Belt on the body.** Ring placement from the existing Tripo source, seat, skin,
-   the contact-ring gate, the review sheet, with every island kept. Done when the
-   strap sits on the waist over the tunic with its buckle and pouches and Rocco
-   approves the sheet. No Tripo spend.
+   rest. Lift the ring rule, the full-detail refit, the under-target fix and the
+   spring-bone adapter from the spike branches. The five pieces ship at full detail
+   and the belt by ring placement, both already approved on the review page.
+2. **Belt on the body.** Proven by the spike: ring placement from the existing
+   Tripo source, rigid hardware, cluster clearance, every island kept. What remains
+   is the contact-ring gate and the review sheet in the shipped path.
 3. **Spring bones.** The panel chain builder, the manifest settings, the runtime
    adapter with the contractual update order, the belt's sash as the first chain.
    Done when the sash swings at a run and settles at idle on the review page.
