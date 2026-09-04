@@ -31,6 +31,13 @@ green gates, and green gates said nothing about a floating belt. That is the les
 **measurements are advisories that make review faster; Rocco's eye on the review
 page is the acceptance test, and no fitted asset is done because a script says so.**
 
+**A trap the spikes hit.** Blender's glTF importer leaves a stray 1 m `Icosphere`
+behind on every skinned import, in no file and no scene node. The old fitter's
+under-target code welded it into the surface it fitted against, so every piece
+fitted `--under` another was seated and measured against a sphere centred on the
+feet. Filter imported meshes to the ones the file's armature skins, as the body
+loader always did.
+
 ## What FF14 and WoW do about races
 
 Neither game refits gear per race with geometry, and neither authors gear per race.
@@ -200,8 +207,12 @@ npm run art:gear -- --input <dressed.glb> --slot <slot> --piece <name> \
   a vertical placement, the target ellipse centred the same way, and every other
   island moves rigidly with the strap. Then only the strap is seated; each other
   island follows the mean displacement of the strap vertices it attaches to, so a
-  buckle or a pouch is never deformed. The contact-ring gate reads the strap's inner
-  face. The Warden belt goes on this way from its existing Tripo source, every one
+  buckle or a pouch is never deformed. Hardware that still sits inside the target
+  after that (a pouch hanging into a lower layer) is cleared as a cluster: islands
+  within 5 mm of each other move together, radially out from the ring centre by
+  the cluster's worst depth plus 3 mm, at most three passes, and the pass count is
+  reported because the rule has no convergence guard of its own. The contact-ring
+  gate reads the strap's inner face. The Warden belt goes on this way from its existing Tripo source, every one
   of its 47 islands and 9,988 triangles kept; the old fitter had scaled one axis and
   let the other follow, kept 10 islands, and left the strap 35% deeper than the
   torso.
