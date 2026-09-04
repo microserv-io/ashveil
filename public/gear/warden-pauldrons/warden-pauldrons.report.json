@@ -19,11 +19,11 @@
     "vertices": 5404
   },
   "authored": {
-    "flags": "--orient 0.3:-3.67:10.66 --offset 0.0157:0.0244:-0.0139 --orient-right 7.68:-14.35:5.19 --offset-right 0.0103:0.0156:-0.0211",
+    "flags": "--orient 0:1.72:16.05 --offset 0.0157:0.0244:-0.0139",
     "orientDegrees": [
-      0.3,
-      -3.67,
-      10.66
+      0.0,
+      1.72,
+      16.05
     ],
     "offsetMetres": [
       0.0157,
@@ -31,29 +31,29 @@
       -0.0139
     ],
     "orientRightDegrees": [
-      7.68,
-      -14.35,
-      5.19
+      0.0,
+      1.72,
+      16.05
     ],
     "offsetRightMetres": [
-      0.0103,
-      0.0156,
-      -0.0211
+      0.0157,
+      0.0244,
+      -0.0139
     ],
     "perSide": {
       "L": {
-        "flags": "--orient 0.3:-3.67:10.66 --offset 0.0157:0.0244:-0.0139",
-        "yawDegrees": 0.3,
-        "pitchDegrees": -3.67,
-        "rollDegrees": 10.66,
+        "flags": "--orient 0:1.72:16.05 --offset 0.0157:0.0244:-0.0139",
+        "yawDegrees": 0.0,
+        "pitchDegrees": 1.72,
+        "rollDegrees": 16.05,
         "offsetMetres": [
           0.0157,
           0.0244,
           -0.0139
         ],
-        "appliedYawDegrees": 0.3,
-        "appliedPitchDegrees": -3.67,
-        "appliedRollDegrees": 10.66,
+        "appliedYawDegrees": 0.0,
+        "appliedPitchDegrees": 1.72,
+        "appliedRollDegrees": 16.05,
         "appliedOffsetMetres": [
           0.0157,
           0.0244,
@@ -68,22 +68,22 @@
         "mirrored": false
       },
       "R": {
-        "flags": "--orient-right 7.68:-14.35:5.19 --offset-right 0.0103:0.0156:-0.0211",
-        "yawDegrees": 7.68,
-        "pitchDegrees": -14.35,
-        "rollDegrees": 5.19,
+        "flags": "--orient-right 0:1.72:16.05 --offset-right 0.0157:0.0244:-0.0139",
+        "yawDegrees": 0.0,
+        "pitchDegrees": 1.72,
+        "rollDegrees": 16.05,
         "offsetMetres": [
-          0.0103,
-          0.0156,
-          -0.0211
+          0.0157,
+          0.0244,
+          -0.0139
         ],
-        "appliedYawDegrees": -7.68,
-        "appliedPitchDegrees": -14.35,
-        "appliedRollDegrees": -5.19,
+        "appliedYawDegrees": -0.0,
+        "appliedPitchDegrees": 1.72,
+        "appliedRollDegrees": -16.05,
         "appliedOffsetMetres": [
-          -0.0103,
-          0.0156,
-          -0.0211
+          -0.0157,
+          0.0244,
+          -0.0139
         ],
         "order": "yaw about up, then pitch about across, then roll about forward",
         "pivot": [
@@ -116,45 +116,45 @@
       "R": "y0p0"
     },
     "bestScorePerSide": {
-      "L": 12.3399,
-      "R": 14.3068
+      "L": 25.8211,
+      "R": 34.9797
     },
     "decidedBy": "both sides",
     "bestPairSeed": "y0p0",
     "pairScores": {
-      "y0p0": 26.6467
+      "y0p0": 60.8008
     },
     "table": {
       "L": [
         {
           "label": "y0p0",
           "iterations": 0,
-          "icpDegrees": 11.2854,
+          "icpDegrees": 16.1413,
           "icpBounded": false,
-          "pushMetres": 0.008612,
-          "residualMeanMillimetres": 21.1634,
-          "residualP95Millimetres": 33.9767,
-          "fixedCapDeeperThan2mmBare": 33,
-          "fixedCapMaxDepthBareMetres": 0.030674,
-          "fixedCapInsidePercent": 4.2362,
-          "coveragePercent": 26.1194,
-          "score": 12.3399
+          "pushMetres": 0.013921,
+          "residualMeanMillimetres": 29.8624,
+          "residualP95Millimetres": 44.3758,
+          "fixedCapDeeperThan2mmBare": 47,
+          "fixedCapMaxDepthBareMetres": 0.037899,
+          "fixedCapInsidePercent": 6.0334,
+          "coveragePercent": 20.1493,
+          "score": 25.8211
         }
       ],
       "R": [
         {
           "label": "y0p0",
           "iterations": 0,
-          "icpDegrees": 17.359,
+          "icpDegrees": 16.1413,
           "icpBounded": false,
-          "pushMetres": 0.007878,
-          "residualMeanMillimetres": 16.6347,
-          "residualP95Millimetres": 27.7338,
-          "fixedCapDeeperThan2mmBare": 27,
-          "fixedCapMaxDepthBareMetres": 0.023527,
-          "fixedCapInsidePercent": 3.8737,
-          "coveragePercent": 12.4031,
-          "score": 14.3068
+          "pushMetres": 0.005557,
+          "residualMeanMillimetres": 29.0996,
+          "residualP95Millimetres": 44.4781,
+          "fixedCapDeeperThan2mmBare": 68,
+          "fixedCapMaxDepthBareMetres": 0.054929,
+          "fixedCapInsidePercent": 9.7561,
+          "coveragePercent": 7.7519,
+          "score": 34.9797
         }
       ]
     }
@@ -238,18 +238,18 @@
       "rule": "crest anchor and the authored orientation",
       "stage": "push",
       "authored": {
-        "flags": "--orient 0.3:-3.67:10.66 --offset 0.0157:0.0244:-0.0139",
-        "yawDegrees": 0.3,
-        "pitchDegrees": -3.67,
-        "rollDegrees": 10.66,
+        "flags": "--orient 0:1.72:16.05 --offset 0.0157:0.0244:-0.0139",
+        "yawDegrees": 0.0,
+        "pitchDegrees": 1.72,
+        "rollDegrees": 16.05,
         "offsetMetres": [
           0.0157,
           0.0244,
           -0.0139
         ],
-        "appliedYawDegrees": 0.3,
-        "appliedPitchDegrees": -3.67,
-        "appliedRollDegrees": 10.66,
+        "appliedYawDegrees": 0.0,
+        "appliedPitchDegrees": 1.72,
+        "appliedRollDegrees": 16.05,
         "appliedOffsetMetres": [
           0.0157,
           0.0244,
@@ -294,21 +294,21 @@
           1.0
         ]
       ],
-      "seedScore": 12.3399,
+      "seedScore": 25.8211,
       "seedTable": [
         {
           "label": "y0p0",
           "iterations": 0,
-          "icpDegrees": 11.2854,
+          "icpDegrees": 16.1413,
           "icpBounded": false,
-          "pushMetres": 0.008612,
-          "residualMeanMillimetres": 21.1634,
-          "residualP95Millimetres": 33.9767,
-          "fixedCapDeeperThan2mmBare": 33,
-          "fixedCapMaxDepthBareMetres": 0.030674,
-          "fixedCapInsidePercent": 4.2362,
-          "coveragePercent": 26.1194,
-          "score": 12.3399
+          "pushMetres": 0.013921,
+          "residualMeanMillimetres": 29.8624,
+          "residualP95Millimetres": 44.3758,
+          "fixedCapDeeperThan2mmBare": 47,
+          "fixedCapMaxDepthBareMetres": 0.037899,
+          "fixedCapInsidePercent": 6.0334,
+          "coveragePercent": 20.1493,
+          "score": 25.8211
         }
       ],
       "crestSource": [
@@ -342,90 +342,100 @@
       "icpMaxDegrees": 45.0,
       "icpTrace": [],
       "icpRotationAxis": [
-        -0.321788,
-        0.056749,
-        0.945109
+        0.105861,
+        -0.014925,
+        0.994269
       ],
-      "icpRotationDegrees": 11.2854,
+      "icpRotationDegrees": 16.1413,
       "rotationAxis": [
-        -0.321788,
-        0.056749,
-        0.945109
+        0.105861,
+        -0.014925,
+        0.994269
       ],
-      "rotationDegrees": 11.2854,
+      "rotationDegrees": 16.1413,
       "rotationMatrix": [
         [
-          0.982667,
-          -0.185307,
-          0.005225
+          0.961021,
+          -0.276476,
+          0.0
         ],
         [
-          0.184601,
-          0.980727,
-          0.06401
+          0.276352,
+          0.960588,
+          -0.030015
         ],
         [
-          -0.016986,
-          -0.061936,
-          0.997936
+          0.008298,
+          0.028845,
+          0.999549
         ]
       ],
-      "residualMeanMillimetres": 21.1634,
-      "residualP95Millimetres": 33.9767,
-      "pushPasses": 1,
+      "residualMeanMillimetres": 29.8624,
+      "residualP95Millimetres": 44.3758,
+      "pushPasses": 2,
       "pushSteps": [
         {
-          "pushMetres": 0.008612,
+          "pushMetres": 0.00626,
           "alongNormal": [
-            0.27096,
-            0.609555,
-            0.744999
+            0.40746,
+            0.817018,
+            0.407993
           ],
-          "depthBeforeMetres": 0.005612,
+          "depthBeforeMetres": 0.00326,
+          "depthAfterMetres": 0.004661
+        },
+        {
+          "pushMetres": 0.007661,
+          "alongNormal": [
+            0.40746,
+            0.817018,
+            0.407993
+          ],
+          "depthBeforeMetres": 0.004661,
           "depthAfterMetres": 0.0
         }
       ],
-      "pushMetres": 0.008612,
+      "pushMetres": 0.013921,
       "pushBounded": false,
       "translation": [
-        0.070761,
-        1.309775,
-        -0.020956
+        0.098878,
+        1.304733,
+        -0.047008
       ],
       "crestPlaced": [
-        0.167496,
-        1.569149,
-        -0.067929
+        0.170835,
+        1.575273,
+        -0.068665
       ],
       "orientation": {
         "openingApex": [
-          0.16306,
-          1.55961,
-          -0.059903
+          0.167319,
+          1.564649,
+          -0.061606
         ],
         "opening": [
-          0.828019,
-          -0.49013,
-          0.272319
+          0.870536,
+          -0.4341,
+          0.231785
         ],
-        "openingDownTheArm": 0.7573,
-        "openingForward": 0.2723,
-        "openingOutward": 0.828,
-        "openingUp": -0.4901,
-        "openingFaces": "outward 0.83, down the arm 0.76",
+        "openingDownTheArm": 0.7225,
+        "openingForward": 0.2318,
+        "openingOutward": 0.8705,
+        "openingUp": -0.4341,
+        "openingFaces": "outward 0.87, down the arm 0.72",
         "drapeVertices": 1096,
         "drapeFromCapCentimetres": [
-          3.15,
-          -8.59,
-          0.56
+          3.94,
+          -8.27,
+          -0.22
         ],
-        "drapeBehindCentimetres": -0.56,
-        "drapeOutwardCentimetres": 3.15,
-        "drapeBelowCentimetres": 8.59
+        "drapeBehindCentimetres": 0.22,
+        "drapeOutwardCentimetres": 3.94,
+        "drapeBelowCentimetres": 8.27
       },
-      "fixedCapDepthAfterMetres": 0.006472,
-      "fixedCapDeeperThan2mm": 7,
-      "fixedCapDeeperThan2mmBare": 33,
+      "fixedCapDepthAfterMetres": 0.027529,
+      "fixedCapDeeperThan2mm": 24,
+      "fixedCapDeeperThan2mmBare": 47,
       "seedChoice": {
         "chosen": "y0p0",
         "sidesAgreed": true,
@@ -434,13 +444,13 @@
           "R": "y0p0"
         },
         "bestScorePerSide": {
-          "L": 12.3399,
-          "R": 14.3068
+          "L": 25.8211,
+          "R": 34.9797
         },
         "decidedBy": "both sides",
         "bestPairSeed": "y0p0",
         "pairScores": {
-          "y0p0": 26.6467
+          "y0p0": 60.8008
         }
       },
       "islands": [
@@ -455,9 +465,9 @@
             -0.011289
           ],
           "centroid": [
-            0.214863,
-            1.469584,
-            -0.037591
+            0.227351,
+            1.478155,
+            -0.047421
           ]
         },
         {
@@ -471,9 +481,9 @@
             0.092986
           ],
           "centroid": [
-            0.246081,
-            1.375912,
-            0.020256
+            0.267258,
+            1.382781,
+            0.001633
           ]
         },
         {
@@ -487,9 +497,9 @@
             0.016805
           ],
           "centroid": [
-            0.210785,
-            1.414843,
-            -0.020048
+            0.228437,
+            1.421866,
+            -0.035124
           ]
         },
         {
@@ -503,9 +513,9 @@
             0.114979
           ],
           "centroid": [
-            0.172226,
-            1.430859,
-            0.028086
+            0.188584,
+            1.429607,
+            0.013989
           ]
         },
         {
@@ -519,9 +529,9 @@
             0.05779
           ],
           "centroid": [
-            0.230015,
-            1.392931,
-            0.001696
+            0.249653,
+            1.399897,
+            -0.015377
           ]
         },
         {
@@ -535,9 +545,9 @@
             0.186358
           ],
           "centroid": [
-            0.224764,
-            1.396522,
-            0.06561
+            0.244139,
+            1.396948,
+            0.048548
           ]
         },
         {
@@ -551,9 +561,9 @@
             0.16915
           ],
           "centroid": [
-            0.212573,
-            1.429768,
-            0.05496
+            0.228877,
+            1.429765,
+            0.040965
           ]
         },
         {
@@ -567,9 +577,9 @@
             0.1398
           ],
           "centroid": [
-            0.180687,
-            1.460408,
-            0.038525
+            0.194247,
+            1.458703,
+            0.027221
           ]
         },
         {
@@ -583,9 +593,9 @@
             0.045456
           ],
           "centroid": [
-            0.289547,
-            1.391686,
-            -0.004687
+            0.309035,
+            1.404824,
+            -0.02137
           ]
         },
         {
@@ -599,9 +609,9 @@
             0.015777
           ],
           "centroid": [
-            0.27984,
-            1.429824,
-            -0.021883
+            0.295782,
+            1.443337,
+            -0.034991
           ]
         },
         {
@@ -615,9 +625,9 @@
             -0.024777
           ],
           "centroid": [
-            0.26976,
-            1.464629,
-            -0.044287
+            0.282465,
+            1.479002,
+            -0.054111
           ]
         },
         {
@@ -631,27 +641,27 @@
             0.102901
           ],
           "centroid": [
-            0.166987,
-            1.450521,
-            0.020829
+            0.181519,
+            1.449289,
+            0.008567
           ]
         }
       ],
       "capClearance": {
         "vertices": 1875,
-        "maxDepthDressedMetres": 0.038959,
-        "deeperThan2mmDressed": 35,
-        "maxDepthBareMetres": 0.063258,
-        "deeperThan2mmBare": 265,
-        "anchorToTargetMillimetres": 49.426,
-        "anchorToBareMillimetres": 60.688
+        "maxDepthDressedMetres": 0.060859,
+        "deeperThan2mmDressed": 38,
+        "maxDepthBareMetres": 0.067255,
+        "deeperThan2mmBare": 272,
+        "anchorToTargetMillimetres": 56.34,
+        "anchorToBareMillimetres": 67.695
       },
       "coverage": {
         "regionVertices": 134,
-        "coveredVertices": 35,
-        "coveredFraction": 0.261194,
+        "coveredVertices": 27,
+        "coveredFraction": 0.201493,
         "reachMetres": 0.06,
-        "medianGapMetres": 0.033884
+        "medianGapMetres": 0.048405
       }
     },
     "R": {
@@ -732,22 +742,22 @@
       "rule": "crest anchor and the authored orientation",
       "stage": "push",
       "authored": {
-        "flags": "--orient-right 7.68:-14.35:5.19 --offset-right 0.0103:0.0156:-0.0211",
-        "yawDegrees": 7.68,
-        "pitchDegrees": -14.35,
-        "rollDegrees": 5.19,
+        "flags": "--orient-right 0:1.72:16.05 --offset-right 0.0157:0.0244:-0.0139",
+        "yawDegrees": 0.0,
+        "pitchDegrees": 1.72,
+        "rollDegrees": 16.05,
         "offsetMetres": [
-          0.0103,
-          0.0156,
-          -0.0211
+          0.0157,
+          0.0244,
+          -0.0139
         ],
-        "appliedYawDegrees": -7.68,
-        "appliedPitchDegrees": -14.35,
-        "appliedRollDegrees": -5.19,
+        "appliedYawDegrees": -0.0,
+        "appliedPitchDegrees": 1.72,
+        "appliedRollDegrees": -16.05,
         "appliedOffsetMetres": [
-          -0.0103,
-          0.0156,
-          -0.0211
+          -0.0157,
+          0.0244,
+          -0.0139
         ],
         "order": "yaw about up, then pitch about across, then roll about forward",
         "pivot": [
@@ -788,21 +798,21 @@
           1.0
         ]
       ],
-      "seedScore": 14.3068,
+      "seedScore": 34.9797,
       "seedTable": [
         {
           "label": "y0p0",
           "iterations": 0,
-          "icpDegrees": 17.359,
+          "icpDegrees": 16.1413,
           "icpBounded": false,
-          "pushMetres": 0.007878,
-          "residualMeanMillimetres": 16.6347,
-          "residualP95Millimetres": 27.7338,
-          "fixedCapDeeperThan2mmBare": 27,
-          "fixedCapMaxDepthBareMetres": 0.023527,
-          "fixedCapInsidePercent": 3.8737,
-          "coveragePercent": 12.4031,
-          "score": 14.3068
+          "pushMetres": 0.005557,
+          "residualMeanMillimetres": 29.0996,
+          "residualP95Millimetres": 44.4781,
+          "fixedCapDeeperThan2mmBare": 68,
+          "fixedCapMaxDepthBareMetres": 0.054929,
+          "fixedCapInsidePercent": 9.7561,
+          "coveragePercent": 7.7519,
+          "score": 34.9797
         }
       ],
       "crestSource": [
@@ -836,90 +846,90 @@
       "icpMaxDegrees": 45.0,
       "icpTrace": [],
       "icpRotationAxis": [
-        -0.805023,
-        -0.477249,
-        -0.352379
+        0.105861,
+        0.014925,
+        -0.994269
       ],
-      "icpRotationDegrees": 17.359,
+      "icpRotationDegrees": 16.1413,
       "rotationAxis": [
-        -0.805023,
-        -0.477249,
-        -0.352379
+        0.105861,
+        0.014925,
+        -0.994269
       ],
-      "rotationDegrees": 17.359,
+      "rotationDegrees": 16.1413,
       "rotationMatrix": [
         [
-          0.983971,
-          0.122634,
-          -0.129471
+          0.961021,
+          0.276476,
+          0.0
         ],
         [
-          -0.087636,
-          0.964828,
-          0.247845
+          -0.276352,
+          0.960588,
+          -0.030015
         ],
         [
-          0.155311,
-          -0.232525,
-          0.96011
+          -0.008298,
+          0.028845,
+          0.999549
         ]
       ],
-      "residualMeanMillimetres": 16.6347,
-      "residualP95Millimetres": 27.7338,
+      "residualMeanMillimetres": 29.0996,
+      "residualP95Millimetres": 44.4781,
       "pushPasses": 1,
       "pushSteps": [
         {
-          "pushMetres": 0.007878,
+          "pushMetres": 0.005557,
           "alongNormal": [
-            -0.408461,
-            0.817976,
-            0.405061
+            -0.514218,
+            0.856908,
+            -0.035895
           ],
-          "depthBeforeMetres": 0.004878,
-          "depthAfterMetres": 0.001364
+          "depthBeforeMetres": 0.002557,
+          "depthAfterMetres": 0.0
         }
       ],
-      "pushMetres": 0.007878,
+      "pushMetres": 0.005557,
       "pushBounded": false,
       "translation": [
-        -0.061463,
-        1.327383,
-        0.013686
+        -0.102974,
+        1.303468,
+        -0.065555
       ],
       "crestPlaced": [
-        -0.162981,
-        1.561538,
-        -0.084563
+        -0.168021,
+        1.568657,
+        -0.080753
       ],
       "orientation": {
         "openingApex": [
-          -0.162376,
-          1.554621,
-          -0.080787
+          -0.16837,
+          1.560924,
+          -0.079153
         ],
         "opening": [
-          -0.855442,
-          -0.490981,
-          0.164793
+          -0.913541,
+          -0.383392,
+          0.13584
         ],
-        "openingDownTheArm": 0.7714,
-        "openingForward": 0.1648,
-        "openingOutward": 0.8554,
-        "openingUp": -0.491,
-        "openingFaces": "outward 0.86, down the arm 0.77",
+        "openingDownTheArm": 0.6943,
+        "openingForward": 0.1358,
+        "openingOutward": 0.9135,
+        "openingUp": -0.3834,
+        "openingFaces": "outward 0.91, down the arm 0.69",
         "drapeVertices": 829,
         "drapeFromCapCentimetres": [
-          -1.93,
-          -9.21,
-          0.6
+          -3.52,
+          -8.58,
+          -1.71
         ],
-        "drapeBehindCentimetres": -0.6,
-        "drapeOutwardCentimetres": 1.93,
-        "drapeBelowCentimetres": 9.21
+        "drapeBehindCentimetres": 1.71,
+        "drapeOutwardCentimetres": 3.52,
+        "drapeBelowCentimetres": 8.58
       },
-      "fixedCapDepthAfterMetres": 0.005286,
-      "fixedCapDeeperThan2mm": 8,
-      "fixedCapDeeperThan2mmBare": 27,
+      "fixedCapDepthAfterMetres": 0.031046,
+      "fixedCapDeeperThan2mm": 26,
+      "fixedCapDeeperThan2mmBare": 68,
       "seedChoice": {
         "chosen": "y0p0",
         "sidesAgreed": true,
@@ -928,13 +938,13 @@
           "R": "y0p0"
         },
         "bestScorePerSide": {
-          "L": 12.3399,
-          "R": 14.3068
+          "L": 25.8211,
+          "R": 34.9797
         },
         "decidedBy": "both sides",
         "bestPairSeed": "y0p0",
         "pairScores": {
-          "y0p0": 26.6467
+          "y0p0": 60.8008
         }
       },
       "islands": [
@@ -949,9 +959,9 @@
             -0.031748
           ],
           "centroid": [
-            -0.206324,
-            1.467627,
-            -0.058299
+            -0.225386,
+            1.478804,
+            -0.075896
           ]
         },
         {
@@ -965,9 +975,9 @@
             0.084256
           ],
           "centroid": [
-            -0.222135,
-            1.455056,
-            0.00218
+            -0.238029,
+            1.451471,
+            -0.019693
           ]
         },
         {
@@ -981,9 +991,9 @@
             0.093381
           ],
           "centroid": [
-            -0.242186,
-            1.383047,
-            0.022734
+            -0.269068,
+            1.380472,
+            -0.017339
           ]
         },
         {
@@ -997,9 +1007,9 @@
             0.016814
           ],
           "centroid": [
-            -0.205678,
-            1.416391,
-            -0.020134
+            -0.230863,
+            1.4191,
+            -0.053817
           ]
         },
         {
@@ -1013,9 +1023,9 @@
             0.057826
           ],
           "centroid": [
-            -0.225579,
-            1.397498,
-            0.003048
+            -0.251835,
+            1.397422,
+            -0.034308
           ]
         },
         {
@@ -1029,9 +1039,9 @@
             0.04547
           ],
           "centroid": [
-            -0.282931,
-            1.389754,
-            -0.009011
+            -0.310451,
+            1.40229,
+            -0.040236
           ]
         },
         {
@@ -1045,9 +1055,9 @@
             0.015764
           ],
           "centroid": [
-            -0.274011,
-            1.424295,
-            -0.031926
+            -0.297356,
+            1.440304,
+            -0.053697
           ]
         },
         {
@@ -1061,9 +1071,9 @@
             0.186359
           ],
           "centroid": [
-            -0.228262,
-            1.413189,
-            0.064413
+            -0.246385,
+            1.394522,
+            0.028787
           ]
         },
         {
@@ -1077,9 +1087,9 @@
             0.169189
           ],
           "centroid": [
-            -0.21737,
-            1.444442,
-            0.049028
+            -0.231319,
+            1.426915,
+            0.02132
           ]
         },
         {
@@ -1093,9 +1103,9 @@
             0.139787
           ],
           "centroid": [
-            -0.186349,
-            1.473892,
-            0.030562
+            -0.197127,
+            1.455493,
+            0.007725
           ]
         },
         {
@@ -1109,9 +1119,9 @@
             -0.02479
           ],
           "centroid": [
-            -0.26392,
-            1.454694,
-            -0.059166
+            -0.284237,
+            1.47551,
+            -0.072574
           ]
         },
         {
@@ -1125,27 +1135,27 @@
             0.102867
           ],
           "centroid": [
-            -0.17016,
-            1.462311,
-            0.01684
+            -0.184549,
+            1.446182,
+            -0.010703
           ]
         }
       ],
       "capClearance": {
         "vertices": 1526,
-        "maxDepthDressedMetres": 0.037876,
-        "deeperThan2mmDressed": 44,
-        "maxDepthBareMetres": 0.060869,
+        "maxDepthDressedMetres": 0.06639,
+        "deeperThan2mmDressed": 31,
+        "maxDepthBareMetres": 0.077012,
         "deeperThan2mmBare": 313,
-        "anchorToTargetMillimetres": 41.896,
-        "anchorToBareMillimetres": 53.867
+        "anchorToTargetMillimetres": 49.987,
+        "anchorToBareMillimetres": 61.929
       },
       "coverage": {
         "regionVertices": 129,
-        "coveredVertices": 16,
-        "coveredFraction": 0.124031,
+        "coveredVertices": 10,
+        "coveredFraction": 0.077519,
         "reachMetres": 0.06,
-        "medianGapMetres": 0.011547
+        "medianGapMetres": 0.038875
       }
     }
   },
@@ -1154,9 +1164,9 @@
     "pieces": {
       "warden-tunic": {
         "vertices": 8236,
-        "hidden": 231,
-        "L": 126,
-        "R": 105
+        "hidden": 173,
+        "L": 124,
+        "R": 49
       }
     }
   },
@@ -1218,25 +1228,25 @@
     "band": {
       "warden-pauldrons_L": {
         "vertices": 2701,
-        "bandVertices": 710,
-        "bandFraction": 0.262866,
+        "bandVertices": 652,
+        "bandFraction": 0.241392,
         "ceiling": 0.8,
-        "minPeakWeight": 0.500045,
-        "meanPeakWeight": 0.871344,
-        "bandHeightMetres": 0.185749,
-        "bandMinY": 1.348334,
-        "bandMaxY": 1.534083
+        "minPeakWeight": 0.500137,
+        "meanPeakWeight": 0.876551,
+        "bandHeightMetres": 0.178542,
+        "bandMinY": 1.365957,
+        "bandMaxY": 1.544499
       },
       "warden-pauldrons_R": {
         "vertices": 2703,
-        "bandVertices": 785,
-        "bandFraction": 0.290418,
+        "bandVertices": 680,
+        "bandFraction": 0.251572,
         "ceiling": 0.8,
-        "minPeakWeight": 0.500375,
-        "meanPeakWeight": 0.862073,
-        "bandHeightMetres": 0.177106,
-        "bandMinY": 1.349604,
-        "bandMaxY": 1.52671
+        "minPeakWeight": 0.500101,
+        "meanPeakWeight": 0.870055,
+        "bandHeightMetres": 0.181189,
+        "bandMinY": 1.361253,
+        "bandMaxY": 1.542442
       }
     },
     "stiffness": 3.0
@@ -1248,14 +1258,14 @@
     "joints": 24
   },
   "bindClearance": {
-    "insideVertices": 293,
-    "maxPenetrationMetres": 0.038958512,
-    "deeperThan2mm": 185
+    "insideVertices": 193,
+    "maxPenetrationMetres": 0.066389672,
+    "deeperThan2mm": 138
   },
   "bareBodyClearance": {
-    "insideVertices": 961,
-    "maxPenetrationMetres": 0.063257933,
-    "deeperThan2mm": 888
+    "insideVertices": 1134,
+    "maxPenetrationMetres": 0.07701245,
+    "deeperThan2mm": 1073
   },
   "runtime": {
     "bones": [
@@ -1340,9 +1350,9 @@
       "textures": true
     },
     "bindClearance": {
-      "insideVertices": 293,
-      "maxPenetrationMetres": 0.038958512,
-      "deeperThan2mm": 185
+      "insideVertices": 193,
+      "maxPenetrationMetres": 0.066389672,
+      "deeperThan2mm": 138
     }
   },
   "gates": {
@@ -1351,7 +1361,7 @@
     "at_most_four_influences_per_vertex": true,
     "weights_sum_to_one": true,
     "every_influence_is_an_allowed_bone": true,
-    "triangles_within_budget": false,
+    "triangles_within_budget": true,
     "materials_within_budget": true,
     "uvs_survived_the_pipeline": true,
     "textures_survived_the_pipeline": true,
@@ -1364,10 +1374,9 @@
     "glb": "warden-pauldrons.glb",
     "manifest": "warden-pauldrons.manifest.json",
     "report": "warden-pauldrons.report.json",
-    "sha256": "c0e9142cc4d967e383c27fe833b48266bc0dc1b85a26095a18b3ebd38ae1efd8"
+    "sha256": "dc461eed6812c6e9fc25eee972982d735d48512d154858c04b1c1acf7b938474"
   },
   "gatesFailed": [
-    "piece_sits_off_the_skin_at_bind",
-    "triangles_within_budget"
+    "piece_sits_off_the_skin_at_bind"
   ]
 }
