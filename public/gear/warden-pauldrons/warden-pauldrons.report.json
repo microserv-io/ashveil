@@ -19,7 +19,7 @@
     "vertices": 5404
   },
   "authored": {
-    "flags": "--orient 0:1.72:16.05 --offset 0.0157:0.0244:-0.0139",
+    "flags": "--orient 0:1.72:16.05 --offset 0.0157:0.0444:-0.0139",
     "orientDegrees": [
       0.0,
       1.72,
@@ -27,7 +27,7 @@
     ],
     "offsetMetres": [
       0.0157,
-      0.0244,
+      0.0444,
       -0.0139
     ],
     "orientRightDegrees": [
@@ -37,18 +37,18 @@
     ],
     "offsetRightMetres": [
       0.0157,
-      0.0244,
+      0.0444,
       -0.0139
     ],
     "perSide": {
       "L": {
-        "flags": "--orient 0:1.72:16.05 --offset 0.0157:0.0244:-0.0139",
+        "flags": "--orient 0:1.72:16.05 --offset 0.0157:0.0444:-0.0139",
         "yawDegrees": 0.0,
         "pitchDegrees": 1.72,
         "rollDegrees": 16.05,
         "offsetMetres": [
           0.0157,
-          0.0244,
+          0.0444,
           -0.0139
         ],
         "appliedYawDegrees": 0.0,
@@ -56,7 +56,7 @@
         "appliedRollDegrees": 16.05,
         "appliedOffsetMetres": [
           0.0157,
-          0.0244,
+          0.0444,
           -0.0139
         ],
         "order": "yaw about up, then pitch about across, then roll about forward",
@@ -68,13 +68,13 @@
         "mirrored": false
       },
       "R": {
-        "flags": "--orient-right 0:1.72:16.05 --offset-right 0.0157:0.0244:-0.0139",
+        "flags": "--orient-right 0:1.72:16.05 --offset-right 0.0157:0.0444:-0.0139",
         "yawDegrees": 0.0,
         "pitchDegrees": 1.72,
         "rollDegrees": 16.05,
         "offsetMetres": [
           0.0157,
-          0.0244,
+          0.0444,
           -0.0139
         ],
         "appliedYawDegrees": -0.0,
@@ -82,7 +82,7 @@
         "appliedRollDegrees": -16.05,
         "appliedOffsetMetres": [
           -0.0157,
-          0.0244,
+          0.0444,
           -0.0139
         ],
         "order": "yaw about up, then pitch about across, then roll about forward",
@@ -116,13 +116,13 @@
       "R": "y0p0"
     },
     "bestScorePerSide": {
-      "L": 25.8211,
-      "R": 34.9797
+      "L": 29.9552,
+      "R": 44.0425
     },
     "decidedBy": "both sides",
     "bestPairSeed": "y0p0",
     "pairScores": {
-      "y0p0": 60.8008
+      "y0p0": 73.9977
     },
     "table": {
       "L": [
@@ -131,14 +131,14 @@
           "iterations": 0,
           "icpDegrees": 16.1413,
           "icpBounded": false,
-          "pushMetres": 0.013921,
-          "residualMeanMillimetres": 29.8624,
-          "residualP95Millimetres": 44.3758,
-          "fixedCapDeeperThan2mmBare": 47,
-          "fixedCapMaxDepthBareMetres": 0.037899,
-          "fixedCapInsidePercent": 6.0334,
-          "coveragePercent": 20.1493,
-          "score": 25.8211
+          "pushMetres": 0.0,
+          "residualMeanMillimetres": 34.3936,
+          "residualP95Millimetres": 51.4424,
+          "fixedCapDeeperThan2mmBare": 41,
+          "fixedCapMaxDepthBareMetres": 0.039369,
+          "fixedCapInsidePercent": 5.2632,
+          "coveragePercent": 19.403,
+          "score": 29.9552
         }
       ],
       "R": [
@@ -147,14 +147,14 @@
           "iterations": 0,
           "icpDegrees": 16.1413,
           "icpBounded": false,
-          "pushMetres": 0.005557,
-          "residualMeanMillimetres": 29.0996,
-          "residualP95Millimetres": 44.4781,
-          "fixedCapDeeperThan2mmBare": 68,
-          "fixedCapMaxDepthBareMetres": 0.054929,
-          "fixedCapInsidePercent": 9.7561,
-          "coveragePercent": 7.7519,
-          "score": 34.9797
+          "pushMetres": 0.0,
+          "residualMeanMillimetres": 40.5007,
+          "residualP95Millimetres": 57.6651,
+          "fixedCapDeeperThan2mmBare": 49,
+          "fixedCapMaxDepthBareMetres": 0.041486,
+          "fixedCapInsidePercent": 7.0301,
+          "coveragePercent": 6.9767,
+          "score": 44.0425
         }
       ]
     }
@@ -238,13 +238,13 @@
       "rule": "crest anchor and the authored orientation",
       "stage": "push",
       "authored": {
-        "flags": "--orient 0:1.72:16.05 --offset 0.0157:0.0244:-0.0139",
+        "flags": "--orient 0:1.72:16.05 --offset 0.0157:0.0444:-0.0139",
         "yawDegrees": 0.0,
         "pitchDegrees": 1.72,
         "rollDegrees": 16.05,
         "offsetMetres": [
           0.0157,
-          0.0244,
+          0.0444,
           -0.0139
         ],
         "appliedYawDegrees": 0.0,
@@ -252,7 +252,7 @@
         "appliedRollDegrees": 16.05,
         "appliedOffsetMetres": [
           0.0157,
-          0.0244,
+          0.0444,
           -0.0139
         ],
         "order": "yaw about up, then pitch about across, then roll about forward",
@@ -294,21 +294,21 @@
           1.0
         ]
       ],
-      "seedScore": 25.8211,
+      "seedScore": 29.9552,
       "seedTable": [
         {
           "label": "y0p0",
           "iterations": 0,
           "icpDegrees": 16.1413,
           "icpBounded": false,
-          "pushMetres": 0.013921,
-          "residualMeanMillimetres": 29.8624,
-          "residualP95Millimetres": 44.3758,
-          "fixedCapDeeperThan2mmBare": 47,
-          "fixedCapMaxDepthBareMetres": 0.037899,
-          "fixedCapInsidePercent": 6.0334,
-          "coveragePercent": 20.1493,
-          "score": 25.8211
+          "pushMetres": 0.0,
+          "residualMeanMillimetres": 34.3936,
+          "residualP95Millimetres": 51.4424,
+          "fixedCapDeeperThan2mmBare": 41,
+          "fixedCapMaxDepthBareMetres": 0.039369,
+          "fixedCapInsidePercent": 5.2632,
+          "coveragePercent": 19.403,
+          "score": 29.9552
         }
       ],
       "crestSource": [
@@ -370,52 +370,31 @@
           0.999549
         ]
       ],
-      "residualMeanMillimetres": 29.8624,
-      "residualP95Millimetres": 44.3758,
-      "pushPasses": 2,
-      "pushSteps": [
-        {
-          "pushMetres": 0.00626,
-          "alongNormal": [
-            0.40746,
-            0.817018,
-            0.407993
-          ],
-          "depthBeforeMetres": 0.00326,
-          "depthAfterMetres": 0.004661
-        },
-        {
-          "pushMetres": 0.007661,
-          "alongNormal": [
-            0.40746,
-            0.817018,
-            0.407993
-          ],
-          "depthBeforeMetres": 0.004661,
-          "depthAfterMetres": 0.0
-        }
-      ],
-      "pushMetres": 0.013921,
+      "residualMeanMillimetres": 34.3936,
+      "residualP95Millimetres": 51.4424,
+      "pushPasses": 0,
+      "pushSteps": [],
+      "pushMetres": 0.0,
       "pushBounded": false,
       "translation": [
-        0.098878,
-        1.304733,
-        -0.047008
+        0.093205,
+        1.313359,
+        -0.052688
       ],
       "crestPlaced": [
-        0.170835,
-        1.575273,
-        -0.068665
+        0.165162,
+        1.583899,
+        -0.074345
       ],
       "orientation": {
         "openingApex": [
-          0.167319,
-          1.564649,
-          -0.061606
+          0.161647,
+          1.573275,
+          -0.067285
         ],
         "opening": [
           0.870536,
-          -0.4341,
+          -0.434101,
           0.231785
         ],
         "openingDownTheArm": 0.7225,
@@ -433,9 +412,9 @@
         "drapeOutwardCentimetres": 3.94,
         "drapeBelowCentimetres": 8.27
       },
-      "fixedCapDepthAfterMetres": 0.027529,
-      "fixedCapDeeperThan2mm": 24,
-      "fixedCapDeeperThan2mmBare": 47,
+      "fixedCapDepthAfterMetres": 0.016684,
+      "fixedCapDeeperThan2mm": 19,
+      "fixedCapDeeperThan2mmBare": 41,
       "seedChoice": {
         "chosen": "y0p0",
         "sidesAgreed": true,
@@ -444,13 +423,13 @@
           "R": "y0p0"
         },
         "bestScorePerSide": {
-          "L": 25.8211,
-          "R": 34.9797
+          "L": 29.9552,
+          "R": 44.0425
         },
         "decidedBy": "both sides",
         "bestPairSeed": "y0p0",
         "pairScores": {
-          "y0p0": 60.8008
+          "y0p0": 73.9977
         }
       },
       "islands": [
@@ -465,9 +444,9 @@
             -0.011289
           ],
           "centroid": [
-            0.227351,
-            1.478155,
-            -0.047421
+            0.221679,
+            1.486782,
+            -0.053101
           ]
         },
         {
@@ -481,9 +460,9 @@
             0.092986
           ],
           "centroid": [
-            0.267258,
-            1.382781,
-            0.001633
+            0.261586,
+            1.391407,
+            -0.004047
           ]
         },
         {
@@ -497,9 +476,9 @@
             0.016805
           ],
           "centroid": [
-            0.228437,
-            1.421866,
-            -0.035124
+            0.222764,
+            1.430492,
+            -0.040803
           ]
         },
         {
@@ -513,9 +492,9 @@
             0.114979
           ],
           "centroid": [
-            0.188584,
-            1.429607,
-            0.013989
+            0.182912,
+            1.438233,
+            0.00831
           ]
         },
         {
@@ -529,9 +508,9 @@
             0.05779
           ],
           "centroid": [
-            0.249653,
-            1.399897,
-            -0.015377
+            0.243981,
+            1.408523,
+            -0.021057
           ]
         },
         {
@@ -545,9 +524,9 @@
             0.186358
           ],
           "centroid": [
-            0.244139,
-            1.396948,
-            0.048548
+            0.238467,
+            1.405574,
+            0.042868
           ]
         },
         {
@@ -561,9 +540,9 @@
             0.16915
           ],
           "centroid": [
-            0.228877,
-            1.429765,
-            0.040965
+            0.223205,
+            1.438391,
+            0.035286
           ]
         },
         {
@@ -577,9 +556,9 @@
             0.1398
           ],
           "centroid": [
-            0.194247,
-            1.458703,
-            0.027221
+            0.188575,
+            1.467329,
+            0.021542
           ]
         },
         {
@@ -593,9 +572,9 @@
             0.045456
           ],
           "centroid": [
-            0.309035,
-            1.404824,
-            -0.02137
+            0.303363,
+            1.41345,
+            -0.02705
           ]
         },
         {
@@ -609,9 +588,9 @@
             0.015777
           ],
           "centroid": [
-            0.295782,
-            1.443337,
-            -0.034991
+            0.290109,
+            1.451963,
+            -0.04067
           ]
         },
         {
@@ -625,9 +604,9 @@
             -0.024777
           ],
           "centroid": [
-            0.282465,
-            1.479002,
-            -0.054111
+            0.276793,
+            1.487628,
+            -0.059791
           ]
         },
         {
@@ -641,27 +620,27 @@
             0.102901
           ],
           "centroid": [
-            0.181519,
-            1.449289,
-            0.008567
+            0.175847,
+            1.457916,
+            0.002887
           ]
         }
       ],
       "capClearance": {
         "vertices": 1875,
-        "maxDepthDressedMetres": 0.060859,
-        "deeperThan2mmDressed": 38,
-        "maxDepthBareMetres": 0.067255,
-        "deeperThan2mmBare": 272,
-        "anchorToTargetMillimetres": 56.34,
-        "anchorToBareMillimetres": 67.695
+        "maxDepthDressedMetres": 0.069873,
+        "deeperThan2mmDressed": 44,
+        "maxDepthBareMetres": 0.074997,
+        "deeperThan2mmBare": 266,
+        "anchorToTargetMillimetres": 62.065,
+        "anchorToBareMillimetres": 73.057
       },
       "coverage": {
         "regionVertices": 134,
-        "coveredVertices": 27,
-        "coveredFraction": 0.201493,
+        "coveredVertices": 26,
+        "coveredFraction": 0.19403,
         "reachMetres": 0.06,
-        "medianGapMetres": 0.048405
+        "medianGapMetres": 0.048719
       }
     },
     "R": {
@@ -742,13 +721,13 @@
       "rule": "crest anchor and the authored orientation",
       "stage": "push",
       "authored": {
-        "flags": "--orient-right 0:1.72:16.05 --offset-right 0.0157:0.0244:-0.0139",
+        "flags": "--orient-right 0:1.72:16.05 --offset-right 0.0157:0.0444:-0.0139",
         "yawDegrees": 0.0,
         "pitchDegrees": 1.72,
         "rollDegrees": 16.05,
         "offsetMetres": [
           0.0157,
-          0.0244,
+          0.0444,
           -0.0139
         ],
         "appliedYawDegrees": -0.0,
@@ -756,7 +735,7 @@
         "appliedRollDegrees": -16.05,
         "appliedOffsetMetres": [
           -0.0157,
-          0.0244,
+          0.0444,
           -0.0139
         ],
         "order": "yaw about up, then pitch about across, then roll about forward",
@@ -798,21 +777,21 @@
           1.0
         ]
       ],
-      "seedScore": 34.9797,
+      "seedScore": 44.0425,
       "seedTable": [
         {
           "label": "y0p0",
           "iterations": 0,
           "icpDegrees": 16.1413,
           "icpBounded": false,
-          "pushMetres": 0.005557,
-          "residualMeanMillimetres": 29.0996,
-          "residualP95Millimetres": 44.4781,
-          "fixedCapDeeperThan2mmBare": 68,
-          "fixedCapMaxDepthBareMetres": 0.054929,
-          "fixedCapInsidePercent": 9.7561,
-          "coveragePercent": 7.7519,
-          "score": 34.9797
+          "pushMetres": 0.0,
+          "residualMeanMillimetres": 40.5007,
+          "residualP95Millimetres": 57.6651,
+          "fixedCapDeeperThan2mmBare": 49,
+          "fixedCapMaxDepthBareMetres": 0.041486,
+          "fixedCapInsidePercent": 7.0301,
+          "coveragePercent": 6.9767,
+          "score": 44.0425
         }
       ],
       "crestSource": [
@@ -874,42 +853,31 @@
           0.999549
         ]
       ],
-      "residualMeanMillimetres": 29.0996,
-      "residualP95Millimetres": 44.4781,
-      "pushPasses": 1,
-      "pushSteps": [
-        {
-          "pushMetres": 0.005557,
-          "alongNormal": [
-            -0.514218,
-            0.856908,
-            -0.035895
-          ],
-          "depthBeforeMetres": 0.002557,
-          "depthAfterMetres": 0.0
-        }
-      ],
-      "pushMetres": 0.005557,
+      "residualMeanMillimetres": 40.5007,
+      "residualP95Millimetres": 57.6651,
+      "pushPasses": 0,
+      "pushSteps": [],
+      "pushMetres": 0.0,
       "pushBounded": false,
       "translation": [
-        -0.102974,
-        1.303468,
-        -0.065555
+        -0.100116,
+        1.318706,
+        -0.065355
       ],
       "crestPlaced": [
-        -0.168021,
-        1.568657,
-        -0.080753
+        -0.165164,
+        1.583895,
+        -0.080554
       ],
       "orientation": {
         "openingApex": [
-          -0.16837,
-          1.560924,
-          -0.079153
+          -0.165512,
+          1.576162,
+          -0.078953
         ],
         "opening": [
           -0.913541,
-          -0.383392,
+          -0.383393,
           0.13584
         ],
         "openingDownTheArm": 0.6943,
@@ -927,9 +895,9 @@
         "drapeOutwardCentimetres": 3.52,
         "drapeBelowCentimetres": 8.58
       },
-      "fixedCapDepthAfterMetres": 0.031046,
-      "fixedCapDeeperThan2mm": 26,
-      "fixedCapDeeperThan2mmBare": 68,
+      "fixedCapDepthAfterMetres": 0.02443,
+      "fixedCapDeeperThan2mm": 18,
+      "fixedCapDeeperThan2mmBare": 49,
       "seedChoice": {
         "chosen": "y0p0",
         "sidesAgreed": true,
@@ -938,13 +906,13 @@
           "R": "y0p0"
         },
         "bestScorePerSide": {
-          "L": 25.8211,
-          "R": 34.9797
+          "L": 29.9552,
+          "R": 44.0425
         },
         "decidedBy": "both sides",
         "bestPairSeed": "y0p0",
         "pairScores": {
-          "y0p0": 60.8008
+          "y0p0": 73.9977
         }
       },
       "islands": [
@@ -959,9 +927,9 @@
             -0.031748
           ],
           "centroid": [
-            -0.225386,
-            1.478804,
-            -0.075896
+            -0.222529,
+            1.494042,
+            -0.075696
           ]
         },
         {
@@ -975,9 +943,9 @@
             0.084256
           ],
           "centroid": [
-            -0.238029,
-            1.451471,
-            -0.019693
+            -0.235172,
+            1.466709,
+            -0.019493
           ]
         },
         {
@@ -991,9 +959,9 @@
             0.093381
           ],
           "centroid": [
-            -0.269068,
-            1.380472,
-            -0.017339
+            -0.26621,
+            1.39571,
+            -0.01714
           ]
         },
         {
@@ -1007,9 +975,9 @@
             0.016814
           ],
           "centroid": [
-            -0.230863,
-            1.4191,
-            -0.053817
+            -0.228006,
+            1.434338,
+            -0.053618
           ]
         },
         {
@@ -1023,9 +991,9 @@
             0.057826
           ],
           "centroid": [
-            -0.251835,
-            1.397422,
-            -0.034308
+            -0.248978,
+            1.412659,
+            -0.034109
           ]
         },
         {
@@ -1039,9 +1007,9 @@
             0.04547
           ],
           "centroid": [
-            -0.310451,
-            1.40229,
-            -0.040236
+            -0.307594,
+            1.417528,
+            -0.040036
           ]
         },
         {
@@ -1055,9 +1023,9 @@
             0.015764
           ],
           "centroid": [
-            -0.297356,
-            1.440304,
-            -0.053697
+            -0.294498,
+            1.455542,
+            -0.053497
           ]
         },
         {
@@ -1071,9 +1039,9 @@
             0.186359
           ],
           "centroid": [
-            -0.246385,
-            1.394522,
-            0.028787
+            -0.243527,
+            1.40976,
+            0.028986
           ]
         },
         {
@@ -1087,9 +1055,9 @@
             0.169189
           ],
           "centroid": [
-            -0.231319,
-            1.426915,
-            0.02132
+            -0.228461,
+            1.442153,
+            0.021519
           ]
         },
         {
@@ -1103,9 +1071,9 @@
             0.139787
           ],
           "centroid": [
-            -0.197127,
-            1.455493,
-            0.007725
+            -0.194269,
+            1.470731,
+            0.007924
           ]
         },
         {
@@ -1119,9 +1087,9 @@
             -0.02479
           ],
           "centroid": [
-            -0.284237,
-            1.47551,
-            -0.072574
+            -0.281379,
+            1.490748,
+            -0.072375
           ]
         },
         {
@@ -1135,27 +1103,27 @@
             0.102867
           ],
           "centroid": [
-            -0.184549,
-            1.446182,
-            -0.010703
+            -0.181691,
+            1.46142,
+            -0.010504
           ]
         }
       ],
       "capClearance": {
         "vertices": 1526,
-        "maxDepthDressedMetres": 0.06639,
-        "deeperThan2mmDressed": 31,
-        "maxDepthBareMetres": 0.077012,
-        "deeperThan2mmBare": 313,
-        "anchorToTargetMillimetres": 49.987,
-        "anchorToBareMillimetres": 61.929
+        "maxDepthDressedMetres": 0.069628,
+        "deeperThan2mmDressed": 35,
+        "maxDepthBareMetres": 0.077026,
+        "deeperThan2mmBare": 280,
+        "anchorToTargetMillimetres": 62.201,
+        "anchorToBareMillimetres": 73.761
       },
       "coverage": {
         "regionVertices": 129,
-        "coveredVertices": 10,
-        "coveredFraction": 0.077519,
+        "coveredVertices": 9,
+        "coveredFraction": 0.069767,
         "reachMetres": 0.06,
-        "medianGapMetres": 0.038875
+        "medianGapMetres": 0.043623
       }
     }
   },
@@ -1164,9 +1132,9 @@
     "pieces": {
       "warden-tunic": {
         "vertices": 8236,
-        "hidden": 173,
-        "L": 124,
-        "R": 49
+        "hidden": 162,
+        "L": 103,
+        "R": 59
       }
     }
   },
@@ -1228,25 +1196,25 @@
     "band": {
       "warden-pauldrons_L": {
         "vertices": 2701,
-        "bandVertices": 652,
-        "bandFraction": 0.241392,
+        "bandVertices": 585,
+        "bandFraction": 0.216586,
         "ceiling": 0.8,
-        "minPeakWeight": 0.500137,
-        "meanPeakWeight": 0.876551,
-        "bandHeightMetres": 0.178542,
-        "bandMinY": 1.365957,
-        "bandMaxY": 1.544499
+        "minPeakWeight": 0.501308,
+        "meanPeakWeight": 0.887868,
+        "bandHeightMetres": 0.190196,
+        "bandMinY": 1.356088,
+        "bandMaxY": 1.546284
       },
       "warden-pauldrons_R": {
         "vertices": 2703,
-        "bandVertices": 680,
-        "bandFraction": 0.251572,
+        "bandVertices": 531,
+        "bandFraction": 0.196448,
         "ceiling": 0.8,
-        "minPeakWeight": 0.500101,
-        "meanPeakWeight": 0.870055,
-        "bandHeightMetres": 0.181189,
-        "bandMinY": 1.361253,
-        "bandMaxY": 1.542442
+        "minPeakWeight": 0.500619,
+        "meanPeakWeight": 0.892089,
+        "bandHeightMetres": 0.190141,
+        "bandMinY": 1.360891,
+        "bandMaxY": 1.551032
       }
     },
     "stiffness": 3.0
@@ -1258,14 +1226,14 @@
     "joints": 24
   },
   "bindClearance": {
-    "insideVertices": 193,
-    "maxPenetrationMetres": 0.066389672,
-    "deeperThan2mm": 138
+    "insideVertices": 209,
+    "maxPenetrationMetres": 0.069873296,
+    "deeperThan2mm": 137
   },
   "bareBodyClearance": {
-    "insideVertices": 1134,
-    "maxPenetrationMetres": 0.07701245,
-    "deeperThan2mm": 1073
+    "insideVertices": 1059,
+    "maxPenetrationMetres": 0.077026322,
+    "deeperThan2mm": 1015
   },
   "runtime": {
     "bones": [
@@ -1350,9 +1318,9 @@
       "textures": true
     },
     "bindClearance": {
-      "insideVertices": 193,
-      "maxPenetrationMetres": 0.066389672,
-      "deeperThan2mm": 138
+      "insideVertices": 209,
+      "maxPenetrationMetres": 0.069873296,
+      "deeperThan2mm": 137
     }
   },
   "gates": {
@@ -1374,7 +1342,7 @@
     "glb": "warden-pauldrons.glb",
     "manifest": "warden-pauldrons.manifest.json",
     "report": "warden-pauldrons.report.json",
-    "sha256": "dc461eed6812c6e9fc25eee972982d735d48512d154858c04b1c1acf7b938474"
+    "sha256": "e6ad547f55c624db9e80ec3e7cf42738821286dcd497502227cc6ef82f932281"
   },
   "gatesFailed": [
     "piece_sits_off_the_skin_at_bind"
