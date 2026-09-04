@@ -1,5 +1,11 @@
 node_modules/
 dist/
+website/.site/
+website/dist/
+website/public/downloads/
+website/public/media/
+website/public/brand/ashveil-emblem.svg
+website/public/brand/ashveil-wordmark.svg
 workspaces/
 .DS_Store
 *.local

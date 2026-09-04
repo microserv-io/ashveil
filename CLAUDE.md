@@ -8,11 +8,14 @@
 
 # Ashveil
 
-An isometric action-RPG in the Diablo / Path of Exile lineage, built core loop first.
+Ashveil's product direction is now an MMORPG. The repository still contains the
+earlier isometric action-RPG prototype; treat its loop, camera and competitor
+assumptions as a preserved baseline awaiting review, not settled MMORPG design.
 
-The loop is the product: **pull a pack, spend skills, things die, loot drops, your
-numbers change, go deeper and harder.** Everything else hangs off that, and none of
-it matters if the ten-second kill-and-loot rhythm does not feel good.
+For the current prototype, the loop is the product: **pull a pack, spend skills,
+things die, loot drops, your numbers change, go deeper and harder.** Prototype work
+continues to protect that ten-second kill-and-loot rhythm while the MMORPG design is
+reviewed separately.
 
 Stack: TypeScript (ESM, `strict`) with Three.js for rendering, Vite, Vitest, and a
 headless CLI harness. No UI framework; the HUD is plain DOM with Tailwind utilities.
@@ -35,6 +38,7 @@ Small dependency set on purpose.
 | `docs/quality.md` | How work gets done: red/green, what must have a test, module-first, the gate, what to look for in review. |
 | `docs/pipeline.md` | The character and animation pipeline: the agent-run path from concept to a rigged body, the family contracts, the gear fitting recipe. Read before touching character generation or rigging. |
 | `docs/motion.md` | How to add or change a motion: the frame contract, the pose key format, the gates, the review page. Read before touching `src/render/procedural/`. |
+| `website/` | Separate static public site. Plain reusable HTML templates, Tailwind, self-hosted fonts and build-time GDD rendering; output is `website/dist/`. |
 
 ## Commands
 
@@ -60,6 +64,9 @@ Small dependency set on purpose.
 - `npm run motion:dev` serves the motion review page on :5277, bound to every
   interface: one body at the gameplay camera with the driver, state, speed and
   time scale under your hand.
+- `npm run site:dev` serves the public website on :5295 at `/ashveil/`.
+  `npm run site:test` validates content and both supported base paths, and
+  `npm run site:build` writes the standalone public artifact to `website/dist/`.
 
 In dev the browser exposes `globalThis.ashveil` as `{ sim, host, view, controls }`,
 which is the fastest way to poke at a live game from the console.

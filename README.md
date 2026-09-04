@@ -1,10 +1,21 @@
 # Ashveil
 
-An isometric action-RPG in the Diablo / Path of Exile lineage, built core loop first.
+[Website](https://microserv-io.github.io/ashveil/) ·
+[Game design document](https://microserv-io.github.io/ashveil/design/) ·
+[Brand resources](https://microserv-io.github.io/ashveil/brand/)
 
-The loop is the product: **pull a pack → spend skills → things die → loot drops → your
-numbers change → go deeper, harder.** Everything else (endgame, crafting, trade,
-ascendancies, uniques) hangs off that, and none of it matters if the ten-second
+Ashveil is moving toward an MMORPG: a vivid shared fantasy world where life and
+colour endure beneath an encroaching ash-grey threat. The detailed shared-world
+design is the next body of work.
+
+This repository currently contains the earlier isometric action-RPG prototype. It
+remains a useful, playable foundation and a preserved design baseline; its loop and
+camera are awaiting review against the new direction.
+
+For the current prototype, the loop is the product: **pull a pack → spend skills →
+things die → loot drops → your numbers change → go deeper, harder.** Everything else (endgame, crafting, trade,
+such as endgame, crafting, trade, ascendancies and uniques, hangs off that, and none
+of it matters if the ten-second
 kill-and-loot rhythm does not feel good. So that rhythm is what exists so far.
 
 ```bash
@@ -12,7 +23,16 @@ npm install
 npm run dev          # play it at http://localhost:5273
 npm run sim          # play it headless, and get numbers back
 npm test             # vitest suite
+npm run site:dev     # public website at http://100.103.10.11:5295/ashveil/
+npm run site:test    # website content, routes and base-path builds
+npm run site:build   # static website in website/dist/
 ```
+
+The public site lives separately in `website/` and is rendered from reusable plain
+HTML templates with Tailwind. Its design-document page is built directly from
+[`docs/game-design-document.md`](docs/game-design-document.md), so the website and
+download cannot drift from the source. Set `SITE_BASE=/` for a root-domain build;
+GitHub Pages uses the default `/ashveil/` base.
 
 ## Architecture
 
@@ -172,9 +192,10 @@ npm run sim -- sweep --seeds 6 --minutes 4 --policy brawler
 
 ## Current state
 
-Playable end to end. A four-minute headless run typically reaches depth 2-3 and level
-6-7 at roughly 25 kills/min with 0-1 deaths, and clear times fall as power accrues,
-which is the curve the loop is supposed to have. Re-measure with
+The action-RPG prototype is playable end to end. A four-minute headless run
+typically reaches depth 2-3 and level 6-7 at roughly 25 kills/min with 0-1 deaths,
+and clear times fall as power accrues, which is the curve the loop is supposed to
+have. Re-measure with
 `npm run sim -- sweep` rather than trusting this paragraph.
 
 Working on this? Start with [CLAUDE.md](CLAUDE.md), then
