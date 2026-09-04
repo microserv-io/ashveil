@@ -15,6 +15,12 @@ export interface ReviewGearPiece {
   readonly slot: GearSlot
   readonly piece: string
   readonly path: string
+  /**
+   * A second fitting of a slot already listed, on the page only to be looked at
+   * beside the one that ships. It is off by default and out of "Wear all", so the
+   * outfit stays one piece per slot, and it is judged by eye rather than by gates.
+   */
+  readonly compare?: boolean
 }
 
 export const REVIEW_GEAR: readonly ReviewGearPiece[] = [
@@ -25,6 +31,7 @@ export const REVIEW_GEAR: readonly ReviewGearPiece[] = [
   { slot: 'head', piece: 'warden-hood', path: gearPath('warden-hood') },
   { slot: 'waist', piece: 'warden-belt', path: gearPath('warden-belt') },
   { slot: 'shoulders', piece: 'warden-pauldrons', path: gearPath('warden-pauldrons') },
+  { slot: 'waist', piece: 'warden-belt-ring', path: gearPath('warden-belt-ring'), compare: true },
 ]
 
 /** A piece with its manifest read: what to bind, and the body it hides. */

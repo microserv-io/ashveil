@@ -33,7 +33,7 @@ describe('the motion review gear list', () => {
   })
 
   it('lists only pieces whose every gate passed, in the slot they were fitted for', () => {
-    for (const entry of REVIEW_GEAR) {
+    for (const entry of REVIEW_GEAR.filter((piece) => !piece.compare)) {
       const manifest = manifestOf(entry.piece)
       expect(manifest.slot as GearSlot, entry.piece).toBe(entry.slot)
       const failed = Object.entries(manifest.gates ?? {}).filter(([, passed]) => !passed)
@@ -43,8 +43,22 @@ describe('the motion review gear list', () => {
 
   /** Two pieces in one slot would mask the same body twice and fight over it. */
   it('lists a slot at most once, so "Wear all" is a wearable outfit', () => {
-    const slots = REVIEW_GEAR.map((entry) => entry.slot)
+    const slots = REVIEW_GEAR.filter((entry) => !entry.compare).map((entry) => entry.slot)
     expect(slots).toEqual([...new Set(slots)])
+  })
+
+  /**
+   * A comparison entry is a second fitting of a slot that already ships, put on the
+   * page to be judged against it. It is off by default and out of "Wear all", and
+   * its gates are what the comparison is about, so they are not the bar for listing
+   * it - the eye is. It still has to be a real fitted piece in the right slot.
+   */
+  it('holds a comparison entry to the slot it claims, and to nothing else', () => {
+    for (const entry of REVIEW_GEAR.filter((piece) => piece.compare)) {
+      expect(manifestOf(entry.piece).slot as GearSlot, entry.piece).toBe(entry.slot)
+      const shipping = REVIEW_GEAR.filter((piece) => !piece.compare && piece.slot === entry.slot)
+      expect(shipping, `${entry.piece} compares against nothing`).not.toEqual([])
+    }
   })
 
   /** Masking is per piece now, so a listed piece carries its own body vertices. */

@@ -316,7 +316,8 @@ function buildGearPanel(): void {
       return label
     }),
   )
-  element('gear-all').addEventListener('click', () => setGear(REVIEW_GEAR.map((entry) => entry.piece)))
+  element('gear-all').addEventListener('click', () =>
+    setGear(REVIEW_GEAR.filter((entry) => !entry.compare).map((entry) => entry.piece)))
   element('gear-bare').addEventListener('click', () => setGear([]))
 }
 
@@ -359,6 +360,8 @@ function saveGear(): void {
 
 /**
  * Dressed unless the reviewer said otherwise, so the bare body is the special case.
+ * A comparison entry is the exception and starts off: two pieces in one slot are a
+ * side by side, not an outfit.
  * What is stored is what was taken off, not what was put on: a piece fitted since
  * the reviewer last set this is worn, rather than hidden by a preference written
  * before it existed.
@@ -369,7 +372,8 @@ function readGearPreference(): Set<string> {
     const stored = localStorage.getItem(GEAR_KEY)
     if (stored) for (const piece of JSON.parse(stored) as string[]) off.add(piece)
   } catch {}
-  return new Set(REVIEW_GEAR.filter((entry) => !off.has(entry.piece)).map((entry) => entry.piece))
+  return new Set(REVIEW_GEAR.filter((entry) => !entry.compare && !off.has(entry.piece))
+    .map((entry) => entry.piece))
 }
 
 function recentre(): void {
