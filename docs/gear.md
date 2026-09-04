@@ -19,10 +19,11 @@ could not see the defects that matter:
 
 | Piece | Report says | What it means |
 |---|---|---|
-| Belt | `regionEnclosed 0`, closest vertex exactly at the 2 cm clearance, 98% of vertices more than 3 cm off the skin | A ring parked around the waist. The whole-piece shrinkwrap only pushes outward; the one inward operator (hug) reaches 2 cm and nothing was within reach. |
+| Belt | `regionEnclosed 0`; measured live, closest vertex 2.1 cm off the skin, median 4.3 cm; the band is 34.7 cm deep against a 24.9 cm torso | A ring parked around the waist, an open horseshoe from above. The whole-piece shrinkwrap only pushes outward; the one inward operator (hug) reaches 2 cm and nothing was within reach. |
 | Belt | 47 islands found, 10 kept | The 2% debris rule deleted the buckle and rivets (issue 34). |
 | Proxy cape fixture | `aheadOfRegionMetres 0.15`, `regionEnclosed 0`, `gatesPass true` | The cape hangs down the front of the body. The `back` slot anchors the piece's bounding-box max Z to the chest's, so a sheet lands in front. The byte-for-byte fixture test pins this. |
-| Warden cloak | not published; 2.35% motion clipping against a 0.5% limit | The drape solver disables capsule collision whenever surface supports exist and fixes the pose afterwards, killing velocity on every contact. |
+| Warden cloak | fails closed: 76% of the cape starts inside the torso, eight outward passes never converge, 42% of vertices get no transferred weight, the result is 67% wider and 120% deeper than the aligned source; 11% motion clipping against a 0.5% limit | A bell, not a cape. At a run three of the six chain angles sit welded to their cone limits every frame, and at rest the chain never settles. The drape solver disables capsule collision whenever surface supports exist and repairs the pose afterwards. |
+| Pauldrons | shrinkwrap moved every vertex 2.9 times on average, `regionEnclosed` 0.29 left and 0.10 right, 1,152 triangles of 24 islands dropped | Torn shards over the shoulder at 3 m. Same failure as the belt. |
 | All | every gate green | Every geometric gate measures penetration only. A piece floating off the body has none. |
 
 The gates were the definition of done, so the agents fitting pieces optimised for
