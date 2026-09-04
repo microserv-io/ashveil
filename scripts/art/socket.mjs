@@ -7,19 +7,25 @@ import { basename, join, resolve } from 'node:path'
  * `npm run art:socket` - socket placement for a piece hung on one joint, on its own path.
  *
  * Thin like `ring.mjs` and for the same reason: the socket rule has no covers, no span
- * and no yaw search, so the wrapper validates the paths and the drape spelling and
- * nothing else. A failing budget gate does not delete the GLB, because full source
- * detail is the thing the spike exists to look at.
+ * and no yaw search, so the wrapper validates the paths, the drape spelling and the
+ * authored pose, and nothing else. A failing budget gate does not delete the GLB,
+ * because full source detail is the thing the spike exists to look at.
  */
 
 const ROOT = join(import.meta.dirname, '..', '..')
 const RUNNER = join(ROOT, 'scripts', 'art', 'gear', 'socket.py')
 const BLENDER_CANDIDATES = ['/opt/homebrew/bin/blender', '/usr/local/bin/blender', 'blender']
 const VALUES = new Set(['--input', '--slot', '--body', '--piece', '--under', '--weights', '--yaw',
-  '--cap', '--anchor', '--seat', '--register', '--inner', '--seeds', '--outdir'])
+  '--cap', '--anchor', '--seat', '--register', '--inner', '--seeds', '--orient', '--offset',
+  '--outdir'])
 const REPEATED = new Set(['--drape'])
 const NAME = /^[a-z0-9][a-z0-9-]*$/
 const DRAPE = /^[a-z][a-z0-9_]*:[A-Za-z0-9_]+:[01](\.[0-9]+)?:[01](\.[0-9]+)?(:[1-6](:[0-9]+(\.[0-9]+)?)?)?$/
+const TRIPLE = /^-?[0-9]+(\.[0-9]+)?(:-?[0-9]+(\.[0-9]+)?){2}$/
+/** Past a quarter turn a flag is correcting a wrong source rather than authoring a pose. */
+const MAX_ORIENT_DEGREES = 90
+/** A cap ten centimetres off its own crest is no longer on the shoulder. */
+const MAX_OFFSET_METRES = 0.1
 
 export class SocketError extends Error {}
 
@@ -64,6 +70,8 @@ export function parseArgs(argv) {
   if (parsed.yaw && !['0', '180'].includes(parsed.yaw)) {
     throw new SocketError(`yaw gate: "${parsed.yaw}" is not 0 or 180`)
   }
+  bounded(parsed.orient, 'orient', 'degrees', MAX_ORIENT_DEGREES)
+  bounded(parsed.offset, 'offset', 'metres', MAX_OFFSET_METRES)
   for (const drape of parsed.drapes) {
     if (!DRAPE.test(drape)) throw new SocketError(`drape gate: "${drape}" is not name:bone:from:to[:segments]`)
   }
@@ -72,6 +80,19 @@ export function parseArgs(argv) {
     throw new SocketError(`drape gate: two drapes share a name in ${named.join(', ')}`)
   }
   return parsed
+}
+
+/** An authored pose is three numbers within reach of a shoulder, or it is a typo. */
+function bounded(value, flag, unit, limit) {
+  if (value === undefined) return
+  if (!TRIPLE.test(value)) {
+    throw new SocketError(`${flag} gate: "${value}" is not three numbers separated by colons`)
+  }
+  for (const each of value.split(':')) {
+    if (Math.abs(Number(each)) > limit) {
+      throw new SocketError(`${flag} gate: ${each} is past the ${limit} ${unit} an authored ${flag} may carry`)
+    }
+  }
 }
 
 export function resolvePlan(parsed, { root = ROOT, exists = existsSync } = {}) {
@@ -105,6 +126,8 @@ export function blenderArgs(plan, runner = RUNNER) {
     ...(plan.register ? ['--register', plan.register] : []),
     ...(plan.inner ? ['--inner', plan.inner] : []),
     ...(plan.seeds ? ['--seeds', plan.seeds] : []),
+    ...(plan.orient ? ['--orient', plan.orient] : []),
+    ...(plan.offset ? ['--offset', plan.offset] : []),
     ...plan.drapes.flatMap((drape) => ['--drape', drape])]
 }
 

@@ -25,7 +25,7 @@ import {
   reviewBodyScale,
   type ReviewBodyDefinition,
 } from './body'
-import { loadReviewGear, REVIEW_GEAR } from './gear'
+import { loadReviewGear, REVIEW_GEAR, type ReviewGearPiece } from './gear'
 
 /**
  * One body, the gameplay camera, and every knob the animation pipeline has.
@@ -47,6 +47,10 @@ const PANEL_KEY = 'ashveil.motion.panel'
 const GEAR_KEY = 'ashveil.motion.gear.off'
 /** Below this the panel would cover the body, so it starts out of the way. */
 const NARROW_VIEWPORT = 640
+/** The bounds `art:socket` puts on an authored pose, so the page cannot ask for one it refuses. */
+const ORIENT_LIMIT = 90
+const OFFSET_LIMIT = 0.1
+const OFFSET_STEP = 0.005
 
 const sim = new Sim({ seed: SEED })
 await loadModels('models')
@@ -105,8 +109,14 @@ const wearing = readGearPreference()
 // Declared before the panel is built: a `const` below that call is still in its
 // temporal dead zone when the first checkbox is made.
 const gearBoxes = new Map<string, HTMLInputElement>()
+const poseSliders = new Map<PoseKey, HTMLInputElement>()
+const socketBinds = new Map<string, BindPose>()
+const poseAsked = hasPoseQuery()
+const pose = readPoseQuery()
+let posed: SocketPiece[] = []
 
 buildGearPanel()
+buildSocketPanel()
 rebuild()
 recentre()
 
@@ -122,7 +132,17 @@ toggle.addEventListener('click', () => showPanels(!panelOpen))
 showPanels(panelOpen)
 
 // The same convenience the game exposes: the fastest way to poke at a live body.
-Object.assign(globalThis, { motion: { host, sim, get view() { return view }, get actor() { return actor }, input } })
+Object.assign(globalThis, {
+  motion: {
+    host, sim, get view() { return view }, get actor() { return actor }, input,
+    socket: {
+      set: setPose,
+      get pose() { return { ...pose } },
+      get flags() { return poseFlags() },
+      get pieces() { return posed.map((target) => target.piece) },
+    },
+  },
+})
 
 requestAnimationFrame(frame)
 
@@ -272,26 +292,31 @@ function rebuild(): void {
 function rewear(): void {
   const body = view!
   for (const piece of worn) removePiece(body.group, piece)
-  worn = REVIEW_GEAR.filter((entry) => wearing.has(entry.piece)).flatMap((entry) => {
-    const loaded = gearSources.get(entry.piece)
-    return loaded
-      ? [wearPiece(body.group, {
-        slot: entry.slot,
-        scene: loaded.scene,
-        covers: loaded.covers,
-        hides: loaded.hides,
-        drapes: loaded.drapes,
-        hidesPieces: loaded.hidesPieces,
-        regions: loaded.regions,
-        hidesRegions: loaded.hidesRegions,
-        hidesBand: loaded.hidesBand,
-        hidesProfile: loaded.hidesProfile,
-      })]
-      : []
+  const dressed = REVIEW_GEAR.filter((entry) => wearing.has(entry.piece) && gearSources.has(entry.piece))
+  worn = dressed.map((entry) => {
+    const loaded = gearSources.get(entry.piece)!
+    return wearPiece(body.group, {
+      slot: entry.slot,
+      scene: loaded.scene,
+      covers: loaded.covers,
+      hides: loaded.hides,
+      drapes: loaded.drapes,
+      hidesPieces: loaded.hidesPieces,
+      regions: loaded.regions,
+      hidesRegions: loaded.hidesRegions,
+      hidesBand: loaded.hidesBand,
+      hidesProfile: loaded.hidesProfile,
+    })
   })
   applyBodyMasks(body.group, worn)
   applyGearMasks(worn)
   viewMaterialsWith(body, bodyMaterials, worn)
+  posed = dressed.flatMap((entry, at) => socketPieceOf(entry, worn[at]!))
+  showSocketPanel()
+  // With nothing asked for, the sliders start where the fit left the piece, so moving
+  // one is a change to the pose that shipped rather than to an arbitrary zero.
+  if (!poseAsked && posed[0]) setPose(posed[0].fitted)
+  else writePose()
   saveGear()
 }
 
@@ -330,6 +355,237 @@ function setGear(pieces: readonly string[]): void {
   for (const piece of pieces) if (gearSources.has(piece)) wearing.add(piece)
   for (const [piece, box] of gearBoxes) box.checked = wearing.has(piece)
   rewear()
+}
+
+/**
+ * Authoring a shoulder's pose, live.
+ *
+ * A pauldron's orientation is declared per item rather than derived - three
+ * derivations were tried on this one and each landed a pose that was rejected on
+ * sight - so the page has to be where it is declared. The sliders carry the same
+ * `--orient yaw:pitch:roll --offset dx:dy:dz` the fitter takes, and they are the
+ * fitter's own numbers rather than a nudge on top of them: the piece arrives already
+ * posed, so what is applied is the difference between where the sliders stand and
+ * where the manifest says the fit left it. A slider at the fitted value moves nothing
+ * and the readout is the flag string that refits exactly what is on screen.
+ *
+ * The piece is a `SkinnedMesh` bound to the body's own skeleton, so nothing here may
+ * move the mesh: what moves is a copy of its bind-pose positions, and the body's
+ * skinning still runs over the result. The cloth's own chain is not re-hung, so a
+ * swinging drape still swings about where the fitter hung it - the sliders are how a
+ * pose is found, and the refit is what makes it true.
+ */
+type PoseKey = 'yaw' | 'pitch' | 'roll' | 'x' | 'y' | 'z'
+
+interface BindPose {
+  readonly position: Float32Array
+  readonly normal: Float32Array | null
+}
+
+interface SocketPiece {
+  readonly piece: string
+  readonly mesh: THREE.SkinnedMesh
+  readonly bind: BindPose
+  readonly crest: Readonly<Record<'L' | 'R', THREE.Vector3>>
+  /** The pose the fitter already applied, which the sliders are stated against. */
+  readonly fitted: Record<PoseKey, number>
+}
+
+/** A function, not a table: the panel is built above, where a `const` here is still dead. */
+function poseRows(): readonly (readonly [PoseKey, string, number, number])[] {
+  return [
+    ['yaw', 'Yaw', ORIENT_LIMIT, 1], ['pitch', 'Pitch', ORIENT_LIMIT, 1], ['roll', 'Roll', ORIENT_LIMIT, 1],
+    ['x', 'Offset X', OFFSET_LIMIT, OFFSET_STEP], ['y', 'Offset Y', OFFSET_LIMIT, OFFSET_STEP],
+    ['z', 'Offset Z', OFFSET_LIMIT, OFFSET_STEP],
+  ]
+}
+
+/**
+ * Only a comparison piece is re-posed: the shipped one in a slot is what it is, and
+ * a piece fitted before the crest was written has no point to turn about.
+ */
+function socketPieceOf(entry: ReviewGearPiece, piece: WornPiece): SocketPiece[] {
+  const crests = gearSources.get(entry.piece)?.crests
+  if (entry.slot !== 'shoulders' || !entry.compare || !crests) return []
+  // The geometry is shared with the loaded source and survives a rewear, so the bind
+  // pose is taken the first time the piece is seen and never off an already-posed mesh.
+  const geometry = piece.mesh.geometry
+  const stored = socketBinds.get(entry.piece) ?? {
+    position: Float32Array.from(geometry.getAttribute('position').array as Float32Array),
+    normal: geometry.getAttribute('normal')
+      ? Float32Array.from(geometry.getAttribute('normal').array as Float32Array)
+      : null,
+  }
+  socketBinds.set(entry.piece, stored)
+  return [{
+    piece: entry.piece,
+    mesh: piece.mesh,
+    bind: stored,
+    crest: { L: vectorOf(crests.L), R: vectorOf(crests.R) },
+    fitted: {
+      yaw: crests.orient[0]!, pitch: crests.orient[1]!, roll: crests.orient[2]!,
+      x: crests.offset[0]!, y: crests.offset[1]!, z: crests.offset[2]!,
+    },
+  }]
+}
+
+function vectorOf(values: readonly number[]): THREE.Vector3 {
+  return new THREE.Vector3(values[0], values[1], values[2])
+}
+
+/**
+ * The turn one side takes. Mirroring about X negates a rotation about Y and one
+ * about Z and leaves one about X alone, so the right shoulder wears the author's own
+ * numbers with the yaw and the roll turned round: the same rule `socket.py` applies,
+ * spelled the same way, or the page and the fitter would disagree by a mirror.
+ */
+function poseTurn(hand: number, values: Record<PoseKey, number>): THREE.Matrix4 {
+  return new THREE.Matrix4().makeRotationY(radians(hand * values.yaw))
+    .multiply(new THREE.Matrix4().makeRotationX(radians(values.pitch)))
+    .multiply(new THREE.Matrix4().makeRotationZ(radians(hand * values.roll)))
+}
+
+function radians(degrees: number): number {
+  return (degrees * Math.PI) / 180
+}
+
+/**
+ * What is left to apply once the fit's own pose is taken off: `wanted` turned by the
+ * inverse of `fitted`, which is exactly what refitting at `wanted` would have done.
+ */
+function poseDelta(hand: number, fitted: Record<PoseKey, number>): THREE.Matrix4 {
+  return poseTurn(hand, pose).multiply(poseTurn(hand, fitted).transpose())
+}
+
+/** Both sides at once, since which side a vertex belongs to is the sign of its X. */
+function writePose(): void {
+  for (const target of posed) {
+    const sides = (['L', 'R'] as const).map((side) => {
+      const hand = side === 'L' ? 1 : -1
+      return { side, hand, turn: poseDelta(hand, target.fitted) }
+    })
+    const geometry = target.mesh.geometry
+    const position = geometry.getAttribute('position') as THREE.BufferAttribute
+    const normal = geometry.getAttribute('normal') as THREE.BufferAttribute | undefined
+    const shifts = sides.map(({ side, hand, turn }) => target.crest[side].clone()
+      .add(new THREE.Vector3(hand * (pose.x - target.fitted.x), pose.y - target.fitted.y,
+        pose.z - target.fitted.z))
+      .sub(target.crest[side].clone().applyMatrix4(turn)))
+    const point = new THREE.Vector3()
+    for (let at = 0; at < position.count; at++) {
+      const chosen = target.bind.position[at * 3]! >= 0 ? 0 : 1
+      point.fromArray(target.bind.position, at * 3).applyMatrix4(sides[chosen]!.turn).add(shifts[chosen]!)
+      position.setXYZ(at, point.x, point.y, point.z)
+      // A rigid turn carries the normals with it exactly, so nothing here re-averages
+      // the source's own shading and turns its hard lame edges soft.
+      if (normal && target.bind.normal) {
+        point.fromArray(target.bind.normal, at * 3).applyMatrix4(sides[chosen]!.turn)
+        normal.setXYZ(at, point.x, point.y, point.z)
+      }
+    }
+    position.needsUpdate = true
+    if (normal) normal.needsUpdate = true
+    geometry.computeBoundingSphere()
+    geometry.computeBoundingBox()
+  }
+  element('socket-flags').textContent = poseFlags()
+}
+
+/** The flags that reproduce what is on screen, spelled the way `art:socket` prints them. */
+function poseFlags(): string {
+  return `--orient ${short(pose.yaw)}:${short(pose.pitch)}:${short(pose.roll)}`
+    + ` --offset ${short(pose.x, 4)}:${short(pose.y, 4)}:${short(pose.z, 4)}`
+}
+
+function short(value: number, places = 2): string {
+  const text = value.toFixed(places).replace(/0+$/, '').replace(/\.$/, '')
+  return text === '' || text === '-0' ? '0' : text
+}
+
+function buildSocketPanel(): void {
+  const panel = document.createElement('div')
+  panel.id = 'socket-panel'
+  panel.className = 'space-y-1 border-t border-ash-600 pt-2'
+  const title = document.createElement('span')
+  title.className = 'text-ash-300 text-[11px] uppercase tracking-wide'
+  title.textContent = 'Shoulder pose'
+  const flags = document.createElement('code')
+  flags.id = 'socket-flags'
+  flags.className = 'block bg-ash-800 border border-ash-600 rounded px-2 py-1 text-[11px] break-all'
+  const copy = document.createElement('button')
+  copy.className = 'w-full bg-ash-700 hover:bg-ash-600 border border-ash-600 rounded px-2 py-1'
+  copy.textContent = 'Copy flags'
+  copy.addEventListener('click', () => {
+    navigator.clipboard?.writeText(poseFlags()).catch(() => {})
+    copy.textContent = 'Copied'
+    setTimeout(() => (copy.textContent = 'Copy flags'), 1200)
+  })
+  panel.append(title, ...poseRows().map(poseSlider), flags, copy)
+  element('gear-panel').after(panel)
+}
+
+function poseSlider([key, label, limit, step]: readonly [PoseKey, string, number, number]): HTMLElement {
+  const wrapper = document.createElement('label')
+  wrapper.className = 'block space-y-1'
+  const name = document.createElement('span')
+  name.className = 'text-ash-300 text-[11px] uppercase tracking-wide'
+  const slider = document.createElement('input')
+  slider.type = 'range'
+  slider.min = String(-limit)
+  slider.max = String(limit)
+  slider.step = String(step)
+  slider.value = String(pose[key])
+  slider.className = 'w-full accent-ember'
+  const show = () => (name.textContent = `${label} ${short(pose[key], step < 1 ? 3 : 0)}`)
+  slider.addEventListener('input', () => {
+    pose[key] = Number(slider.value)
+    show()
+    writePose()
+  })
+  show()
+  poseSliders.set(key, slider)
+  wrapper.append(name, slider)
+  return wrapper
+}
+
+function showSocketPanel(): void {
+  element('socket-panel').hidden = posed.length === 0
+}
+
+function hasPoseQuery(): boolean {
+  const query = new URLSearchParams(location.search)
+  return query.has('orient') || query.has('offset')
+}
+
+/** `?orient=12:-8:0&offset=0.01:0:-0.005` lands the page on a pose already dialled. */
+function readPoseQuery(): Record<PoseKey, number> {
+  const query = new URLSearchParams(location.search)
+  const read = (name: string, limit: number): number[] => {
+    const parts = (query.get(name) ?? '').split(':').map(Number)
+    return parts.length === 3 && parts.every((value) => Number.isFinite(value))
+      ? parts.map((value) => Math.max(-limit, Math.min(limit, value)))
+      : [0, 0, 0]
+  }
+  const [yaw, pitch, roll] = read('orient', ORIENT_LIMIT)
+  const [x, y, z] = read('offset', OFFSET_LIMIT)
+  return { yaw: yaw!, pitch: pitch!, roll: roll!, x: x!, y: y!, z: z! }
+}
+
+/** The same pose from the console, for a sweep no hand wants to drag out one step at a time. */
+function setPose(next: Partial<Record<PoseKey, number>>): string {
+  for (const [key, limit] of [['yaw', ORIENT_LIMIT], ['pitch', ORIENT_LIMIT], ['roll', ORIENT_LIMIT],
+    ['x', OFFSET_LIMIT], ['y', OFFSET_LIMIT], ['z', OFFSET_LIMIT]] as const) {
+    const value = next[key]
+    if (value === undefined) continue
+    pose[key] = Math.max(-limit, Math.min(limit, value))
+    const slider = poseSliders.get(key)
+    if (slider) {
+      slider.value = String(pose[key])
+      slider.dispatchEvent(new Event('input', { bubbles: true }))
+    }
+  }
+  writePose()
+  return poseFlags()
 }
 
 /**

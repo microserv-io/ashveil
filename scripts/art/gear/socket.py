@@ -23,6 +23,15 @@ plate left inside the bare body, less half a millimetre for every percent of the
 deltoid the plate covers. Lowest score wins, and the two shoulders must agree on a
 seed, because a pair whose sides chose different poses is not a pair.
 
+Measuring it does not settle it. Three derivations - the arm's own tilt, an ICP from
+the drawn pose, a scored grid of seeds - each produced a pose that was rejected on
+sight, so the orientation is declared instead: `--orient yaw:pitch:roll` turns the cap
+about the crest the anchor put it on, `--offset dx:dy:dz` slides it, and the right
+shoulder wears the mirror of both without being told twice. That is how a game
+attaches a shoulder, and it is what the pipeline already learned about this slot's
+neighbours: an orientation is authored per item, not derived. Declaring one replaces
+the ICP, because a registration that argues with the author is not an author.
+
 The tilt this replaced stood the cap up on the upper arm's axis, which is 10 degrees
 from vertical where the cap is drawn leaning 35 degrees down the deltoid, and the
 anchor put it on the centroid of the muscle rather than the crest above it: together
@@ -122,6 +131,7 @@ SCORE_PENETRATION_PER_PERCENT = 1.0
 SCORE_COVERAGE_PER_PERCENT = 0.5
 UP = np.array([0.0, 1.0, 0.0])
 FORWARD = np.array([0.0, 0.0, 1.0])
+ACROSS = np.array([1.0, 0.0, 0.0])
 # Runtime (+Y up, +Z forward) from Blender (+Z up, -Y forward), as a linear map.
 TO_BLENDER = np.array([[1.0, 0.0, 0.0], [0.0, 0.0, -1.0], [0.0, 1.0, 0.0]])
 
@@ -181,6 +191,39 @@ def turn_about(axis: np.ndarray, degrees: float) -> np.ndarray:
                       [axis[2], 0.0, -axis[0]],
                       [-axis[1], axis[0], 0.0]])
     return np.eye(3) + math.sin(angle) * cross + (1.0 - math.cos(angle)) * (cross @ cross)
+
+
+def triple(text: str, flag: str) -> np.ndarray:
+    """`a:b:c` as three numbers, or a named gate rather than a stack trace."""
+    parts = text.split(":")
+    if len(parts) != 3:
+        raise SocketError(f"{flag} gate: \"{text}\" is not three values separated by colons")
+    try:
+        return np.array([float(part) for part in parts], dtype=np.float64)
+    except ValueError as error:
+        raise SocketError(f"{flag} gate: \"{text}\" has a value that is not a number") from error
+
+
+def hand_of(side: str) -> float:
+    return 1.0 if side == "L" else -1.0
+
+
+def declared(orient: np.ndarray, side: str) -> np.ndarray:
+    """A pose that is stated rather than searched for: yaw, then pitch, then roll.
+
+    Yaw turns the cap about the body's vertical, pitch tips it about the axis across
+    the body, roll rocks it about forward. Mirroring about X negates a rotation about
+    Y and one about Z and leaves one about X alone, so the right shoulder wears the
+    author's own numbers with the yaw and the roll turned round and is the mirror of
+    the left rather than a second guess at the same piece.
+    """
+    hand = hand_of(side)
+    return (turn_about(UP, hand * float(orient[0])) @ turn_about(ACROSS, float(orient[1]))
+            @ turn_about(FORWARD, hand * float(orient[2])))
+
+
+def declared_offset(offset: np.ndarray, side: str) -> np.ndarray:
+    return offset * np.array([hand_of(side), 1.0, 1.0])
 
 
 def seed_grid(side: str, axis_arm: np.ndarray, mode: str) -> list[dict]:
@@ -414,6 +457,29 @@ def register(points: np.ndarray, normals: np.ndarray, tree: BVHTree,
             "residualP95Millimetres": round(float(np.percentile(moved, 95.0)) * 1000.0, 4)}
 
 
+def _declare(plan: dict, wall: np.ndarray, crest: np.ndarray) -> dict:
+    """The authored pose, in the shape a registration returns.
+
+    Three attempts to derive this cap's orientation from the geometry each landed a
+    pose the eye rejects, which is the ordinary answer: a shoulder's offset is
+    authored per item, the way a game attaches one. So the turn is read off the flags
+    and taken, about the crest the anchor has already placed, and the residual is
+    still measured - a declared pose earns the same numbers a searched one does.
+    """
+    rotation = declared(plan["orient"], plan["side"])
+    offset = declared_offset(plan["offset"], plan["side"])
+    shift = crest - rotation @ crest + offset
+    placed = wall @ rotation.T + shift
+    gaps = np.array([nearest_surface(plan["dressed"].every, point)[2] for point in placed])
+    moved = np.abs(gaps - plan["clearance"])
+    axis, degrees = axis_angle(rotation)
+    return {"rotation": rotation, "translation": shift, "placed": placed,
+            "iterations": 0, "bounded": False, "trace": [], "axis": rounded_list(axis),
+            "degrees": round(degrees, 4),
+            "residualMeanMillimetres": round(float(moved.mean()) * 1000.0, 4),
+            "residualP95Millimetres": round(float(np.percentile(moved, 95.0)) * 1000.0, 4)}
+
+
 def push_out(placed: np.ndarray, tree: BVHTree, surface: geometry.Surface) -> tuple[np.ndarray, list]:
     """Lift a rigid part off whatever it is still buried in, along the skin's own normal."""
     moved = np.zeros(3)
@@ -589,7 +655,9 @@ def plan_side(entries: list[tuple], side: str, contract: dict, landmarks: dict,
               region: np.ndarray, region_normals: np.ndarray, dressed: geometry.Surface,
               bare: geometry.Surface, skin: np.ndarray, clearance: float,
               cap_fraction: float, anchor: str = "crest", seat: str = "p95",
-              stage: str = "push", inner: str = "nearest", seeds: str = "grid") -> dict:
+              stage: str = "push", inner: str = "nearest", seeds: str = "grid",
+              orient: np.ndarray | None = None,
+              offset: np.ndarray | None = None) -> dict:
     """Everything measurable about one shoulder, before a vertex has been moved.
 
     Split from the commit because the seed the pair wears is a decision about the pair:
@@ -627,7 +695,8 @@ def plan_side(entries: list[tuple], side: str, contract: dict, landmarks: dict,
             "cap": cap, "capPoints": cap_points, "isFixed": is_fixed, "axis": axis,
             "apex": apex, "scale": scale, "armAxis": axis_arm, "joint": joint,
             "region": region, "regionNormals": region_normals, "dressed": dressed,
-            "bare": bare, "clearance": clearance, "shared": shared, "seeds": seeds}
+            "bare": bare, "clearance": clearance, "shared": shared, "seeds": seeds,
+            "orient": orient, "offset": offset}
     if anchor != "crest":
         # The first rule is one pose by construction: it turns the cap onto the arm.
         plan["trials"] = [{"label": "y0p0", "yawDegrees": 0.0, "pitchDegrees": 0.0,
@@ -645,8 +714,11 @@ def plan_side(entries: list[tuple], side: str, contract: dict, landmarks: dict,
     plan["normals"] = normals
     plan["crestBody"] = crest_of(skin, joint, CREST_RADIUS)
     plan["faces"] = faces_of(cap)
+    # A declared pose is not a searched one: the seeds exist to guess an orientation,
+    # and once one is written down there is nothing left for them to choose between.
     plan["trials"] = [{**seed, **_crest_trial(plan, seed["rotation"])}
-                      for seed in seed_grid(side, axis_arm, seeds)]
+                      for seed in seed_grid(side, axis_arm,
+                                            "none" if orient is not None else seeds)]
     return plan
 
 
@@ -665,14 +737,18 @@ def _crest_trial(plan: dict, seed: np.ndarray) -> dict:
     clearance, dressed = plan["clearance"], plan["dressed"]
     wall = (cap_points @ seed.T)[is_inner] * scale
     crest_source = wall[int(np.argmax(wall[:, 1]))]
-    seated = plan["crestBody"] + np.array([0.0, clearance, 0.0]) - crest_source
-    registered = (register(wall + seated, (plan["normals"] @ seed.T)[is_inner],
-                           dressed.every, clearance)
-                  if plan["stage"] in ("icp", "push")
-                  else {"rotation": np.eye(3), "translation": np.zeros(3), "placed": wall + seated,
-                        "iterations": 0, "bounded": False, "trace": [], "axis": [0.0, 1.0, 0.0],
-                        "degrees": 0.0, "residualMeanMillimetres": None,
-                        "residualP95Millimetres": None})
+    crest_at = plan["crestBody"] + np.array([0.0, clearance, 0.0])
+    seated = crest_at - crest_source
+    if plan["orient"] is not None:
+        registered = _declare(plan, wall + seated, crest_at)
+    elif plan["stage"] in ("icp", "push"):
+        registered = register(wall + seated, (plan["normals"] @ seed.T)[is_inner],
+                              dressed.every, clearance)
+    else:
+        registered = {"rotation": np.eye(3), "translation": np.zeros(3), "placed": wall + seated,
+                      "iterations": 0, "bounded": False, "trace": [], "axis": [0.0, 1.0, 0.0],
+                      "degrees": 0.0, "residualMeanMillimetres": None,
+                      "residualP95Millimetres": None}
     rotation, shift = registered["rotation"], registered["translation"]
     lifted, passes = (push_out(registered["placed"], dressed.every, dressed)
                       if plan["stage"] == "push" else (np.zeros(3), []))
@@ -802,11 +878,15 @@ def commit_side(plan: dict, label: str) -> dict:
     settled = depths(placed[plan["isFixed"]], plan["dressed"])
     return {
         **plan["shared"],
-        "rule": "multi-start seeds, crest and rigid ICP",
+        "rule": ("crest anchor and the authored orientation" if plan["orient"] is not None
+                 else "multi-start seeds, crest and rigid ICP"),
         "stage": plan["stage"],
+        "authored": _authored_report(plan),
         "innerFace": {"vertices": int(plan["isInner"].sum()), "rule": plan["innerRule"],
                       "ofCapVertices": int(len(plan["capPoints"]))},
-        "seedRule": (f"yaw {list(SEED_YAW_DEGREES)} by pitch {list(SEED_PITCH_DEGREES)}"
+        "seedRule": ("the source's own orientation, then the authored turn"
+                     if plan["orient"] is not None
+                     else f"yaw {list(SEED_YAW_DEGREES)} by pitch {list(SEED_PITCH_DEGREES)}"
                      if plan["seeds"] == "grid" else "the source's own orientation only"),
         "seedChosen": label,
         "seedYawDegrees": chosen["yawDegrees"],
@@ -845,6 +925,37 @@ def commit_side(plan: dict, label: str) -> dict:
         "fixedCapDeeperThan2mm": int((settled > CLEARANCE_DEPTH).sum()),
         "fixedCapDeeperThan2mmBare": chosen["fixedCapDeeperThan2mmBare"],
     }
+
+
+def _authored_report(plan: dict) -> dict | None:
+    """What the flags asked for, what this side actually took, and where it turned."""
+    if plan["orient"] is None:
+        return None
+    orient, offset = plan["orient"], plan["offset"]
+    applied_orient = orient * np.array([hand_of(plan["side"]), 1.0, hand_of(plan["side"])])
+    return {
+        "flags": flag_string(orient, offset),
+        "yawDegrees": float(orient[0]), "pitchDegrees": float(orient[1]),
+        "rollDegrees": float(orient[2]),
+        "offsetMetres": rounded_list(offset),
+        "appliedYawDegrees": float(applied_orient[0]),
+        "appliedPitchDegrees": float(applied_orient[1]),
+        "appliedRollDegrees": float(applied_orient[2]),
+        "appliedOffsetMetres": rounded_list(declared_offset(offset, plan["side"])),
+        "order": "yaw about up, then pitch about across, then roll about forward",
+        "pivot": rounded_list(plan["crestBody"] + np.array([0.0, plan["clearance"], 0.0])),
+        "mirrored": plan["side"] == "R",
+    }
+
+
+def flag_string(orient: np.ndarray, offset: np.ndarray) -> str:
+    """The two flags that reproduce this placement, spelled the way they are typed."""
+    return (f"--orient {_short(orient[0])}:{_short(orient[1])}:{_short(orient[2])}"
+            f" --offset {_short(offset[0], 4)}:{_short(offset[1], 4)}:{_short(offset[2], 4)}")
+
+
+def _short(value: float, places: int = 2) -> str:
+    return f"{float(value):.{places}f}".rstrip("0").rstrip(".") or "0"
 
 
 SEED_COLUMNS = ("label", "iterations", "icpDegrees", "icpBounded", "pushMetres",
@@ -984,6 +1095,16 @@ def run(args) -> dict:
             if bone not in slot["weights"]["allowedBones"]:
                 raise SocketError(f"drape gate: {bone} is not a bone the {args.slot} slot weights to")
 
+    # One flag is enough to declare the pose: an offset with no turn is still authored,
+    # and a placement that is half declared and half registered is neither.
+    orient = triple(args.orient, "orient") if args.orient else None
+    offset = triple(args.offset, "offset") if args.offset else None
+    if orient is not None or offset is not None:
+        orient = np.zeros(3) if orient is None else orient
+        offset = np.zeros(3) if offset is None else offset
+    if orient is not None and args.anchor != "crest":
+        raise SocketError("orient gate: an authored pose turns about the crest anchor")
+
     loaded = body.load(ROOT, args.body)
     landmarks = loaded["manifest"]["landmarks"]
     worn_under = [name.strip() for name in (args.under or "").split(",") if name.strip()]
@@ -1016,7 +1137,7 @@ def run(args) -> dict:
 
     plans = {side: plan_side(entries, side, contract, landmarks, region[side], normals[side],
                              dressed, bare, skin, clearance, args.cap, args.anchor, args.seat,
-                             args.register, args.inner, args.seeds)
+                             args.register, args.inner, args.seeds, orient, offset)
              for side, entries in sided.items()}
     choice = choose_seed(plans)
     print_seed_tables(plans, choice)
@@ -1102,8 +1223,17 @@ def run(args) -> dict:
 
     measured = gate.measure(glb_path, str(loaded["path"]), contract, source_had, outside)
     gates_table = gate.gates(measured, slot, None, drapes)
+    # The crest is where the piece was turned about, and the pose is what it was turned
+    # by: together they let a further turn - the review page's sliders, or the next
+    # author - be stated in the same numbers this run took rather than as a delta.
+    authored_pose = {} if orient is None else {"orient": rounded_list(orient),
+                                               "offset": rounded_list(offset)}
     alignment = {side: {"scale": placement[side]["scale"], "yawDegrees": args.yaw,
-                        "translation": placement[side]["translation"]} for side in ("L", "R")}
+                        "translation": placement[side]["translation"],
+                        **({"crest": placement[side]["crestPlaced"]}
+                           if "crestPlaced" in placement[side] else {}),
+                        **authored_pose}
+                 for side in ("L", "R")}
     manifest = {
         "schema": "ashveil.gear-manifest.v1",
         "family": contract["family"],
@@ -1141,6 +1271,11 @@ def run(args) -> dict:
         "under": worn_under,
         "source": manifest["source"],
         "raw": raw,
+        "authored": None if orient is None else {
+            "flags": flag_string(orient, offset),
+            "orientDegrees": rounded_list(orient), "offsetMetres": rounded_list(offset),
+            "perSide": {side: placement[side]["authored"] for side in ("L", "R")},
+        },
         "seeds": {"mode": args.seeds, "yawDegrees": list(SEED_YAW_DEGREES),
                   "pitchDegrees": list(SEED_PITCH_DEGREES),
                   "scoreRule": ("mean inner-face residual in millimetres"
@@ -1196,6 +1331,8 @@ def parse(argv: list[str]):
     parser.add_argument("--register", choices=("crest", "icp", "push"), default="push")
     parser.add_argument("--inner", choices=("normals", "nearest"), default="nearest")
     parser.add_argument("--seeds", choices=("grid", "none"), default="grid")
+    parser.add_argument("--orient", default="")
+    parser.add_argument("--offset", default="")
     parser.add_argument("--drape", action="append", default=[])
     parser.add_argument("--outdir", required=True)
     return parser.parse_args(argv)

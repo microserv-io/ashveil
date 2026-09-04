@@ -45,6 +45,19 @@ export const REVIEW_GEAR: readonly ReviewGearPiece[] = [
   { slot: 'shoulders', piece: 'warden-pauldrons-socket-stiff', path: gearPath('warden-pauldrons-socket-stiff'), compare: true },
 ]
 
+/**
+ * Where the fitter turned each side of a paired piece. A pose authored on top of a
+ * fitted one has to turn about the same point the fitter did, or the flags the page
+ * prints do not reproduce the pose the page is showing.
+ */
+export interface PieceCrests {
+  readonly L: readonly number[]
+  readonly R: readonly number[]
+  /** The `--orient` and `--offset` this piece was fitted with, so a pose can be stated. */
+  readonly orient: readonly number[]
+  readonly offset: readonly number[]
+}
+
 /** A piece with its manifest read: what to bind, and the body it hides. */
 export interface LoadedGearPiece {
   readonly scene: THREE.Object3D
@@ -56,6 +69,7 @@ export interface LoadedGearPiece {
   readonly hidesRegions: readonly string[] | undefined
   readonly hidesBand: readonly [number, number] | undefined
   readonly hidesProfile: HideProfile | undefined
+  readonly crests: PieceCrests | undefined
 }
 
 /** Where `npm run art:gear` puts a piece, and so where the page fetches it. */
@@ -75,6 +89,7 @@ export async function loadGearManifest(piece: string): Promise<Omit<LoadedGearPi
   const manifest = (await response.json()) as {
     covers?: unknown; hides?: unknown; drapes?: unknown; hidesPieces?: unknown
     regions?: unknown; hidesRegions?: unknown; hidesBand?: unknown; hidesProfile?: unknown
+    alignment?: unknown
   }
   if (!Array.isArray(manifest.covers)) throw new Error(`gear: ${url} has no "covers" array`)
   for (const slot of manifest.covers) {
@@ -96,7 +111,29 @@ export async function loadGearManifest(piece: string): Promise<Omit<LoadedGearPi
     hidesRegions: hiddenRegionsOf(manifest.hidesRegions, url),
     hidesBand: bandOf(manifest.hidesBand, url),
     hidesProfile: profileOf(manifest.hidesProfile, url),
+    crests: crestsOf(manifest.alignment),
   }
+}
+
+/**
+ * A piece fitted before the crest was written down, or fitted by a registration
+ * rather than by hand, cannot be re-posed: the page would have nothing to turn
+ * about and no numbers to say the result in.
+ */
+function crestsOf(alignment: unknown): PieceCrests | undefined {
+  if (!alignment || typeof alignment !== 'object' || Array.isArray(alignment)) return undefined
+  const sides = alignment as Record<string, Record<string, unknown> | undefined>
+  const triple = (side: string, name: string): readonly number[] | null => {
+    const values = sides[side]?.[name]
+    return Array.isArray(values) && values.length === 3 && values.every((each) => typeof each === 'number')
+      ? (values as number[])
+      : null
+  }
+  const left = triple('L', 'crest')
+  const right = triple('R', 'crest')
+  const orient = triple('L', 'orient')
+  const offset = triple('L', 'offset')
+  return left && right && orient && offset ? { L: left, R: right, orient, offset } : undefined
 }
 
 /** A piece fitted before region tags existed has none, and falls back to burial. */
