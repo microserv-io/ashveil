@@ -126,9 +126,13 @@ head. The "Many bodies" section below is that pattern with Blender built-ins.
   layer live in the family contract; runtime constants are generated from it. A piece
   may hide whole lower slots (a robe over a belt), by declaration.
 - **The body hides what the piece covers, measured once at fit time.** A body vertex
-  is hidden when cloth sits within 25 mm along its outward normal, or it lies inside
-  the garment within 10 mm of its surface; the indices are written into the manifest
-  per body. A neckline, a slashed sleeve or a cleavage then shows skin, never the
+  is hidden when cloth sits within the slot's reach along its outward normal (25 mm
+  for shells, 20 mm for the head and the ring and socket slots) and the hit is
+  within 10 mm of the nearest cloth, so a ray never counts a far wall it crossed the
+  garment's inside to reach; or it lies inside the garment within 8 mm of its
+  surface. A facing test on the hit triangle does not work here, because every
+  Tripo piece is an open surface whose normals point either way. The indices are
+  written into the manifest per body. A neckline, a slashed sleeve or a cleavage then shows skin, never the
   wall, because skin under an opening is not covered. The two ways this went wrong
   were a 60 mm reach, which let a ray cross the hood's face opening to the far wall,
   and counting anything inside a thick Tripo solid as covered, which hid the armpit
