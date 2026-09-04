@@ -34,13 +34,37 @@ page is the acceptance test, and no fitted asset is done because a script says s
 
 Neither game refits gear per race with geometry, and neither authors gear per race.
 Every race shares one skeleton family with identical bone names. A piece is authored
-once on a base body; other races get it through a per-bone deformation from the base
-skeleton to theirs, carried by the piece's own skin weights, and a per-item table
-says which races have a dedicated model instead. Body parts under gear are hidden by
-authored flags on the item. Heads are the exception in both: helmets ship per race
-because a human helmet cannot be deformed onto a lion's head, and FF14 launched two
-races unable to wear most headgear for that reason. The "Many bodies" section below
-is that pattern with Blender built-ins.
+once on a base body and other races get it through a per-bone deformation, carried
+by the piece's own skin weights; a per-item table says which races have a dedicated
+model instead; body parts under gear are hidden by authored flags on the item. Heads
+are the exception in both, because a human helmet cannot be deformed onto a lion's
+head. The "Many bodies" section below is that pattern with Blender built-ins.
+
+- FF14 stores equipment models under a race code, `chara/equipment/e0000/model/
+  c0101e0000_top.mdl`, and a per-race EQDP bit says whether the race has its own
+  model; otherwise "the game will use the midlander model/material"
+  ([Penumbra wiki](https://github.com/xivdev/Penumbra/wiki/Advanced-Editing)).
+- The racial deformer is one file, `chara/xls/boneDeformer/human.pbd`, holding per
+  body code a 4x3 matrix per bone name: "various races use pre-bone deformers to
+  create their unique body shapes"
+  ([Physis](https://github.com/redstrate/Physis/blob/master/src/pbd.rs)).
+- Part hiding is the EQP flag set per item: hide scalp, hair, neck, waist, elbow,
+  forearm, knees, calves, ankles, with per-race exceptions such as "Show on
+  Hrothgar" ([Penumbra wiki](https://github.com/xivdev/Penumbra/wiki/Advanced-Editing)).
+- Hrothgar and Viera launched with most headgear hidden; "more than five hundred and
+  forty such items were carefully modified by our designers"
+  ([Yoshida, 2019](https://www.siliconera.com/naoki-yoshida-on-viera-and-hrothgar-gender-lock-lack-of-new-healer-in-ffxiv-shadowbringers/)),
+  and "a large number of headgear items will now display when worn by Viera and
+  Hrothgar" only arrived in patch 7.3
+  ([patch notes](https://na.finalfantasyxiv.com/lodestone/topics/detail/c04405c6cbe8519a0b6c8aa5e4d88a5d447419c9)).
+- WoW paints body armour as textures onto a layout every race shares ("build up
+  character models from multiple source textures instead of baking textures for each
+  model/race/variation") and switches on geosets already in each race's mesh for
+  sleeves, boots, belts, tabards, capes and robes
+  ([wowdev.wiki](https://wowdev.wiki/Character_Customization)). Helms and shoulders
+  are attached models; helm files are keyed by race and gender and
+  `HelmetGeosetVisData` is a race bitmask "for hiding certain elements of the face on
+  certain races for certain helmets" ([wowdev.wiki](https://wowdev.wiki/DB/HelmetGeosetVisData)).
 
 ## Decided
 
