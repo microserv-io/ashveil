@@ -90,7 +90,12 @@ head. The "Many bodies" section below is that pattern with Blender built-ins.
   to derive it from geometry (an arm-axis tilt, a registration from the drawn pose,
   a scored grid of seeds) each produced a pose the eye rejected, and the scored one
   was the worst: it hid the plate behind the shoulder because its coverage term
-  counted the cap alone. The same rule as yaw in the old fitter, learned twice. Only *shell*
+  counted the cap alone. Facing is declared the same way: a source that Tripo
+  returned facing backwards gets `--yaw 180`, a half turn of the whole pair before
+  the sides are assigned, which keeps outboard outboard without mirroring. The
+  Warden pauldrons came out with their cloth at the back and the fitter assumed
+  front, so the drape hung behind the cap until the turn was declared. The same
+  rule as yaw in the old fitter, learned three times. Only *shell*
   pieces (tunic, trousers, gloves, boots, hood) need the body's shape, and the five
   the game has were fitted by the old fitter, now frozen as a tool for them.
 - **Generation on the mannequin is the fallback for a new shell piece, not the
