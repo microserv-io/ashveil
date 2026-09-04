@@ -17,6 +17,7 @@ const RUNNER = join(ROOT, 'scripts', 'art', 'gear', 'ring.py')
 const BLENDER_CANDIDATES = ['/opt/homebrew/bin/blender', '/usr/local/bin/blender', 'blender']
 const VALUES = new Set(['--input', '--slot', '--body', '--piece', '--under', '--weights', '--yaw',
   '--bins', '--passes', '--seat', '--outdir'])
+const SWITCHES = new Set(['--no-conform'])
 const NAME = /^[a-z0-9][a-z0-9-]*$/
 
 export class RingError extends Error {}
@@ -25,6 +26,10 @@ export function parseArgs(argv) {
   const parsed = {}
   for (let at = 0; at < argv.length; at++) {
     const flag = argv[at]
+    if (SWITCHES.has(flag)) {
+      parsed[flag.slice(2)] = true
+      continue
+    }
     if (!VALUES.has(flag)) throw new RingError(`argument gate: unknown argument "${flag}"`)
     const value = argv[++at]
     if (value === undefined) throw new RingError(`argument gate: ${flag} needs a value`)
@@ -74,7 +79,8 @@ export function blenderArgs(plan, runner = RUNNER) {
     ...(plan.yaw ? ['--yaw', plan.yaw] : []),
     ...(plan.bins ? ['--bins', plan.bins] : []),
     ...(plan.passes ? ['--passes', plan.passes] : []),
-    ...(plan.seat ? ['--seat', plan.seat] : [])]
+    ...(plan.seat ? ['--seat', plan.seat] : []),
+    ...(plan['no-conform'] ? ['--no-conform'] : [])]
 }
 
 function findBlender(exists = existsSync) {

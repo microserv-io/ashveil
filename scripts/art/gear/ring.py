@@ -2,19 +2,25 @@
 
 A belt strap, a collar or a cuff closes a loop about the vertical axis, and the
 body's cross section at that height plus a clearance says where the loop goes.
-Nothing here reshapes the piece to place it: the strap's own inner ellipse is
-measured, the body's outer ellipse at the same height too, and the whole piece - buckle,
-pouches, sash, rivets - is moved by one rigid transform with a scale per horizontal
-axis. Then one Shrinkwrap pushes the strap back out of the body, and a Corrective
-Smooth tidies only what moved.
+The strap's own inner ellipse is measured, the body's outer ellipse at the same
+height too, and the whole piece - buckle, pouches, sash, rivets - is moved by one
+rigid transform with a scale per horizontal axis.
+
+An ellipse is where the placement ends and the belt is not on yet, because a waist
+is not an ellipse: the leather touches at the points where the body reaches the
+ellipse and stands a centimetre off between them. So the strap is then conformed.
+Per azimuth the surface's own reach is measured by ray and the leather is drawn onto
+it, every vertex in that direction moving by the same amount so the thickness and
+the edge profile come along unchanged. One Shrinkwrap pushes back out what the
+conform left inside, and a Corrective Smooth tidies only what moved.
 
 Only the strap is ever reshaped. The body has an opinion about a band of leather
 lying on it and none at all about the buckle bolted through it, so every other
-island is translated by what the seat did to the strap under it and keeps its own
-shape to the millimetre. What that leaves inside the clothes underneath - the belt
-was generated against nothing, so a pouch back can start in the hem - is then pushed
-radially out of the waist, whole part by whole part, which is the same rigid move
-with the ring rather than the strap saying which way.
+island is translated by what the conform and the seat did to the strap under it and
+keeps its own shape to the millimetre. What that leaves inside the clothes
+underneath - the belt was generated against nothing, so a pouch back can start in
+the hem - is then pushed radially out of the waist, whole part by whole part, which
+is the same rigid move with the ring rather than the strap saying which way.
 
 Every island and every triangle the source had survives to the runtime file. The
 2% debris rule that ate the belt's buckle, the alignment search, the tube fit and
@@ -51,6 +57,18 @@ AZIMUTH_BINS = 36
 # What the strap holds off the body's own surface before the seat runs.
 RING_CLEARANCE = 0.003
 SHRINKWRAP_OFFSET = 0.003
+# The conform reads a cross section rather than fits one, so it wants a finer comb
+# than the ellipse does: 5 degrees is a bin the strap always has vertices in.
+CONFORM_BINS = 72
+# What the conformed leather holds off the surface it now lies on.
+CONFORM_GAP = 0.002
+# One spike in the measured profile must not pull a whole column of the strap in.
+CONFORM_KERNEL = 3
+# Heights across the strap's own band each azimuth is measured at: the band is what
+# the leather has to clear, so its widest point over that band is the target.
+CONFORM_SAMPLES = 9
+# Past this a bin moved far enough to be worth naming rather than counting.
+CONFORM_LOUD = 0.015
 # A vertex the seat did not touch is not "moved"; float noise is not movement.
 MOVE_EPSILON = 1e-6
 # Below this the seat found nothing to fix and a smooth would only blur the source.
@@ -269,16 +287,18 @@ class Solid:
         found = self.tree.find_nearest(Vector(point))
         return float("inf") if found[0] is None else float(found[3])
 
-    def _crossings(self, origin: Vector, direction: Vector) -> int:
-        crossings = 0
+    def hits(self, origin: Vector, direction: Vector):
+        """Every crossing along one ray, near to far: a dressed cross section is layered."""
         at = origin.copy()
-        while crossings <= RAY_HIT_LIMIT:
+        for _ in range(RAY_HIT_LIMIT):
             hit, _, _, _ = self.tree.ray_cast(at, direction)
             if hit is None:
-                return crossings
-            crossings += 1
+                return
+            yield hit
             at = hit + direction * RAY_NUDGE
-        return crossings
+
+    def _crossings(self, origin: Vector, direction: Vector) -> int:
+        return sum(1 for _ in self.hits(origin, direction))
 
     def inside(self, point) -> bool:
         origin = Vector(point)
@@ -302,6 +322,7 @@ def described(values: np.ndarray) -> dict:
         "medianMetres": round(float(np.median(values)), 6),
         "p90Metres": round(float(np.percentile(values, 90)), 6),
         "maxMetres": round(float(values.max()), 6),
+        "within5mm": round(float((values <= 0.005).mean()), 6),
         "within10mm": round(float((values <= 0.010).mean()), 6),
     }
 
@@ -356,6 +377,168 @@ def target_ellipse(surface_points: np.ndarray, is_torso: np.ndarray, centre: np.
             "regionCentroidXZ": [round(float(centre[0]), 6), round(float(centre[1]), 6)],
             "maxRadius": round(float(np.nanmax(outer)), 6),
             "minRadius": round(float(np.nanmin(outer)), 6)}
+
+
+def circular_fill(values: np.ndarray) -> np.ndarray:
+    """A bin nothing landed in borrows from its neighbours, the short way round."""
+    known = np.flatnonzero(np.isfinite(values))
+    if known.size == 0:
+        raise RingError("conform gate: no azimuth bin carries a radius")
+    if known.size == values.size:
+        return values.copy()
+    bins = len(values)
+    step = 2.0 * math.pi / bins
+    at = known.astype(float) * step
+    grid = np.concatenate([at[-1:] - 2.0 * math.pi, at, at[:1] + 2.0 * math.pi])
+    picked = np.concatenate([values[known[-1:]], values[known], values[known[:1]]])
+    return np.interp(np.arange(bins) * step, grid, picked)
+
+
+def circular_smooth(values: np.ndarray, width: int) -> np.ndarray:
+    """A moving average that wraps, because the last bin and the first are neighbours."""
+    if width <= 1:
+        return values.copy()
+    padded = np.concatenate([values[-width:], values, values[:width]])
+    kernel = np.ones(width) / float(width)
+    return np.convolve(padded, kernel, mode="same")[width:width + len(values)]
+
+
+def surface_radii(target: Solid, centre_xz: np.ndarray, band: tuple[float, float], near_torso,
+                  bins: int, samples: int, gap: float, kernel: int) -> tuple[np.ndarray, dict]:
+    """How far the surface under the strap reaches, per azimuth, plus the strap's gap.
+
+    A cross section read off the target's own vertices is as sparse as the mesh is,
+    and a belt conformed to it would follow the triangulation. A ray from the ring
+    axis asks the surface itself, and the furthest torso crossing is the outside of
+    whatever is worn there: skin where nothing is, the tunic's outer shell where it
+    is. Hits that are not torso are dropped, because at waist height the arm is a
+    wall the leather would otherwise be asked to wrap.
+
+    The band is sampled rather than sliced once, because the leather has to clear the
+    widest thing under it anywhere down its height and not only at its middle.
+    """
+    heights = np.linspace(band[0], band[1], samples)
+    grid = np.full((bins, samples), np.nan)
+    per_bin_hits = np.zeros(bins, dtype=int)
+    for slot, angle in enumerate(bin_angles(bins)):
+        direction = Vector(blender_from_runtime((math.cos(angle), 0.0, math.sin(angle))))
+        for level, height in enumerate(heights):
+            origin = Vector(blender_from_runtime((centre_xz[0], height, centre_xz[1])))
+            for hit in target.hits(origin, direction):
+                point = np.array(runtime_from_blender(hit))
+                if not near_torso(point):
+                    continue
+                per_bin_hits[slot] += 1
+                reach = math.hypot(point[0] - centre_xz[0], point[2] - centre_xz[1])
+                if not np.isfinite(grid[slot, level]) or reach > grid[slot, level]:
+                    grid[slot, level] = reach
+    radii = np.where(np.isnan(grid).all(axis=1), np.nan, np.nanmax(grid, axis=1))
+    # The waist tapers across the strap's own height, and a straight band moved
+    # horizontally cannot follow that: this is the gap the conform cannot close.
+    spread = np.nanmax(grid, axis=1) - np.nanmin(grid, axis=1)
+    measured = int(np.isfinite(radii).sum())
+    if measured < bins // 2:
+        raise RingError(f"conform gate: only {measured} of {bins} azimuths found the surface")
+    smoothed = circular_smooth(circular_fill(radii), kernel) + gap
+    return smoothed, {
+        "bins": bins, "samples": samples, "gapMetres": gap, "kernelBins": kernel,
+        "band": [round(float(band[0]), 6), round(float(band[1]), 6)],
+        "centreXZ": [round(float(centre_xz[0]), 6), round(float(centre_xz[1]), 6)],
+        "binsMeasured": measured, "binsFilled": bins - measured,
+        "torsoHits": int(per_bin_hits.sum()),
+        "rawMinMetres": round(float(np.nanmin(radii)), 6),
+        "rawMaxMetres": round(float(np.nanmax(radii)), 6),
+        "targetMinMetres": round(float(smoothed.min()), 6),
+        "targetMaxMetres": round(float(smoothed.max()), 6),
+        "bandSpreadMetres": {"min": round(float(np.nanmin(spread)), 6),
+                             "median": round(float(np.nanmedian(spread)), 6),
+                             "max": round(float(np.nanmax(spread)), 6)},
+        "medianRadiusPerHeight": [[round(float(height), 6),
+                                   round(float(np.nanmedian(grid[:, level])), 6)]
+                                  for level, height in enumerate(heights)],
+    }
+
+
+def bin_thickness(points: np.ndarray, centre_xz: np.ndarray, bins: int) -> np.ndarray:
+    """Per azimuth, how far the outer face stands off the inner one: the strap's own depth."""
+    inner, outer = bin_extremes(points, centre_xz, bins)
+    return (outer - inner)[np.isfinite(inner)]
+
+
+def conform(obj, indices: list[int], centre_xz: np.ndarray, target_radius: np.ndarray,
+            bins: int) -> dict:
+    """Draw the strap's cross section onto the surface's, keeping the leather's depth.
+
+    Per azimuth the strap has an inner radius and the body has a reach, and the
+    difference is what the leather has to come in by. Every vertex in that direction
+    moves by it, horizontally and about the ring axis, so the outer face travels with
+    the inner one: the thickness and the edge profile are the same shape afterwards,
+    only wrapped around a waist rather than around an ellipse.
+
+    The move is a function of the azimuth alone and interpolated between bin centres,
+    so no column of vertices steps against its neighbour.
+    """
+    picked = np.array(sorted(indices), dtype=int)
+    strap = points_of(obj)[picked]
+    angles, radius = azimuth(strap, centre_xz)
+    if float(radius.min()) < 1e-9:
+        raise RingError("conform gate: a strap vertex sits on the ring's own axis")
+    which = bin_index(angles, bins)
+    inner = np.full(bins, np.nan)
+    for slot in range(bins):
+        members = radius[which == slot]
+        if members.size:
+            inner[slot] = members.min()
+    filled = circular_fill(inner)
+    delta = target_radius - filled
+    centres = bin_angles(bins)
+    grid = np.concatenate([centres[-1:] - 2.0 * math.pi, centres, centres[:1] + 2.0 * math.pi])
+    values = np.concatenate([delta[-1:], delta, delta[:1]])
+    shift = np.interp(angles, grid, values)
+    towards = np.stack([(strap[:, 0] - centre_xz[0]) / radius, np.zeros(len(strap)),
+                        (strap[:, 2] - centre_xz[1]) / radius], axis=1)
+    travel = towards * shift[:, None]
+    before = bin_thickness(strap, centre_xz, bins)
+    after = bin_thickness(strap + travel, centre_xz, bins)
+    basis = obj.matrix_world.to_3x3().inverted()
+    for at, index in enumerate(picked):
+        vertex = obj.data.vertices[int(index)]
+        vertex.co = vertex.co + (basis @ Vector(blender_from_runtime(travel[at])))
+    obj.data.update()
+    loud = [slot for slot in range(bins) if abs(delta[slot]) > CONFORM_LOUD]
+    return {
+        "bins": bins,
+        "vertices": int(len(picked)),
+        "emptyBins": int((~np.isfinite(inner)).sum()),
+        "displacementMetres": {
+            "min": round(float(delta.min()), 6),
+            "median": round(float(np.median(delta)), 6),
+            "max": round(float(delta.max()), 6),
+            "maxAbs": round(float(np.abs(delta).max()), 6),
+        },
+        "loudThresholdMetres": CONFORM_LOUD,
+        "loudBins": [{"bin": slot, "degrees": round(math.degrees(centres[slot]), 2),
+                      "displacementMetres": round(float(delta[slot]), 6)} for slot in loud],
+        "loudBinCount": len(loud),
+        "innerRadiusBeforeMetres": {"min": round(float(filled.min()), 6),
+                                    "median": round(float(np.median(filled)), 6),
+                                    "max": round(float(filled.max()), 6)},
+        "targetRadiusMetres": {"min": round(float(target_radius.min()), 6),
+                               "median": round(float(np.median(target_radius)), 6),
+                               "max": round(float(target_radius.max()), 6)},
+        "thicknessBeforeMetres": {"min": round(float(before.min()), 6),
+                                  "median": round(float(np.median(before)), 6),
+                                  "max": round(float(before.max()), 6)},
+        "thicknessAfterMetres": {"min": round(float(after.min()), 6),
+                                 "median": round(float(np.median(after)), 6),
+                                 "max": round(float(after.max()), 6)},
+        # A bin is a 5 degree wedge, so its inner and outer extreme are not the same
+        # radial line and a steep bin reads a change the leather did not have.
+        "thicknessChangeMetres": {"median": round(float(np.median(np.abs(after - before))), 6),
+                                  "p90": round(float(np.percentile(np.abs(after - before), 90)), 6),
+                                  "max": round(float(np.abs(after - before).max()), 6)},
+        "maxVertexMoveMetres": round(float(np.abs(shift).max()), 6),
+    }
 
 
 def transform(objects: list, centre_xz: np.ndarray, centre_y: float, scale: tuple[float, float, float],
@@ -835,6 +1018,34 @@ def run(args) -> dict:
         raise RingError("strap gate: the join lost the strap island")
     fitted_object.vertex_groups.new(name=STRAP_GROUP).add(strap_vertices, 1.0, "REPLACE")
 
+    conformed: dict | None = None
+    after_conform = before_seat
+    if args.conform:
+        placed_band = (float(placed_strap[:, 1].min()), float(placed_strap[:, 1].max()))
+        before_conform_points = np.array([tuple(vertex.co)
+                                          for vertex in fitted_object.data.vertices])
+        radii, profile = surface_radii(dressed, placed_centre, placed_band, near_torso,
+                                       CONFORM_BINS, CONFORM_SAMPLES, CONFORM_GAP, CONFORM_KERNEL)
+        conformed = conform(fitted_object, strap_vertices, placed_centre, radii, CONFORM_BINS)
+        conformed["target"] = profile
+        # The hardware is welded to leather that just changed shape, so it rides the
+        # conform by the same rule it rides the seat by, and before the seat runs.
+        carried = rigid_transport(
+            fitted_object, members, strap_at, before_conform_points,
+            np.array([tuple(vertex.co) for vertex in fitted_object.data.vertices])
+            - before_conform_points, ATTACH_RADIUS)
+        conformed["transport"] = {
+            "islandsMoved": len(carried),
+            "fromNearestStrapVertex": sum(1 for entry in carried
+                                          if entry["fromNearestStrapVertex"]),
+            "maxTranslationMetres": round(max((entry["translationMetres"] for entry in carried),
+                                              default=0.0), 6),
+            "meanTranslationMetres": round(float(np.mean([entry["translationMetres"]
+                                                          for entry in carried])) if carried else 0.0, 6),
+        }
+        after_conform = measure_strap(points_of(fitted_object)[strap_vertices], placed_centre,
+                                      args.bins, dressed, bare)
+
     before_seat_points = np.array([tuple(vertex.co) for vertex in fitted_object.data.vertices])
     limited = args.seat == "strap"
     shrinkwrap = seat(fitted_object, seat_targets if args.seat == "layers" else [dressed_target],
@@ -862,6 +1073,7 @@ def run(args) -> dict:
     after_points = points_of(fitted_object)
     strap_after = after_points[strap_vertices]
     after_seat = measure_strap(strap_after, placed_centre, args.bins, dressed, bare)
+    seated_thickness = bin_thickness(strap_after, placed_centre, CONFORM_BINS)
 
     torso_band = surface_points[(surface_points[:, 1] >= band[0]) & (surface_points[:, 1] <= band[1])
                                 & is_torso]
@@ -978,8 +1190,14 @@ def run(args) -> dict:
                       "maxTranslationMetres": round(max((entry["translationMetres"]
                                                          for entry in transported), default=0.0), 6)},
         "clearance": clearance,
+        "conform": conformed,
         "strapBeforeSeat": before_seat,
+        "strapAfterConform": after_conform,
         "strapAfterSeat": after_seat,
+        "strapThicknessAfterSeatMetres": {
+            "min": round(float(seated_thickness.min()), 6),
+            "median": round(float(np.median(seated_thickness)), 6),
+            "max": round(float(seated_thickness.max()), 6)},
         "strapExtents": extents(strap_after),
         "torsoExtents": {"dressed": extents(torso_band), "bare": extents(bare_band),
                          "band": [round(band[0], 6), round(band[1], 6)]},
@@ -1023,6 +1241,8 @@ def parse(argv: list[str]):
     parser.add_argument("--bins", type=int, default=AZIMUTH_BINS)
     parser.add_argument("--passes", type=int, default=3)
     parser.add_argument("--seat", choices=("strap", "merged", "layers"), default="strap")
+    parser.add_argument("--no-conform", dest="conform", action="store_false",
+                        help="place by the ellipse alone and leave the cross section unread")
     parser.add_argument("--outdir", required=True)
     return parser.parse_args(argv)
 
