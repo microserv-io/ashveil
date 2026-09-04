@@ -216,6 +216,20 @@ When a feature changes a player-facing rule, its PR must:
 - **Canonical upright stance.** A base character must have a neutral, upright
   canonical stance plus deformation-ready knee and elbow topology, because a leaning
   or non-deforming rest pose corrupts every animation built on top of it.
+- **Gear is generated on the canonical body, never fitted to it afterwards.** The
+  concept for a piece is the canonical body's own render wearing it, Tripo returns a
+  dressed body, and the fitter extracts the piece, seats it with one shrinkwrap pass
+  and transfers the body's skin weights. A standalone piece fitted by bespoke
+  geometry was tried and produced a floating belt and a cape down the chest while
+  every gate stayed green.
+- **The body hides under gear by authored regions; hanging cloth is spring bones.**
+  A piece declares which contract regions it hides. Capes, sashes and pauldron
+  drapes are short bone chains driven by a spring-bone solver against capsule
+  colliders on the body, presentation only.
+- **Fitted assets are accepted by eye, not by gate.** Gates fail closed only on what a
+  script can judge; every other measurement is an advisory on the review sheet, and
+  no fitted piece is done until Rocco approves it on the review page. See
+  [gear.md](gear.md).
 
 ### Direction
 
