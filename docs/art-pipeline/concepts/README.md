@@ -9,6 +9,7 @@ times that and git carries every version forever).
 |---|---|---|
 | `hero/` | The hooded assassin, the player's launch look | single front view |
 | `mannequins/` | The bald-scalp undersuit bodies the game rigs: masculine and feminine, front, right, back, and a mirrored left (the undersuit is symmetric) | four views |
+| `mannequins/tauren/` | Broad-shouldered male and female Tauren proportion references | front, back and right views |
 | `creatures/` | Non-humanoid species, starting with the ash wolf | single view until a four-view sheet exists |
 | `environment/` | Landmark pieces such as the Ashward gate | single view |
 | `batch-1/` | Three bipedal enemies as four-view sets, six dungeon kit pieces and eight props as front views (three-quarter views are reference only) | see its README |

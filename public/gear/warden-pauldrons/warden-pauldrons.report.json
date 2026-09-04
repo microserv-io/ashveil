@@ -19,7 +19,7 @@
     "vertices": 5404
   },
   "turn": {
-    "degrees": 180,
+    "degrees": 0,
     "axis": "the runtime vertical through the piece's own centre",
     "centre": [
       0.0,
@@ -38,72 +38,60 @@
         0.206299
       ]
     ],
-    "boundsAfter": [
-      [
-        -0.499756,
-        0.0,
-        -0.206299
-      ],
-      [
-        0.499756,
-        0.480957,
-        0.206299
-      ]
-    ],
     "facing": {
       "rule": "the cap island above and below the cloth line, both halves onto the left",
       "pair": {
         "capCentroid": [
           0.326805,
           0.37243,
-          0.013529
+          -0.013529
         ],
         "clothCentroid": [
           0.352693,
           0.187589,
-          0.02579
+          -0.02579
         ],
-        "clothAheadMetres": 0.012261,
+        "clothAheadMetres": -0.012261,
         "clothOutwardMetres": 0.025888,
         "clothBelowMetres": 0.184841
       },
       "perSide": {
         "L": {
           "capCentroid": [
-            0.326828,
-            0.375684,
-            0.015681
-          ],
-          "clothCentroid": [
-            0.347152,
-            0.187218,
-            0.045257
-          ],
-          "clothAheadMetres": 0.029577,
-          "clothOutwardMetres": 0.020324,
-          "clothBelowMetres": 0.188467,
-          "capVertices": 697,
-          "clothVertices": 829,
-          "capOutwardComponent": 0.705063,
-          "capFacesOutward": true
-        },
-        "R": {
-          "capCentroid": [
-            -0.326785,
+            0.326785,
             0.369518,
-            0.011604
+            -0.011604
           ],
           "clothCentroid": [
-            -0.356885,
+            0.356885,
             0.187869,
-            0.011066
+            -0.011066
           ],
-          "clothAheadMetres": -0.000539,
+          "clothAheadMetres": 0.000539,
           "clothOutwardMetres": 0.030099,
           "clothBelowMetres": 0.181649,
           "capVertices": 779,
           "clothVertices": 1096,
           "capOutwardComponent": 0.671508,
+          "capFacesOutward": true
+        },
+        "R": {
+          "capCentroid": [
+            -0.326828,
+            0.375684,
+            -0.015681
+          ],
+          "clothCentroid": [
+            -0.347152,
+            0.187218,
+            -0.045257
+          ],
+          "clothAheadMetres": -0.029577,
+          "clothOutwardMetres": 0.020324,
+          "clothBelowMetres": 0.188467,
+          "capVertices": 697,
+          "clothVertices": 829,
+          "capOutwardComponent": 0.705063,
           "capFacesOutward": true
         }
       }
@@ -207,13 +195,13 @@
       "R": "y0p0"
     },
     "bestScorePerSide": {
-      "L": 39.8022,
-      "R": 34.6821
+      "L": 32.0681,
+      "R": 42.5914
     },
     "decidedBy": "both sides",
     "bestPairSeed": "y0p0",
     "pairScores": {
-      "y0p0": 74.4843
+      "y0p0": 74.6595
     },
     "table": {
       "L": [
@@ -223,13 +211,13 @@
           "icpDegrees": 16.1413,
           "icpBounded": false,
           "pushMetres": 0.0,
-          "residualMeanMillimetres": 41.8124,
-          "residualP95Millimetres": 55.1294,
-          "fixedCapDeeperThan2mmBare": 25,
-          "fixedCapMaxDepthBareMetres": 0.025025,
-          "fixedCapInsidePercent": 3.5868,
-          "coveragePercent": 11.194,
-          "score": 39.8022
+          "residualMeanMillimetres": 35.411,
+          "residualP95Millimetres": 50.6745,
+          "fixedCapDeeperThan2mmBare": 35,
+          "fixedCapMaxDepthBareMetres": 0.03194,
+          "fixedCapInsidePercent": 4.4929,
+          "coveragePercent": 15.6716,
+          "score": 32.0681
         }
       ],
       "R": [
@@ -239,13 +227,13 @@
           "icpDegrees": 16.1413,
           "icpBounded": false,
           "pushMetres": 0.0,
-          "residualMeanMillimetres": 37.7928,
-          "residualP95Millimetres": 50.4047,
-          "fixedCapDeeperThan2mmBare": 12,
-          "fixedCapMaxDepthBareMetres": 0.012114,
-          "fixedCapInsidePercent": 1.5404,
-          "coveragePercent": 9.3023,
-          "score": 34.6821
+          "residualMeanMillimetres": 40.872,
+          "residualP95Millimetres": 56.466,
+          "fixedCapDeeperThan2mmBare": 39,
+          "fixedCapMaxDepthBareMetres": 0.036301,
+          "fixedCapInsidePercent": 5.5954,
+          "coveragePercent": 7.7519,
+          "score": 42.5914
         }
       ]
     }
@@ -265,56 +253,56 @@
         -0.062384
       ],
       "capIsland": {
-        "vertices": 1526,
-        "triangles": 2836
+        "vertices": 1875,
+        "triangles": 3394
       },
       "openingAxisSource": [
-        0.321186,
-        -0.945288,
-        -0.057189
+        0.319167,
+        -0.934453,
+        0.157894
       ],
       "axisTrace": [
         {
           "axis": [
-            -0.412139,
-            -0.905762,
-            0.098675
+            -0.336915,
+            -0.913084,
+            -0.229706
           ],
-          "turnDegrees": 20.8303
+          "turnDegrees": 26.0172
         },
         {
           "axis": [
-            0.101981,
-            -0.986909,
-            -0.124946
+            0.161311,
+            -0.981458,
+            0.103532
           ],
-          "turnDegrees": 32.9079
+          "turnDegrees": 35.1125
         },
         {
           "axis": [
-            0.266666,
-            -0.957397,
-            -0.110815
+            0.293854,
+            -0.941005,
+            0.167805
           ],
-          "turnDegrees": 9.6315
+          "turnDegrees": 8.761
         },
         {
           "axis": [
-            0.321186,
-            -0.945288,
-            -0.057189
+            0.319167,
+            -0.934453,
+            0.157894
           ],
-          "turnDegrees": 4.4373
+          "turnDegrees": 1.6022
         }
       ],
       "apexSource": [
-        0.272483,
-        0.465738,
-        0.04339
+        0.276248,
+        0.462813,
+        -0.044995
       ],
       "capFraction": 0.5,
-      "capSpanAlongAxisMetres": 0.251093,
-      "wholeIslandAlongAxisMetres": 0.458807,
+      "capSpanAlongAxisMetres": 0.264215,
+      "wholeIslandAlongAxisMetres": 0.457423,
       "deltoid": {
         "regionVertices": 134,
         "regionWidthMetres": 0.114341,
@@ -323,9 +311,10 @@
         "widthMetres": 0.11434077502618822
       },
       "deltoidFactor": 1.15,
-      "scale": 0.523677,
+      "scale": 0.497671,
+      "deltoidWidthUsedMetres": 0.114341,
       "clearanceMetres": 0.016,
-      "fixedCapVertices": 697,
+      "fixedCapVertices": 779,
       "rule": "crest anchor and the authored orientation",
       "stage": "push",
       "authored": {
@@ -355,9 +344,9 @@
         "mirrored": false
       },
       "innerFace": {
-        "vertices": 316,
+        "vertices": 429,
         "rule": "the 40% of the cap nearest its own axis",
-        "ofCapVertices": 1526
+        "ofCapVertices": 1875
       },
       "seedRule": "the source's own orientation, then the authored turn",
       "seedChosen": "y0p0",
@@ -385,7 +374,7 @@
           1.0
         ]
       ],
-      "seedScore": 39.8022,
+      "seedScore": 32.0681,
       "seedTable": [
         {
           "label": "y0p0",
@@ -393,29 +382,29 @@
           "icpDegrees": 16.1413,
           "icpBounded": false,
           "pushMetres": 0.0,
-          "residualMeanMillimetres": 41.8124,
-          "residualP95Millimetres": 55.1294,
-          "fixedCapDeeperThan2mmBare": 25,
-          "fixedCapMaxDepthBareMetres": 0.025025,
-          "fixedCapInsidePercent": 3.5868,
-          "coveragePercent": 11.194,
-          "score": 39.8022
+          "residualMeanMillimetres": 35.411,
+          "residualP95Millimetres": 50.6745,
+          "fixedCapDeeperThan2mmBare": 35,
+          "fixedCapMaxDepthBareMetres": 0.03194,
+          "fixedCapInsidePercent": 4.4929,
+          "coveragePercent": 15.6716,
+          "score": 32.0681
         }
       ],
       "crestSource": [
-        0.276123,
+        0.288818,
         0.480957,
-        0.047119
+        -0.059814
       ],
       "crestSourceSeeded": [
-        0.276123,
+        0.288818,
         0.480957,
-        0.047119
+        -0.059814
       ],
       "crestSourceScaled": [
-        0.144599,
-        0.251866,
-        0.024675
+        0.143736,
+        0.239358,
+        -0.029768
       ],
       "crestBody": [
         0.149462,
@@ -424,9 +413,9 @@
       ],
       "crestRadiusMetres": 0.04,
       "initialTranslation": [
-        0.004863,
-        1.287633,
-        -0.08512
+        0.005726,
+        1.300141,
+        -0.030677
       ],
       "icpIterations": 0,
       "icpBounded": false,
@@ -461,16 +450,16 @@
           0.999549
         ]
       ],
-      "residualMeanMillimetres": 41.8124,
-      "residualP95Millimetres": 55.1294,
+      "residualMeanMillimetres": 35.411,
+      "residualP95Millimetres": 50.6745,
       "pushPasses": 0,
       "pushSteps": [],
       "pushMetres": 0.0,
       "pushBounded": false,
       "translation": [
-        0.095834,
-        1.301259,
-        -0.090544
+        0.093205,
+        1.315146,
+        -0.036493
       ],
       "crestPlaced": [
         0.165162,
@@ -479,33 +468,33 @@
       ],
       "orientation": {
         "openingApex": [
-          0.165534,
-          1.575658,
-          -0.076051
+          0.161647,
+          1.573718,
+          -0.066661
         ],
         "opening": [
-          0.913542,
-          -0.383392,
-          -0.13584
+          0.870536,
+          -0.419409,
+          0.257415
         ],
-        "openingDownTheArm": 0.7018,
-        "openingForward": -0.1358,
-        "openingOutward": 0.9135,
-        "openingUp": -0.3834,
-        "openingFaces": "outward 0.91, down the arm 0.70",
-        "drapeVertices": 829,
+        "openingDownTheArm": 0.7081,
+        "openingForward": 0.2574,
+        "openingOutward": 0.8705,
+        "openingUp": -0.4194,
+        "openingFaces": "outward 0.87, down the arm 0.71",
+        "drapeVertices": 1096,
         "drapeFromCapCentimetres": [
-          3.75,
-          -9.14,
-          1.82
+          3.94,
+          -8.27,
+          0.28
         ],
-        "drapeBehindCentimetres": -1.82,
-        "drapeOutwardCentimetres": 3.75,
-        "drapeBelowCentimetres": 9.14
+        "drapeBehindCentimetres": -0.28,
+        "drapeOutwardCentimetres": 3.94,
+        "drapeBelowCentimetres": 8.27
       },
-      "fixedCapDepthAfterMetres": 0.018434,
-      "fixedCapDeeperThan2mm": 6,
-      "fixedCapDeeperThan2mmBare": 25,
+      "fixedCapDepthAfterMetres": 0.016289,
+      "fixedCapDeeperThan2mm": 12,
+      "fixedCapDeeperThan2mmBare": 35,
       "seedChoice": {
         "chosen": "y0p0",
         "sidesAgreed": true,
@@ -514,78 +503,78 @@
           "R": "y0p0"
         },
         "bestScorePerSide": {
-          "L": 39.8022,
-          "R": 34.6821
+          "L": 32.0681,
+          "R": 42.5914
         },
         "decidedBy": "both sides",
         "bestPairSeed": "y0p0",
         "pairScores": {
-          "y0p0": 74.4843
+          "y0p0": 74.6595
         }
       },
       "islands": [
         {
           "island": 0,
           "role": "cap",
-          "vertices": 1526,
-          "triangles": 2836,
+          "vertices": 1875,
+          "triangles": 3394,
           "sourceCentroid": [
-            0.337869,
-            0.2733,
-            0.031748
+            0.344379,
+            0.263338,
+            -0.011289
           ],
           "centroid": [
-            0.226302,
-            1.488134,
-            -0.079522
+            0.221679,
+            1.488232,
+            -0.047312
           ]
         },
         {
           "island": 1,
           "role": "rides the cap",
-          "vertices": 441,
-          "triangles": 719,
+          "vertices": 234,
+          "triangles": 429,
           "sourceCentroid": [
-            0.348173,
-            0.216047,
-            -0.084256
+            0.369299,
+            0.059923,
+            0.092986
           ],
           "centroid": [
-            0.239777,
-            1.459002,
-            -0.139424
+            0.261586,
+            1.395973,
+            0.007377
           ]
         },
         {
           "island": 2,
           "role": "rides the cap",
-          "vertices": 235,
-          "triangles": 429,
+          "vertices": 168,
+          "triangles": 328,
           "sourceCentroid": [
-            0.368988,
-            0.059915,
-            -0.093381
+            0.315424,
+            0.1548,
+            0.016805
           ],
           "centroid": [
-            0.272858,
-            1.38333,
-            -0.141932
+            0.222764,
+            1.432781,
+            -0.031659
           ]
         },
         {
           "island": 3,
           "role": "rides the cap",
-          "vertices": 168,
-          "triangles": 328,
+          "vertices": 91,
+          "triangles": 160,
           "sourceCentroid": [
-            0.315374,
-            0.154791,
-            -0.016814
+            0.243585,
+            0.194728,
+            0.114979
           ],
           "centroid": [
-            0.23214,
-            1.424501,
-            -0.103054
+            0.182912,
+            1.443456,
+            0.016901
           ]
         },
         {
@@ -594,14 +583,14 @@
           "vertices": 82,
           "triangles": 111,
           "sourceCentroid": [
-            0.34453,
+            0.344524,
             0.101753,
-            -0.057826
+            0.05779
           ],
           "centroid": [
-            0.254492,
-            1.401396,
-            -0.123847
+            0.243981,
+            1.412037,
+            -0.01063
           ]
         },
         {
@@ -610,14 +599,14 @@
           "vertices": 37,
           "triangles": 58,
           "sourceCentroid": [
-            0.461815,
-            0.07794,
-            -0.04547
+            0.333305,
+            0.102829,
+            0.186358
           ],
           "centroid": [
-            0.316965,
-            1.406585,
-            -0.117529
+            0.238467,
+            1.412929,
+            0.053357
           ]
         },
         {
@@ -626,14 +615,14 @@
           "vertices": 37,
           "triangles": 58,
           "sourceCentroid": [
-            0.457355,
-            0.158837,
-            -0.015764
+            0.321929,
+            0.174211,
+            0.16915
           ],
           "centroid": [
-            0.303008,
-            1.4471,
-            -0.103182
+            0.223205,
+            1.445231,
+            0.043819
           ]
         },
         {
@@ -642,14 +631,14 @@
           "vertices": 37,
           "triangles": 58,
           "sourceCentroid": [
-            0.333305,
-            0.102856,
-            -0.186359
+            0.270897,
+            0.248509,
+            0.1398
           ],
           "centroid": [
-            0.248683,
-            1.398306,
-            -0.191094
+            0.188575,
+            1.473293,
+            0.028363
           ]
         },
         {
@@ -658,14 +647,14 @@
           "vertices": 37,
           "triangles": 58,
           "sourceCentroid": [
-            0.321929,
-            0.174224,
-            -0.169189
+            0.461828,
+            0.077927,
+            0.045456
           ],
           "centroid": [
-            0.232625,
-            1.43283,
-            -0.183136
+            0.303363,
+            1.416595,
+            -0.016907
           ]
         },
         {
@@ -674,14 +663,14 @@
           "vertices": 37,
           "triangles": 58,
           "sourceCentroid": [
-            0.270897,
-            0.248535,
-            -0.139787
+            0.457394,
+            0.158837,
+            0.015777
           ],
           "centroid": [
-            0.196183,
-            1.463288,
-            -0.168646
+            0.290109,
+            1.454221,
+            -0.032815
           ]
         },
         {
@@ -690,14 +679,14 @@
           "vertices": 37,
           "triangles": 58,
           "sourceCentroid": [
-            0.451178,
-            0.23394,
-            0.02479
+            0.451165,
+            0.233966,
+            -0.024777
           ],
           "centroid": [
-            0.289026,
-            1.484623,
-            -0.083062
+            0.276793,
+            1.488675,
+            -0.054041
           ]
         },
         {
@@ -706,32 +695,32 @@
           "vertices": 29,
           "triangles": 37,
           "sourceCentroid": [
-            0.240748,
+            0.240782,
             0.236328,
-            -0.102867
+            0.102901
           ],
           "centroid": [
-            0.182778,
-            1.453365,
-            -0.149005
+            0.175847,
+            1.462777,
+            0.010307
           ]
         }
       ],
       "capClearance": {
-        "vertices": 1526,
-        "maxDepthDressedMetres": 0.061058,
-        "deeperThan2mmDressed": 14,
-        "maxDepthBareMetres": 0.064774,
-        "deeperThan2mmBare": 226,
+        "vertices": 1875,
+        "maxDepthDressedMetres": 0.065827,
+        "deeperThan2mmDressed": 30,
+        "maxDepthBareMetres": 0.06897,
+        "deeperThan2mmBare": 251,
         "anchorToTargetMillimetres": 62.065,
         "anchorToBareMillimetres": 73.057
       },
       "coverage": {
         "regionVertices": 134,
-        "coveredVertices": 15,
-        "coveredFraction": 0.11194,
+        "coveredVertices": 21,
+        "coveredFraction": 0.156716,
         "reachMetres": 0.06,
-        "medianGapMetres": 0.037787
+        "medianGapMetres": 0.047834
       }
     },
     "R": {
@@ -748,56 +737,56 @@
         -0.062384
       ],
       "capIsland": {
-        "vertices": 1875,
-        "triangles": 3394
+        "vertices": 1526,
+        "triangles": 2836
       },
       "openingAxisSource": [
-        -0.319167,
-        -0.934453,
-        -0.157894
+        -0.321186,
+        -0.945288,
+        0.057189
       ],
       "axisTrace": [
         {
           "axis": [
-            0.336915,
-            -0.913084,
-            0.229706
+            0.412139,
+            -0.905762,
+            -0.098675
           ],
-          "turnDegrees": 26.0172
+          "turnDegrees": 20.8303
         },
         {
           "axis": [
-            -0.161311,
-            -0.981458,
-            -0.103532
+            -0.101981,
+            -0.986909,
+            0.124946
           ],
-          "turnDegrees": 35.1125
+          "turnDegrees": 32.9079
         },
         {
           "axis": [
-            -0.293854,
-            -0.941005,
-            -0.167805
+            -0.266666,
+            -0.957397,
+            0.110815
           ],
-          "turnDegrees": 8.761
+          "turnDegrees": 9.6315
         },
         {
           "axis": [
-            -0.319167,
-            -0.934453,
-            -0.157894
+            -0.321186,
+            -0.945288,
+            0.057189
           ],
-          "turnDegrees": 1.6022
+          "turnDegrees": 4.4373
         }
       ],
       "apexSource": [
-        -0.276248,
-        0.462813,
-        0.044995
+        -0.272483,
+        0.465738,
+        -0.04339
       ],
       "capFraction": 0.5,
-      "capSpanAlongAxisMetres": 0.264215,
-      "wholeIslandAlongAxisMetres": 0.457423,
+      "capSpanAlongAxisMetres": 0.251093,
+      "wholeIslandAlongAxisMetres": 0.458807,
       "deltoid": {
         "regionVertices": 129,
         "regionWidthMetres": 0.107281,
@@ -806,9 +795,10 @@
         "widthMetres": 0.10728088171296668
       },
       "deltoidFactor": 1.15,
-      "scale": 0.466943,
+      "scale": 0.491343,
+      "deltoidWidthUsedMetres": 0.107281,
       "clearanceMetres": 0.016,
-      "fixedCapVertices": 779,
+      "fixedCapVertices": 697,
       "rule": "crest anchor and the authored orientation",
       "stage": "push",
       "authored": {
@@ -838,9 +828,9 @@
         "mirrored": true
       },
       "innerFace": {
-        "vertices": 429,
+        "vertices": 316,
         "rule": "the 40% of the cap nearest its own axis",
-        "ofCapVertices": 1875
+        "ofCapVertices": 1526
       },
       "seedRule": "the source's own orientation, then the authored turn",
       "seedChosen": "y0p0",
@@ -868,7 +858,7 @@
           1.0
         ]
       ],
-      "seedScore": 34.6821,
+      "seedScore": 42.5914,
       "seedTable": [
         {
           "label": "y0p0",
@@ -876,29 +866,29 @@
           "icpDegrees": 16.1413,
           "icpBounded": false,
           "pushMetres": 0.0,
-          "residualMeanMillimetres": 37.7928,
-          "residualP95Millimetres": 50.4047,
-          "fixedCapDeeperThan2mmBare": 12,
-          "fixedCapMaxDepthBareMetres": 0.012114,
-          "fixedCapInsidePercent": 1.5404,
-          "coveragePercent": 9.3023,
-          "score": 34.6821
+          "residualMeanMillimetres": 40.872,
+          "residualP95Millimetres": 56.466,
+          "fixedCapDeeperThan2mmBare": 39,
+          "fixedCapMaxDepthBareMetres": 0.036301,
+          "fixedCapInsidePercent": 5.5954,
+          "coveragePercent": 7.7519,
+          "score": 42.5914
         }
       ],
       "crestSource": [
-        -0.288818,
+        -0.276123,
         0.480957,
-        0.059814
+        -0.047119
       ],
       "crestSourceSeeded": [
-        -0.288818,
+        -0.276123,
         0.480957,
-        0.059814
+        -0.047119
       ],
       "crestSourceScaled": [
-        -0.134862,
-        0.224579,
-        0.02793
+        -0.135671,
+        0.236315,
+        -0.023152
       ],
       "crestBody": [
         -0.149464,
@@ -907,9 +897,9 @@
       ],
       "crestRadiusMetres": 0.04,
       "initialTranslation": [
-        -0.014602,
-        1.314915,
-        -0.094584
+        -0.013793,
+        1.30318,
+        -0.043502
       ],
       "icpIterations": 0,
       "icpBounded": false,
@@ -944,16 +934,16 @@
           0.999549
         ]
       ],
-      "residualMeanMillimetres": 37.7928,
-      "residualP95Millimetres": 50.4047,
+      "residualMeanMillimetres": 40.872,
+      "residualP95Millimetres": 56.466,
       "pushPasses": 0,
       "pushSteps": [],
       "pushMetres": 0.0,
       "pushBounded": false,
       "translation": [
-        -0.09765,
-        1.330059,
-        -0.100874
+        -0.100116,
+        1.320095,
+        -0.04947
       ],
       "crestPlaced": [
         -0.165164,
@@ -962,33 +952,33 @@
       ],
       "orientation": {
         "openingApex": [
-          -0.161865,
-          1.573926,
-          -0.087178
+          -0.165512,
+          1.576272,
+          -0.078492
         ],
         "opening": [
-          -0.870536,
-          -0.4341,
-          -0.231785
+          -0.913541,
+          -0.37455,
+          0.1586
         ],
-        "openingDownTheArm": 0.7354,
-        "openingForward": -0.2318,
-        "openingOutward": 0.8705,
-        "openingUp": -0.4341,
-        "openingFaces": "outward 0.87, down the arm 0.74",
-        "drapeVertices": 1096,
+        "openingDownTheArm": 0.6855,
+        "openingForward": 0.1586,
+        "openingOutward": 0.9135,
+        "openingUp": -0.3746,
+        "openingFaces": "outward 0.91, down the arm 0.69",
+        "drapeVertices": 829,
         "drapeFromCapCentimetres": [
-          -3.7,
-          -7.76,
-          0.21
+          -3.52,
+          -8.66,
+          -1.19
         ],
-        "drapeBehindCentimetres": -0.21,
-        "drapeOutwardCentimetres": 3.7,
-        "drapeBelowCentimetres": 7.76
+        "drapeBehindCentimetres": 1.19,
+        "drapeOutwardCentimetres": 3.52,
+        "drapeBelowCentimetres": 8.66
       },
-      "fixedCapDepthAfterMetres": 0.008295,
-      "fixedCapDeeperThan2mm": 8,
-      "fixedCapDeeperThan2mmBare": 12,
+      "fixedCapDepthAfterMetres": 0.020105,
+      "fixedCapDeeperThan2mm": 14,
+      "fixedCapDeeperThan2mmBare": 39,
       "seedChoice": {
         "chosen": "y0p0",
         "sidesAgreed": true,
@@ -997,78 +987,78 @@
           "R": "y0p0"
         },
         "bestScorePerSide": {
-          "L": 39.8022,
-          "R": 34.6821
+          "L": 32.0681,
+          "R": 42.5914
         },
         "decidedBy": "both sides",
         "bestPairSeed": "y0p0",
         "pairScores": {
-          "y0p0": 74.4843
+          "y0p0": 74.6595
         }
       },
       "islands": [
         {
           "island": 0,
           "role": "cap",
-          "vertices": 1875,
-          "triangles": 3394,
+          "vertices": 1526,
+          "triangles": 2836,
           "sourceCentroid": [
-            -0.344379,
-            0.263338,
-            0.011289
+            -0.337869,
+            0.2733,
+            -0.031748
           ],
           "centroid": [
-            -0.218191,
-            1.492774,
-            -0.100486
+            -0.222529,
+            1.494496,
+            -0.070314
           ]
         },
         {
           "island": 1,
           "role": "rides the cap",
-          "vertices": 234,
-          "triangles": 429,
+          "vertices": 441,
+          "triangles": 719,
           "sourceCentroid": [
-            -0.369299,
-            0.059923,
-            -0.092986
+            -0.348173,
+            0.216047,
+            0.084256
           ],
           "centroid": [
-            -0.255634,
-            1.403288,
-            -0.146512
+            -0.235172,
+            1.470584,
+            -0.012572
           ]
         },
         {
           "island": 2,
           "role": "rides the cap",
-          "vertices": 168,
-          "triangles": 328,
+          "vertices": 235,
+          "triangles": 429,
           "sourceCentroid": [
-            -0.315424,
-            0.1548,
-            -0.016805
+            -0.368988,
+            0.059915,
+            0.093381
           ],
           "centroid": [
-            -0.219209,
-            1.43996,
-            -0.112025
+            -0.26621,
+            1.399854,
+            -0.005962
           ]
         },
         {
           "island": 3,
           "role": "rides the cap",
-          "vertices": 91,
-          "triangles": 160,
+          "vertices": 168,
+          "triangles": 328,
           "sourceCentroid": [
-            -0.243585,
-            0.194728,
-            -0.114979
+            -0.315374,
+            0.154791,
+            0.016814
           ],
           "centroid": [
-            -0.181818,
-            1.447223,
-            -0.158105
+            -0.228006,
+            1.436224,
+            -0.044692
           ]
         },
         {
@@ -1077,14 +1067,14 @@
           "vertices": 82,
           "triangles": 111,
           "sourceCentroid": [
-            -0.344524,
+            -0.34453,
             0.101753,
-            -0.05779
+            0.057826
           ],
           "centroid": [
-            -0.239116,
-            1.419347,
-            -0.130552
+            -0.248978,
+            1.415755,
+            -0.023918
           ]
         },
         {
@@ -1093,14 +1083,14 @@
           "vertices": 37,
           "triangles": 58,
           "sourceCentroid": [
-            -0.333305,
-            0.102829,
-            -0.186358
+            -0.461815,
+            0.07794,
+            0.04547
           ],
           "centroid": [
-            -0.233942,
-            1.41658,
-            -0.19053
+            -0.307594,
+            1.420259,
+            -0.030127
           ]
         },
         {
@@ -1109,14 +1099,14 @@
           "vertices": 37,
           "triangles": 58,
           "sourceCentroid": [
-            -0.321929,
-            0.174211,
-            -0.16915
+            -0.457355,
+            0.158837,
+            0.015764
           ],
           "centroid": [
-            -0.219622,
-            1.44737,
-            -0.183416
+            -0.294498,
+            1.457396,
+            -0.045844
           ]
         },
         {
@@ -1125,14 +1115,14 @@
           "vertices": 37,
           "triangles": 58,
           "sourceCentroid": [
-            -0.270897,
-            0.248509,
-            -0.1398
+            -0.333305,
+            0.102856,
+            0.186359
           ],
           "centroid": [
-            -0.18713,
-            1.474522,
-            -0.17052
+            -0.243527,
+            1.416647,
+            0.039238
           ]
         },
         {
@@ -1141,14 +1131,14 @@
           "vertices": 37,
           "triangles": 58,
           "sourceCentroid": [
-            -0.461828,
-            0.077927,
-            -0.045456
+            -0.321929,
+            0.174224,
+            0.169189
           ],
           "centroid": [
-            -0.294831,
-            1.42397,
-            -0.124929
+            -0.228461,
+            1.448533,
+            0.029841
           ]
         },
         {
@@ -1157,14 +1147,14 @@
           "vertices": 37,
           "triangles": 58,
           "sourceCentroid": [
-            -0.457394,
-            0.158837,
-            -0.015777
+            -0.270897,
+            0.248535,
+            0.139787
           ],
           "centroid": [
-            -0.282396,
-            1.460105,
-            -0.112149
+            -0.194269,
+            1.476243,
+            0.014555
           ]
         },
         {
@@ -1173,14 +1163,14 @@
           "vertices": 37,
           "triangles": 58,
           "sourceCentroid": [
-            -0.451165,
-            0.233966,
-            0.024777
+            -0.451178,
+            0.23394,
+            -0.02479
           ],
           "centroid": [
-            -0.269902,
-            1.493568,
-            -0.094209
+            -0.281379,
+            1.491407,
+            -0.0668
           ]
         },
         {
@@ -1189,32 +1179,32 @@
           "vertices": 29,
           "triangles": 37,
           "sourceCentroid": [
-            -0.240782,
+            -0.240748,
             0.236328,
-            -0.102901
+            0.102867
           ],
           "centroid": [
-            -0.175189,
-            1.46569,
-            -0.153017
+            -0.181691,
+            1.465844,
+            -0.003281
           ]
         }
       ],
       "capClearance": {
-        "vertices": 1875,
-        "maxDepthDressedMetres": 0.054901,
-        "deeperThan2mmDressed": 32,
-        "maxDepthBareMetres": 0.065704,
-        "deeperThan2mmBare": 212,
+        "vertices": 1526,
+        "maxDepthDressedMetres": 0.073745,
+        "deeperThan2mmDressed": 28,
+        "maxDepthBareMetres": 0.075221,
+        "deeperThan2mmBare": 262,
         "anchorToTargetMillimetres": 62.201,
         "anchorToBareMillimetres": 73.761
       },
       "coverage": {
         "regionVertices": 129,
-        "coveredVertices": 12,
-        "coveredFraction": 0.093023,
+        "coveredVertices": 10,
+        "coveredFraction": 0.077519,
         "reachMetres": 0.06,
-        "medianGapMetres": 0.039605
+        "medianGapMetres": 0.049361
       }
     }
   },
@@ -1223,9 +1213,9 @@
     "pieces": {
       "warden-tunic": {
         "vertices": 8236,
-        "hidden": 249,
-        "L": 191,
-        "R": 58
+        "hidden": 152,
+        "L": 89,
+        "R": 63
       }
     }
   },
@@ -1286,26 +1276,26 @@
     "orphanedVertices": {},
     "band": {
       "warden-pauldrons_L": {
-        "vertices": 2703,
-        "bandVertices": 595,
-        "bandFraction": 0.220126,
+        "vertices": 2701,
+        "bandVertices": 551,
+        "bandFraction": 0.203999,
         "ceiling": 0.8,
-        "minPeakWeight": 0.500294,
-        "meanPeakWeight": 0.884184,
-        "bandHeightMetres": 0.190454,
-        "bandMinY": 1.363921,
-        "bandMaxY": 1.554375
+        "minPeakWeight": 0.500896,
+        "meanPeakWeight": 0.891348,
+        "bandHeightMetres": 0.188647,
+        "bandMinY": 1.358104,
+        "bandMaxY": 1.546751
       },
       "warden-pauldrons_R": {
-        "vertices": 2701,
-        "bandVertices": 704,
-        "bandFraction": 0.260644,
+        "vertices": 2703,
+        "bandVertices": 523,
+        "bandFraction": 0.193489,
         "ceiling": 0.8,
-        "minPeakWeight": 0.500824,
-        "meanPeakWeight": 0.871176,
-        "bandHeightMetres": 0.178178,
-        "bandMinY": 1.367262,
-        "bandMaxY": 1.54544
+        "minPeakWeight": 0.500162,
+        "meanPeakWeight": 0.893148,
+        "bandHeightMetres": 0.188491,
+        "bandMinY": 1.36244,
+        "bandMaxY": 1.550931
       }
     },
     "stiffness": 3.0
@@ -1317,14 +1307,14 @@
     "joints": 24
   },
   "bindClearance": {
-    "insideVertices": 118,
-    "maxPenetrationMetres": 0.061057527,
-    "deeperThan2mm": 76
+    "insideVertices": 153,
+    "maxPenetrationMetres": 0.073744729,
+    "deeperThan2mm": 105
   },
   "bareBodyClearance": {
-    "insideVertices": 706,
-    "maxPenetrationMetres": 0.065704159,
-    "deeperThan2mm": 683
+    "insideVertices": 928,
+    "maxPenetrationMetres": 0.075221412,
+    "deeperThan2mm": 883
   },
   "runtime": {
     "bones": [
@@ -1409,9 +1399,9 @@
       "textures": true
     },
     "bindClearance": {
-      "insideVertices": 118,
-      "maxPenetrationMetres": 0.061057527,
-      "deeperThan2mm": 76
+      "insideVertices": 153,
+      "maxPenetrationMetres": 0.073744729,
+      "deeperThan2mm": 105
     }
   },
   "gates": {
@@ -1433,7 +1423,7 @@
     "glb": "warden-pauldrons.glb",
     "manifest": "warden-pauldrons.manifest.json",
     "report": "warden-pauldrons.report.json",
-    "sha256": "4eb88dcd3140cb6dabc6c7132766cda52ae2e100c54b0c5ec35fec7c8252976e"
+    "sha256": "ad128e760ac05a425a5f10013e534fd7548c06111587e9a77ba2a5bbbc4bba69"
   },
   "gatesFailed": [
     "piece_sits_off_the_skin_at_bind"

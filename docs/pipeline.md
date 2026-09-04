@@ -684,6 +684,14 @@ npm run art:gear -- --input <shoulders.glb> --slot shoulders --body <body> \
   --piece <name> --under <chest-piece> --drape <name>:upper_arm_L:<from>:<to>:<segments>
 ```
 
+The Warden pauldrons use their source-authored +Z facing and this exact socket recipe:
+
+```bash
+npm run art:socket -- --input docs/art-pipeline/sources/gear/warden-pauldrons-tripo.glb \
+  --slot shoulders --body masculine-v3 --piece warden-pauldrons --under warden-tunic \
+  --yaw 0 --orient 0:-1.72:16.05 --offset 0.0157:0.0444:-0.0139
+```
+
 The fitter refuses an under-piece from another body or the same/higher layer, measures
 the smallest configured cap seat that clears the lower shell, and records both the dependency
 and the per-side measurement in the manifest. A paired seat can mirror its direction so
