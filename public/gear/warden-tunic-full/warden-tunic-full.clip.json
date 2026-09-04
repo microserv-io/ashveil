@@ -1,0 +1,66 @@
+{
+  "schema": "ashveil.gear-clip.v1",
+  "body": "masculine-v3",
+  "piece": "warden-tunic-full",
+  "slot": "chest",
+  "hides": {
+    "Body": 2395
+  },
+  "clip": {
+    "depth": 0.005,
+    "fraction": 0.002
+  },
+  "vertices": 8236,
+  "exempt": 0,
+  "poses": 201,
+  "cycles": {
+    "motion": {
+      "pose": "none",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    },
+    "stress": {
+      "pose": "none",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    },
+    "advisory": {
+      "pose": "abduct150",
+      "phase": 0,
+      "maxDepth": 0.024633353628574647,
+      "count": 163,
+      "fraction": 0.019791160757649345
+    }
+  },
+  "samples": {
+    "cleave@0.34375": {
+      "pose": "cleave",
+      "phase": 0.34375,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    },
+    "frost_nova@0.375": {
+      "pose": "frost_nova",
+      "phase": 0.375,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    },
+    "abduct90@0": {
+      "pose": "abduct90",
+      "phase": 0,
+      "maxDepth": 0,
+      "count": 0,
+      "fraction": 0
+    }
+  },
+  "gates": {
+    "clears_the_body_through_motion_cycles": true,
+    "clears_the_body_through_stress_poses": true
+  }
+}

@@ -40,6 +40,7 @@ def parse(argv: list[str]):
     # rigidly on the shell. The budget gate cannot pass in this mode and does not
     # take the GLB with it: looking at what full detail costs is the point.
     parser.add_argument("--full-detail", action="store_true")
+    parser.add_argument("--weld-under", action="store_true")
     parser.add_argument("--outdir", required=True)
     return parser.parse_args(argv)
 
@@ -352,11 +353,15 @@ def run(args) -> dict:
     beneath = piece.under(ROOT, worn_under)
     # What a piece is worn over is body as far as fitting goes: it is pushed out of
     # those shells too. Coverage stays body-only - gear never masks gear here.
-    targets = [body.joined_target(loaded)]
-    targets.extend(body.joined_meshes(
-        [mesh for mesh in beneath if mesh.name.startswith(f"under-{name}-")],
-        f"GearFitSurface-{name}") for name in worn_under)
     target = body.joined_target(loaded, beneath)
+    # Layer seating needs each shell on its own, and pushing out of a garment shell
+    # alone is what a piece fitted before that lands differently against: a tunic
+    # driven out of a bare trouser shell is a tunic nobody approved. `--weld-under`
+    # is the one welded surface those pieces were placed against.
+    targets = [target] if args.weld_under else (
+        [body.joined_target(loaded)] + [body.joined_meshes(
+            [mesh for mesh in beneath if mesh.name.startswith(f"under-{name}-")],
+            f"GearFitSurface-{name}") for name in worn_under])
     body_surface = geometry.Surface(loaded["meshes"], body.region_vertices(loaded, covers))
     layer_surface = geometry.Surface(beneath) if beneath else None
     surface = geometry.SurfaceUnion([body_surface, layer_surface]) if layer_surface else body_surface
@@ -531,6 +536,7 @@ def run(args) -> dict:
     # shipped report byte for byte: a key that is always there would move it.
     if args.full_detail:
         report["fullDetail"] = True
+        report["weldUnder"] = bool(args.weld_under)
         report["transport"] = transport_report
     exporter.write_json(str(out / f"{args.piece}.report.json"), report)
     # A budget gate cannot pass at full detail, and deleting the GLB would take the

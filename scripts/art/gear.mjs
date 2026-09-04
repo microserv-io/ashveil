@@ -8,7 +8,7 @@ const RUNNER = join(ROOT, 'scripts', 'art', 'gear', 'run.py')
 const CLIP = join(ROOT, 'scripts', 'art', 'gear', 'clip.ts')
 const CLIP_ARGUMENT = join('scripts', 'art', 'gear', 'clip.ts')
 const BLENDER_CANDIDATES = ['/opt/homebrew/bin/blender', '/usr/local/bin/blender', 'blender']
-const FLAGS = new Set(['--no-mask', '--two-sided', '--full-detail'])
+const FLAGS = new Set(['--no-mask', '--two-sided', '--full-detail', '--weld-under'])
 const VALUES = new Set(['--input', '--slot', '--body', '--piece', '--weights', '--covers', '--span', '--yaw', '--under', '--thumb', '--outdir'])
 const REPEATED = new Set(['--drape'])
 const SHAPES = new Set(['cape'])
@@ -20,8 +20,8 @@ const DRAPE = /^[a-z][a-z0-9_]*:[A-Za-z0-9_]+:[01](\.[0-9]+)?:[01](\.[0-9]+)?(:[
 export class GearError extends Error {}
 
 export function parseArgs(argv) {
-  const parsed = { noMask: false, twoSided: false, fullDetail: false, drapes: [] }
-  const NAMED_FLAGS = { '--no-mask': 'noMask', '--two-sided': 'twoSided', '--full-detail': 'fullDetail' }
+  const parsed = { noMask: false, twoSided: false, fullDetail: false, weldUnder: false, drapes: [] }
+  const NAMED_FLAGS = { '--no-mask': 'noMask', '--two-sided': 'twoSided', '--full-detail': 'fullDetail', '--weld-under': 'weldUnder' }
   for (let at = 0; at < argv.length; at++) {
     const flag = argv[at]
     if (FLAGS.has(flag)) parsed[NAMED_FLAGS[flag]] = true
@@ -144,7 +144,8 @@ export function blenderArgs(plan, runner = RUNNER) {
     ...(plan.thumb ? ['--thumb', plan.thumb] : []),
     ...(plan.noMask ? ['--no-mask'] : []),
     ...(plan.twoSided ? ['--two-sided'] : []),
-    ...(plan.fullDetail ? ['--full-detail'] : [])]
+    ...(plan.fullDetail ? ['--full-detail'] : []),
+    ...(plan.weldUnder ? ['--weld-under'] : [])]
 }
 
 function findBlender(exists = existsSync) {
