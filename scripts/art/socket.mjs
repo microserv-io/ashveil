@@ -16,8 +16,8 @@ const ROOT = join(import.meta.dirname, '..', '..')
 const RUNNER = join(ROOT, 'scripts', 'art', 'gear', 'socket.py')
 const BLENDER_CANDIDATES = ['/opt/homebrew/bin/blender', '/usr/local/bin/blender', 'blender']
 const VALUES = new Set(['--input', '--slot', '--body', '--piece', '--under', '--weights', '--yaw',
-  '--cap', '--anchor', '--seat', '--register', '--inner', '--seeds', '--orient', '--offset',
-  '--orient-right', '--offset-right', '--outdir'])
+  '--cap', '--size', '--anchor', '--seat', '--register', '--inner', '--seeds', '--scale-mode',
+  '--orient', '--offset', '--orient-right', '--offset-right', '--outdir'])
 /** The pose flags, each bounded the same way whichever shoulder it is spoken for. */
 const POSES = [['orient', 'degrees'], ['offset', 'metres'], ['orient-right', 'degrees'],
   ['offset-right', 'metres']]
@@ -25,6 +25,10 @@ const REPEATED = new Set(['--drape'])
 const NAME = /^[a-z0-9][a-z0-9-]*$/
 const DRAPE = /^[a-z][a-z0-9_]*:[A-Za-z0-9_]+:[01](\.[0-9]+)?:[01](\.[0-9]+)?(:[1-6](:[0-9]+(\.[0-9]+)?)?)?$/
 const TRIPLE = /^-?[0-9]+(\.[0-9]+)?(:-?[0-9]+(\.[0-9]+)?){2}$/
+const NUMBER = /^[0-9]+(\.[0-9]+)?$/
+/** A cap narrower than the muscle is a pip and one at twice its width is a tabletop. */
+const MIN_SIZE_FACTOR = 0.75
+const MAX_SIZE_FACTOR = 2.5
 /** Past a quarter turn a flag is correcting a wrong source rather than authoring a pose. */
 const MAX_ORIENT_DEGREES = 90
 /** A cap ten centimetres off its own crest is no longer on the shoulder. */
@@ -66,6 +70,18 @@ export function parseArgs(argv) {
   }
   if (parsed.seeds && !['grid', 'none'].includes(parsed.seeds)) {
     throw new SocketError(`seeds gate: "${parsed.seeds}" is not grid or none`)
+  }
+  if (parsed['scale-mode'] && !['side', 'pair'].includes(parsed['scale-mode'])) {
+    throw new SocketError(`scale-mode gate: "${parsed['scale-mode']}" is not side or pair`)
+  }
+  if (parsed.size !== undefined) {
+    if (!NUMBER.test(parsed.size)) {
+      throw new SocketError(`size gate: "${parsed.size}" is not a number`)
+    }
+    if (Number(parsed.size) < MIN_SIZE_FACTOR || Number(parsed.size) > MAX_SIZE_FACTOR) {
+      throw new SocketError(`size gate: ${parsed.size} is outside the ${MIN_SIZE_FACTOR} to`
+        + ` ${MAX_SIZE_FACTOR} deltoid widths a cap may span`)
+    }
   }
   if (parsed.seat && !['none', 'clear', 'p95'].includes(parsed.seat)) {
     throw new SocketError(`seat gate: "${parsed.seat}" is not none, clear or p95`)
@@ -125,11 +141,13 @@ export function blenderArgs(plan, runner = RUNNER) {
     ...(plan.weights ? ['--weights', plan.weights] : []),
     ...(plan.yaw ? ['--yaw', plan.yaw] : []),
     ...(plan.cap ? ['--cap', plan.cap] : []),
+    ...(plan.size ? ['--size', plan.size] : []),
     ...(plan.anchor ? ['--anchor', plan.anchor] : []),
     ...(plan.seat ? ['--seat', plan.seat] : []),
     ...(plan.register ? ['--register', plan.register] : []),
     ...(plan.inner ? ['--inner', plan.inner] : []),
     ...(plan.seeds ? ['--seeds', plan.seeds] : []),
+    ...(plan['scale-mode'] ? ['--scale-mode', plan['scale-mode']] : []),
     ...POSES.flatMap(([flag]) => (plan[flag] ? [`--${flag}`, plan[flag]] : [])),
     ...plan.drapes.flatMap((drape) => ['--drape', drape])]
 }

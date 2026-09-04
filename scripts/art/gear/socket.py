@@ -6,12 +6,15 @@ about where it goes - the top of the shoulder, and the width of the muscle under
 and no opinion at all about its shape. So nothing here deforms a vertex.
 
 The whole rule, per side: the largest island is the cap, everything else on that side
-rides it. The cap is scaled so it spans the deltoid, and is dropped so its own crest -
-the highest vertex of its inner face - lands on the body's shoulder crest plus the
-slot's clearance. A rigid ICP then turns and slides it until its inner face stands one
-clearance off the skin all along, bounded to 45 degrees, and a push out along the
-surface normal frees whatever is still buried. One rigid transform per side, applied to
-every island of that side alike.
+rides it. The cap is scaled so it spans `--size` times the deltoid under it, and is
+dropped so its own crest - the highest vertex of its inner face - lands on the body's
+shoulder crest plus the slot's clearance. How big a pauldron reads is a look rather
+than a measurement, so the size is authored; the crest anchor is what makes it safe to
+turn, because the cap is seated after it is scaled and a bigger one therefore grows
+about the point it hangs from and still sits on top. A rigid ICP then turns and slides
+it until its inner face stands one clearance off the skin all along, bounded to 45
+degrees, and a push out along the surface normal frees whatever is still buried. One
+rigid transform per side, applied to every island of that side alike.
 
 Which way up the cap starts is measured, not assumed. The orientation a Tripo source is
 drawn in is one guess among several - a cap can come back presenting its opening at the
@@ -83,8 +86,12 @@ from gear import body, drape, gate, geometry, piece, ring, weights  # noqa: E402
 ROOT = Path(__file__).resolve().parents[3]
 CONTRACT_PATH = ROOT / "scripts" / "art" / "contracts" / "humanoid.v1.json"
 
-# How much wider than the muscle a pauldron reads as armour rather than a pip.
+# How much wider than the muscle a pauldron reads as armour rather than a pip, and so
+# the default `--size`.
 DELTOID_FACTOR = 1.15
+# A cap narrower than the muscle is a pip and one at twice its width is a tabletop.
+MIN_SIZE_FACTOR = 0.75
+MAX_SIZE_FACTOR = 2.5
 # The cap is the fixed part of its island; below this line the same island is cloth,
 # and cloth hanging past the elbow must not set the cap's scale.
 CAP_FRACTION = 0.5
@@ -848,7 +855,8 @@ def plan_side(entries: list[tuple], side: str, contract: dict, landmarks: dict,
               stage: str = "push", inner: str = "nearest", seeds: str = "grid",
               orient: np.ndarray | None = None,
               offset: np.ndarray | None = None,
-              deltoid_metres: float | None = None) -> dict:
+              deltoid_metres: float | None = None,
+              size_factor: float = DELTOID_FACTOR) -> dict:
     """Everything measurable about one shoulder, before a vertex has been moved.
 
     Split from the commit because the seed the pair wears is a decision about the pair:
@@ -874,7 +882,7 @@ def plan_side(entries: list[tuple], side: str, contract: dict, landmarks: dict,
     # A pair whose sides read one deltoid wider than the other wears two sizes of the
     # same plate, so the pair may be sized off the mean of the two instead.
     width = muscle["widthMetres"] if deltoid_metres is None else deltoid_metres
-    scale = width * DELTOID_FACTOR / span
+    scale = width * size_factor / span
 
     shared = {"side": side, "anchor": anchor, "armAxis": rounded_list(axis_arm),
               "jointHead": rounded_list(joint),
@@ -883,7 +891,7 @@ def plan_side(entries: list[tuple], side: str, contract: dict, landmarks: dict,
               "apexSource": rounded_list(apex), "capFraction": cap_fraction,
               "capSpanAlongAxisMetres": round(span, 6),
               "wholeIslandAlongAxisMetres": round(whole, 6),
-              "deltoid": muscle, "deltoidFactor": DELTOID_FACTOR, "scale": round(scale, 6),
+              "deltoid": muscle, "deltoidFactor": size_factor, "scale": round(scale, 6),
               "deltoidWidthUsedMetres": round(width, 6),
               "clearanceMetres": clearance, "fixedCapVertices": int(is_fixed.sum())}
     plan = {"side": side, "entries": entries, "anchor": anchor, "seat": seat, "stage": stage,
@@ -1311,6 +1319,9 @@ def run(args) -> dict:
     if not slot["pair"]:
         raise SocketError(f"socket gate: {args.slot} is not a paired slot")
     clearance = float(slot["clearance"])
+    if not MIN_SIZE_FACTOR <= args.size <= MAX_SIZE_FACTOR:
+        raise SocketError(f"size gate: {args.size} is outside the {MIN_SIZE_FACTOR} to"
+                          f" {MAX_SIZE_FACTOR} deltoid widths a cap may span")
     drape_specs = [drape.parse(spec) for spec in (args.drape or [])]
     for spec in drape_specs:
         for side in ("L", "R"):
@@ -1365,7 +1376,7 @@ def run(args) -> dict:
                              args.register, args.inner, args.seeds,
                              None if authored is None else authored[side]["orient"],
                              None if authored is None else authored[side]["offset"],
-                             pair_deltoid)
+                             pair_deltoid, args.size)
              for side, entries in sided.items()}
     choice = choose_seed(plans)
     print_seed_tables(plans, choice)
@@ -1565,6 +1576,7 @@ def parse(argv: list[str]):
     parser.add_argument("--weights", choices=("transfer", "stiff", "rigid"), default="stiff")
     parser.add_argument("--yaw", type=int, choices=(0, 180), default=0)
     parser.add_argument("--cap", type=float, default=CAP_FRACTION)
+    parser.add_argument("--size", type=float, default=DELTOID_FACTOR)
     parser.add_argument("--anchor", choices=("crest", "deltoid", "apex"), default="crest")
     parser.add_argument("--seat", choices=("none", "clear", "p95"), default="p95")
     parser.add_argument("--register", choices=("crest", "icp", "push"), default="push")
