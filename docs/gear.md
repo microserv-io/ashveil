@@ -311,12 +311,18 @@ wobbling; thirty cloaked actors at the four-step cap cost 0.22 ms a frame.
 - **Hide.** The manifest carries the resolved region rules; the runtime resolves them
   against the worn body's `<body>.masks.json` and drops body triangles whose three
   corners are hidden. The same rules hide lower pieces: at fit time every piece
-  vertex is tagged with the body region nearest it, so a belt that hides the waist
-  band also drops the tunic's triangles under its strap, and the two can never
-  clip there whatever the pose. `hidesSlots` hides whole lower pieces. A piece worn
-  over another takes the same weight mode as the piece beneath it in the band they
-  share, so they move together. No burial or coverage computation at runtime;
-  `SLOT_LAYERS` is generated from the contract.
+  vertex is tagged with the body region nearest it, read off the exported GLB
+  because the exporter splits vertices on seams and only runtime indices count,
+  so a belt that hides the waist band also drops the tunic's triangles under its
+  strap, and the two can never clip there whatever the pose. The band a ring piece
+  hides follows the strap's own top and bottom edge per azimuth, pulled 3 mm inward
+  so the leather always overlaps the cut; a flat band on a strap that tilts around
+  the ring either cuts hem the strap does not cover or hides nothing. `hidesSlots`
+  hides whole lower pieces. A piece worn over another takes the same weight mode
+  as the piece beneath it in the band they share, so they move together: the belt
+  at `transfer` clips the tunic at a run on 23 vertices against 40 at `stiff`. No
+  burial or coverage computation at runtime; `SLOT_LAYERS` is generated from the
+  contract.
 - **Verify.** The gate fails closed on: the registration gate above; joints and
   inverse binds match the body; influences at most four, summing to one, on allowed
   bones; the source's triangle and island counts survive into the default GLB; UVs
