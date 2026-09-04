@@ -8,7 +8,7 @@ const RUNNER = join(ROOT, 'scripts', 'art', 'gear', 'run.py')
 const CLIP = join(ROOT, 'scripts', 'art', 'gear', 'clip.ts')
 const CLIP_ARGUMENT = join('scripts', 'art', 'gear', 'clip.ts')
 const BLENDER_CANDIDATES = ['/opt/homebrew/bin/blender', '/usr/local/bin/blender', 'blender']
-const FLAGS = new Set(['--no-mask', '--two-sided'])
+const FLAGS = new Set(['--no-mask', '--two-sided', '--full-detail'])
 const VALUES = new Set(['--input', '--slot', '--body', '--piece', '--weights', '--covers', '--span', '--yaw', '--under', '--thumb', '--outdir'])
 const REPEATED = new Set(['--drape'])
 const SHAPES = new Set(['cape'])
@@ -20,10 +20,11 @@ const DRAPE = /^[a-z][a-z0-9_]*:[A-Za-z0-9_]+:[01](\.[0-9]+)?:[01](\.[0-9]+)?(:[
 export class GearError extends Error {}
 
 export function parseArgs(argv) {
-  const parsed = { noMask: false, twoSided: false, drapes: [] }
+  const parsed = { noMask: false, twoSided: false, fullDetail: false, drapes: [] }
+  const NAMED_FLAGS = { '--no-mask': 'noMask', '--two-sided': 'twoSided', '--full-detail': 'fullDetail' }
   for (let at = 0; at < argv.length; at++) {
     const flag = argv[at]
-    if (FLAGS.has(flag)) parsed[flag === '--no-mask' ? 'noMask' : 'twoSided'] = true
+    if (FLAGS.has(flag)) parsed[NAMED_FLAGS[flag]] = true
     else if (REPEATED.has(flag)) {
       const value = argv[++at]
       if (value === undefined) throw new GearError(`argument gate: ${flag} needs a value`)
@@ -142,7 +143,8 @@ export function blenderArgs(plan, runner = RUNNER) {
     ...plan.drapes.flatMap((drape) => ['--drape', drape]),
     ...(plan.thumb ? ['--thumb', plan.thumb] : []),
     ...(plan.noMask ? ['--no-mask'] : []),
-    ...(plan.twoSided ? ['--two-sided'] : [])]
+    ...(plan.twoSided ? ['--two-sided'] : []),
+    ...(plan.fullDetail ? ['--full-detail'] : [])]
 }
 
 function findBlender(exists = existsSync) {
@@ -199,6 +201,10 @@ export function run(plan) {
     gates = readClipGates(clipped.stdout ?? '')
   } catch (error) {
     if (clipped.status !== 0 || clipped.error) {
+      if (plan.fullDetail) {
+        console.warn(`clip gate warning: ${clipped.error?.message ?? `exit ${clipped.status}`}`)
+        return 0
+      }
       rmSync(join(plan.outdir, `${plan.piece}.glb`), { force: true })
       throw new GearError(`clip gate: ${clipped.error?.message ?? `exit ${clipped.status}`}`)
     }
@@ -208,6 +214,12 @@ export function run(plan) {
   const failed = Object.entries(gates).filter(([, passed]) => !passed).map(([name]) => name).sort()
   if (clipped.error) throw new GearError(`clip gate: ${clipped.error.message}`)
   if (clipped.status !== 0 || failed.length) {
+    // At full detail the clip gate is a reading, not a verdict: the mode exists to
+    // see what every island costs, and a deleted GLB says nothing about that.
+    if (plan.fullDetail) {
+      console.warn(`clip gate failed: ${failed.join(', ') || `exit ${clipped.status}`}`)
+      return 0
+    }
     rmSync(join(plan.outdir, `${plan.piece}.glb`), { force: true })
     throw new GearError(`clip gate failed: ${failed.join(', ') || `exit ${clipped.status}`}`)
   }

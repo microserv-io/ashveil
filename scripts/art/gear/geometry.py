@@ -715,10 +715,27 @@ def _straighten(points: np.ndarray, limb: dict) -> tuple[np.ndarray, dict]:
     }
 
 
+def _write(obj, points: np.ndarray) -> None:
+    inverse = obj.matrix_world.inverted()
+    for vertex, point in zip(obj.data.vertices, points):
+        vertex.co = inverse @ Vector(blender_from_runtime(point))
+    obj.data.update()
+
+
+def _similar(points: np.ndarray, yaw: int, scale: float, translation: np.ndarray) -> np.ndarray:
+    """Scale, yaw and anchor: every step of the placement a rigid part may take."""
+    moved = points.copy()
+    if yaw:
+        moved[:, 0] *= -1.0
+        moved[:, 2] *= -1.0
+    moved *= scale
+    return moved + translation
+
+
 def align(obj, reference: np.ndarray, rule: dict, surface: Surface, side: str | None = None,
           span: dict | None = None, yaw: int = 0, limb: dict | None = None,
           roll: dict | None = None, tube: dict | None = None,
-          enclose: dict | None = None) -> dict:
+          enclose: dict | None = None, carry: dict | None = None) -> dict:
     """Place the piece on the region it covers, at the yaw the caller asked for.
 
     The fitter used to vote between 0 and 180 by counting vertices inside the body,
@@ -765,6 +782,12 @@ def align(obj, reference: np.ndarray, rule: dict, surface: Surface, side: str | 
 
     candidates = {turn: place(turn, scale) for turn in (0, 180)}
     inside, mean, points, translation, deep = candidates[yaw]
+    # Rigid parts take the similarity and stop there: the shell's own record of where
+    # it stood at that moment is what their move is later measured against.
+    if carry is not None:
+        carry["shell"] = _similar(original, yaw, scale, translation)
+        for extra in carry.get("objects", []):
+            _write(extra, _similar(_runtime_points(extra), yaw, scale, translation))
     rolled = None
     tubed = None
     grown = None

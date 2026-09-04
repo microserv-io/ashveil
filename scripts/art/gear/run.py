@@ -15,7 +15,7 @@ from fit import export as exporter  # noqa: E402
 from fit import masks as body_masks  # noqa: E402
 from fit.glb import Glb  # noqa: E402
 from fit.skin import Body  # noqa: E402
-from gear import body, drape, gate, geometry, paint, piece, review, weights  # noqa: E402
+from gear import body, drape, full, gate, geometry, paint, piece, review, weights  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
 CONTRACT_PATH = ROOT / "scripts" / "art" / "contracts" / "humanoid.v1.json"
@@ -36,6 +36,10 @@ def parse(argv: list[str]):
     parser.add_argument("--thumb", choices=("+Z", "-Z", "inward", "outward"), default="+Z")
     parser.add_argument("--no-mask", action="store_true")
     parser.add_argument("--two-sided", action="store_true")
+    # Every island and every triangle the source had, with the hardware carried
+    # rigidly on the shell. The budget gate cannot pass in this mode and does not
+    # take the GLB with it: looking at what full detail costs is the point.
+    parser.add_argument("--full-detail", action="store_true")
     parser.add_argument("--outdir", required=True)
     return parser.parse_args(argv)
 
@@ -328,6 +332,13 @@ def _under_clearance(names: list[str], body_name: str, slot_name: str,
     return float(outer["clearance"])
 
 
+def _no_decimation(objects: list) -> dict:
+    triangles = sum(sum(max(0, len(face.vertices) - 2) for face in obj.data.polygons)
+                    for obj in objects)
+    return {"trianglesBefore": triangles, "trianglesAfter": triangles, "ratio": 1.0,
+            "skipped": "full detail"}
+
+
 def run(args) -> dict:
     contract = json.loads(CONTRACT_PATH.read_text())
     if args.slot not in contract["slots"]:
@@ -350,7 +361,8 @@ def run(args) -> dict:
     layer_surface = geometry.Surface(beneath) if beneath else None
     surface = geometry.SurfaceUnion([body_surface, layer_surface]) if layer_surface else body_surface
     objects, source_had, source = _source(args, loaded)
-    objects, island_report = piece.islands(objects, slot["pair"], args.piece)
+    objects, hardware, island_report = piece.islands(objects, slot["pair"], args.piece,
+                                                     args.full_detail)
 
     # A shape the fitter builds is not a shell of the body, so it is measured and
     # grown like the garment it stands in for rather than left at the region's size.
@@ -365,22 +377,28 @@ def run(args) -> dict:
     reference = body.region(loaded, reference_slots, slot["pair"])
     rule = _alignment_rule(slot["align"], proxy)
     alignment_report = {}
+    similarity = {}
     for at, obj in enumerate(objects):
         side = ("L", "R")[at] if slot["pair"] else "all"
         chosen = side if slot["pair"] else None
         landmarks = loaded["manifest"]["landmarks"]
         tube = _tube(rule, chosen, loaded, reference_slots, landmarks, float(slot["clearance"]))
+        carry = {"objects": hardware.get(side, [])} if args.full_detail else None
         measured_side = geometry.align(obj, reference[side], rule, surface, chosen, span,
                                        int(args.yaw), _limb(rule, chosen, contract, landmarks),
                                        _roll(rule, chosen, contract, landmarks,
                                              slot.get("thumb"), args.thumb, tube),
                                        tube,
-                                       _enclose(rule, chosen, loaded, reference_slots))
+                                       _enclose(rule, chosen, loaded, reference_slots),
+                                       carry)
+        if carry is not None:
+            similarity[side] = carry["shell"]
         measured_side["proxy"] = proxy
         measured_side["reference"] = reference_slots
         alignment_report[side] = measured_side
     faces = geometry.facing(objects, reference, slot, contract, loaded["manifest"]["landmarks"])
-    decimation = geometry.decimate(objects, slot["budget"]["maxTriangles"])
+    decimation = (_no_decimation(objects) if args.full_detail
+                  else geometry.decimate(objects, slot["budget"]["maxTriangles"]))
     # A glove replaces the hand rather than covering it, so the skin it stands in for
     # goes whether the garment reaches it or not: a fingertip the glove is a little
     # short of is still a gloved finger, not a bare one poking through.
@@ -395,6 +413,15 @@ def run(args) -> dict:
             alignment_report[side]["layerSeat"] = geometry.layer_seat(
                 obj, layer_surface, slot["align"]["layerSeat"], layer_clearance, side)
         shrinkwrap["layerSeatPasses"] = geometry.finish_layer_seat(objects, targets, slot, surface)
+    transport_report = {}
+    if args.full_detail:
+        carried = []
+        for at, obj in enumerate(objects):
+            side = ("L", "R")[at] if slot["pair"] else "all"
+            parts = hardware.get(side, [])
+            transport_report[side] = full.transport(obj, similarity[side], parts)
+            carried.append(piece.join([obj, *parts], obj.name))
+        objects = carried
     mode = args.weights or slot["weights"]["mode"]
     weight_report = weights.apply(objects, target, loaded["armature"], slot, mode, slot["pair"])
     drapes, drape_report = [], []
@@ -500,10 +527,19 @@ def run(args) -> dict:
             "sha256": exporter.sha256_file(glb_path),
         },
     }
+    # Only a full-detail run says anything about hardware, and a fixture pins the
+    # shipped report byte for byte: a key that is always there would move it.
+    if args.full_detail:
+        report["fullDetail"] = True
+        report["transport"] = transport_report
     exporter.write_json(str(out / f"{args.piece}.report.json"), report)
+    # A budget gate cannot pass at full detail, and deleting the GLB would take the
+    # thing the mode exists to look at with it: the failures are named and kept.
     if not report["gatesPass"]:
-        os.remove(glb_path)
-        gate.check(gates_table)
+        report["gatesFailed"] = sorted(name for name, passed in gates_table.items() if not passed)
+        if not args.full_detail:
+            os.remove(glb_path)
+            gate.check(gates_table)
 
     manifest = _manifest(args, contract, source, covers, worn_under, hides, mode, alignment,
                          measured, gates_table, glb_path, drapes, bool(args.two_sided))

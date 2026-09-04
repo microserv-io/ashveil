@@ -229,12 +229,30 @@ def _centroid_x(obj) -> float:
     return sum(runtime_from_blender(obj.matrix_world @ vertex.co)[0] for vertex in vertices) / len(vertices)
 
 
-def islands(objects: list, pair: bool, name: str) -> tuple[list, dict]:
+def _side_of(obj) -> str:
+    return "L" if _centroid_x(obj) >= 0.0 else "R"
+
+
+def _profile(obj, side: str) -> dict:
+    points = np.array([runtime_from_blender(obj.matrix_world @ vertex.co)
+                       for vertex in obj.data.vertices], dtype=np.float64)
+    centre = points.mean(axis=0)
+    return {"triangles": _triangles(obj), "vertices": int(len(points)), "side": side,
+            "sourceCentroid": [round(float(value), 6) for value in centre],
+            "sourceHeightMetres": round(float(points[:, 1].max() - points[:, 1].min()), 6)}
+
+
+def islands(objects: list, pair: bool, name: str,
+            keep_all: bool = False) -> tuple[list, dict, dict]:
     """Reduce a source to the shapes a slot wears: one per side, or one in all.
 
     A runtime body GLB is seam-split, so anything carved from one arrives as
     dozens of loose patches; merging by distance is what makes an island an
     island again, and the side a patch belongs to is the sign of its centre.
+
+    `keep_all` keeps what the debris rule would have deleted, as loose islands per
+    side rather than welded into the shell: the buckles, rivets and appliques are
+    the premium look, and they ride the fitted shell rather than being fitted.
     """
     for obj in objects:
         normalise._merge_seams(obj)
@@ -242,32 +260,51 @@ def islands(objects: list, pair: bool, name: str) -> tuple[list, dict]:
     counts = {obj: _triangles(obj) for obj in separated}
     total = sum(counts.values())
     kept = [obj for obj in separated if counts[obj] >= total * DEBRIS_FRACTION]
-    dropped = sorted(counts[obj] for obj in separated if obj not in kept)
-    for obj in separated:
-        if obj not in kept:
+    debris = [obj for obj in separated if obj not in kept]
+    dropped = sorted(counts[obj] for obj in debris)
+    if not keep_all:
+        for obj in debris:
             bpy.data.objects.remove(obj, do_unlink=True)
+        debris = []
     if not kept:
         raise PieceError("island gate: every island was under the debris threshold")
 
+    hardware: dict[str, list] = {}
+    # Measured before the join, which is what forgets an island was ever one.
+    shell_profiles = ([_profile(obj, _side_of(obj) if pair else "all") for obj in kept]
+                      if keep_all else [])
     if pair:
-        sides = {"L": [obj for obj in kept if _centroid_x(obj) >= 0.0],
-                 "R": [obj for obj in kept if _centroid_x(obj) < 0.0]}
+        sides = {"L": [obj for obj in kept if _side_of(obj) == "L"],
+                 "R": [obj for obj in kept if _side_of(obj) == "R"]}
         empty = sorted(side for side, group in sides.items() if not group)
         if empty:
             raise PieceError(f"pair gate: no island on side {', '.join(empty)}, "
                              f"from {len(kept)} island(s) kept of {len(separated)}")
         grouped = {side: len(group) for side, group in sides.items()}
+        for side in ("L", "R"):
+            hardware[side] = [obj for obj in debris if _side_of(obj) == side]
         result = [_join(sides["L"], f"{name}_L"), _join(sides["R"], f"{name}_R")]
     else:
         grouped = {"all": len(kept)}
+        hardware["all"] = list(debris)
         result = [_join(kept, name)]
-    return result, {
+    report = {
         "found": len(separated),
         "kept": len(kept),
         "grouped": grouped,
         "droppedTriangleCounts": dropped,
         "triangles": sum(_triangles(obj) for obj in result),
     }
+    if keep_all:
+        report["hardwareKept"] = len(debris)
+        report["hardwareTriangles"] = int(sum(counts[obj] for obj in debris))
+        report["hardwareIslands"] = sorted(
+            (_profile(obj, side) for side, group in hardware.items() for obj in group),
+            key=lambda entry: -entry["triangles"])
+        report["shellIslands"] = sorted(shell_profiles, key=lambda entry: -entry["triangles"])
+        report["shellTriangles"] = report["triangles"]
+        report["triangles"] += report["hardwareTriangles"]
+    return result, hardware, report
 
 
 def join(objects: list, name: str):
