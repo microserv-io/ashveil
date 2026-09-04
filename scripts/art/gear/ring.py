@@ -49,7 +49,7 @@ from fit import export as exporter  # noqa: E402
 from fit.frame import blender_from_runtime, runtime_from_blender  # noqa: E402
 from fit.glb import Glb  # noqa: E402
 from fit import normalise  # noqa: E402
-from gear import body, gate, piece, weights  # noqa: E402
+from gear import body, gate, piece, regions, weights  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
 CONTRACT_PATH = ROOT / "scripts" / "art" / "contracts" / "humanoid.v1.json"
@@ -532,6 +532,36 @@ def bin_thickness(points: np.ndarray, centre_xz: np.ndarray, bins: int) -> np.nd
     """Per azimuth, how far the outer face stands off the inner one: the strap's own depth."""
     inner, outer = bin_extremes(points, centre_xz, bins)
     return (outer - inner)[np.isfinite(inner)]
+
+
+def band_profile(points: np.ndarray, centre_xz: np.ndarray, bins: int) -> dict:
+    """Where the strap's own edges run around the ring, against its flat Y extent.
+
+    A hide rule reaches over the piece below through a band of heights, and that is
+    only the strap wherever the strap is level. This says how far from level it is:
+    `everywhereMetres` is the heights it covers at every azimuth, and a value there
+    much shorter than the strap means a flat band cuts a hem the leather is not
+    behind at the azimuths where it rides low.
+    """
+    at = bin_index(azimuth(points, centre_xz)[0], bins)
+    tops = []
+    bottoms = []
+    for index in range(bins):
+        members = points[at == index]
+        if len(members) == 0:
+            continue
+        bottoms.append(float(members[:, 1].min()))
+        tops.append(float(members[:, 1].max()))
+    if not tops:
+        raise RingError("band gate: the strap covers no azimuth bin")
+    return {
+        "bins": len(tops),
+        "everywhereMetres": [round(max(bottoms), 6), round(min(tops), 6)],
+        "topSpreadMetres": round(max(tops) - min(tops), 6),
+        "bottomSpreadMetres": round(max(bottoms) - min(bottoms), 6),
+        "tops": [round(value, 6) for value in tops],
+        "bottoms": [round(value, 6) for value in bottoms],
+    }
 
 
 def buried_bins(points: np.ndarray, centre_xz: np.ndarray, bins: int, depths: np.ndarray,
@@ -1201,6 +1231,10 @@ def run(args) -> dict:
     if args.slot not in contract["slots"]:
         raise RingError(f"slot gate: unknown slot \"{args.slot}\"")
     slot = contract["slots"][args.slot]
+    hidden_regions = [name.strip() for name in (args.hides_regions or "").split(",") if name.strip()]
+    for name in hidden_regions:
+        if name not in contract["slots"]:
+            raise RingError(f"hide gate: unknown region \"{name}\"")
     loaded = body.load(ROOT, args.body)
     worn_under = [name.strip() for name in (args.under or "").split(",") if name.strip()]
     beneath = piece.under(ROOT, worn_under)
@@ -1365,6 +1399,11 @@ def run(args) -> dict:
     glb_path = str(out / f"{args.piece}.glb")
     exporter.write_glb(glb_path, {args.piece: fitted_object}, loaded["armature"])
     rest = exporter.finish(glb_path)
+    piece_regions, region_report = regions.of_glb(glb_path, str(loaded["path"]), loaded["masks"])
+    # The band a hide rule reaches over the piece below is the leather's own, after
+    # the conform and the seat have decided where the leather actually lies.
+    hides_band = [round(float(strap_after[:, 1].min()), 6), round(float(strap_after[:, 1].max()), 6)]
+    strap_profile = band_profile(strap_after, ring_centre_xz, CONFORM_BINS)
 
     depths = np.array([dressed.depth(blender_from_runtime(point)) for point in after_points])
     bare_depths = np.array([bare.depth(blender_from_runtime(point)) for point in after_points])
@@ -1420,6 +1459,10 @@ def run(args) -> dict:
         # A belt hides nothing: the tunic under it is a piece, not skin, and the skin
         # under the tunic is already hidden by the tunic's own mask.
         "hides": {},
+        # One layer up the same rule bites: the leather owns the waist band, so the
+        # piece below stops drawing what it tagged waist inside that band.
+        **({"hidesRegions": hidden_regions, "hidesBand": hides_band} if hidden_regions else {}),
+        "regions": piece_regions,
         "weights": mode,
         # The schema carries one scale, and the ring rule has three; the report has
         # the axes, and the mean is what a reader comparing pieces wants here.
@@ -1461,6 +1504,8 @@ def run(args) -> dict:
                       "clearanceMetres": RING_CLEARANCE,
                       "translation": manifest["alignment"]["translation"]},
         "hardware": hardware,
+        "regions": {**region_report, "hides": hidden_regions, "band": hides_band,
+                    "bandProfile": strap_profile},
         "islandTable": islands_table,
         "transport": {"mode": args.seat, "attachRadiusMetres": ATTACH_RADIUS,
                       "strapIsland": strap_at, "islandsMoved": len(transported),
@@ -1518,6 +1563,9 @@ def parse(argv: list[str]):
     parser.add_argument("--body", required=True)
     parser.add_argument("--piece", required=True)
     parser.add_argument("--under", default="")
+    parser.add_argument("--hides-regions", dest="hides_regions", default="",
+                        help="contract regions this piece hides on the pieces below it, "
+                             "inside its own strap band")
     parser.add_argument("--weights", choices=("transfer", "stiff", "rigid"), default="stiff")
     parser.add_argument("--yaw", type=int, choices=(0, 180), default=0)
     parser.add_argument("--bins", type=int, default=AZIMUTH_BINS)

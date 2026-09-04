@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { hiddenByRegion, hidesByRegion, type RegionHides } from './gearregions'
 
 /**
  * Which parts of one mesh another mesh covers, and the triangle grid both this and
@@ -337,7 +338,7 @@ function union(first: Float32Array, second: Float32Array): Float64Array {
   return box
 }
 
-export interface LayeredMesh {
+export interface LayeredMesh extends RegionHides {
   /** The slot's layer: a higher one is worn over a lower one and hides it. */
   readonly layer: number
   readonly mesh: THREE.SkinnedMesh
@@ -357,8 +358,10 @@ export interface LayeredMesh {
 /**
  * Hides each worn piece under the pieces worn over it, by layer and never by the
  * order they were put on. A triangle goes only when all three of its vertices are
- * inside a higher piece; a piece nothing covers gets its own geometry straight
- * back, so taking the outer piece off restores what it hid.
+ * hidden; a piece nothing covers gets its own geometry straight back, so taking the
+ * outer piece off restores what it hid. Which of the two rules answers "hidden" is
+ * `gearregions.ts`: the authored one wherever both sides carry what it needs, burial
+ * everywhere else.
  */
 export function applyPieceMasks(worn: readonly LayeredMesh[]): void {
   for (const wear of worn) {
@@ -368,7 +371,10 @@ export function applyPieceMasks(worn: readonly LayeredMesh[]): void {
     for (const other of worn) {
       if (other.layer <= wear.layer || other.mesh === wear.mesh) continue
       if (other.hidesPieces === false) continue
-      for (const vertex of coveredVertices(inner, coveringOf(other))) covered.add(vertex)
+      const hidden = hidesByRegion(wear, other)
+        ? hiddenByRegion(inner.positions, wear.regions!, other.hidesRegions!, other.hidesBand)
+        : coveredVertices(inner, coveringOf(other))
+      for (const vertex of hidden) covered.add(vertex)
     }
     wear.mesh.geometry = covered.size === 0 ? base : maskedGeometry(base, covered)
   }

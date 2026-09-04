@@ -2,10 +2,12 @@ import * as THREE from 'three'
 import type { ActorView } from './actorview'
 import { bindDrapes, unbindDrapes, type DrapeChain, type DrapeDefinition } from './drapebones'
 import { applyPieceMasks, baseGeometryOf, maskedGeometry } from './gearcover'
+import type { RegionHides } from './gearregions'
 import { isBodyMaterial, type BodyMaterial } from './look'
 
 export { resetWornPieces, updateWornPieces } from './drapestep'
 export type { DrapeChain, DrapeDefinition } from './drapebones'
+export type { PieceRegions, RegionHides } from './gearregions'
 
 /**
  * Gear on a fitted body: a second skinned mesh driven by the body's own bones, and
@@ -44,7 +46,7 @@ export const DRAPE_MARGIN = 0.01
 export type GearHides = Readonly<Record<string, readonly number[]>>
 
 /** A loaded piece GLB, before it is bound to any particular body. */
-export interface GearPieceSource {
+export interface GearPieceSource extends RegionHides {
   slot: GearSlot
   scene: THREE.Object3D
   /** The slot regions this piece spans, for reference; masking is `hides`. */
@@ -60,7 +62,7 @@ export interface GearPieceSource {
   hidesPieces?: boolean
 }
 
-export interface WornPiece {
+export interface WornPiece extends RegionHides {
   slot: GearSlot
   covers: readonly GearSlot[]
   hides: GearHides
@@ -122,6 +124,9 @@ export function wearPiece(body: THREE.Object3D, source: GearPieceSource): WornPi
     material,
     drapes: drapes.chains,
     hidesPieces: source.hidesPieces ?? true,
+    regions: source.regions,
+    hidesRegions: source.hidesRegions,
+    hidesBand: source.hidesBand,
   }
 }
 
@@ -154,9 +159,8 @@ export function applyBodyMasks(body: THREE.Object3D, worn: readonly Pick<WornPie
  */
 export function applyGearMasks(worn: readonly WornPiece[]): void {
   applyPieceMasks(worn.map((piece) => ({
+    ...piece,
     layer: SLOT_LAYERS[piece.slot],
-    mesh: piece.mesh,
-    hidesPieces: piece.hidesPieces,
     drapeJoints: drapeJointsOf(piece),
   })))
 }

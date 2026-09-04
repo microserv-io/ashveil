@@ -15,8 +15,8 @@ import { basename, join, resolve } from 'node:path'
 const ROOT = join(import.meta.dirname, '..', '..')
 const RUNNER = join(ROOT, 'scripts', 'art', 'gear', 'ring.py')
 const BLENDER_CANDIDATES = ['/opt/homebrew/bin/blender', '/usr/local/bin/blender', 'blender']
-const VALUES = new Set(['--input', '--slot', '--body', '--piece', '--under', '--weights', '--yaw',
-  '--bins', '--passes', '--seat', '--conform', '--outdir'])
+const VALUES = new Set(['--input', '--slot', '--body', '--piece', '--under', '--hides-regions',
+  '--weights', '--yaw', '--bins', '--passes', '--seat', '--conform', '--outdir'])
 const SWITCHES = new Set(['--no-conform'])
 const NAME = /^[a-z0-9][a-z0-9-]*$/
 
@@ -81,6 +81,7 @@ export function blenderArgs(plan, runner = RUNNER) {
     '--input', plan.input, '--body', plan.body, '--piece', plan.piece, '--outdir', plan.outdir,
     ...(plan.slot ? ['--slot', plan.slot] : []),
     ...(plan.under ? ['--under', plan.under] : []),
+    ...(plan['hides-regions'] ? ['--hides-regions', plan['hides-regions']] : []),
     ...(plan.weights ? ['--weights', plan.weights] : []),
     ...(plan.yaw ? ['--yaw', plan.yaw] : []),
     ...(plan.bins ? ['--bins', plan.bins] : []),

@@ -260,6 +260,36 @@
         }
       }
     },
+    "hidesRegions": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/region"
+      }
+    },
+    "hidesBand": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "number"
+      }
+    },
+    "regions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "feet": { "$ref": "#/$defs/vertices" },
+        "legs": { "$ref": "#/$defs/vertices" },
+        "waist": { "$ref": "#/$defs/vertices" },
+        "chest": { "$ref": "#/$defs/vertices" },
+        "back": { "$ref": "#/$defs/vertices" },
+        "hands": { "$ref": "#/$defs/vertices" },
+        "shoulders": { "$ref": "#/$defs/vertices" },
+        "head": { "$ref": "#/$defs/vertices" }
+      }
+    },
     "weights": {
       "enum": [
         "transfer",
@@ -338,6 +368,26 @@
     }
   },
   "$defs": {
+    "region": {
+      "enum": [
+        "feet",
+        "legs",
+        "waist",
+        "chest",
+        "back",
+        "hands",
+        "shoulders",
+        "head"
+      ]
+    },
+    "vertices": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
     "alignment": {
       "type": "object",
       "additionalProperties": false,

@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { GEAR_SLOTS, type DrapeDefinition, type GearHides, type GearSlot } from '../../src/render/gear'
+import {
+  GEAR_SLOTS, type DrapeDefinition, type GearHides, type GearSlot, type PieceRegions,
+} from '../../src/render/gear'
 import { stylise } from '../../src/render/look'
 
 /**
@@ -49,6 +51,9 @@ export interface LoadedGearPiece {
   readonly hides: GearHides
   readonly drapes: readonly DrapeDefinition[]
   readonly hidesPieces: boolean | undefined
+  readonly regions: PieceRegions | undefined
+  readonly hidesRegions: readonly string[] | undefined
+  readonly hidesBand: readonly [number, number] | undefined
 }
 
 /** Where `npm run art:gear` puts a piece, and so where the page fetches it. */
@@ -67,6 +72,7 @@ export async function loadGearManifest(piece: string): Promise<Omit<LoadedGearPi
   if (!response.ok) throw new Error(`gear: ${url} answered ${response.status}`)
   const manifest = (await response.json()) as {
     covers?: unknown; hides?: unknown; drapes?: unknown; hidesPieces?: unknown
+    regions?: unknown; hidesRegions?: unknown; hidesBand?: unknown
   }
   if (!Array.isArray(manifest.covers)) throw new Error(`gear: ${url} has no "covers" array`)
   for (const slot of manifest.covers) {
@@ -84,7 +90,40 @@ export async function loadGearManifest(piece: string): Promise<Omit<LoadedGearPi
     hides: hides as GearHides,
     drapes: drapesOf(manifest.drapes, url),
     hidesPieces: typeof manifest.hidesPieces === 'boolean' ? manifest.hidesPieces : undefined,
+    regions: regionsOf(manifest.regions, url),
+    hidesRegions: hiddenRegionsOf(manifest.hidesRegions, url),
+    hidesBand: bandOf(manifest.hidesBand, url),
   }
+}
+
+/** A piece fitted before region tags existed has none, and falls back to burial. */
+function regionsOf(regions: unknown, url: string): PieceRegions | undefined {
+  if (regions === undefined) return undefined
+  if (!regions || typeof regions !== 'object' || Array.isArray(regions)) {
+    throw new Error(`gear: ${url} has a "regions" that is not an object`)
+  }
+  for (const [region, indices] of Object.entries(regions)) {
+    if (!GEAR_SLOTS.includes(region as GearSlot)) throw new Error(`gear: ${url} tags unknown region "${region}"`)
+    if (!Array.isArray(indices)) throw new Error(`gear: ${url} regions "${region}" is not an array`)
+  }
+  return regions as PieceRegions
+}
+
+function hiddenRegionsOf(regions: unknown, url: string): readonly string[] | undefined {
+  if (regions === undefined) return undefined
+  if (!Array.isArray(regions)) throw new Error(`gear: ${url} has a "hidesRegions" that is not an array`)
+  for (const region of regions) {
+    if (!GEAR_SLOTS.includes(region as GearSlot)) throw new Error(`gear: ${url} hides unknown region "${region}"`)
+  }
+  return regions as string[]
+}
+
+function bandOf(band: unknown, url: string): readonly [number, number] | undefined {
+  if (band === undefined) return undefined
+  if (!Array.isArray(band) || band.length !== 2 || band.some((edge) => typeof edge !== 'number')) {
+    throw new Error(`gear: ${url} has a "hidesBand" that is not two numbers`)
+  }
+  return band as [number, number]
 }
 
 /** A piece with no hanging cloth has no `drapes` at all, and that is the common case. */

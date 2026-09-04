@@ -282,6 +282,9 @@ function rewear(): void {
         hides: loaded.hides,
         drapes: loaded.drapes,
         hidesPieces: loaded.hidesPieces,
+        regions: loaded.regions,
+        hidesRegions: loaded.hidesRegions,
+        hidesBand: loaded.hidesBand,
       })]
       : []
   })

@@ -131,6 +131,90 @@ describe('hiding a worn piece under the pieces over it', () => {
     expect(triangles(movingInner), 'moving cloth never cuts a hole below it').toBeGreaterThan(0)
   })
 
+  /**
+   * The authored rule, and the case burial cannot answer: two shells side by side,
+   * neither inside the other, the way a belt strap and the tunic hem it lies against
+   * sit six millimetres apart and then swap sides at a run.
+   */
+  describe('by the regions the upper piece hides', () => {
+    /** Every vertex of a shell, tagged waist inside a band and legs outside it. */
+    function tagged(mesh: THREE.Mesh, band: readonly [number, number]) {
+      const position = mesh.geometry.getAttribute('position')
+      const waist: number[] = []
+      const legs: number[] = []
+      for (let vertex = 0; vertex < position.count; vertex++) {
+        const y = position.getY(vertex)
+        ;(y >= band[0] && y <= band[1] ? waist : legs).push(vertex)
+      }
+      return { waist, legs }
+    }
+
+    /** A belt sits beside the hem it hides, never inside it, so burial finds nothing. */
+    const beside = (): THREE.SkinnedMesh => {
+      const strap = shell(0.05)
+      strap.translate(0, 0, 0.4)
+      return meshOf(strap)
+    }
+
+    it('drops the tagged triangles inside the band and keeps the rest', () => {
+      const lower = meshOf(shell(0.05))
+      const whole = triangles(lower)
+      const regions = tagged(lower, [0, 0.06])
+
+      applyPieceMasks([
+        { layer: SLOT_LAYERS.chest, mesh: lower, regions },
+        { layer: SLOT_LAYERS.waist, mesh: beside(), hidesRegions: ['waist'], hidesBand: [0, 0.06] },
+      ])
+      expect(triangles(lower), 'the band goes, though nothing is buried').toBeLessThan(whole)
+      expect(triangles(lower), 'everything below the band stays').toBeGreaterThan(0)
+
+      applyPieceMasks([{ layer: SLOT_LAYERS.chest, mesh: lower, regions }])
+      expect(triangles(lower), 'taking the belt off puts the hem back').toBe(whole)
+    })
+
+    it('leaves a region the upper piece does not name alone', () => {
+      const lower = meshOf(shell(0.05))
+      const whole = triangles(lower)
+      applyPieceMasks([
+        { layer: SLOT_LAYERS.chest, mesh: lower, regions: tagged(lower, [0, 0.06]) },
+        { layer: SLOT_LAYERS.waist, mesh: beside(), hidesRegions: ['head'], hidesBand: [0, 0.06] },
+      ])
+      expect(triangles(lower)).toBe(whole)
+    })
+
+    it('keeps a tagged vertex outside the band, so a hem below a strap stays drawn', () => {
+      const lower = meshOf(shell(0.05))
+      const whole = triangles(lower)
+      const waist = Array.from({ length: lower.geometry.getAttribute('position').count }, (_, at) => at)
+      applyPieceMasks([
+        { layer: SLOT_LAYERS.chest, mesh: lower, regions: { waist } },
+        { layer: SLOT_LAYERS.waist, mesh: beside(), hidesRegions: ['waist'], hidesBand: [1, 2] },
+      ])
+      expect(triangles(lower)).toBe(whole)
+    })
+
+    /** A piece the fitter never tagged is still hidden the way it always was. */
+    it('falls back to burial for a piece that carries no regions', () => {
+      const lower = meshOf(shell(0.05))
+      applyPieceMasks([
+        { layer: SLOT_LAYERS.chest, mesh: lower },
+        { layer: SLOT_LAYERS.waist, mesh: meshOf(shell(0.08)), hidesRegions: ['waist'], hidesBand: [-1, 1] },
+      ])
+      expect(triangles(lower)).toBe(0)
+    })
+
+    /** Layer still decides direction: a belt cannot hide the piece worn over it. */
+    it('never reaches up a layer', () => {
+      const upper = meshOf(shell(0.05))
+      const whole = triangles(upper)
+      applyPieceMasks([
+        { layer: SLOT_LAYERS.waist, mesh: upper, regions: tagged(upper, [-1, 1]) },
+        { layer: SLOT_LAYERS.legs, mesh: beside(), hidesRegions: ['waist'], hidesBand: [-1, 1] },
+      ])
+      expect(triangles(upper)).toBe(whole)
+    })
+  })
+
   it('orders fixed overlap from chest to back to shoulders and headgear', () => {
     expect(SLOT_LAYERS.shoulders).toBe(SLOT_LAYERS.head)
     expect(SLOT_LAYERS.back).toBeGreaterThan(SLOT_LAYERS.chest)
