@@ -76,22 +76,30 @@ head. The "Many bodies" section below is that pattern with Blender built-ins.
 
 ## Decided
 
-- **Gear is generated on the canonical body, on the mannequin for its layer.** The
-  concept for a piece is the canonical body's own render wearing it, over the
-  reference pieces of the layers beneath, so Tripo returns a dressed body in the
-  body's proportions and pose with the piece already where it belongs. Tripo works
-  from the image, not from measurements, so the dressed body is close and never
-  exact; the fitter measures the difference and closes it, it does not assume it
-  away.
+- **Pieces are generated standalone and placed by a rule per slot type.** Every
+  piece that works today was generated alone, as the concepts are drawn now, and
+  put on the body by a rule that reads the body's measurements: a *ring* (belt
+  strap, collar, cuff) is placed on the cross section at its height, a *socket*
+  piece (pauldron cap, helm, backpack) is placed rigidly at its bone's socket, and
+  hardware and hanging cloth ride along. Neither deforms a vertex. Only *shell*
+  pieces (tunic, trousers, gloves, boots, hood) need the body's shape, and the five
+  the game has were fitted by the old fitter, now frozen as a tool for them.
+- **Generation on the mannequin is the fallback for a new shell piece, not the
+  default.** It puts a form-fitting piece where it belongs at the cost of cutting it
+  out of a dressed body, and that extraction is untested. It is tried on the first
+  new shell piece the game needs, with one Tripo generation, and dropped if the cut
+  is not clean. Tripo works from the image, not from measurements, so any dressed
+  body is close and never exact; the fitter measures the difference and closes it.
 - **Ring pieces are placed by their ring.** A belt strap, a collar or a cuff is a loop
   around a bone, and a loop has exactly one correct placement: the body's cross
   section at that height plus the strap's clearance. The fitter places such a piece
   by that rule, with its buckle, pouches and hanging cloth riding along, so an
   existing standalone belt needs no regeneration. This is the only per-shape rule.
-- **The fitter corrects, it never reshapes.** After registration or ring placement
-  the only geometry change is a push-out to a 3 mm safety clearance off the
-  mannequin and a Corrective Smooth on what moved. A piece that needs more is a
-  rejected generation.
+- **The fitter corrects, it never reshapes.** After placement the only geometry
+  changes are structured and measured: a ring strap conforms to the cross section
+  it sits on, everything else gets at most a push-out to a 3 mm safety clearance
+  and a Corrective Smooth on what moved. Hardware never deforms. A piece that
+  needs more is a rejected generation.
 - **Belt, shoulders and back carry hanging attachments.** A sash below the strap,
   feathers or cloth below a pauldron cap, a cape's panels below its yoke. The fixed
   part is placed and skinned like any piece; every hanging panel gets its own spring
@@ -111,10 +119,15 @@ head. The "Many bodies" section below is that pattern with Blender built-ins.
   on the body's bones. It peers only on `three`, runs without a VRM file, and its
   update is a function of the step and the bone matrices alone. Stepped at the sim's
   fixed `DT` from sim time; presentation only, never sim.
-- **One authored piece, many bodies, by conforming the canonical body.** A second
-  body gets the piece by deforming a copy of the canonical body onto it (bone-length
-  retarget, then body-to-body Shrinkwrap) with the piece bound to that copy through
-  Surface Deform. Nothing is generated per body below the neck.
+- **One authored piece, many bodies, and the scaling code is small because it is
+  measurement, not deformation.** A ring or socket piece goes onto a dwarf or a
+  tauren by re-running its placement rule against that body's landmarks: the
+  dwarf's waist ellipse, the tauren's shoulder socket. Only shell pieces need a
+  deformation, and that is one built-in flow: deform a copy of the canonical body
+  onto the new body (bone-length retarget, then body-to-body Shrinkwrap) with the
+  piece bound to the copy through Surface Deform. Anatomy no deformation can reach
+  (a horned head, a hoof, a tail) gets an authored variant for that family, which is
+  what FF14 and WoW do for heads. Nothing is generated per body otherwise.
 - **Gates fail closed only on what a script can judge**: contract identity, budgets,
   registration, a contact-ring standoff that a floating piece cannot pass, clipping
   through gameplay motion for fixed geometry. Everything else is reported on the
