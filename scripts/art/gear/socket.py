@@ -847,7 +847,8 @@ def plan_side(entries: list[tuple], side: str, contract: dict, landmarks: dict,
               cap_fraction: float, anchor: str = "crest", seat: str = "p95",
               stage: str = "push", inner: str = "nearest", seeds: str = "grid",
               orient: np.ndarray | None = None,
-              offset: np.ndarray | None = None) -> dict:
+              offset: np.ndarray | None = None,
+              deltoid_metres: float | None = None) -> dict:
     """Everything measurable about one shoulder, before a vertex has been moved.
 
     Split from the commit because the seed the pair wears is a decision about the pair:
@@ -870,7 +871,10 @@ def plan_side(entries: list[tuple], side: str, contract: dict, landmarks: dict,
     whole = float((cap_points @ axis).max() - (cap_points @ axis).min())
 
     muscle = deltoid_width(region, axis_arm, joint, side, dressed)
-    scale = muscle["widthMetres"] * DELTOID_FACTOR / span
+    # A pair whose sides read one deltoid wider than the other wears two sizes of the
+    # same plate, so the pair may be sized off the mean of the two instead.
+    width = muscle["widthMetres"] if deltoid_metres is None else deltoid_metres
+    scale = width * DELTOID_FACTOR / span
 
     shared = {"side": side, "anchor": anchor, "armAxis": rounded_list(axis_arm),
               "jointHead": rounded_list(joint),
@@ -880,6 +884,7 @@ def plan_side(entries: list[tuple], side: str, contract: dict, landmarks: dict,
               "capSpanAlongAxisMetres": round(span, 6),
               "wholeIslandAlongAxisMetres": round(whole, 6),
               "deltoid": muscle, "deltoidFactor": DELTOID_FACTOR, "scale": round(scale, 6),
+              "deltoidWidthUsedMetres": round(width, 6),
               "clearanceMetres": clearance, "fixedCapVertices": int(is_fixed.sum())}
     plan = {"side": side, "entries": entries, "anchor": anchor, "seat": seat, "stage": stage,
             "cap": cap, "capPoints": cap_points, "isFixed": is_fixed, "axis": axis,
@@ -1350,11 +1355,17 @@ def run(args) -> dict:
     turn["facing"] = source_facing(sided, args.cap)
     check_facing(turn["facing"], args.yaw)
 
+    pair_deltoid = None
+    if args.scale_mode == "pair":
+        pair_deltoid = float(np.mean([
+            deltoid_width(region[side], *arm_axis(landmarks, contract, side), side,
+                          dressed)["widthMetres"] for side in ("L", "R")]))
     plans = {side: plan_side(entries, side, contract, landmarks, region[side], normals[side],
                              dressed, bare, skin, clearance, args.cap, args.anchor, args.seat,
                              args.register, args.inner, args.seeds,
                              None if authored is None else authored[side]["orient"],
-                             None if authored is None else authored[side]["offset"])
+                             None if authored is None else authored[side]["offset"],
+                             pair_deltoid)
              for side, entries in sided.items()}
     choice = choose_seed(plans)
     print_seed_tables(plans, choice)
@@ -1559,6 +1570,7 @@ def parse(argv: list[str]):
     parser.add_argument("--register", choices=("crest", "icp", "push"), default="push")
     parser.add_argument("--inner", choices=("normals", "nearest"), default="nearest")
     parser.add_argument("--seeds", choices=("grid", "none"), default="grid")
+    parser.add_argument("--scale-mode", choices=("side", "pair"), default="side")
     parser.add_argument("--orient", default="")
     parser.add_argument("--offset", default="")
     parser.add_argument("--orient-right", default="")
