@@ -124,10 +124,16 @@ head. The "Many bodies" section below is that pattern with Blender built-ins.
 - **Layers are authored, not computed.** The layer order and the mannequin per
   layer live in the family contract; runtime constants are generated from it. A piece
   may hide whole lower slots (a robe over a belt), by declaration.
-- **The body hides per region, authored.** A piece declares which body regions it
-  hides, with the region rule parameters it needs (a knee boot hides more shin than
-  an ankle boot). Regions resolve per body through `fit/masks.py`. Coverage is never
-  computed from the piece.
+- **The body hides what the piece covers, measured once at fit time.** A body vertex
+  is hidden when cloth sits within 25 mm along its outward normal, or it lies inside
+  the garment within 10 mm of its surface; the indices are written into the manifest
+  per body. A neckline, a slashed sleeve or a cleavage then shows skin, never the
+  wall, because skin under an opening is not covered. The two ways this went wrong
+  were a 60 mm reach, which let a ray cross the hood's face opening to the far wall,
+  and counting anything inside a thick Tripo solid as covered, which hid the armpit
+  and the nape 20 to 58 mm from any cloth. Authored regions remain for the slots
+  that replace a region outright (hands, feet) and for the bands a ring or socket
+  piece hides on the layer beneath it.
 - **Hanging cloth is spring bones.** Capes, sashes and pauldron drapes get short bone
   chains driven at runtime by `@pixiv/three-vrm-springbone`, colliding with capsules
   on the body's bones. It peers only on `three`, runs without a VRM file, and its
@@ -329,9 +335,10 @@ wobbling; thirty cloaked actors at the four-step cap cost 0.22 ms a frame.
 
 - **Bind.** Unchanged in principle from PR 28: the piece binds to the body's own
   `THREE.Skeleton` plus its chain bones, sharing geometry, cloning only the material.
-- **Hide.** The manifest carries the resolved region rules; the runtime resolves them
-  against the worn body's `<body>.masks.json` and drops body triangles whose three
-  corners are hidden. The same rules hide lower pieces: at fit time every piece
+- **Hide.** The manifest carries the hidden body vertices the fitter measured (and,
+  for hands and feet, the replaced regions); the runtime drops body triangles whose
+  three corners are hidden, so a triangle on the edge of an opening stays drawn and
+  the skin meets the cloth without a gap. Region rules hide lower pieces: at fit time every piece
   vertex is tagged with the body region nearest it, read off the exported GLB
   because the exporter splits vertices on seams and only runtime indices count,
   so a belt that hides the waist band also drops the tunic's triangles under its
