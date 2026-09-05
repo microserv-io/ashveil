@@ -313,12 +313,30 @@ These are precedents for research, not blanket adoption.
   [party play guide](https://na.finalfantasyxiv.com/game_manual/pp/) and WoW's
   [five-player follower dungeons](https://news.blizzard.com/en-gb/article/24054790/take-the-lead-in-follower-dungeons).
 
+- Build a dungeon progression path that remains worthwhile without raiding. Working
+  tiers are **Story** (approachable matchmaking, clear mechanics, forgiving recovery
+  and no speed timer), **Veteran** (repeatable endgame matchmaking with sensible
+  readiness requirements, expanded mechanics, checkpoints and equipment progression),
+  and **Challenge** (coordinated four-player mastery, demanding mechanics, premium
+  appearances and prestigious achievements). Difficulty should deepen teamwork and
+  give every role responsibilities, beyond increasing enemy health and damage.
+- Add separate **solo-friendly adventures for one to four players**, with flexible
+  roles, branching discoveries and story alongside meaningful solo equipment
+  progression. They complement the preferred four-player tank/healer/damage dungeons;
+  rewards should keep both experiences attractive. Inspirations are FFXIV's
+  [Variant exploration](https://na.finalfantasyxiv.com/lodestone/topics/detail/2e8a10c44121af50ce86e1b605e10608e15f24d6/)
+  and WoW's [Delves](https://worldofwarcraft.blizzard.com/en-us/news/24104270),
+  rather than a commitment to either game's exact rules.
+
 ### Open
 
 - Quest types, sharing, presentation, density and repeatable or daily tasks.
-- Dungeon structure, final validation of the preferred four-player size, difficulty
-  modes, checkpoints, rewards, exact
-  level-sync math and max-level incentives.
+- Final validation of the preferred four-player size, encounter structure, readiness
+  requirements, checkpoint rules, exact level-sync math and max-level incentives.
+- Whole-dungeon timers remain TBD as an optional challenge; worthwhile difficult
+  untimed content is the direction. Tier names and exact difficulty boundaries remain open.
+- Solo-adventure role support, scaling, NPC companions, unlocks and the reward balance
+  with coordinated group content.
 - The normalized baseline and stat formula, plus validation of how the full retained
   kit scales utility, area damage, mitigation, healing and class resources. Turning
   off gear bonuses alone is not assumed to balance that kit.
@@ -474,15 +492,24 @@ These are precedents for research, not blanket adoption.
 
 ### Direction
 
-- Endgame should keep several play styles relevant: group challenge, collecting,
-  crafting, markets, housing, social projects and revisiting the wider world.
+- Build endgame around dungeons, solo-friendly adventures, larger group encounters,
+  world activities and crafting/social pursuits. Collecting, markets, housing and
+  social projects should remain meaningful at max level.
+- Prioritize a strong Veteran dungeon loop, then a limited amount of carefully
+  designed Challenge content for launch; this sets a focus, not a content count.
+- Pair useful equipment drops with earned tokens toward chosen gear, so unlucky runs
+  still advance a goal. Longer pursuits include appearances, housing decorations,
+  crafting recipes and materials; exact power ceilings remain open.
+- Refresh the relevant dungeon pool and add encounters over time while preserving
+  rewarded level-sync play. Progression should allow breaks without mandatory daily
+  attendance to remain competitive.
 - Updates should strengthen the shared world rather than turn each season into a
   disposable replacement.
 
 ### Open
 
-- Endgame pillars, difficulty progression, reward resets, catch-up, seasonal or
-  expansion structure and protection against required repetitive chores.
+- Equipment power ceilings across activities, token rules, reward resets, catch-up,
+  seasonal or expansion structure and specific protections against required chores.
 - Release cadence, events, maintenance, server lifecycle, legacy-content support and
   how player feedback changes this living GDD.
 - Collections, achievements, reputation, completion goals and long-term rewards.
