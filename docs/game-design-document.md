@@ -261,6 +261,21 @@ These are precedents for research, not blanket adoption.
 
 - Power and visual status should grow together often enough that upgrades feel
   tangible, while transmog preserves personal identity.
+- **Several equipment paths.** Story and world activities provide starting and
+  catch-up gear; solo adventures and Veteran dungeons offer meaningful endgame
+  upgrades. Comparable challenge should offer comparable power. Challenge dungeons
+  and difficult raids share the highest power band rather than rewarding group size
+  alone, with distinctive appearances for each activity.
+- **Competitive crafted equipment.** Crafting serves multiple power bands. Top-end
+  commissions combine a crafter's expertise with progression materials personally
+  earned by the customer; purchasing currency alone cannot unlock that band.
+- **Investment before replacement.** Upgrade and reforge equipment within a tier;
+  major tiers may introduce replacements. Preserve collected appearances, salvage
+  useful materials from replaced gear and provide straightforward catch-up options.
+- **Personal loot with choice.** Default to personal rewards with limited gifting to
+  eligible teammates who participated. Eligible completions advance tokens toward
+  chosen gear, preserving difficulty requirements. Players may select an unlocked
+  class for rewards independently of the class played; equip-level requirements stay.
 - Headwear, hair, shoulders, back pieces, torso layers, weapons and off-hands are
   promising zones because they change silhouette or colour blocking.
 - Present appearances at gameplay distance, in social spaces and in a close
@@ -269,9 +284,9 @@ These are precedents for research, not blanket adoption.
 ### Open
 
 - Level cap, pace, horizontal versus vertical growth, account-wide progression,
-  attributes, talents and catch-up systems.
-- Item statistics, slots, final rarity names, set bonuses, upgrading, durability,
-  binding, storage and bad-luck protection.
+  attributes, talents and exact catch-up systems.
+- Item statistics, slots, final rarity names, set bonuses, upgrade/reforge rules,
+  durability, binding, storage, gifting eligibility and token rates/limits.
 - Exact outfit storage, recolour acquisition and consumption, and restrictions on
   using appearances within the account-shared cosmetic collection.
 - How hard-content visual prestige coexists with a worthwhile identity for expert
@@ -378,6 +393,29 @@ These are precedents for research, not blanket adoption.
 
 - Gathering, production and trade create interdependence and respected social roles
   outside combat.
+- **Earned mastery.** Crafting is a progression path with useful, accessible basics
+  and demanding mastery through quests, advanced commissions and demonstrated skill.
+  Buying materials or repeating one recipe should not be sufficient for mastery.
+- **Committed specialisation.** Becoming a sought-after specialist takes sustained
+  effort. One character can eventually learn every craft, with mastering several a
+  substantial long-term pursuit; avoid daily limits that encourage crafting alts.
+- **Expertise and reputation.** Reward mastery through advanced commissions, precise
+  stat selection, material efficiency and distinctive crafted appearances. Maker's
+  marks, favourite crafters and repeat customers should make expertise visible.
+- **Clear commissions.** Integrate orders into the marketplace: customers specify the
+  result, provide personally earned progression materials where required, and see
+  the total price and guaranteed output before committing. Crafters supply expertise
+  and receive payment for their service.
+- **Lasting material demand.** Support useful beginner products and sustained work
+  for masters through equipment improvements, consumables, housing and customisation.
+  Use earlier materials selectively in advanced recipes to keep gathering relevant.
+- **Consumption and supply.** Support material value through recurring consumption
+  and controlled supply, rather than relying on rare masters alone. Permanent
+  equipment destruction is not the starting direction. Track material supply,
+  consumption and prices separately from currency creation and removal: crafting
+  consumes resources, while marketplace tax removes currency.
+- These mastery and material-value directions remain pending comparative research
+  and economy testing; they are not a proven guarantee of stable prices or demand.
 - Removing trash drops should clarify rewards rather than make combat unrewarding.
 - Currency sources and sinks should be legible enough to understand how content and
   trade sustain the economy.
@@ -391,13 +429,14 @@ These are precedents for research, not blanket adoption.
 
 - Currency name, denominations, wallets, caps, account sharing and additional
   currencies, if any.
-- Crafting and gathering professions, recipes, quality, specialisation, work orders,
-  progression, materials and crafted endgame equipment.
+- Profession roster, recipes, quality rules, mastery pace and requirements,
+  specialisation restrictions, commission details, material sources/consumption rates
+  and exact crafted equipment power budgets.
 - Transaction-tax rate, who pays it, rounding, treatment of direct trades and any
   separate listing charges.
 - Direct trade and market shape, listing limits, price history, regional
   markets and protection against manipulation, bots and real-money trade.
-- Vendor roles, repair or other sinks, scarcity, salvage and exactly which
+- Vendor roles, repair or other sinks, scarcity, salvage yields and exactly which
   meaningful items or materials enemies drop.
 - Sustainable currency-flow ranges, intervention thresholds and which additional
   sinks are appropriate as player wealth and the world mature.
@@ -513,7 +552,7 @@ These are precedents for research, not blanket adoption.
 
 ### Open
 
-- Equipment power ceilings across activities, token rules, reward resets, catch-up,
+- Exact equipment power ceilings, token rules, reward resets and catch-up pacing,
   seasonal or expansion structure and specific protections against required chores.
 - Release cadence, events, maintenance, server lifecycle, legacy-content support and
   how player feedback changes this living GDD.
