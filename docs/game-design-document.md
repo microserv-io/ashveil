@@ -114,6 +114,15 @@ These are precedents for research, not blanket adoption.
   non-consensus examples of players wanting identity or convenience without repeated
   character work: [FFXIV example](https://forum.square-enix.com/ffxiv/threads/486201)
   and [WoW example](https://us.forums.blizzard.com/en/wow/t/wish-i-could-swap-classes-by-changing-a-weapon/1692814).
+- Official guidance shows both games supporting controller targeting: FFXIV documents
+  target cycling and the cross hotbar, while WoW documents action targeting and
+  interact assists. These are precedents rather than Ashveil UI decisions:
+  [FFXIV controls](https://na.finalfantasyxiv.com/game_manual/operation/) and
+  [WoW accessibility](https://worldofwarcraft.blizzard.com/en-us/news/23876525/accessibility-updates-in-dragonflight).
+- Historical player posts illustrate controller friction around target switching and
+  ground-targeted actions. They are anecdotes, not prevalence evidence or verified
+  current bugs: [FFXIV example](https://forum.square-enix.com/ffxiv/threads/483174-Confused-about-targeting-on-controller-.?mode=hybrid)
+  and [WoW example](https://us.forums.blizzard.com/en/wow/t/with-the-addition-of-native-gamepadcontroller-support-its-time-for-target-to-work-with-ground-target-aoe-spells/835438).
 
 ## World, story and exploration
 
@@ -174,6 +183,9 @@ These are precedents for research, not blanket adoption.
   combat tools and class progression change with the weapon.
 - The first weapon choice should be informed and reversible, with enough context to
   understand its class fantasy before investing substantial time.
+- A starting class should advance into a more specialised job through its progression,
+  using Final Fantasy XIV's
+  [battle job guide](https://na.finalfantasyxiv.com/jobguide/battle/) as a reference.
 
 ### Open
 
@@ -182,6 +194,8 @@ These are precedents for research, not blanket adoption.
   changes.
 - Class roster, class-quest structure, switching restrictions, loadouts and
   equipment behaviour across classes.
+- Whether class advancement is linear or branching, and how jobs relate to class
+  levels, weapons and switching.
 - Which conveniences are account-shared and the specific restrictions on shared
   cosmetics. Currency, banks and story completion are not implicitly shared.
 
@@ -191,8 +205,8 @@ These are precedents for research, not blanket adoption.
 
 - **Group roles.** Cooperative combat uses tank, healer and damage roles. Exact
   party composition and sizes remain open.
-- **Hybrid combat.** Combat combines targeted MMORPG structure with active aiming or
-  action elements. The exact targeting model is not yet decided.
+- **Controller parity.** Every combat role must be comfortably playable on a
+  controller without relying on external macros.
 - **Freely controlled third-person camera.** Normal MMORPG play uses a third-person
   camera that the player can rotate freely.
 - **Readability before spectacle.** Effects can be striking but cannot obscure
@@ -202,6 +216,10 @@ These are precedents for research, not blanket adoption.
 
 - Combat should be immediately readable and responsive, with depth that rewards
   mastery without requiring outside tools for basic competence.
+- Use a selected target as the primary casting foundation, with positioning and
+  action elements adding engagement without assuming aim-heavy spells.
+- Controller play should support enemy and ally targeting while moving the character,
+  controlling the camera and using actions at the same time.
 - Encounters should reward coordination and recovery together rather than making
   other players feel like interchangeable damage sources.
 - Bold ground shapes, restrained effect layers and strong silhouettes carry combat
@@ -211,8 +229,8 @@ These are precedents for research, not blanket adoption.
 
 - Exact camera pitch, distance, field of view, zoom range, collision and recentering.
   The prototype's elevated three-quarter camera is historical only.
-- The boundary between target selection and active aim; action cadence, resources,
-  ability counts, movement during actions, interrupts and crowd control.
+- Target-cycle and selection rules, controller mapping, action count, ground-target
+  placement, casting while moving, cadence, resources, interrupts and crowd control.
 - Party composition, role flexibility, class balance and switching around queued or
   active content.
 - Keyboard, mouse, controller, handheld and accessibility controls; rebinding and
@@ -279,6 +297,12 @@ These are precedents for research, not blanket adoption.
   play together across progression gaps.
 - Main, regional and class quests teach systems in context instead of opening a wall
   of menus at creation.
+- Explore four players (one tank, one healer and two damage roles) against five
+  (one tank, one healer and three damage roles) as candidate dungeon compositions.
+  Four retains one tank and healer with one fewer damage seat; effects on queues
+  need validation. Official precedents include FFXIV's
+  [party play guide](https://na.finalfantasyxiv.com/game_manual/pp/) and WoW's
+  [five-player follower dungeons](https://news.blizzard.com/en-gb/article/24054790/take-the-lead-in-follower-dungeons).
 
 ### Open
 
