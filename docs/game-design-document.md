@@ -478,8 +478,35 @@ These are precedents for research, not blanket adoption.
 
 ### Direction
 
-- Help good groups persist through clear presence, easy regrouping, appreciation and
-  ways to continue after matched content.
+- **Three ways to belong.** Give each character one primary guild for shared
+  identity, a neighbourhood independent of guild membership, and several lightweight
+  interest groups for dungeon teams, crafting, roleplay or other pursuits.
+- Guilds support social, crafting and adventuring communities through ranks, a
+  treasury with permissions and transaction history, events and long-term projects.
+  Interest groups provide chat and a shared calendar without another guild membership.
+- Offer public and player-organised neighbourhoods so friends can live together
+  across guilds. Leaving a guild preserves the personal home and furnishings, even
+  if relocation is necessary.
+- Help good groups persist through clear presence, easy regrouping, appreciation,
+  a post-content “stay together” option and invitations to future activities.
+  Existing level sync and alternate-class reward selection make helping friends
+  worthwhile without requiring the same progression stage.
+- Provide an in-game community finder with language, play times, interests,
+  experience level and recently confirmed recruitment listings. Controller-accessible
+  calendars support invitations, sign-ups and reminders so basic organisation works
+  within the game.
+- Give neighbourhoods useful gathering spaces: a shared square or tavern, crafting
+  facilities and a noticeboard. Start with a small selection of social activities;
+  tabletop games, fishing gatherings and player-hosted markets are examples to explore.
+- Shared improvement projects consume gathered materials, crafted goods and
+  system-paid currency for lasting community results. Rewards emphasise decoration
+  and identity rather than combat advantages that pressure guild choice.
+- Support guest permissions, event moderation, mute/block/report tools and clear
+  leadership succession. Alternate-character identity links are private by default
+  and disclosed only by player choice, preserving different lives.
+- Prioritise guilds, interest-group chat, recruitment, calendars and usable
+  neighbourhood gathering spaces for launch; expand activities around how players
+  actually use them.
 - Social spaces support conversation, appearance, performance, crafting and
   spontaneous activity rather than acting only as menu lobbies.
 - Housing and neighbourhoods should make player creativity and nearby community
@@ -500,18 +527,36 @@ These are precedents for research, not blanket adoption.
 
 ### Open
 
-- Friends, parties, communities, guilds, guild progression, calendars, recruitment,
-  alliances and group-finding tools.
+- Guild and interest-group limits, rank powers, treasury safeguards, project
+  progression, leadership succession procedures, alliances and friend/party details.
+- Finder freshness rules, calendar behaviour, activity catalogue, project costs and
+  rewards, and the exact launch scope.
 - Text, voice, emotes, performance, status, inspect, commendation and privacy.
 - House access model, ownership, limits, pricing, availability, decoration,
   permissions and shared or guild housing.
 - Exact purchase and upgrade fees, payment cadence, and whether rent or taxes exist.
   No recurring charge, foreclosure rule or fixed price is implied by this draft.
-- Whether neighbourhoods are public, private or mixed; their population, persistence
-  and relationship to world servers.
+- Public and player-organised neighbourhood access rules, population, persistence,
+  relocation guarantees and relationship to world servers.
 - Mentoring, newcomer identity, cross-server relationships and offline contact.
-- Moderation, reporting, blocking, chat filtering, naming, anti-harassment and
-  community governance.
+- Moderation and reporting procedures, blocking scope, chat filtering, naming,
+  anti-harassment, identity-disclosure controls and community governance.
+
+### Reference lessons and tradeoffs
+
+- WoW's official neighbourhood design describes public/private communities and
+  shared activity; FFXIV's Community Finder distinguishes Free Companies and Linkshells
+  as recruitment categories. These support overlapping social circles without deciding
+  Ashveil's population or access rules: [WoW neighbourhoods](https://news.blizzard.com/en-us/article/24221516/wow-housing-its-only-neighborly)
+  and [FFXIV Community Finder](https://na.finalfantasyxiv.com/lodestone/community_finder/?type=ls).
+- Anecdotal WoW guild-tool feedback and FFXIV Fellowship discussion highlight
+  discovery and organisation friction. They inform usable recruitment, calendars
+  and recurring activities, not a claim of consensus or guaranteed social activity:
+  [WoW discussion](https://eu.forums.blizzard.com/en/wow/t/guild-management-tools-feedback/609545)
+  and [FFXIV discussion](https://forum.square-enix.com/ffxiv/threads/407861).
+- Multiple circles improve freedom to belong but add coordination and moderation
+  work. Shared spaces need useful activities, and projects must support participation
+  without turning guild membership into a combat requirement.
 
 ## Failure, recovery and onboarding
 
