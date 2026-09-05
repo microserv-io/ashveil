@@ -301,17 +301,23 @@ These are precedents for research, not blanket adoption.
   play together across progression gaps.
 - Main, regional and class quests teach systems in context instead of opening a wall
   of menus at creation.
-- Explore four players (one tank, one healer and two damage roles) against five
-  (one tank, one healer and three damage roles) as candidate dungeon compositions.
-  Four retains one tank and healer with one fewer damage seat; effects on queues
-  need validation. Official precedents include FFXIV's
+- Prefer four-player dungeons: one tank, one healer and two damage roles. Supporting
+  three teammates gives the healer room for richer healing, protection and recovery
+  decisions at manageable difficulty, while also caring for their own health. Depth
+  should come from those decisions rather than simply increasing incoming damage.
+- Validate healer engagement, controller targeting, recovery from mistakes and queue
+  effects in prototypes. Five players (one tank, one healer and three damage roles)
+  remain a comparison option: four retains the same tank and healer requirements
+  with one fewer damage seat, so faster queues are not assumed. Official precedents
+  include FFXIV's
   [party play guide](https://na.finalfantasyxiv.com/game_manual/pp/) and WoW's
   [five-player follower dungeons](https://news.blizzard.com/en-gb/article/24054790/take-the-lead-in-follower-dungeons).
 
 ### Open
 
 - Quest types, sharing, presentation, density and repeatable or daily tasks.
-- Dungeon structure, party size, difficulty modes, checkpoints, rewards, exact
+- Dungeon structure, final validation of the preferred four-player size, difficulty
+  modes, checkpoints, rewards, exact
   level-sync math and max-level incentives.
 - The normalized baseline and stat formula, plus validation of how the full retained
   kit scales utility, area damage, mitigation, healing and class resources. Turning
