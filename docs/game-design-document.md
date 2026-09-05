@@ -1,10 +1,15 @@
 # Ashveil game design document
 
-This is Ashveil's living design contract. It records the rules that product and
-implementation must agree on without pretending undecided areas are settled.
-Architecture and implementation details belong in
-[architecture.md](architecture.md); this document owns the intended player
-experience and the design constraints that produce it.
+This is Ashveil's living design contract. On 5 September 2026, Ashveil changed
+product direction to an MMORPG. The earlier action-RPG loop, camera and competitor
+assumptions recorded below remain a legacy baseline awaiting structured review; they
+are not new MMORPG commitments. The upcoming review will study Final Fantasy XIV
+and World of Warcraft, including their strengths and the improvements players ask
+for, as research input rather than adopted design. Architecture and implementation
+details belong in
+[architecture.md](https://github.com/microserv-io/ashveil/blob/main/docs/architecture.md);
+this document owns the intended player experience and the design constraints that
+produce it.
 
 ## How to read and maintain this document
 
@@ -227,7 +232,8 @@ the contract skeleton and computes automatic weights, and fails closed), profile
 (a per-body driver profile generated from the contract), and verify (the Vitest
 gate and the run-ashveil skill check bone count, height, axes, budgets, texture
 presence and pose coverage, plus a screenshot at gameplay distance). See
-[pipeline.md](pipeline.md) for the full contract.
+[pipeline.md](https://github.com/microserv-io/ashveil/blob/main/docs/pipeline.md) for
+the full contract.
 
 Production proceeds through five ordered slices: the motion-driver seam refactor,
 procedural locomotion on the existing KayKit bodies, the ash wolf as the quadruped
