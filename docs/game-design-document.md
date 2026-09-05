@@ -368,6 +368,9 @@ These are precedents for research, not blanket adoption.
   does not create currency by itself.
 - **Player markets.** Players have a market through which crafted goods and other
   allowed items can be exchanged.
+- **Marketplace transaction tax.** Every completed marketplace or auction-house sale
+  incurs a transaction tax. The tax removes currency from circulation, providing a
+  recurring economy sink rather than transferring that portion to another player.
 - **Long-term economy health.** Keeping the custom currency useful and the player
   economy healthy over the game's lifetime is a core design requirement.
 
@@ -390,7 +393,9 @@ These are precedents for research, not blanket adoption.
   currencies, if any.
 - Crafting and gathering professions, recipes, quality, specialisation, work orders,
   progression, materials and crafted endgame equipment.
-- Direct trade and market shape, taxes, listing limits, price history, regional
+- Transaction-tax rate, who pays it, rounding, treatment of direct trades and any
+  separate listing charges.
+- Direct trade and market shape, listing limits, price history, regional
   markets and protection against manipulation, bots and real-money trade.
 - Vendor roles, repair or other sinks, scarcity, salvage and exactly which
   meaningful items or materials enemies drop.
