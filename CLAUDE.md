@@ -74,14 +74,20 @@ which is the fastest way to poke at a live game from the console.
 ## Default task workflow
 
 1. Read `src/sim/CLAUDE.md` if the change touches the sim at all.
-2. Make the change. Keep sim logic out of `render/` and `ui/`.
-3. **Write the failing test first**, and check it fails for the right reason. Bug
+2. Before proposing or settling a game-design decision, research player feedback and
+   long-standing requests for both World of Warcraft and Final Fantasy XIV, then
+   verify current official behaviour because older requests may have shipped. Cite
+   evidence, separate recurring cross-source concerns from anecdote, and record the
+   adopted lesson, tradeoff and unresolved conflicts. Do not reopen an Ashveil
+   decision without a concrete reason; mark it pending evidence review if needed.
+3. Make the change. Keep sim logic out of `render/` and `ui/`.
+4. **Write the failing test first**, and check it fails for the right reason. Bug
    fixes always start with a reproduction: runs are deterministic, so a seed is a
    test waiting to be written. See `docs/quality.md`.
-4. `npm run gate` (typecheck, tests, build) before calling it done.
-5. **If the change could move game feel or balance, run a sweep before and after**
+5. `npm run gate` (typecheck, tests, build) before calling it done.
+6. **If the change could move game feel or balance, run a sweep before and after**
    and put the numbers in the PR. `npm run gate:balance` does both. See below.
-6. Update the docs that went stale: `src/sim/CLAUDE.md` for sim rules,
+7. Update the docs that went stale: `src/sim/CLAUDE.md` for sim rules,
    `docs/architecture.md` for structure, `README.md` for the outside view.
 
 ## Invariants, YOU MUST keep these

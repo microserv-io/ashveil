@@ -123,6 +123,7 @@ test('rendered GDD preserves source paragraphs, tables and list items', async ()
   assert.match(rendered, /World of Warcraft/)
   assert.match(rendered, /PR #32/)
   assert.match(rendered, /PR #35/)
+  assert.doesNotMatch(rendered, /These action-RPG foundations predate the MMORPG direction/)
 })
 
 test('downloaded Markdown is byte-for-byte identical to its source', async () => {
@@ -140,6 +141,7 @@ test('all heading IDs and document fragments are unique and valid', async () => 
   }
   assert.ok(ids.includes('decided'))
   assert.ok(ids.includes('decided-2'))
+  assert.ok(ids.includes('historical-action-rpg-prototype'))
 })
 
 test('public site output contains no game models or runtime scripts', async () => {

@@ -2,9 +2,9 @@
 
 ## Objective
 
-Publish Ashveil's chosen Ember & Bloom identity and complete current GDD on a
-public, readable website. Rocco selected identity study 03 on 5 September 2026.
-Ashveil's new product direction is an MMORPG; the detailed redesign is a later task.
+Publish Ashveil's chosen Ember & Bloom identity and living GDD on a public, readable
+website. Rocco selected identity study 03 on 5 September 2026. The web-rendered
+Markdown is the maintained design record for Ashveil's MMORPG direction.
 
 ## Brand source correction
 
@@ -30,17 +30,12 @@ editorial typography and must not be presented as the wordmark's source face.
   Alegreya for display and Source Sans 3 for navigation and prose. Generated art is
   labelled concept art. Record provenance and font licences.
 - GDD page: build-time rendering from `docs/game-design-document.md`, not a second
-  manually maintained copy. Preserve every existing section and item. Add a
-  conspicuous transition note: MMORPG is the new direction; earlier ARPG loop,
-  camera and competitor assumptions await review. Only update the GDD introduction
-  to reflect this transition; do not settle gameplay or commercial design. Show
-  compact legacy-baseline context beside product/camera/competition sections so
-  deep links and printouts cannot mistake earlier decisions for new commitments.
-- Incorporate open design proposals in a clearly separate status-labelled addendum:
-  PR #32 painterly/toon rendering and PR #35 canonical-body gear production,
-  authored body regions, spring-bone cloth and human visual acceptance. Summarise
-  all their GDD additions, link the PRs and keep the status explicitly open as of
-  the content review date. PR #24 is the merged baseline, superseding closed #17.
+  manually maintained copy. The source covers the MMORPG as Decided, Direction and
+  Open statements; the earlier ARPG loop and camera remain historical prototype
+  context only.
+- Keep open design proposals in the source GDD so the rendered page and Markdown
+  download have identical content. PR #32 painterly/toon rendering and PR #35
+  canonical-body gear production remain labelled open until separately approved.
 - GDD navigation: heading anchors, usable desktop contents and mobile navigation,
   selectable text, print stylesheet, source Markdown download. Relative links to
   technical docs must resolve publicly, using repository links where appropriate.
@@ -59,8 +54,8 @@ editorial typography and must not be presented as the wordmark's source face.
 
 ## Non-goals
 
-Detailed MMORPG design, FF14/WoW feature research, game changes, purchases or custom
-domain registration, newsletter, community accounts, ecommerce and a game launcher.
+Game implementation, purchases or custom-domain registration, newsletter, community
+accounts, ecommerce and a game launcher.
 
 ## Acceptance
 

@@ -4,13 +4,13 @@
 [Game design document](https://microserv-io.github.io/ashveil/design/) ·
 [Brand resources](https://microserv-io.github.io/ashveil/brand/)
 
-Ashveil is moving toward an MMORPG: a vivid shared fantasy world where life and
-colour endure beneath an encroaching ash-grey threat. The detailed shared-world
-design is the next body of work.
+Ashveil is a social MMORPG in development: a vivid shared fantasy world where life
+and colour endure beneath an encroaching ash-grey threat. The public GDD is the
+living source for decided, directional and open design.
 
 This repository currently contains the earlier isometric action-RPG prototype. It
-remains a useful, playable foundation and a preserved design baseline; its loop and
-camera are awaiting review against the new direction.
+remains a useful, playable technical foundation and historical design baseline; its
+loop and camera are not MMORPG commitments.
 
 For the current prototype, the loop is the product: **pull a pack → spend skills →
 things die → loot drops → your numbers change → go deeper, harder.** Everything else (endgame, crafting, trade,

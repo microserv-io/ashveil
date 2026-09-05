@@ -23,10 +23,6 @@ function makeSlugger() {
   }
 }
 
-function legacyNote(copy) {
-  return `<aside class="legacy-note"><strong>Legacy baseline</strong><span>${copy}</span></aside>`
-}
-
 export function renderDesignMarkdown(markdown) {
   const headings = []
   const slug = makeSlugger()
@@ -44,20 +40,7 @@ export function renderDesignMarkdown(markdown) {
     },
   })
 
-  let html = marked.parse(markdown)
-  html = html
-    .replace(
-      /(<h2 id="product-foundation"[^>]*>.*?<\/h2>)/,
-      `$1${legacyNote('These action-RPG foundations predate the MMORPG direction and await review.')}`,
-    )
-    .replace(
-      /(<h2 id="camera-and-combat-presentation"[^>]*>.*?<\/h2>)/,
-      `$1${legacyNote('Camera and combat assumptions are recorded for continuity, not carried forward as MMORPG commitments.')}`,
-    )
-    .replace(
-      /(<h3 id="product-and-competition"[^>]*>.*?<\/h3>)/,
-      `$1${legacyNote('Positioning questions were framed around ARPG competitors and will be reframed for the shared-world direction.')}`,
-    )
+  const html = marked.parse(markdown)
     .replaceAll('<table>', '<div class="table-region" role="region" aria-label="Scrollable design table" tabindex="0"><table>')
     .replaceAll('</table>', '</table></div>')
 
