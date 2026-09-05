@@ -101,6 +101,19 @@ These are precedents for research, not blanket adoption.
   direction, not a claim of consensus or a substitute for Ashveil's economic data:
   [FFXIV example](https://forum.square-enix.com/ffxiv/threads/479602) and
   [WoW example](https://us.forums.blizzard.com/en/wow/t/why-make-housing-so-costly/2207426).
+- Feedback examples in both games show the tension between retaining a learned
+  rotation and keeping low-level groups meaningful. These are not verified current
+  bugs or evidence of consensus: [FFXIV example](https://forum.square-enix.com/ffxiv/threads/452755-Skills-should-scale-down-in-lower-content-NOT-be-greyed-out./page23)
+  and [WoW example](https://us.forums.blizzard.com/en/wow/t/level-scaling-still-broken-after-many-years-since-its-implementation/2131705).
+- Anecdotal discussions about FFXIV social access and WoW campaign skips illustrate
+  the friction between story progression and joining other players. They inform
+  Ashveil's clear prerequisites and early social access, not a claim that either
+  game currently has the same design problem: [FFXIV example](https://forum.square-enix.com/ffxiv/threads/519752)
+  and [WoW example](https://us.forums.blizzard.com/en/wow/t/campaign-skip-or-no/2268667).
+- FFXIV alt feedback and a WoW weapon-based class-switch request provide anecdotal,
+  non-consensus examples of players wanting identity or convenience without repeated
+  character work: [FFXIV example](https://forum.square-enix.com/ffxiv/threads/486201)
+  and [WoW example](https://us.forums.blizzard.com/en/wow/t/wish-i-could-swap-classes-by-changing-a-weapon/1692814).
 
 ## World, story and exploration
 
@@ -114,6 +127,9 @@ These are precedents for research, not blanket adoption.
   generic black mask.
 - **Story unlocks the game.** Features open through quests across the main story,
   giving new systems a place in the world and teaching them as the journey expands.
+- **Early social access.** Introductory quests unlock basic social participation.
+  Group activities show clear prerequisites, and veterans can help newer players
+  without forcing them to rush the main story.
 
 ### Direction
 
@@ -148,6 +164,9 @@ These are precedents for research, not blanket adoption.
 - **Separate class levels.** Each class has its own level progression. Completed
   quests stay completed when the character switches class; leveling another class
   uses its class quests, dungeons and optional quests that character skipped.
+- **Shared collection, separate growth.** Cosmetic collections and selected
+  conveniences are account-shared. Character and class growth remain separate, and
+  ordinary play never requires progressing many classes.
 
 ### Direction
 
@@ -163,8 +182,8 @@ These are precedents for research, not blanket adoption.
   changes.
 - Class roster, class-quest structure, switching restrictions, loadouts and
   equipment behaviour across classes.
-- Which story, cosmetic and system unlocks belong to a character or account, and how
-  they behave on optional alts.
+- Which conveniences are account-shared and the specific restrictions on shared
+  cosmetics. Currency, banks and story completion are not implicitly shared.
 
 ## Combat, camera and controls
 
@@ -231,8 +250,8 @@ These are precedents for research, not blanket adoption.
   attributes, talents and catch-up systems.
 - Item statistics, slots, final rarity names, set bonuses, upgrading, durability,
   binding, storage and bad-luck protection.
-- Transmog collection, recolour acquisition and consumption, outfit storage and
-  restrictions; whether cosmetic unlocks are character- or account-wide.
+- Exact outfit storage, recolour acquisition and consumption, and restrictions on
+  using appearances within the account-shared cosmetic collection.
 - How hard-content visual prestige coexists with a worthwhile identity for expert
   crafters.
 
@@ -242,6 +261,11 @@ These are precedents for research, not blanket adoption.
 
 - **Level-sync dungeon finder.** The finder scales higher-level players down to the
   selected dungeon so they can meaningfully play with progressing players.
+- **Keep the learned rotation.** Synced players retain their learned high-level
+  class rotation while combat strength is normalized to the dungeon's level. Gear
+  bonus statistics and effects, such as procs and set bonuses, are inactive.
+- **No gear bypass.** A veteran's gear cannot bypass the synced challenge; newer
+  players must remain meaningful participants in the group.
 - **Keep early queues alive.** Max-level players receive useful rewards for using
   the finder, keeping lower-level queues healthy for newcomers.
 - **Content creates currency.** Quests and activities such as world events and
@@ -261,8 +285,9 @@ These are precedents for research, not blanket adoption.
 - Quest types, sharing, presentation, density and repeatable or daily tasks.
 - Dungeon structure, party size, difficulty modes, checkpoints, rewards, exact
   level-sync math and max-level incentives.
-- Which skills remain available when synced down, how class progression is treated
-  and how item statistics scale.
+- The normalized baseline and stat formula, plus validation of how the full retained
+  kit scales utility, area damage, mitigation, healing and class resources. Turning
+  off gear bonuses alone is not assumed to balance that kit.
 - Trials, raids, world bosses and public events, including group sizes and schedules.
 - Loot allocation, role shortages, premade versus matched rewards, replacement
   players, mentoring and protections against disruption.
@@ -303,6 +328,9 @@ These are precedents for research, not blanket adoption.
   trade sustain the economy.
 - Track currency created and removed, representative prices and wealth distribution
   over time so economic changes respond to evidence rather than guesswork.
+- Evaluate housing's basic affordability, aspirational spending and currency removed
+  as separate measures. A sink succeeds through actual participation and sustained
+  removal, not through a high listed price alone.
 
 ### Open
 
