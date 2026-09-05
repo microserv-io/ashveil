@@ -25,6 +25,19 @@ This document owns the intended player experience.
 The headings cover the whole game at planning depth. Detail is added as decisions
 are made. Git retains history; this page describes the current truth.
 
+Before proposing or settling an Ashveil design decision, research both World of
+Warcraft and Final Fantasy XIV player feedback and long-standing requests, then
+verify each game's current official behaviour because an older request may already
+have shipped. Cite the evidence; distinguish recurring concerns supported across
+sources from anecdotal requests; and record the lesson adopted, its tradeoff and any
+conflict that remains open. This process informs decisions rather than overruling a
+settled Ashveil choice without a concrete reason.
+
+The Design references section records the evidence gathered so far; it does not show a completed
+two-game review for every linked topic. Each decision still requires research into
+both games' player feedback and current official behaviour before dependent details
+are settled. Earlier decisions remain current while that review is pending.
+
 ## Product foundation
 
 ### Decided
@@ -76,6 +89,18 @@ These are precedents for research, not blanket adoption.
   capped players run roulettes. It is an anecdotal example supporting research into
   max-level incentives, not evidence of prevalence:
   [forum request](https://forum.square-enix.com/ffxiv/threads/517396-Better-New-Rewards-in-Dungeon-Roulettes-for-people-with-maxed-out-Jobs).
+- Official housing differs: World of Warcraft describes broad access without a
+  lottery or onerous upkeep, while Final Fantasy XIV documents limited plots and
+  lottery purchase. These frame Ashveil's availability decision rather than choosing
+  it: [WoW housing](https://worldofwarcraft.blizzard.com/en-us/news/24230692) and
+  [FFXIV land purchase](https://na.finalfantasyxiv.com/lodestone/playguide/contentsguide/housing_land/).
+- Two anecdotal discussions expose the housing-economy tradeoff: an FFXIV player
+  asks for more reasons to craft and earn after major purchases, while WoW players
+  debate exclusionary costs against cheap basics with costly long-term projects.
+  They support accessible participation plus aspirational system-paid upgrades as a
+  direction, not a claim of consensus or a substitute for Ashveil's economic data:
+  [FFXIV example](https://forum.square-enix.com/ffxiv/threads/479602) and
+  [WoW example](https://us.forums.blizzard.com/en/wow/t/why-make-housing-so-costly/2207426).
 
 ## World, story and exploration
 
@@ -266,6 +291,8 @@ These are precedents for research, not blanket adoption.
   does not create currency by itself.
 - **Player markets.** Players have a market through which crafted goods and other
   allowed items can be exchanged.
+- **Long-term economy health.** Keeping the custom currency useful and the player
+  economy healthy over the game's lifetime is a core design requirement.
 
 ### Direction
 
@@ -274,6 +301,8 @@ These are precedents for research, not blanket adoption.
 - Removing trash drops should clarify rewards rather than make combat unrewarding.
 - Currency sources and sinks should be legible enough to understand how content and
   trade sustain the economy.
+- Track currency created and removed, representative prices and wealth distribution
+  over time so economic changes respond to evidence rather than guesswork.
 
 ### Open
 
@@ -285,6 +314,8 @@ These are precedents for research, not blanket adoption.
   markets and protection against manipulation, bots and real-money trade.
 - Vendor roles, repair or other sinks, scarcity, salvage and exactly which
   meaningful items or materials enemies drop.
+- Sustainable currency-flow ranges, intervention thresholds and which additional
+  sinks are appropriate as player wealth and the world mature.
 
 ## Travel and the physical world
 
@@ -317,6 +348,9 @@ These are precedents for research, not blanket adoption.
   recognition and reputation attached to the character players inhabit.
 - **Housing and neighbourhoods.** Player housing exists within neighbourhoods and is
   part of the social world.
+- **Housing removes currency.** Housing must provide meaningful system-paid
+  custom-currency sinks. Money paid to another player for crafted furniture changes
+  hands instead of leaving the economy.
 
 ### Direction
 
@@ -329,6 +363,16 @@ These are precedents for research, not blanket adoption.
 - Use Final Fantasy XIV-style residential neighbourhoods as the current reference
   for visible homes in a shared social district, without adopting its availability
   or acquisition rules by default.
+- Give players an obtainable base home, with aspirational paid expansion,
+  renovation, neighbourhood improvements and optional services providing reasons
+  to spend beyond the first purchase. These are candidate system-paid sinks, not
+  approved fee implementations.
+- Let players choose a neighbourhood near friends where the population model allows,
+  rather than separating housing from established relationships.
+- Preserve a player's home and layout across breaks from the game so housing supports
+  durable belonging rather than punishing absence.
+- Keep crafted furniture and housing upgrades desirable within the player market,
+  while system fees provide the part of housing spend that removes currency.
 
 ### Open
 
@@ -337,6 +381,8 @@ These are precedents for research, not blanket adoption.
 - Text, voice, emotes, performance, status, inspect, commendation and privacy.
 - House access model, ownership, limits, pricing, availability, decoration,
   permissions and shared or guild housing.
+- Exact purchase and upgrade fees, payment cadence, and whether rent or taxes exist.
+  No recurring charge, foreclosure rule or fixed price is implied by this draft.
 - Whether neighbourhoods are public, private or mixed; their population, persistence
   and relationship to world servers.
 - Mentoring, newcomer identity, cross-server relationships and offline contact.
