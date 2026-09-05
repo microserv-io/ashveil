@@ -176,6 +176,8 @@ These are precedents for research, not blanket adoption.
 - **Shared collection, separate growth.** Cosmetic collections and selected
   conveniences are account-shared. Character and class growth remain separate, and
   ordinary play never requires progressing many classes.
+- **Class advancement.** A starting class advances into a more specialised job
+  through its progression.
 
 ### Direction
 
@@ -183,9 +185,9 @@ These are precedents for research, not blanket adoption.
   combat tools and class progression change with the weapon.
 - The first weapon choice should be informed and reversible, with enough context to
   understand its class fantasy before investing substantial time.
-- A starting class should advance into a more specialised job through its progression,
-  using Final Fantasy XIV's
-  [battle job guide](https://na.finalfantasyxiv.com/jobguide/battle/) as a reference.
+- As the roster grows, advanced jobs may be added without a prerequisite base class,
+  using FFXIV's [Samurai](https://na.finalfantasyxiv.com/jobguide/samurai/) as a precedent.
+  Standalone describes its entry path, not a higher power or gear tier.
 
 ### Open
 
@@ -196,6 +198,8 @@ These are precedents for research, not blanket adoption.
   equipment behaviour across classes.
 - Whether class advancement is linear or branching, and how jobs relate to class
   levels, weapons and switching.
+- Talents; no talent-tree model is selected. For standalone advanced jobs, their
+  unlock requirements, starting level, level inheritance and switching rules.
 - Which conveniences are account-shared and the specific restrictions on shared
   cosmetics. Currency, banks and story completion are not implicitly shared.
 
