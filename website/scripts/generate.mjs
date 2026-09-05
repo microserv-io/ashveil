@@ -117,7 +117,7 @@ function homePage(base) {
     <section class="intro page-band">
       <p class="eyebrow">In early development</p>
       <h2>A world meant to be shared.</h2>
-      <p class="lede">Ashveil is becoming an MMORPG: a vivid mythic world where communities grow beneath a slow, colourless threat. The direction is new, the design is still being worked through, and the record stays open.</p>
+      <p class="lede">Ashveil is a social MMORPG in development: a vivid mythic world where communities grow beneath a slow, colourless threat. Its living design record separates decisions from directions and open questions.</p>
       <a class="text-link" href="${paths.design}">Explore the living GDD <span aria-hidden="true">↗</span></a>
     </section>
     <section class="world-feature">
@@ -140,39 +140,19 @@ function homePage(base) {
     <section class="gdd-invite">
       <p class="eyebrow">Read the work in progress</p>
       <h2>The design is a living record.</h2>
-      <p>The current document preserves the playable action-RPG foundation while Ashveil’s MMORPG direction is explored. Earlier assumptions are clearly marked for review.</p>
+      <p>The first MMORPG design pass covers the whole game at planning depth, from one-character class switching and social life to crafting, group play and the questions still open.</p>
       <a class="button button-gold" href="${paths.design}">Open the GDD <span aria-hidden="true">→</span></a>
     </section>`
   return shell({ base, current: 'home', description: 'Ashveil is an early MMORPG concept: a vivid shared fantasy world threatened by ash.', content, bodyClass: 'home-page' })
 }
 
-function proposalAddendum() {
-  return `<section class="proposal-addendum" aria-labelledby="open-proposals">
-    <p class="eyebrow">Content review · 5 September 2026</p>
-    <h2 id="open-proposals">Open design proposals<a class="heading-link" href="#open-proposals" aria-label="Link to Open design proposals">#</a></h2>
-    <p>These proposals remain separate from the accepted GDD baseline. Their branches are open and their rules are not merged decisions.</p>
-    <article id="proposal-32">
-      <header><span class="status">Open proposal</span><h3>Painterly rendering</h3><a href="https://github.com/microserv-io/ashveil/pull/32">PR #32</a></header>
-      <p>The proposed surface language replaces restrained PBR lighting with hand-painted colour under a soft three-step toon ramp, flat hemisphere fill and gentle key light. Broad material reads remain preferred over photoreal micro-detail and hard outlines.</p>
-    </article>
-    <article id="proposal-35">
-      <header><span class="status">Open proposal</span><h3>Canonical-body gear production</h3><a href="https://github.com/microserv-io/ashveil/pull/35">PR #35</a></header>
-      <ul>
-        <li>Generate gear on the canonical body, then extract, seat and transfer skin weights instead of fitting standalone geometry after generation.</li>
-        <li>Hide the body through authored regions. Drive capes, sashes and pauldron drapes with short spring-bone chains against body colliders, as presentation only.</li>
-        <li>Treat automated gates as narrow technical checks. Project-owner visual acceptance remains required for every fitted asset.</li>
-      </ul>
-    </article>
-  </section>`
-}
-
 function designPage(base, markdown) {
   const paths = createPathHelpers(base)
   const rendered = renderDesignMarkdown(markdown)
-  const tocItems = [...rendered.headings, { id: 'open-proposals', label: 'Open design proposals' }]
+  const tocItems = rendered.headings
   const toc = `<ol>${tocItems.map(({ id, label }) => `<li><a href="#${id}">${escapeHtml(label)}</a></li>`).join('')}</ol>`
   const content = `<header class="document-hero">
-      <p class="eyebrow">Living design record · 5 September 2026</p>
+      <p class="eyebrow">First MMORPG design pass · 5 September 2026</p>
       <h1>Game design document</h1>
       <p>What Ashveil currently knows, what it is testing, and what still needs a decision.</p>
       <nav aria-label="Document actions"><a class="button button-gold" href="${paths.path('downloads/game-design-document.md')}" download>Download Markdown</a><button class="text-link print-button" type="button" onclick="window.print()">Print document</button></nav>
@@ -180,7 +160,7 @@ function designPage(base, markdown) {
     <details class="mobile-toc"><summary>On this page</summary>${toc}</details>
     <section class="document-layout">
       <aside class="desktop-toc"><p>On this page</p>${toc}</aside>
-      <article class="prose">${rendered.html}${proposalAddendum()}</article>
+      <article class="prose">${rendered.html}</article>
     </section>`
   return shell({ base, current: 'design', title: 'Game design document', description: 'Read Ashveil’s living game design document, including its MMORPG transition and open proposals.', content, bodyClass: 'document-page' })
 }
