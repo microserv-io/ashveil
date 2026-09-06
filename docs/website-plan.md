@@ -33,6 +33,10 @@ editorial typography and must not be presented as the wordmark's source face.
   manually maintained copy. The source covers the MMORPG as Decided, Direction and
   Open statements; the earlier ARPG loop and camera remain historical prototype
   context only.
+- First-chapter page: build-time rendering at `/story/first-chapter/` from the
+  opening overview, main-story script and side-quest script under `docs/story/`.
+  Present it as an authored planning draft with working names, a complete contents
+  list, print support and one generated Markdown download in source order.
 - Keep open design proposals in the source GDD so the rendered page and Markdown
   download have identical content. PR #32 painterly/toon rendering and PR #35
   canonical-body gear production remain labelled open until separately approved.
@@ -59,7 +63,8 @@ accounts, ecommerce and a game launcher.
 
 ## Acceptance
 
-1. Home, GDD, brand page and 404 render at the Pages base path and on direct visits.
+1. Home, GDD, first-chapter story, brand page and 404 render at the Pages base path
+   and on direct visits.
 2. All current GDD content blocks (including paragraphs, tables and list items)
    remain present; downloaded Markdown matches the source; repeated headings
    receive unique, stable anchors. Validate both `/ashveil/` and `/` build bases.

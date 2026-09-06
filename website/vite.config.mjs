@@ -24,6 +24,7 @@ export default defineConfig({
       input: {
         home: resolve(root, 'index.html'),
         design: resolve(root, 'design/index.html'),
+        firstChapter: resolve(root, 'story/first-chapter/index.html'),
         brand: resolve(root, 'brand/index.html'),
         notFound: resolve(root, '404.html'),
       },

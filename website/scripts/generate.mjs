@@ -30,6 +30,7 @@ function createPathHelpers(base) {
     path,
     home: path(),
     design: path('design/'),
+    story: path('story/first-chapter/'),
     brand: path('brand/'),
   }
 }
@@ -62,10 +63,10 @@ function siteFooter(paths) {
   </footer>`
 }
 
-function shell({ base, current, description, title, content, bodyClass = '' }) {
+function shell({ base, current, canonicalPath, description, title, content, bodyClass = '' }) {
   const paths = createPathHelpers(base)
   const pageTitle = title ? `${title} · Ashveil` : 'Ashveil · A world worth defending'
-  const canonicalPath = current === 'design' ? paths.design : current === 'brand' ? paths.brand : paths.home
+  const resolvedCanonicalPath = canonicalPath || (current === 'design' ? paths.design : current === 'brand' ? paths.brand : paths.home)
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -77,11 +78,11 @@ function shell({ base, current, description, title, content, bodyClass = '' }) {
   <meta property="og:title" content="${pageTitle}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="${siteOrigin}${canonicalPath}">
+  <meta property="og:url" content="${siteOrigin}${resolvedCanonicalPath}">
   <meta property="og:image" content="${siteOrigin}${paths.path('media/ember-world-social.jpg')}">
   <meta property="og:image:alt" content="A party overlooking Ashveil's sunlit valleys and city">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="canonical" href="${siteOrigin}${canonicalPath}">
+  <link rel="canonical" href="${siteOrigin}${resolvedCanonicalPath}">
   <link rel="icon" href="${paths.path('brand/ashveil-emblem.svg')}" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
 </head>
@@ -146,16 +147,21 @@ function homePage(base) {
   return shell({ base, current: 'home', description: 'Ashveil is an early MMORPG concept: a vivid shared fantasy world threatened by ash.', content, bodyClass: 'home-page' })
 }
 
+function documentContents(headings) {
+  return `<ol>${headings.map(({ id, label, depth }) => `<li${depth > 2 ? ` class="toc-depth-${depth}"` : ''}><a href="#${id}">${escapeHtml(label)}</a></li>`).join('')}</ol>`
+}
+
 function designPage(base, markdown) {
   const paths = createPathHelpers(base)
-  const rendered = renderDesignMarkdown(markdown)
-  const tocItems = rendered.headings
-  const toc = `<ol>${tocItems.map(({ id, label }) => `<li><a href="#${id}">${escapeHtml(label)}</a></li>`).join('')}</ol>`
+  const rendered = renderDesignMarkdown(markdown, {
+    transformLink: (href) => href === 'story/opening-chapter.md' ? paths.story : href,
+  })
+  const toc = documentContents(rendered.headings)
   const content = `<header class="document-hero">
       <p class="eyebrow">First MMORPG design pass · 5 September 2026</p>
       <h1>Game design document</h1>
       <p>What Ashveil currently knows, what it is testing, and what still needs a decision.</p>
-      <nav aria-label="Document actions"><a class="button button-gold" href="${paths.path('downloads/game-design-document.md')}" download>Download Markdown</a><button class="text-link print-button" type="button" onclick="window.print()">Print document</button></nav>
+      <nav aria-label="Document actions"><a class="button button-gold" href="${paths.path('downloads/game-design-document.md')}" download>Download Markdown</a><a class="text-link" href="${paths.story}">Read the first chapter</a><button class="text-link print-button" type="button" onclick="window.print()">Print document</button></nav>
     </header>
     <details class="mobile-toc"><summary>On this page</summary>${toc}</details>
     <section class="document-layout">
@@ -163,6 +169,36 @@ function designPage(base, markdown) {
       <article class="prose">${rendered.html}</article>
     </section>`
   return shell({ base, current: 'design', title: 'Game design document', description: 'Read Ashveil’s living game design document, including its MMORPG transition and open proposals.', content, bodyClass: 'document-page' })
+}
+
+function storyPage(base, markdown) {
+  const paths = createPathHelpers(base)
+  const rendered = renderDesignMarkdown(markdown, {
+    headingOffset: 1,
+    includeLevelOne: true,
+    tocDepths: [1, 2],
+  })
+  const toc = documentContents(rendered.headings)
+  const content = `<header class="document-hero story-hero">
+      <p class="eyebrow">Authored story draft · First Early Access chapter</p>
+      <h1>The first chapter</h1>
+      <p>A long-form quest script for Ashveil’s opening journey. Story beats and working names may change; this draft describes planned content, not implemented gameplay.</p>
+      <nav aria-label="Document actions"><a class="button button-gold" href="${paths.path('downloads/first-chapter.md')}" download>Download Markdown</a><a class="text-link" href="${paths.design}">Return to the GDD</a><button class="text-link print-button" type="button" onclick="window.print()">Print chapter</button></nav>
+    </header>
+    <details class="mobile-toc"><summary>Chapter contents</summary>${toc}</details>
+    <section class="document-layout story-layout">
+      <aside class="desktop-toc"><p>Chapter contents</p>${toc}</aside>
+      <article class="prose story-prose">${rendered.html}</article>
+    </section>`
+  return shell({
+    base,
+    current: 'story',
+    canonicalPath: paths.story,
+    title: 'The first chapter',
+    description: 'Read the authored draft of Ashveil’s first story chapter: its opening main quests, local side stories and first dungeon.',
+    content,
+    bodyClass: 'document-page story-page',
+  })
 }
 
 function brandPage(base) {
@@ -221,6 +257,12 @@ export async function generateSite({
 } = {}) {
   const normalizedBase = normalizeBase(base)
   const markdown = await readFile(resolve(repositoryRoot, 'docs/game-design-document.md'), 'utf8')
+  const storySources = await Promise.all([
+    'opening-chapter.md',
+    'opening-msq.md',
+    'opening-side-quests.md',
+  ].map((filename) => readFile(resolve(repositoryRoot, 'docs/story', filename), 'utf8')))
+  const storyMarkdown = `${storySources.map((source) => source.trimEnd()).join('\n\n')}\n`
   if (clean) await rm(outputDir, { recursive: true, force: true })
   await Promise.all([
     optimizeArtwork(websiteRoot, publicDir),
@@ -233,9 +275,11 @@ export async function generateSite({
     resolve(repositoryRoot, 'docs/game-design-document.md'),
     resolve(publicDir, 'downloads/game-design-document.md'),
   )
+  await writeFile(resolve(publicDir, 'downloads/first-chapter.md'), storyMarkdown)
   await Promise.all([
     writePage(outputDir, 'index.html', homePage(normalizedBase)),
     writePage(outputDir, 'design/index.html', designPage(normalizedBase, markdown)),
+    writePage(outputDir, 'story/first-chapter/index.html', storyPage(normalizedBase, storyMarkdown)),
     writePage(outputDir, 'brand/index.html', brandPage(normalizedBase)),
     writePage(outputDir, '404.html', notFoundPage(normalizedBase)),
   ])
