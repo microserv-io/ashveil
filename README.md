@@ -26,6 +26,7 @@ npm test             # vitest suite
 npm run site:dev     # public website at http://100.103.10.11:5295/ashveil/
 npm run site:test    # website content, routes and base-path builds
 npm run site:build   # static website in website/dist/
+npm run texture:dev  # first-zone texture review at http://100.103.10.11:5297/
 ```
 
 The public site lives separately in `website/` and is rendered from reusable plain
@@ -33,6 +34,10 @@ HTML templates with Tailwind. Its design-document page is built directly from
 [`docs/game-design-document.md`](docs/game-design-document.md), so the website and
 download cannot drift from the source. Set `SITE_BASE=/` for a root-domain build;
 GitHub Pages uses the default `/ashveil/` base.
+
+The first-zone albedo candidates and their integration notes live in
+[`public/textures/first-zone/`](public/textures/first-zone/README.md). The review
+page compares all four on real Three.js materials and exposes their raw joins.
 
 ## Architecture
 
