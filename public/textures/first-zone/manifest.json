@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "status": "candidate",
+  "scope": "first-zone material study",
+  "sourceReference": "website/assets/source/ember-and-bloom-world.png",
+  "mapPolicy": "albedo-only",
+  "tiling": {
+    "status": "nonseamless",
+    "reviewDefault": "mirrored-repeat",
+    "productionRequirement": "Retouch source edges before ordinary repeat use"
+  },
+  "candidates": [
+    {
+      "id": "meadow-grass",
+      "label": "Meadow grass",
+      "file": "meadow-grass.png",
+      "dimensions": [1254, 1254],
+      "colorSpace": "srgb",
+      "maps": ["albedo"],
+      "surface": { "metalness": 0, "roughness": 0.92 },
+      "physicalRepeatMetres": 2,
+      "status": "candidate"
+    },
+    {
+      "id": "worn-earth",
+      "label": "Worn earth",
+      "file": "worn-earth.png",
+      "dimensions": [1254, 1254],
+      "colorSpace": "srgb",
+      "maps": ["albedo"],
+      "surface": { "metalness": 0, "roughness": 0.94 },
+      "physicalRepeatMetres": 2.5,
+      "status": "candidate"
+    },
+    {
+      "id": "ivory-limestone",
+      "label": "Ivory limestone",
+      "file": "ivory-limestone.png",
+      "dimensions": [1254, 1254],
+      "colorSpace": "srgb",
+      "maps": ["albedo"],
+      "surface": { "metalness": 0, "roughness": 0.88 },
+      "physicalRepeatMetres": 3,
+      "status": "candidate"
+    },
+    {
+      "id": "ash-ground",
+      "label": "Ash ground",
+      "file": "ash-ground.png",
+      "dimensions": [1254, 1254],
+      "colorSpace": "srgb",
+      "maps": ["albedo"],
+      "surface": { "metalness": 0, "roughness": 0.96 },
+      "physicalRepeatMetres": 2,
+      "status": "candidate"
+    }
+  ]
+}

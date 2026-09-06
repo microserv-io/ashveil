@@ -17,6 +17,8 @@
     "art:fit": "node scripts/art/fit.mjs",
     "art:profile": "node scripts/art/profile.mjs",
     "motion:dev": "npm run assets && vite --config spike/motion/vite.config.ts",
+    "texture:dev": "vite --config spike/zone-textures/vite.config.ts",
+    "texture:build": "vite build --config spike/zone-textures/vite.config.ts",
     "site:dev": "node website/scripts/generate.mjs && vite --config website/vite.config.mjs --host 0.0.0.0",
     "site:build": "node website/scripts/generate.mjs && vite build --config website/vite.config.mjs",
     "site:test": "node --test website/tests/*.site.mjs",
