@@ -15,6 +15,11 @@ const vite = resolve(repositoryRoot, 'node_modules/.bin/vite')
 const config = resolve(repositoryRoot, 'website/vite.config.mjs')
 const generate = resolve(repositoryRoot, 'website/scripts/generate.mjs')
 const sourcePath = resolve(repositoryRoot, 'docs/game-design-document.md')
+const storySourcePaths = [
+  'opening-chapter.md',
+  'opening-msq.md',
+  'opening-side-quests.md',
+].map((filename) => resolve(repositoryRoot, 'docs/story', filename))
 const temporaryRoot = await mkdtemp(join(tmpdir(), 'ashveil-site-'))
 const builds = new Map()
 
@@ -77,7 +82,7 @@ function publicTarget(root, base, reference, fromFile) {
 
 for (const [base, root] of builds) {
   test(`${base} build contains every public route`, async () => {
-    for (const relative of ['index.html', 'design/index.html', 'brand/index.html', '404.html']) {
+    for (const relative of ['index.html', 'design/index.html', 'story/first-chapter/index.html', 'brand/index.html', '404.html']) {
       assert.ok((await stat(resolve(root, relative))).isFile(), `${relative} is missing`)
     }
   })
@@ -131,6 +136,66 @@ test('downloaded Markdown is byte-for-byte identical to its source', async () =>
   const download = await readFile(resolve(builds.get('/ashveil/'), 'downloads/game-design-document.md'))
   assert.deepEqual(download, source)
 })
+
+test('GDD story link is useful in both source Markdown and the generated site', async () => {
+  const source = await readFile(sourcePath, 'utf8')
+  const reference = source.match(/\[first-chapter draft\]\(([^)]+)\)/)
+  assert.ok(reference, 'GDD must link its first-chapter companion')
+  assert.ok((await stat(resolve(dirname(sourcePath), reference[1]))).isFile(), 'source Markdown story link does not resolve')
+})
+
+test('first chapter renders all quest anchors with a complete contents list', async () => {
+  const rendered = await readFile(resolve(builds.get('/ashveil/'), 'story/first-chapter/index.html'), 'utf8')
+  const questHeadings = (await Promise.all(storySourcePaths.map((path) => readFile(path, 'utf8'))))
+    .flatMap((source) => [...source.matchAll(/^## ([MS]\d{2})\b/gm)].map((match) => match[1]))
+  const questIds = [...rendered.matchAll(/<h3 id="([^"]+)">([MS]\d{2})\b/g)]
+    .map(([, id]) => id)
+  assert.equal(questHeadings.length, 30, 'story sources must define ten MSQs and twenty side quests')
+  assert.equal(questIds.length, 30, 'all thirty quests must render with IDs')
+  assert.equal(new Set(questIds).size, 30, 'quest IDs must be unique')
+  for (const id of questIds) {
+    assert.equal(occurrences(rendered, new RegExp(`href="#${id}"`, 'g')), 3, `#${id} must appear in both contents lists and its heading link`)
+  }
+  assert.match(rendered, /Authored story draft/)
+  assert.match(rendered, /planned content, not implemented gameplay/)
+})
+
+test('first chapter preserves all authored source blocks and section headings', async () => {
+  const sources = await Promise.all(storySourcePaths.map((path) => readFile(path, 'utf8')))
+  const sourceMarkdown = `${sources.map((source) => source.trimEnd()).join('\n\n')}\n`
+  const reference = new Marked({ gfm: true }).parse(sourceMarkdown)
+  const rendered = await readFile(resolve(builds.get('/ashveil/'), 'story/first-chapter/index.html'), 'utf8')
+  for (const tag of ['p', 'table', 'li']) {
+    const sourceBlocks = textBlocks(reference, tag)
+    const renderedBlocks = textBlocks(rendered, tag)
+    for (const [text, count] of sourceBlocks) {
+      assert.ok((renderedBlocks.get(text) || 0) >= count, `${tag} content was lost: ${text.slice(0, 90)}`)
+    }
+  }
+  for (const heading of sourceMarkdown.matchAll(/^#{1,4} (.+)$/gm)) {
+    assert.ok(stripMarkup(rendered).includes(heading[1]), `missing story section ${heading[1]}`)
+  }
+})
+
+test('first chapter download is composed byte-for-byte from the three story sources', async () => {
+  const sources = await Promise.all(storySourcePaths.map((path) => readFile(path, 'utf8')))
+  const expected = Buffer.from(`${sources.map((source) => source.trimEnd()).join('\n\n')}\n`)
+  const download = await readFile(resolve(builds.get('/ashveil/'), 'downloads/first-chapter.md'))
+  assert.deepEqual(download, expected)
+})
+
+for (const [base, root] of builds) {
+  test(`${base} GDD and first chapter use base-aware reciprocal links and story metadata`, async () => {
+    const design = await readFile(resolve(root, 'design/index.html'), 'utf8')
+    const story = await readFile(resolve(root, 'story/first-chapter/index.html'), 'utf8')
+    const storyUrl = `${base}story/first-chapter/`.replace(/\/+/g, '/')
+    assert.match(design, new RegExp(`href="${storyUrl}"`))
+    assert.match(story, new RegExp(`href="${base}design/"`))
+    assert.match(story, new RegExp(`<link rel="canonical" href="https://microserv-io.github.io${storyUrl}">`))
+    assert.match(story, /<title>The first chapter · Ashveil<\/title>/)
+    assert.doesNotMatch(story, /<script(?:\s|>)/)
+  })
+}
 
 test('all heading IDs and document fragments are unique and valid', async () => {
   const rendered = await readFile(resolve(builds.get('/ashveil/'), 'design/index.html'), 'utf8')

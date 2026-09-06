@@ -144,6 +144,12 @@ These are precedents for research, not blanket adoption.
 
 - Regions should feel lived in before they feel like content maps: settlements,
   routes, local concerns and recurring people provide context for adventure.
+- The authored [first-chapter draft](story/opening-chapter.md) plans the First
+  Season opening as 10 main-story quests (MSQs), 20 optional local side quests and a
+  concluding dungeon. Its throughline is escape, reunion and investigation;
+  bundled outings let players share in ordinary local life without redundant trips
+  back to the same creatures. Early Access builds toward this First Season journey
+  rather than presenting a later-season reset.
 - Exploration reveals places, stories and shared activity while making the boundary
   between life and ash visually meaningful.
 - Classic hand-painted animated fantasy is an emotional reference for wonder,

@@ -23,7 +23,12 @@ function makeSlugger() {
   }
 }
 
-export function renderDesignMarkdown(markdown) {
+export function renderDesignMarkdown(markdown, {
+  headingOffset = 0,
+  includeLevelOne = false,
+  tocDepths = [2],
+  transformLink,
+} = {}) {
   const headings = []
   const slug = makeSlugger()
   const marked = new Marked({ gfm: true })
@@ -33,9 +38,15 @@ export function renderDesignMarkdown(markdown) {
       heading(token) {
         const label = token.text.replace(/[*_`]/g, '')
         const id = slug(label)
-        if (token.depth === 1) return ''
-        if (token.depth === 2) headings.push({ id, label })
-        return `<h${token.depth} id="${id}">${this.parser.parseInline(token.tokens)}<a class="heading-link" href="#${id}" aria-label="Link to ${escapeHtml(label)}">#</a></h${token.depth}>`
+        if (token.depth === 1 && !includeLevelOne) return ''
+        const depth = Math.min(token.depth + headingOffset, 6)
+        if (tocDepths.includes(token.depth)) headings.push({ id, label, depth })
+        return `<h${depth} id="${id}">${this.parser.parseInline(token.tokens)}<a class="heading-link" href="#${id}" aria-label="Link to ${escapeHtml(label)}">#</a></h${depth}>`
+      },
+      link(token) {
+        const href = transformLink ? transformLink(token.href) : token.href
+        const title = token.title ? ` title="${escapeHtml(token.title)}"` : ''
+        return `<a href="${escapeHtml(href)}"${title}>${this.parser.parseInline(token.tokens)}</a>`
       },
     },
   })
