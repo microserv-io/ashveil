@@ -37,6 +37,21 @@ export async function optimizeArtwork(websiteRoot, publicDir) {
     await createImage(source, resolve(mediaDir, `${outputName}-960.webp`), { width: 960 })
     await createImage(source, resolve(mediaDir, `${outputName}-1600.webp`), { width: 1600 })
   }
+  const chapterImages = [
+    'alderbank-refuge',
+    'orchard-and-wagon-road',
+    'broken-waystation',
+    'ward-engine',
+  ]
+  for (const name of chapterImages) {
+    const source = resolve(sourceDir, 'chapter', `${name}.png`)
+    for (const width of [960, 1600]) {
+      await Promise.all([
+        createImage(source, resolve(mediaDir, 'chapter', `${name}-${width}.webp`), { width }),
+        createImage(source, resolve(mediaDir, 'chapter', `${name}-${width}.jpg`), { width, format: 'jpeg' }),
+      ])
+    }
+  }
   await createImage(
     resolve(sourceDir, 'ember-and-bloom-world.png'),
     resolve(mediaDir, 'ember-world-social.jpg'),
