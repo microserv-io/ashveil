@@ -36,7 +36,9 @@ editorial typography and must not be presented as the wordmark's source face.
 - First-chapter page: build-time rendering at `/story/first-chapter/` from the
   opening overview, main-story script and side-quest script under `docs/story/`.
   Present it as an authored planning draft with working names, a complete contents
-  list, print support and one generated Markdown download in source order.
+  list, print support and one generated Markdown download in source order. A compact,
+  anchored gallery near the top presents four proposed chapter locations as clearly
+  labelled concept art, with responsive WebP/JPEG derivatives and full-size links.
 - Keep open design proposals in the source GDD so the rendered page and Markdown
   download have identical content. PR #32 painterly/toon rendering and PR #35
   canonical-body gear production remain labelled open until separately approved.
@@ -81,3 +83,6 @@ accounts, ecommerce and a game launcher.
    installed Chrome through browser automation for practical verification.
 7. Conventional commit and PR; green CI before merge; publish and verify the real
    public URL, then clean up the temporary worktree and local preview.
+8. The first-chapter concept gallery renders as four distinct figures, keeps each
+   image's aspect ratio, and resolves its responsive and full-size assets at both
+   supported base paths without changing the authored story source or download.

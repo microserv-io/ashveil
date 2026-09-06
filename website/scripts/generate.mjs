@@ -102,6 +102,45 @@ function responsivePicture(paths, name, alt, className = '') {
   </picture>`
 }
 
+const chapterConcepts = [
+  {
+    name: 'alderbank-refuge',
+    alt: 'Proposed Alderbank Refuge concept showing travellers and survivors gathering in a sunlit riverside settlement',
+    caption: 'Alderbank Refuge · a proposed haven for the chapter’s survivors',
+  },
+  {
+    name: 'orchard-and-wagon-road',
+    alt: 'Proposed orchard and wagon road concept with fruit trees, a stopped covered wagon and travellers beside a warm rural lane',
+    caption: 'Orchard and wagon road · a proposed route through the chapter’s lived-in countryside',
+  },
+  {
+    name: 'broken-waystation',
+    alt: 'Proposed broken waystation concept with four travellers descending into riverside ruins among collapsed bridges and old pipes',
+    caption: 'Broken waystation · a proposed threshold where the road begins to fail',
+  },
+  {
+    name: 'ward-engine',
+    alt: 'Proposed ward engine concept with four travellers facing three handwheel regulators around a cyan and violet fault in an old stone chamber',
+    caption: 'Ward engine · a proposed visual direction for the first dungeon’s central mechanism',
+  },
+]
+
+function chapterConceptGallery(paths) {
+  const figures = chapterConcepts.map(({ name, alt, caption }) => `<figure>
+        <a href="${paths.path(`media/chapter/${name}-1600.jpg`)}" aria-label="View full-size concept art: ${escapeHtml(caption)}">
+          <picture>
+            <source type="image/webp" srcset="${paths.path(`media/chapter/${name}-960.webp`)} 960w, ${paths.path(`media/chapter/${name}-1600.webp`)} 1600w" sizes="(max-width: 800px) 100vw, 42rem">
+            <img src="${paths.path(`media/chapter/${name}-960.jpg`)}" srcset="${paths.path(`media/chapter/${name}-960.jpg`)} 960w, ${paths.path(`media/chapter/${name}-1600.jpg`)} 1600w" sizes="(max-width: 800px) 100vw, 42rem" width="1600" height="900" alt="${escapeHtml(alt)}" loading="lazy" decoding="async">
+          </picture>
+        </a>
+        <figcaption>${escapeHtml(caption)}</figcaption>
+      </figure>`).join('')
+  return `<section class="chapter-concepts" id="concept-art" aria-labelledby="concept-art-title">
+      <header><p class="eyebrow">Early visual development</p><h2 id="concept-art-title">Places along the first journey</h2><p>Four proposed scene studies for the opening chapter. These images explore atmosphere and location; they are concept art, not gameplay footage or settled environment design.</p></header>
+      <section class="chapter-concept-grid" aria-label="First chapter concept art">${figures}</section>
+    </section>`
+}
+
 function homePage(base) {
   const paths = createPathHelpers(base)
   const content = `<section class="hero">
@@ -183,8 +222,9 @@ function storyPage(base, markdown) {
       <p class="eyebrow">Authored story draft · First Early Access chapter</p>
       <h1>The first chapter</h1>
       <p>A long-form quest script for Ashveil’s opening journey. Story beats and working names may change; this draft describes planned content, not implemented gameplay.</p>
-      <nav aria-label="Document actions"><a class="button button-gold" href="${paths.path('downloads/first-chapter.md')}" download>Download Markdown</a><a class="text-link" href="${paths.design}">Return to the GDD</a><button class="text-link print-button" type="button" onclick="window.print()">Print chapter</button></nav>
+      <nav aria-label="Document actions"><a class="button button-gold" href="${paths.path('downloads/first-chapter.md')}" download>Download Markdown</a><a class="text-link" href="#concept-art">View concept art</a><a class="text-link" href="${paths.design}">Return to the GDD</a><button class="text-link print-button" type="button" onclick="window.print()">Print chapter</button></nav>
     </header>
+    ${chapterConceptGallery(paths)}
     <details class="mobile-toc"><summary>Chapter contents</summary>${toc}</details>
     <section class="document-layout story-layout">
       <aside class="desktop-toc"><p>Chapter contents</p>${toc}</aside>

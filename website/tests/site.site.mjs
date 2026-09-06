@@ -184,6 +184,30 @@ test('first chapter download is composed byte-for-byte from the three story sour
   assert.deepEqual(download, expected)
 })
 
+test('first chapter presents the four proposed scene concepts before the story script', async () => {
+  const rendered = await readFile(resolve(builds.get('/ashveil/'), 'story/first-chapter/index.html'), 'utf8')
+  const galleryStart = rendered.indexOf('<section class="chapter-concepts" id="concept-art"')
+  const scriptStart = rendered.indexOf('<section class="document-layout story-layout">')
+  assert.ok(galleryStart > -1, 'chapter concept gallery is missing')
+  assert.ok(galleryStart < scriptStart, 'chapter concept gallery must precede the story script')
+  assert.equal(occurrences(rendered.slice(galleryStart, scriptStart), /<figure>/g), 4)
+  assert.match(rendered, /concept art, not gameplay footage or settled environment design/)
+  assert.doesNotMatch(rendered, /concept art[^<]*game screenshot/i)
+})
+
+for (const [base, root] of builds) {
+  test(`${base} chapter gallery uses base-aware responsive and full-size artwork`, async () => {
+    const rendered = await readFile(resolve(root, 'story/first-chapter/index.html'), 'utf8')
+    for (const name of ['alderbank-refuge', 'orchard-and-wagon-road', 'broken-waystation', 'ward-engine']) {
+      for (const suffix of ['960.webp', '1600.webp', '960.jpg', '1600.jpg']) {
+        assert.match(rendered, new RegExp(`${base.replaceAll('/', '\\/')}media\\/chapter\\/${name}-${suffix.replace('.', '\\.')}`))
+        assert.ok((await stat(resolve(root, 'media/chapter', `${name}-${suffix}`))).isFile())
+      }
+      assert.match(rendered, new RegExp(`href="${base.replaceAll('/', '\\/')}media\\/chapter\\/${name}-1600\\.jpg"`))
+    }
+  })
+}
+
 for (const [base, root] of builds) {
   test(`${base} GDD and first chapter use base-aware reciprocal links and story metadata`, async () => {
     const design = await readFile(resolve(root, 'design/index.html'), 'utf8')
