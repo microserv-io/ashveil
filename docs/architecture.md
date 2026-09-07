@@ -75,6 +75,7 @@ Snapshots carry the seed, never the map: areas are a pure function of
 
 ```
 src/sim/        rules and simulation. No DOM, no wall-clock, no Math.random, no network.
+src/world/      authored first-zone truth plus its isolated browser validation route.
 src/session/    characters, parties, instances, transitions. Owns what outlives an area.
 src/net/        transport abstraction and the wire protocol. No gameplay.
 src/render/     three.js projection of sim state.
@@ -85,7 +86,9 @@ headless/       CLI harness driving the sim with scripted players.
 Dependency rule, enforced by `tests/architecture.test.ts`: **dependencies point
 inward.** `sim` imports nothing from the others. `session` may import `sim`. `net`
 may import `session` and `sim` types. `render` and `ui` may import `sim` types and
-read sim state, never mutate it.
+read sim state, never mutate it. Within `src/world`, authored data, terrain queries and
+movement are host-agnostic; its renderer, controls and HUD depend on them and may use
+Three.js and browser APIs.
 
 Animation is also a projection: each actor view converts replicated state and sim
 time into a preallocated `RigInput`, then gives it to that body's `MotionDriver`.
@@ -93,6 +96,20 @@ The procedural driver owns the skeleton pose; neither the driver nor the pose fe
 information back into the simulation.
 
 ### Zones
+
+The default browser route is a fresh Three.js idea-validation slice for the authored
+opening zone. The current action-RPG demo is deprecated and remains at `/legacy.html`
+as historical evidence. New zone work must not inherit its scene, procedural terrain,
+model preload, portal flow or runtime modules by convenience. The slice's scope,
+tolerances and outstanding validation are recorded in
+[first-zone-terrain.md](first-zone-terrain.md). Three.js supports this validation pass;
+it does not settle the final production engine.
+
+The zone loads its Blender scenery kit independently of the legacy model registry.
+Four vertex-coloured templates become instanced buildings and trees; authored positions
+and collision disks remain in `world-data.ts`. Tree camera proxies exclude foliage so
+overhanging crowns do not collapse the orbit distance. The kit's Blender generator and
+asset manifest record the source reference, export frame and geometry budgets.
 
 Three kinds of place, with different rules, because they answer different questions:
 

@@ -8,19 +8,27 @@ Ashveil is a social MMORPG in development: a vivid shared fantasy world where li
 and colour endure beneath an encroaching ash-grey threat. The public GDD is the
 living source for decided, directional and open design.
 
-This repository currently contains the earlier isometric action-RPG prototype. It
-remains a useful, playable technical foundation and historical design baseline; its
-loop and camera are not MMORPG commitments.
+The default browser route is a fresh Three.js idea-validation slice for the opening
+chapter's connected river-valley geography. It tests authored terrain, movement and a
+freely controlled third-person camera; it is not a commitment to the final production
+engine or an implementation of the full MMORPG.
 
-For the current prototype, the loop is the product: **pull a pack → spend skills →
-things die → loot drops → your numbers change → go deeper, harder.** Everything else (endgame, crafting, trade,
-such as endgame, crafting, trade, ascendancies and uniques, hangs off that, and none
-of it matters if the ten-second
-kill-and-loot rhythm does not feel good. So that rhythm is what exists so far.
+The environment pass uses Blender-authored buildings and trees guided by the
+[character-and-village style reference](docs/art-pipeline/concepts/opening-chapter/environment-kit.png).
+The reference sets an art direction; it is not a screenshot of the playable zone.
+See the [Blender kit instructions](scripts/art/scenery/README.md) for the editable
+source, generator and exported models.
+
+This repository still contains the earlier isometric action-RPG demo, which is now
+deprecated and available at `/legacy.html`. Its loop, camera, procedural dungeon and
+runtime modules are not the foundation for the new zone. See the
+[`first-zone terrain build slice`](docs/first-zone-terrain.md) for scope and validation
+status.
 
 ```bash
 npm install
-npm run dev          # play it at http://localhost:5273
+npm run dev          # first zone at http://100.103.10.11:5300
+npm run preview      # built routes at http://100.103.10.11:5300
 npm run sim          # play it headless, and get numbers back
 npm test             # vitest suite
 npm run site:dev     # public website at http://100.103.10.11:5295/ashveil/
@@ -41,11 +49,13 @@ page compares all four on real Three.js materials and exposes their raw joins.
 
 ## Architecture
 
-The rule that shapes everything: **`src/sim` is the game, and it does not know the
-browser exists.**
+The production-runtime rule that shapes the existing systems: **`src/sim` is the game,
+and it does not know the browser exists.** The first-zone slice keeps its own terrain
+and movement truth host-agnostic while the team validates how it should join that sim.
 
 ```
 src/sim/      deterministic core — seeded RNG, fixed 60Hz tick, no DOM, no wall-clock
+src/world/    first-zone authored data, terrain, movement and browser presentation
 src/session/  characters, persistence, the authoritative session
 src/net/      transport abstraction and wire protocol
 src/render/   three.js scene, meshes, effects, screen-space overlay, input
@@ -64,6 +74,10 @@ and why single-player is a one-player session rather than its own code path.
 build on any of them. The payoff: the same seed produces the same run everywhere, so
 a bug found headless reproduces exactly in the browser, and balance can be measured
 without opening anything.
+
+Within `src/world`, authored world data, terrain queries and movement stay independent
+of Three.js and the browser. The first-zone renderer and controls consume those pure
+modules so later authoritative simulation work can adopt the same terrain contract.
 
 The browser and the headless bot both drive the sim through one narrow surface:
 
@@ -99,7 +113,7 @@ that modify the wearer. That distinction matters — treating a weapon's flat ph
 roll as a global mod would count it twice for attacks that already scale with weapon
 damage.
 
-## The headless sim
+## Deprecated demo's headless sim
 
 `npm run sim` runs the real game with a scripted player. This is the main balance
 instrument, not a toy.
@@ -119,7 +133,7 @@ time actually went (idle / moving / acting / dead).
 distance moved, path cursor and current target. Three real bugs were found by reading
 its `moved` column: the fix history is in the git log.
 
-## The frame budget
+## Deprecated demo's frame budget
 
 A frame has 16.67ms to advance the sim and draw it. `npm run perf` plays a fixed seed
 against a bot in real Chrome and reports where that time went, against a baseline
@@ -141,7 +155,7 @@ cursor, `twinstick` plays it with a stick, `punching-bag` never fights back (so 
 lethality can be measured), and `runner` skips combat entirely (so "can packs be
 outrun" can be answered). Add a policy to ask a new question.
 
-## Controls
+## Deprecated demo controls
 
 Movement is **direct** by default — left stick or WASD — not click-to-move. A stick
 sends a direction, and a direction is the only thing that can express strafing,
@@ -195,7 +209,7 @@ npm run sim -- sweep --seeds 6 --minutes 4 --policy twinstick
 npm run sim -- sweep --seeds 6 --minutes 4 --policy brawler
 ```
 
-## Current state
+## Historical demo state
 
 The action-RPG prototype is playable end to end. A four-minute headless run
 typically reaches depth 2-3 and level 6-7 at roughly 25 kills/min with 0-1 deaths,
@@ -224,11 +238,14 @@ not what the dressing looks like.
 
 ## Notes
 
-- `?seed=7` in the URL reproduces an exact run; omit it for a random one.
-- In dev, `globalThis.ashveil` exposes `{ sim, host, view, input }` for poking at a
-  live game from the console.
-- `?ui=1.4` overrides the interface scale; it bumps automatically when a pad is
-  connected, since a controller usually means a handheld or a couch.
+- On the first-zone route in dev, `globalThis.ashveilWorld` exposes repeatable move,
+  stop, reset and overview controls plus position, camera, recent frame times, draw-call,
+  triangle and error state. Production preview builds do not expose it.
+- On `/legacy.html`, `?seed=7` reproduces an exact run; omit it for a random one.
+- On `/legacy.html` in dev, `globalThis.ashveil` exposes `{ sim, host, view, controls }`
+  for poking at the old demo from the console.
+- On `/legacy.html`, `?ui=1.4` overrides the interface scale; it bumps automatically
+  when a pad is connected, since a controller usually means a handheld or a couch.
 
 ## License
 

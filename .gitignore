@@ -18,3 +18,4 @@ public/models/
 # Diagnostic renders: every body regenerates its own contact sheet.
 public/bodies/*/*.review.png
 __pycache__/
+scripts/art/scenery/.output/

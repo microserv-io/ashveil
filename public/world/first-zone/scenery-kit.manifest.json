@@ -1,0 +1,126 @@
+{
+  "schema": "ashveil.scenery-kit.v1",
+  "version": 1,
+  "generator": "scripts/art/scenery/generate_first_zone.py",
+  "asset": {
+    "file": "scenery-kit.glb",
+    "sha256": "0be51578c096e3baa76f6e0fbe585fd363973bb7e2dced4686d5155adc86452a"
+  },
+  "coordinateFrame": {
+    "up": "+Y",
+    "front": "+Z",
+    "units": "metres"
+  },
+  "material": {
+    "name": "scenery_vertex_color",
+    "vertexColorAttribute": "COLOR_0"
+  },
+  "references": [
+    {
+      "file": "docs/art-pipeline/concepts/opening-chapter/environment-kit.png",
+      "sha256": "f906ac6c2f0c04bbeaf8367e795998294a5532283703dc05ee7ede7d7c325d8b"
+    },
+    {
+      "file": "public/bodies/masculine-v3/masculine-v3.glb",
+      "sha256": "28a5088916abf4069df26bf1b7461544ed6063e2a307d8f83061b0e296bea826"
+    },
+    {
+      "file": "public/textures/first-zone/concepts/village-edge.png",
+      "sha256": "96c905a27cfb7043982a754b96f900b77a726442b559933c0591f82c96d9d1db"
+    }
+  ],
+  "templates": [
+    {
+      "id": "refuge_hall",
+      "nodeType": "mesh",
+      "identityTRS": true,
+      "groundedY": 0.0,
+      "footprintRadius": 6.0,
+      "vertices": 5096,
+      "triangles": 8580,
+      "triangleBudget": 12000,
+      "materials": 1,
+      "bounds": {
+        "minimum": [
+          -4.521275,
+          -0.656043,
+          -2.996653
+        ],
+        "maximum": [
+          4.552281,
+          7.05,
+          4.09
+        ]
+      }
+    },
+    {
+      "id": "cottage",
+      "nodeType": "mesh",
+      "identityTRS": true,
+      "groundedY": 0.0,
+      "footprintRadius": 4.0,
+      "vertices": 3688,
+      "triangles": 6320,
+      "triangleBudget": 10000,
+      "materials": 1,
+      "bounds": {
+        "minimum": [
+          -3.020946,
+          -0.630558,
+          -2.247395
+        ],
+        "maximum": [
+          3.047625,
+          5.884,
+          3.056118
+        ]
+      }
+    },
+    {
+      "id": "alder_tree",
+      "nodeType": "mesh",
+      "identityTRS": true,
+      "groundedY": 0.0,
+      "footprintRadius": 1.1,
+      "vertices": 4858,
+      "triangles": 4400,
+      "triangleBudget": 5000,
+      "materials": 1,
+      "bounds": {
+        "minimum": [
+          -3.437848,
+          -0.267956,
+          -2.359772
+        ],
+        "maximum": [
+          3.379328,
+          8.012478,
+          2.418829
+        ]
+      }
+    },
+    {
+      "id": "orchard_tree",
+      "nodeType": "mesh",
+      "identityTRS": true,
+      "groundedY": 0.0,
+      "footprintRadius": 1.1,
+      "vertices": 3204,
+      "triangles": 3180,
+      "triangleBudget": 5000,
+      "materials": 1,
+      "bounds": {
+        "minimum": [
+          -2.650587,
+          -0.217965,
+          -1.834391
+        ],
+        "maximum": [
+          2.447118,
+          5.914703,
+          1.919341
+        ]
+      }
+    }
+  ]
+}

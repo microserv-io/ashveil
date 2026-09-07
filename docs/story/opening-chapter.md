@@ -12,6 +12,11 @@ rescue those still missing, and discover a reason to investigate further. The
 chapter should resolve its immediate rescue story without pretending to explain
 the whole ash threat.
 
+The [first-zone terrain build slice](https://github.com/microserv-io/ashveil/blob/main/docs/first-zone-terrain.md)
+is implementing this travel contract as connected Three.js terrain for review. It does
+not implement these quests or settle their encounters, production engine, playable
+scale or staging.
+
 ## The story
 
 You travelled with a close-knit group through Bracken Hollow. Whether it was your
