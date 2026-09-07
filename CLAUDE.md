@@ -110,6 +110,12 @@ say why in the message.
 - **Model zone buildings and trees in Blender.** Use the actual masculine character and
   existing concept art as style references. Keep reproducible generators and runtime GLBs;
   retain editable `.blend` files in the documented local output directory.
+- **Keep publishing boundaries explicit.** Updating and publishing the GDD and public
+  documentation website is standing-authorized. Playable builds and Tailnet previews stay
+  private; publishing a playable demo requires explicit later authorization.
+- **Add concept art; do not repackage it.** Preserve existing concept art when extending
+  the visual record. New gallery content must add a new composition or scene rather than
+  presenting a zoom or crop of existing art as something new.
 - **Determinism.** Fixed 60 Hz tick (`DT` in `src/sim/types.ts`). All randomness goes
   through `Rng` (`src/sim/rng.ts`). Never `Math.random`, `Date.now`, or
   `performance.now` in sim logic. Same seed, same run.
