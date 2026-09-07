@@ -1,10 +1,31 @@
 export interface InputFrame {
-  readonly forward: number
-  readonly right: number
+  readonly keyboardForward: number
+  readonly keyboardStrafe: number
+  readonly keyboardTurn: number
+  readonly touchForward: number
+  readonly touchRight: number
   readonly sprint: boolean
   readonly orbitX: number
   readonly orbitY: number
   readonly zoom: number
+}
+
+export interface KeyboardAxes {
+  readonly forward: number
+  readonly strafe: number
+  readonly turn: number
+}
+
+export function keyboardAxes(keys: ReadonlySet<string>): KeyboardAxes {
+  return {
+    forward: Number(keys.has('KeyW') || keys.has('ArrowUp')) - Number(keys.has('KeyS') || keys.has('ArrowDown')),
+    strafe: Number(keys.has('KeyE')) - Number(keys.has('KeyQ')),
+    turn: Number(keys.has('KeyA') || keys.has('ArrowLeft')) - Number(keys.has('KeyD') || keys.has('ArrowRight')),
+  }
+}
+
+export function keyboardSteeringActive(input: Pick<InputFrame, 'keyboardForward' | 'keyboardStrafe' | 'keyboardTurn'>): boolean {
+  return input.keyboardForward !== 0 || input.keyboardStrafe !== 0 || input.keyboardTurn !== 0
 }
 
 export class WorldInput {
@@ -59,11 +80,13 @@ export class WorldInput {
   }
 
   read(): InputFrame {
-    const keyboardForward = Number(this.keys.has('KeyW') || this.keys.has('ArrowUp')) - Number(this.keys.has('KeyS') || this.keys.has('ArrowDown'))
-    const keyboardRight = Number(this.keys.has('KeyD') || this.keys.has('ArrowRight')) - Number(this.keys.has('KeyA') || this.keys.has('ArrowLeft'))
+    const keyboard = keyboardAxes(this.keys)
     const frame = {
-      forward: Math.max(-1, Math.min(1, keyboardForward - this.joystickY)),
-      right: Math.max(-1, Math.min(1, keyboardRight + this.joystickX)),
+      keyboardForward: keyboard.forward,
+      keyboardStrafe: keyboard.strafe,
+      keyboardTurn: keyboard.turn,
+      touchForward: -this.joystickY,
+      touchRight: this.joystickX,
       sprint: this.sprintTouch || this.keys.has('ShiftLeft') || this.keys.has('ShiftRight'),
       orbitX: this.orbitX,
       orbitY: this.orbitY,

@@ -14,6 +14,7 @@ import {
 } from '../src/world/scenery-kit'
 import { SOLIDS } from '../src/world/world-data'
 import { BUILDING_STYLES } from '../src/world/scenery-layout'
+import { fitTreeWidthToGroundZone, measureTreeGroundRadius } from '../src/world/tree-variation'
 
 const ROOT = join(import.meta.dirname, '..')
 const KIT_PATH = join(ROOT, 'public/world/first-zone/scenery-kit.glb')
@@ -91,6 +92,28 @@ function kitScene(): THREE.Scene {
     prototype('orchard_tree', 1.1, material),
   )
   return scene
+}
+
+function isTree(solid: { readonly id: string }): boolean {
+  return solid.id.startsWith('grove-tree-') || solid.id.startsWith('wild-tree-') || solid.id.startsWith('orchard-tree-')
+}
+
+function treeSnapshots(group: THREE.Group, solids: readonly { readonly id: string }[]): Map<string, readonly number[]> {
+  const snapshots = new Map<string, readonly number[]>()
+  for (const batch of group.children as THREE.InstancedMesh[]) {
+    if (batch.name !== 'kit-alder_tree' && batch.name !== 'kit-orchard_tree') continue
+    const placements = solids.filter((solid) => batch.name === 'kit-orchard_tree'
+      ? solid.id.startsWith('orchard-tree-')
+      : solid.id.startsWith('grove-tree-') || solid.id.startsWith('wild-tree-'))
+    placements.forEach((solid, index) => {
+      const matrix = new THREE.Matrix4()
+      const color = new THREE.Color()
+      batch.getMatrixAt(index, matrix)
+      batch.getColorAt(index, color)
+      snapshots.set(solid.id, [...matrix.elements, color.r, color.g, color.b])
+    })
+  }
+  return snapshots
 }
 
 function nodeTextureLoader(): GLTFLoader {
@@ -290,7 +313,39 @@ describe('first-zone Blender scenery kit', () => {
     expect(material.normalMap!.colorSpace).toBe(THREE.NoColorSpace)
     expect(material.roughnessMap).toBe(material.metalnessMap)
     expect(material.roughnessMap).toBe(material.aoMap)
-  })
+
+    const authoredGroundRadii = Object.fromEntries((['alder_tree', 'orchard_tree'] as const).map((name) => {
+      return [name, measureTreeGroundRadius(kit[name].geometry, 1, TREE_GROUND_ZONE_CUTOFF)]
+    }))
+    expect(authoredGroundRadii.alder_tree).toBeCloseTo(0.9932577, 5)
+    expect(authoredGroundRadii.orchard_tree).toBeCloseTo(0.9917995, 5)
+
+    const instances = buildSceneryKitInstances(kit, { heightAt: () => 2, solids: SOLIDS })
+    for (const batch of instances.children as THREE.InstancedMesh[]) {
+      if (batch.name !== 'kit-alder_tree' && batch.name !== 'kit-orchard_tree') continue
+      const source = batch.name === 'kit-alder_tree' ? kit.alder_tree : kit.orchard_tree
+      const placements = SOLIDS.filter((solid) => batch.name === 'kit-orchard_tree'
+        ? solid.id.startsWith('orchard-tree-')
+        : solid.id.startsWith('grove-tree-') || solid.id.startsWith('wild-tree-'))
+      expect(batch.geometry).not.toBe(source.geometry)
+      expect(batch.material).not.toBe(source.material)
+      expect((batch.material as THREE.MeshStandardMaterial).map).toBe(source.material.map)
+      placements.forEach((solid, instanceIndex) => {
+        const matrix = new THREE.Matrix4()
+        batch.getMatrixAt(instanceIndex, matrix)
+        const position = new THREE.Vector3()
+        const rotation = new THREE.Quaternion()
+        const scale = new THREE.Vector3()
+        matrix.decompose(position, rotation, scale)
+        const worldGroundRadius = measureTreeGroundRadius(
+          source.geometry,
+          scale.y,
+          TREE_GROUND_ZONE_CUTOFF,
+        ) * scale.x
+        expect(worldGroundRadius).toBeLessThanOrEqual(solid.radius + 1e-5)
+      })
+    }
+  }, 15_000)
 
   it('creates four instance batches at authoritative solid anchors', () => {
     const kit = validateSceneryKit(kitScene())
@@ -307,6 +362,14 @@ describe('first-zone Blender scenery kit', () => {
       SOLIDS.filter((solid) => solid.id.startsWith('orchard-tree-')),
     ]
     expect(expected.flat()).toHaveLength(39)
+    const familyScales = {
+      orchard: { widths: [] as number[], heights: [] as number[] },
+      grove: { widths: [] as number[], heights: [] as number[] },
+      wild: { widths: [] as number[], heights: [] as number[] },
+    }
+    const normalizedYaws: number[] = []
+    const tintShades: number[] = []
+    const tintWarmths: number[] = []
     batches.forEach((batch, batchIndex) => expected[batchIndex]!.forEach((solid, index) => {
       const matrix = new THREE.Matrix4()
       const position = new THREE.Vector3()
@@ -318,13 +381,74 @@ describe('first-zone Blender scenery kit', () => {
       expect(position.y).toBeCloseTo(solid.x * 0.01 + solid.z * 0.02)
       expect(position.z).toBeCloseTo(solid.z)
       const template = kit[batches[batchIndex]!.name.replace('kit-', '') as keyof typeof kit]
-      const expectedScale = Math.min(1, solid.radius / Number(template.userData.footprintRadius))
-      expect(scale.x).toBeCloseTo(expectedScale)
-      expect(scale.y).toBeCloseTo(scale.x)
-      expect(scale.z).toBeCloseTo(scale.x)
       const yaw = new THREE.Euler().setFromQuaternion(rotation, 'YXZ').y
-      expect(yaw).toBeCloseTo(buildingYaws.get(solid.id) ?? 0)
+      if (isTree(solid)) {
+        expect(scale.x).toBeGreaterThanOrEqual(0.82)
+        expect(scale.x).toBeLessThanOrEqual(1.08)
+        expect(scale.y).toBeGreaterThanOrEqual(0.82)
+        expect(scale.y).toBeLessThanOrEqual(1.18)
+        expect(scale.z).toBeCloseTo(scale.x)
+        const color = new THREE.Color()
+        batch.getColorAt(index, color)
+        expect([color.r, color.g, color.b].every((channel) => channel >= 0.94 - 1e-6 && channel <= 1)).toBe(true)
+        const family = solid.id.startsWith('orchard-tree-')
+          ? familyScales.orchard
+          : solid.id.startsWith('grove-tree-')
+            ? familyScales.grove
+            : familyScales.wild
+        family.widths.push(scale.x)
+        family.heights.push(scale.y)
+        normalizedYaws.push((yaw + Math.PI * 2) % (Math.PI * 2))
+        tintShades.push((color.r + color.g + color.b) / 3)
+        tintWarmths.push(color.r - color.b)
+      } else {
+        const expectedScale = Math.min(1, solid.radius / Number(template.userData.footprintRadius))
+        expect(scale.x).toBeCloseTo(expectedScale)
+        expect(scale.y).toBeCloseTo(expectedScale)
+        expect(scale.z).toBeCloseTo(expectedScale)
+        expect(yaw).toBeCloseTo(buildingYaws.get(solid.id) ?? 0)
+      }
     }))
+    const span = (values: readonly number[]) => Math.max(...values) - Math.min(...values)
+    for (const family of Object.values(familyScales)) {
+      expect(span(family.widths)).toBeGreaterThan(0.15)
+      expect(span(family.heights)).toBeGreaterThan(0.25)
+    }
+    const yawQuadrants = new Set(normalizedYaws.map((yaw) => Math.floor(yaw / (Math.PI / 2))))
+    expect([...yawQuadrants].sort()).toEqual([0, 1, 2, 3])
+    expect(span(normalizedYaws)).toBeGreaterThan(5.5)
+    expect(span(tintShades)).toBeGreaterThan(0.025)
+    expect(span(tintWarmths)).toBeGreaterThan(0.05)
+    expect(batches.slice(0, 2).every((batch) => batch.instanceColor === null)).toBe(true)
+    expect(batches.slice(2).every((batch) => (batch.instanceColor?.version ?? 0) > 0)).toBe(true)
+  })
+
+  it('keeps per-tree transforms and tints stable across placement order changes', () => {
+    const kit = validateSceneryKit(kitScene())
+    const options = { heightAt: () => 0, solids: SOLIDS }
+    const forward = treeSnapshots(buildSceneryKitInstances(kit, options), SOLIDS)
+    const reversedSolids = [...SOLIDS].reverse()
+    const reversed = treeSnapshots(buildSceneryKitInstances(kit, { ...options, solids: reversedSolids }), reversedSolids)
+    const extendedSolids = [{ id: 'wild-tree-unrelated', x: 90, z: 90, radius: 1.1 }, ...SOLIDS]
+    const extended = treeSnapshots(buildSceneryKitInstances(kit, { ...options, solids: extendedSolids }), extendedSolids)
+    for (const solid of SOLIDS.filter(isTree)) {
+      expect(reversed.get(solid.id)).toEqual(forward.get(solid.id))
+      expect(extended.get(solid.id)).toEqual(forward.get(solid.id))
+    }
+  })
+
+  it('brings lowered vertices into the ground-zone footprint cap', () => {
+    const geometry = new THREE.BufferGeometry()
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
+      0, 0, 0,
+      2, 1.1, 0,
+    ]), 3))
+    expect(fitTreeWidthToGroundZone(geometry, 1.1, 1.08, 1, TREE_GROUND_ZONE_CUTOFF)).toBe(1.08)
+    expect(fitTreeWidthToGroundZone(geometry, 1.1, 1.08, 0.82, TREE_GROUND_ZONE_CUTOFF)).toBeCloseTo(0.55)
+
+    const emptyGroundZone = new THREE.BufferGeometry()
+    emptyGroundZone.setAttribute('position', new THREE.BufferAttribute(new Float32Array([1, 2, 0]), 3))
+    expect(fitTreeWidthToGroundZone(emptyGroundZone, 1.1, 0.9, 0.82, TREE_GROUND_ZONE_CUTOFF)).toBe(0.9)
   })
 
   it('uses raycastable trunk proxies without treating canopies as camera walls', () => {

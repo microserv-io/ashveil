@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { BUILDING_STYLES, type ScenerySolid } from './scenery-layout'
+import { treeInstanceVariation } from './tree-variation'
 
 export const SCENERY_KIT_URL = '/world/first-zone/scenery-kit.glb'
 export const TREE_GROUND_ZONE_CUTOFF = 1
@@ -195,19 +196,27 @@ export function buildSceneryKitInstances(kit: SceneryKit, options: KitPlacementO
     const placements = options.solids.filter(batch.ids)
     const source = kit[batch.template]
     const mesh = new THREE.InstancedMesh(source.geometry.clone(), source.material.clone(), placements.length)
+    const isTree = batch.template === 'alder_tree' || batch.template === 'orchard_tree'
     mesh.name = `kit-${batch.template}`
     mesh.castShadow = true
     mesh.receiveShadow = batch.template === 'refuge_hall' || batch.template === 'cottage'
     placements.forEach((solid, index) => {
-      const scale = Math.min(1, solid.radius / Number(source.userData.footprintRadius))
+      const uniformScale = Math.min(1, solid.radius / Number(source.userData.footprintRadius))
+      const variation = isTree
+        ? treeInstanceVariation(solid.id, source.geometry, solid.radius, TREE_GROUND_ZONE_CUTOFF)
+        : undefined
       const matrix = new THREE.Matrix4().compose(
         new THREE.Vector3(solid.x, options.heightAt(solid.x, solid.z), solid.z),
-        new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaws.get(solid.id) ?? 0),
-        new THREE.Vector3(scale, scale, scale),
+        new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), variation?.yaw ?? yaws.get(solid.id) ?? 0),
+        variation
+          ? new THREE.Vector3(variation.widthScale, variation.heightScale, variation.widthScale)
+          : new THREE.Vector3(uniformScale, uniformScale, uniformScale),
       )
       mesh.setMatrixAt(index, matrix)
+      if (variation) mesh.setColorAt(index, variation.tint)
     })
     mesh.instanceMatrix.needsUpdate = true
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
     mesh.computeBoundingBox()
     mesh.computeBoundingSphere()
     group.add(mesh)

@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { WorldCharacter, type WorldCharacterTemplate } from './character'
 import { buildScenery, type BuiltScenery } from './scenery'
 import type { SceneryKit } from './scenery-kit'
 import { createTerrainGeometryData, heightAt, riverCenterAt, riverHalfWidthAt, WORLD_BOUNDS } from './terrain'
@@ -40,19 +41,7 @@ function buildRiver(): THREE.Mesh {
   return new THREE.Mesh(geometry, new THREE.MeshPhysicalMaterial({ color: 0x5b8490, roughness: 0.28, metalness: 0.04, transparent: true, opacity: 0.84 }))
 }
 
-function buildExplorer(): THREE.Group {
-  const group = new THREE.Group()
-  const cloak = new THREE.Mesh(new THREE.ConeGeometry(0.68, 1.65, 7), new THREE.MeshStandardMaterial({ color: 0x284f4b, roughness: 0.9 }))
-  cloak.position.y = 0.88
-  const shoulders = new THREE.Mesh(new THREE.SphereGeometry(0.48, 10, 7), new THREE.MeshStandardMaterial({ color: 0x426864, roughness: 0.85 }))
-  shoulders.scale.y = 0.58
-  shoulders.position.y = 1.42
-  const hood = new THREE.Mesh(new THREE.SphereGeometry(0.3, 10, 8), new THREE.MeshStandardMaterial({ color: 0xd7cfb5, roughness: 1 }))
-  hood.position.set(0, 1.82, 0.05)
-  group.add(cloak, shoulders, hood)
-  group.traverse((object) => { if (object instanceof THREE.Mesh) object.castShadow = true })
-  return group
-}
+export const DEFAULT_CAMERA_YAW = 0.45
 
 export class WorldView {
   readonly renderer: THREE.WebGLRenderer
@@ -60,15 +49,15 @@ export class WorldView {
   readonly camera = new THREE.PerspectiveCamera(48, 1, 0.1, 600)
   private readonly terrain = buildTerrain()
   private readonly scenery: BuiltScenery
-  private readonly explorer = buildExplorer()
+  private readonly explorer: WorldCharacter
   private readonly raycaster = new THREE.Raycaster()
   private readonly cameraTarget = new THREE.Vector3()
-  private yaw = 0.45
+  private yaw = DEFAULT_CAMERA_YAW
   private pitch = 0.42
   private distance = 11.5
   private overview = false
 
-  constructor(host: HTMLElement, kit: SceneryKit) {
+  constructor(host: HTMLElement, kit: SceneryKit, character: WorldCharacterTemplate, initialExplorer: Explorer) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' })
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
@@ -77,10 +66,11 @@ export class WorldView {
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
     host.prepend(this.renderer.domElement)
+    this.explorer = new WorldCharacter(character, initialExplorer)
     this.scene.background = new THREE.Color(0xb7aa8e)
     this.scene.fog = new THREE.FogExp2(0xb7aa8e, 0.003)
     this.terrain.receiveShadow = true
-    this.scene.add(this.terrain, buildRiver(), this.explorer)
+    this.scene.add(this.terrain, buildRiver(), this.explorer.root)
     this.scenery = buildScenery(this.scene, { heightAt, landmarks: LANDMARKS, paths: PATHS, solids: SOLIDS, kit })
     this.scene.add(new THREE.HemisphereLight(0xf5e8c9, 0x4b5042, 1.55))
     const sun = new THREE.DirectionalLight(0xffe5b7, 2.8)
@@ -95,10 +85,9 @@ export class WorldView {
   get canvas(): HTMLCanvasElement { return this.renderer.domElement }
   get cameraYaw(): number { return this.yaw }
 
-  setExplorer(explorer: Explorer): void {
-    this.explorer.position.set(explorer.x, explorer.y, explorer.z)
-    this.explorer.rotation.y = explorer.facing
-  }
+  setExplorer(explorer: Explorer, delta: number): void { this.explorer.update(explorer, delta) }
+  resetExplorer(explorer: Explorer): void { this.explorer.reset(explorer) }
+  turnCamera(delta: number): void { this.yaw += delta }
 
   adjustOrbit(x: number, y: number, zoom: number): void {
     if (this.overview) return
@@ -108,7 +97,7 @@ export class WorldView {
   }
 
   setOverview(active: boolean): void { this.overview = active; (this.scene.fog as THREE.FogExp2).density = active ? 0.0013 : 0.003 }
-  resetCamera(): void { this.yaw = 0.45; this.pitch = 0.42; this.distance = 11.5 }
+  resetCamera(): void { this.yaw = DEFAULT_CAMERA_YAW; this.pitch = 0.42; this.distance = 11.5 }
 
   updateCamera(explorer: Explorer, delta: number): void {
     if (this.overview) {

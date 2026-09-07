@@ -59,9 +59,27 @@ describe('first-zone terrain', () => {
   it('does not import the deprecated demo runtime', () => {
     const root = join(import.meta.dirname, '..')
     const worldRoot = join(root, 'src/world')
-    const source = readdirSync(worldRoot).filter((file) => file.endsWith('.ts'))
+    const worldFiles = readdirSync(worldRoot).filter((file) => file.endsWith('.ts'))
+    const ordinaryWorld = worldFiles.filter((file) => file !== 'character.ts')
       .map((file) => readFileSync(join(worldRoot, file), 'utf8')).join('\n')
-    expect(source).not.toMatch(/src\/main|\.\.\/(sim|render|ui|session|net)\//)
+    expect(ordinaryWorld).not.toMatch(/src\/main|\.\.\/(sim|render|ui|session|net)\//)
+
+    const character = readFileSync(join(worldRoot, 'character.ts'), 'utf8')
+    const renderReferences = [...character.matchAll(/['"](\.\.\/render\/[^'"]+)['"]/g)]
+      .map((match) => match[1])
+    expect(renderReferences).toEqual([
+      '../render/proceduraldriver',
+      '../render/profiles/masculine',
+      '../render/riginput',
+    ])
+    const renderImports = [...character.matchAll(/^import( type)? .* from ['"](\.\.\/render\/[^'"]+)['"]/gm)]
+      .map((match) => ({ typeOnly: match[1] !== undefined, path: match[2] }))
+    expect(renderImports).toEqual([
+      { typeOnly: false, path: '../render/proceduraldriver' },
+      { typeOnly: false, path: '../render/profiles/masculine' },
+      { typeOnly: true, path: '../render/riginput' },
+    ])
+    expect(character).not.toMatch(/src\/main|\.\.\/(sim|ui|session|net)\//)
     for (const file of ['terrain.ts', 'world-data.ts', 'movement.ts']) {
       expect(readFileSync(join(worldRoot, file), 'utf8')).not.toMatch(/from ['"]three['"]|\b(document|window|performance)\b/)
     }

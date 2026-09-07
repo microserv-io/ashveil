@@ -1,13 +1,15 @@
 import './world.css'
+import { loadWorldCharacter, type WorldCharacterTemplate } from './character'
 import { createWorldHud } from './hud'
-import { WorldInput } from './input'
+import { keyboardSteeringActive, WorldInput } from './input'
 import { createExplorer, moveExplorer, type Explorer } from './movement'
-import { WorldView } from './renderer'
+import { DEFAULT_CAMERA_YAW, WorldView } from './renderer'
 import { loadSceneryKit, type SceneryKit } from './scenery-kit'
+import { explorerFacingFromCamera, steerExplorer } from './steering'
 import { nearestLandmark, SPAWN } from './world-data'
 
 interface DiagnosticState {
-  position: { x: number; y: number; z: number }; location: string; overview: boolean
+  position: { x: number; y: number; z: number }; facing: number; location: string; overview: boolean
   frameMs: number; frameTimes: number[]
   camera: { x: number; y: number; z: number; yaw: number }; forward: { x: number; z: number }
   drawCalls: number; triangles: number; errors: string[]
@@ -32,7 +34,7 @@ function showLoading(failed = false): void {
       <section class="max-w-md rounded-2xl border border-amber-100/15 bg-stone-900 px-8 py-7 shadow-2xl">
         <p class="text-[0.65rem] font-semibold uppercase tracking-[0.28em] text-amber-200/65">Terrain exploration</p>
         <h1 class="mt-3 font-serif text-2xl">${failed ? 'Alderbank could not be opened' : 'Preparing Alderbank'}</h1>
-        <p class="mt-2 text-sm leading-6 text-stone-400">${failed ? 'The scenery did not arrive. Try loading the valley again.' : 'Setting the valley and refuge in place…'}</p>
+        <p class="mt-2 text-sm leading-6 text-stone-400">${failed ? 'The world assets did not arrive. Try loading the valley again.' : 'Setting the valley and refuge in place…'}</p>
         ${failed ? '<button id="retry-world" class="mt-5 rounded-lg border border-amber-100/20 bg-amber-100/10 px-4 py-2 text-sm font-medium text-amber-50 hover:bg-amber-100/15">Try again</button>' : ''}
       </section>
     </main>`
@@ -45,9 +47,9 @@ async function boot(): Promise<void> {
   booting = true
   showLoading()
   try {
-    const kit = await loadSceneryKit()
+    const [kit, character] = await Promise.all([loadSceneryKit(), loadWorldCharacter()])
     app!.replaceChildren()
-    startWorld(app!, kit)
+    startWorld(app!, kit, character)
   } catch (error) {
     console.error(error)
     booting = false
@@ -55,11 +57,15 @@ async function boot(): Promise<void> {
   }
 }
 
-function startWorld(host: HTMLElement, kit: SceneryKit): void {
+function initialExplorer(cameraYaw = DEFAULT_CAMERA_YAW): Explorer {
+  return { ...createExplorer(SPAWN), facing: explorerFacingFromCamera(cameraYaw) }
+}
+
+function startWorld(host: HTMLElement, kit: SceneryKit, character: WorldCharacterTemplate): void {
+  let explorer = initialExplorer()
   const hud = createWorldHud(host)
-  const view = new WorldView(host, kit)
+  const view = new WorldView(host, kit, character, explorer)
   const input = new WorldInput(view.canvas, hud.joystick, hud.joystickKnob, hud.sprintButton)
-  let explorer: Explorer = createExplorer(SPAWN)
   let overview = false
   let injected = { x: 0, z: 0, sprint: false }
   let previous = performance.now()
@@ -75,10 +81,11 @@ function startWorld(host: HTMLElement, kit: SceneryKit): void {
   }
 
   function reset(): void {
-    explorer = createExplorer(SPAWN)
     injected = { x: 0, z: 0, sprint: false }
     input.clear()
     view.resetCamera()
+    explorer = initialExplorer(view.cameraYaw)
+    view.resetExplorer(explorer)
     if (overview) toggleOverview()
   }
 
@@ -90,7 +97,7 @@ function startWorld(host: HTMLElement, kit: SceneryKit): void {
 
   const diagnostics: WorldDiagnostics = {
     state: {
-      position: { x: explorer.x, y: explorer.y, z: explorer.z }, location: 'Alderbank Refuge', overview,
+      position: { x: explorer.x, y: explorer.y, z: explorer.z }, facing: explorer.facing, location: 'Alderbank Refuge', overview,
       frameMs: 0, frameTimes: [], camera: { x: 0, y: 0, z: 0, yaw: 0 }, forward: { x: 0, z: 1 },
       drawCalls: 0, triangles: 0, errors,
     },
@@ -108,24 +115,36 @@ function startWorld(host: HTMLElement, kit: SceneryKit): void {
     const controls = input.read()
     view.adjustOrbit(controls.orbitX, controls.orbitY, controls.zoom)
     if (!overview) {
-      const forward = view.cameraForward()
-      const right = { x: -forward.z, z: forward.x }
-      const localRight = controls.right + injected.x
-      const localForward = controls.forward + injected.z
-      explorer = moveExplorer(explorer, {
-        x: right.x * localRight + forward.x * localForward,
-        z: right.z * localRight + forward.z * localForward,
-        sprint: controls.sprint || injected.sprint,
-      }, delta)
+      const keyboardActive = keyboardSteeringActive(controls)
+      if (keyboardActive) {
+        const steered = steerExplorer(explorer, {
+          forward: controls.keyboardForward,
+          strafe: controls.keyboardStrafe,
+          turn: controls.keyboardTurn,
+          sprint: controls.sprint,
+        }, delta)
+        explorer = steered.explorer
+        view.turnCamera(steered.turnDelta)
+      } else {
+        const forward = view.cameraForward()
+        const right = { x: -forward.z, z: forward.x }
+        const localRight = controls.touchRight + injected.x
+        const localForward = controls.touchForward + injected.z
+        explorer = moveExplorer(explorer, {
+          x: right.x * localRight + forward.x * localForward,
+          z: right.z * localRight + forward.z * localForward,
+          sprint: controls.sprint || injected.sprint,
+        }, delta)
+      }
     }
-    view.setExplorer(explorer)
+    view.setExplorer(explorer, delta)
     view.updateCamera(explorer, delta)
     view.render()
     const frameMs = performance.now() - frameStart
     averageFrameMs += (frameMs - averageFrameMs) * 0.05
     const rendered = view.diagnostics()
     Object.assign(diagnostics.state, {
-      position: { x: explorer.x, y: explorer.y, z: explorer.z }, location: nearestLandmark(explorer.x, explorer.z).label,
+      position: { x: explorer.x, y: explorer.y, z: explorer.z }, facing: explorer.facing, location: nearestLandmark(explorer.x, explorer.z).label,
       overview, frameMs: averageFrameMs, camera: rendered.camera, forward: rendered.forward,
       drawCalls: rendered.drawCalls, triangles: rendered.triangles,
     })
@@ -135,7 +154,6 @@ function startWorld(host: HTMLElement, kit: SceneryKit): void {
     requestAnimationFrame(frame)
   }
 
-  view.setExplorer(explorer)
   view.updateCamera(explorer, 1)
   requestAnimationFrame(frame)
 }
