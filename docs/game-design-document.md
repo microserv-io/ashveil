@@ -150,6 +150,10 @@ These are precedents for research, not blanket adoption.
   bundled outings let players share in ordinary local life without redundant trips
   back to the same creatures. Early Access builds toward this First Season journey
   rather than presenting a later-season reset.
+- A proposed [first-zone terrain build slice](https://github.com/microserv-io/ashveil/blob/main/docs/first-zone-terrain.md)
+  translates that chapter's existing geography into a connected refuge, road,
+  optional local branches and Lower Road approach. It is a production plan rather
+  than implemented content; its engine choice remains open.
 - Exploration reveals places, stories and shared activity while making the boundary
   between life and ash visually meaningful.
 - Classic hand-painted animated fantasy is an emotional reference for wonder,

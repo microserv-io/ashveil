@@ -8,15 +8,14 @@ Ashveil is a social MMORPG in development: a vivid shared fantasy world where li
 and colour endure beneath an encroaching ash-grey threat. The public GDD is the
 living source for decided, directional and open design.
 
-This repository currently contains the earlier isometric action-RPG prototype. It
-remains a useful, playable technical foundation and historical design baseline; its
-loop and camera are not MMORPG commitments.
+This repository still contains the earlier isometric action-RPG demo, which is now
+deprecated. Keep it available as historical evidence until a replacement route exists;
+its loop, camera, procedural dungeon and entry point are not the foundation for new
+MMORPG zones.
 
-For the current prototype, the loop is the product: **pull a pack → spend skills →
-things die → loot drops → your numbers change → go deeper, harder.** Everything else (endgame, crafting, trade,
-such as endgame, crafting, trade, ascendancies and uniques, hangs off that, and none
-of it matters if the ten-second
-kill-and-loot rhythm does not feel good. So that rhythm is what exists so far.
+The proposed [`first-zone terrain build slice`](docs/first-zone-terrain.md) starts that
+replacement with the opening chapter's connected river-valley geography. Its runtime
+engine choice remains pending, and no new zone is implemented yet.
 
 ```bash
 npm install
@@ -195,7 +194,7 @@ npm run sim -- sweep --seeds 6 --minutes 4 --policy twinstick
 npm run sim -- sweep --seeds 6 --minutes 4 --policy brawler
 ```
 
-## Current state
+## Historical demo state
 
 The action-RPG prototype is playable end to end. A four-minute headless run
 typically reaches depth 2-3 and level 6-7 at roughly 25 kills/min with 0-1 deaths,

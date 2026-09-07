@@ -9,13 +9,10 @@
 # Ashveil
 
 Ashveil's product direction is now an MMORPG. The repository still contains the
-earlier isometric action-RPG prototype; treat its loop, camera and competitor
-assumptions as a preserved baseline awaiting review, not settled MMORPG design.
-
-For the current prototype, the loop is the product: **pull a pack, spend skills,
-things die, loot drops, your numbers change, go deeper and harder.** Prototype work
-continues to protect that ten-second kill-and-loot rhythm while the MMORPG design is
-reviewed separately.
+earlier isometric action-RPG demo, which is deprecated. Preserve it as historical
+evidence until a replacement route exists, but do not use its loop, camera, procedural
+terrain or entry point as the foundation for new MMORPG zones. The proposed first-zone
+replacement is specified in `docs/first-zone-terrain.md`; its engine choice is pending.
 
 Stack: TypeScript (ESM, `strict`) with Three.js for rendering, Vite, Vitest, and a
 headless CLI harness. No UI framework; the HUD is plain DOM with Tailwind utilities.

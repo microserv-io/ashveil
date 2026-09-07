@@ -94,6 +94,12 @@ information back into the simulation.
 
 ### Zones
 
+The current action-RPG demo is deprecated and remains only as historical evidence
+until a replacement route exists. New zone work must not inherit its scene, procedural
+terrain, model preload, portal flow or entry point by convenience. The proposed opening
+terrain slice and its pending engine decision are recorded in
+[first-zone-terrain.md](first-zone-terrain.md).
+
 Three kinds of place, with different rules, because they answer different questions:
 
 | | geometry | combat | who is there | entry | cleared? |
