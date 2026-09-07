@@ -1,19 +1,164 @@
 {
-  "schema": "ashveil.scenery-kit.v1",
-  "version": 1,
+  "schema": "ashveil.scenery-kit.v2",
+  "version": 2,
   "generator": "scripts/art/scenery/generate_first_zone.py",
   "asset": {
     "file": "scenery-kit.glb",
-    "sha256": "0be51578c096e3baa76f6e0fbe585fd363973bb7e2dced4686d5155adc86452a"
+    "sha256": "920939b85334e415efef1c1a3950472f3607eb03726d2c02f950bba151099eeb",
+    "bytes": 17647420
   },
   "coordinateFrame": {
     "up": "+Y",
     "front": "+Z",
     "units": "metres"
   },
+  "treeGroundZoneCutoff": 1.0,
   "material": {
-    "name": "scenery_vertex_color",
-    "vertexColorAttribute": "COLOR_0"
+    "name": "scenery_pbr_atlas",
+    "vertexColorAttribute": "COLOR_0",
+    "uvAttribute": "TEXCOORD_0",
+    "bindings": {
+      "baseColor": "baseColorTexture",
+      "orm": [
+        "occlusionTexture",
+        "metallicRoughnessTexture"
+      ],
+      "normal": "normalTexture"
+    },
+    "atlas": {
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "gutterPixels": 14,
+      "uvOrigin": "topLeft",
+      "uvConvention": "Exported glTF TEXCOORD_0; V is flipped from Blender's bottom-left image convention.",
+      "semanticRects": {
+        "plaster": {
+          "uvMinimum": [
+            0.00683594,
+            0.00683594
+          ],
+          "uvMaximum": [
+            0.24316406,
+            0.49316406
+          ]
+        },
+        "stone": {
+          "uvMinimum": [
+            0.25683594,
+            0.00683594
+          ],
+          "uvMaximum": [
+            0.49316406,
+            0.49316406
+          ]
+        },
+        "wood": {
+          "uvMinimum": [
+            0.50683594,
+            0.00683594
+          ],
+          "uvMaximum": [
+            0.74316406,
+            0.49316406
+          ]
+        },
+        "roof": {
+          "uvMinimum": [
+            0.00683594,
+            0.50683594
+          ],
+          "uvMaximum": [
+            0.24316406,
+            0.99316406
+          ]
+        },
+        "bark": {
+          "uvMinimum": [
+            0.25683594,
+            0.50683594
+          ],
+          "uvMaximum": [
+            0.49316406,
+            0.99316406
+          ]
+        },
+        "leaves": {
+          "uvMinimum": [
+            0.50683594,
+            0.50683594
+          ],
+          "uvMaximum": [
+            0.74316406,
+            0.99316406
+          ]
+        },
+        "cloth": {
+          "uvMinimum": [
+            0.75683594,
+            0.50683594
+          ],
+          "uvMaximum": [
+            0.99316406,
+            0.99316406
+          ]
+        }
+      },
+      "images": [
+        {
+          "name": "scenery-atlas-basecolor",
+          "embeddedFile": "scenery-atlas-basecolor.png",
+          "sha256": "d1df1a21b2513f8c588a85303842aaf4faccbec0248c5b17b3cbeef7e72e914a",
+          "encodedBytes": 2062867,
+          "decodedRgbaBytes": 16777216,
+          "colorSpace": "sRGB",
+          "nativeChannels": [
+            "R",
+            "G",
+            "B"
+          ],
+          "channels": {
+            "rgb": "baseColor"
+          },
+          "opacityFactor": 1.0
+        },
+        {
+          "name": "scenery-atlas-orm",
+          "embeddedFile": "scenery-atlas-orm.png",
+          "sha256": "9bd6ade0934e5dca42b1a01c18780c9d3b39fc67f1c42fad085002cdd4b04ed1",
+          "encodedBytes": 1258943,
+          "decodedRgbaBytes": 16777216,
+          "colorSpace": "linear",
+          "nativeChannels": [
+            "R",
+            "G",
+            "B"
+          ],
+          "channels": {
+            "r": "ambientOcclusion",
+            "g": "roughness",
+            "b": "metallic"
+          }
+        },
+        {
+          "name": "scenery-atlas-normal",
+          "embeddedFile": "scenery-atlas-normal.png",
+          "sha256": "69febc9971b3443fff974a1951165b15846dc4a623b978a2de33647d896ea964",
+          "encodedBytes": 2656924,
+          "decodedRgbaBytes": 16777216,
+          "colorSpace": "linear",
+          "nativeChannels": [
+            "R",
+            "G",
+            "B"
+          ],
+          "channels": {
+            "rgb": "tangentNormal"
+          }
+        }
+      ]
+    }
   },
   "references": [
     {
@@ -23,12 +168,16 @@
     {
       "file": "public/bodies/masculine-v3/masculine-v3.glb",
       "sha256": "28a5088916abf4069df26bf1b7461544ed6063e2a307d8f83061b0e296bea826"
-    },
-    {
-      "file": "public/textures/first-zone/concepts/village-edge.png",
-      "sha256": "96c905a27cfb7043982a754b96f900b77a726442b559933c0591f82c96d9d1db"
     }
   ],
+  "scaleProof": {
+    "body": "public/bodies/masculine-v3/masculine-v3.glb",
+    "measuredBodyHeightMetres": 1.8,
+    "renders": [
+      "scripts/art/scenery/.output/first-zone/cottage-alder-body-close.png",
+      "scripts/art/scenery/.output/first-zone/cottage-alder-body-play-distance.png"
+    ]
+  },
   "templates": [
     {
       "id": "refuge_hall",
@@ -36,19 +185,20 @@
       "identityTRS": true,
       "groundedY": 0.0,
       "footprintRadius": 6.0,
-      "vertices": 5096,
-      "triangles": 8580,
-      "triangleBudget": 12000,
+      "vertices": 25796,
+      "triangles": 49218,
+      "advisoryTriangles": 35000,
+      "runawayTriangleCap": 1000000,
       "materials": 1,
       "bounds": {
         "minimum": [
-          -4.521275,
-          -0.656043,
-          -2.996653
+          -4.607523,
+          -0.621898,
+          -3.10624
         ],
         "maximum": [
-          4.552281,
-          7.05,
+          4.677503,
+          7.722558,
           4.09
         ]
       }
@@ -59,20 +209,21 @@
       "identityTRS": true,
       "groundedY": 0.0,
       "footprintRadius": 4.0,
-      "vertices": 3688,
-      "triangles": 6320,
-      "triangleBudget": 10000,
+      "vertices": 19790,
+      "triangles": 37912,
+      "advisoryTriangles": 25000,
+      "runawayTriangleCap": 1000000,
       "materials": 1,
       "bounds": {
         "minimum": [
-          -3.020946,
-          -0.630558,
-          -2.247395
+          -3.111655,
+          -0.614264,
+          -2.337434
         ],
         "maximum": [
-          3.047625,
-          5.884,
-          3.056118
+          3.166592,
+          6.446195,
+          3.068855
         ]
       }
     },
@@ -82,20 +233,21 @@
       "identityTRS": true,
       "groundedY": 0.0,
       "footprintRadius": 1.1,
-      "vertices": 4858,
-      "triangles": 4400,
-      "triangleBudget": 5000,
+      "vertices": 31724,
+      "triangles": 39509,
+      "advisoryTriangles": 15000,
+      "runawayTriangleCap": 1000000,
       "materials": 1,
       "bounds": {
         "minimum": [
-          -3.437848,
-          -0.267956,
-          -2.359772
+          -3.615188,
+          -0.111378,
+          -2.621398
         ],
         "maximum": [
-          3.379328,
-          8.012478,
-          2.418829
+          3.496988,
+          7.59703,
+          2.816041
         ]
       }
     },
@@ -105,20 +257,21 @@
       "identityTRS": true,
       "groundedY": 0.0,
       "footprintRadius": 1.1,
-      "vertices": 3204,
-      "triangles": 3180,
-      "triangleBudget": 5000,
+      "vertices": 21972,
+      "triangles": 27877,
+      "advisoryTriangles": 15000,
+      "runawayTriangleCap": 1000000,
       "materials": 1,
       "bounds": {
         "minimum": [
-          -2.650587,
-          -0.217965,
-          -1.834391
+          -2.820136,
+          -0.103754,
+          -2.274099
         ],
         "maximum": [
-          2.447118,
-          5.914703,
-          1.919341
+          2.693948,
+          6.214343,
+          2.211856
         ]
       }
     }

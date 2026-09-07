@@ -119,7 +119,7 @@ builds do not expose it.
 
 ## Blender environment pass
 
-The next environment pass replaces the six building and 33 tree placeholders with four
+This environment pass replaces the six building and 33 tree placeholders with four
 Blender-authored templates: a refuge hall, cottage, mature alder and orchard tree.
 The [environment reference](art-pipeline/concepts/opening-chapter/environment-kit.png)
 combines a Blender render of the actual `masculine-v3` character with the existing village
@@ -127,21 +127,31 @@ concept art. It establishes human scale, softened stonework, structural timber,
 terracotta tile courses, teal cloth and irregular branching foliage. It is an art target,
 not an in-game screenshot. The character remains a scale reference for this pass.
 
-Export the templates as one GLB with a joined, vertex-coloured mesh per template for
-instanced rendering. Retain a reproducible Blender generator and an editable local
-`.blend` source under `scripts/art/scenery/.output/first-zone/`, which survives application
-builds. Building footprints, including porches, must fit the existing collision
-disks; alder roots must fit the smallest shared radius of 1.1 metres, and orchard roots
-the 1.15-metre disk, while crowns may overhang. Preserve authored
-positions, yaw, route clearance and all movement truth. Foundations extend below the
-placement plane to meet slopes; tree camera proxies exclude foliage. Secondary props
-remain procedural.
+Export the templates as one GLB with exactly four identity-transform direct mesh roots
+and one joined mesh per template for instanced rendering. All vertices carry finite
+atlas UVs in the zero-to-one range and mild `COLOR_0` tint, which multiplies the shared
+material's textures. The material uses embedded 2,048-pixel PNG atlases for sRGB base
+colour, tangent-space normal data and linear ORM data (R occlusion, G roughness and B
+metallic). Retain a reproducible Blender generator and an editable local `.blend` source
+under `scripts/art/scenery/.output/first-zone/`, which survives application builds.
+Building footprints, including porches, must fit the existing collision disks; alder
+roots must fit the smallest shared radius of 1.1 metres, and orchard roots the 1.15-metre
+disk, while crowns may overhang. Tree footprint measurement includes geometry through
+1.0 metre above the ground datum and excludes the overhanging crown above that cutoff.
+Preserve authored positions, yaw, route clearance and all movement truth. Foundations
+extend below the placement plane to meet slopes; tree camera proxies exclude foliage.
+Secondary props remain procedural.
 
 Load and validate the kit before starting exploration, with visible loading and retry
-states. Check real exported geometry, placement, resource ownership and failed-load
-recovery. Review the Blender render and actual browser scene for scale, grounding,
-silhouette, camera obstruction and material quality. Repeat route/touch validation and
-record frame timing and draw calls after integration. These remain prototype assets.
+states. The loaded templates own the cached atlas textures and treat them as immutable;
+each instance batch clones its material while sharing those maps, and scenery teardown
+disposes batch geometry and materials without disposing the cached sources. Missing or
+malformed texture bindings fail validation and clear the pending load so retry performs
+a fresh request. Check real exported geometry, embedded PNG pixels, placement, resource
+ownership and failed-load recovery. Review the Blender render and actual browser scene
+for scale, grounding, silhouette, camera obstruction and material quality. Repeat
+route/touch validation and record frame timing and draw calls after integration. These
+remain prototype assets.
 
 ## Non-goals
 
@@ -187,17 +197,30 @@ new route has passed browser, camera, touch or performance validation.
 
 ## Recorded verification — 7 September 2026
 
-The final Blender kit exports four templates deterministically: hall 8,580 triangles,
-cottage 6,320, alder 4,400 and orchard tree 3,180. The exported GLB, reference hashes,
-frame and footprint metadata are recorded in its manifest. All 39 instance transforms,
-including the six building yaws, are checked against the authored layout.
+The final Blender kit exports four templates: hall 49,218 triangles,
+cottage 37,912, alder 39,509 and orchard tree 27,877. Its 17,647,420-byte GLB embeds
+2,048-pixel base-colour, ORM and normal PNGs measuring 2,062,867, 1,258,943 and
+2,656,924 encoded bytes. The manifest records their byte hashes, channel semantics,
+colour spaces, atlas regions, frame and footprint metadata. Tests decode the real pixels
+and check all 39 instance transforms, including the six building yaws, against the
+authored layout.
 
 The post-fix gate passed with `npm run typecheck && npm test -- --maxWorkers=1 && npm run build`:
-56 test files, 915 passing tests and one existing skipped test; both browser entries built.
-Website tests passed 18/18. One earlier run timed out in a legacy
-allocation test; isolated and full single-worker runs passed with unchanged test limits.
+56 test files, 918 passing tests and one existing skipped test; both browser entries built.
+After correcting the manifest's exported UV convention, the 11 focused scenery tests
+and typecheck passed again. Independent review checked the complete diff, exported UV
+occupancy, texture hashes, source ownership and the final Blender comparison renders.
 
-Actual Chrome on Apple M4/ANGLE Metal traversed the main route and all 17 optional-loop
+Chrome loaded the revised kit and the zone overview. A controlled corrupt embedded PNG
+produced the visible error state; retry fetched the valid GLB and restored one canvas and
+one HUD with no captured runtime errors. The final GLB SHA-256 is
+`920939b85334e415efef1c1a3950472f3607eb03726d2c02f950bba151099eeb`.
+A warmed sample with DevTools open recorded 25 draw calls, 2,838,966 submitted triangles
+and 2.1 ms p95 CPU frame work. This excludes GPU completion and is not an FPS guarantee.
+The Computer Use connection subsequently lost its Chrome window, so fresh mobile
+interaction and full-route traversal were not repeated for this asset revision.
+
+The preceding terrain release's Chrome checks on Apple M4/ANGLE Metal traversed the main route and all 17 optional-loop
 control points without runtime errors. Loading failure and retry recovered one canvas
 and HUD. The iPhone 13 emulation exposed a high-DPI canvas sizing bug; the corrected
 390×664 logical viewport keeps the player, joystick and Run button visible. In-viewport
@@ -208,6 +231,6 @@ cover the measured downhill relief at all six building placements. Production pr
 loaded the world and legacy entries without page errors or development diagnostics;
 the editable `.blend` remained present after the application build.
 
-A warmed desktop sample recorded 26 draw calls and 356,420 submitted triangles; CPU frame
+A baseline desktop sample from that preceding release recorded 26 draw calls and 356,420 submitted triangles; CPU frame
 durations had a 1.9 ms median, 5.2 ms p95 and 42.4 ms p99, with a 193.9 ms maximum. These
 are measurements from this machine, not a production frame-rate guarantee or budget.

@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { BUILDING_STYLES, type ScenerySolid } from './scenery-layout'
 
 export const SCENERY_KIT_URL = '/world/first-zone/scenery-kit.glb'
+export const TREE_GROUND_ZONE_CUTOFF = 1
 
 const TEMPLATE_NAMES = ['refuge_hall', 'cottage', 'alder_tree', 'orchard_tree'] as const
 type TemplateName = typeof TEMPLATE_NAMES[number]
@@ -47,10 +48,12 @@ export function loadSceneryKit(): Promise<SceneryKit> { return sharedSource.load
 
 export function validateSceneryKit(scene: THREE.Object3D): SceneryKit {
   const directMeshes = scene.children.filter((child): child is THREE.Mesh => child instanceof THREE.Mesh)
-  if (directMeshes.length !== TEMPLATE_NAMES.length || directMeshes.some((mesh) => !TEMPLATE_NAMES.includes(mesh.name as TemplateName))) {
+  if (scene.children.length !== TEMPLATE_NAMES.length || directMeshes.length !== TEMPLATE_NAMES.length
+    || directMeshes.some((mesh) => !TEMPLATE_NAMES.includes(mesh.name as TemplateName))) {
     throw new Error('Scenery kit must contain exactly the four direct template meshes.')
   }
   const templates = {} as Record<TemplateName, THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>>
+  let sharedTextures: readonly THREE.Texture[] | undefined
   for (const name of TEMPLATE_NAMES) {
     const root = scene.getObjectByName(name)
     if (!(root instanceof THREE.Mesh) || root.parent !== scene || !(root.geometry instanceof THREE.BufferGeometry)) {
@@ -65,10 +68,18 @@ export function validateSceneryKit(scene: THREE.Object3D): SceneryKit {
       throw new Error(`Scenery kit root ${name} must contain vertex colours.`)
     }
     for (let index = 0; index < color.count; index += 1) {
-      if (![color.getX(index), color.getY(index), color.getZ(index)].every(Number.isFinite)) {
+      const channels = [color.getX(index), color.getY(index), color.getZ(index)]
+      if (!channels.every((channel) => Number.isFinite(channel) && channel >= 0 && channel <= 1)) {
         throw new Error(`Scenery kit root ${name} has invalid vertex colours.`)
       }
     }
+    validateTextureCoordinates(root.geometry, name)
+    const textures = validateMaterial(root.material, name)
+    const expectedTextures = sharedTextures
+    if (expectedTextures && textures.some((texture, index) => texture !== expectedTextures[index])) {
+      throw new Error(`Scenery kit root ${name} must use the shared PBR atlases.`)
+    }
+    sharedTextures = textures
     validateTransform(root, name)
     validateGeometry(root.geometry, name)
     const footprint = root.userData.footprintRadius
@@ -90,13 +101,56 @@ function validateFootprint(geometry: THREE.BufferGeometry, name: TemplateName, f
   let samples = 0
   for (let index = 0; index < position.count; index += 1) {
     const y = position.getY(index)
-    if ((name === 'alder_tree' || name === 'orchard_tree') && y > 1) continue
+    if ((name === 'alder_tree' || name === 'orchard_tree') && y > TREE_GROUND_ZONE_CUTOFF) continue
     radial = Math.max(radial, Math.hypot(position.getX(index), position.getZ(index)))
     samples += 1
   }
   if (samples === 0 || radial > footprint + 1e-4) {
     throw new Error(`Scenery kit root ${name} exceeds its authored footprint.`)
   }
+}
+
+function validateTextureCoordinates(geometry: THREE.BufferGeometry, name: TemplateName): void {
+  const position = geometry.getAttribute('position')
+  const uv = geometry.getAttribute('uv')
+  if (!uv || uv.itemSize < 2 || uv.count !== position.count) {
+    throw new Error(`Scenery kit root ${name} must contain texture coordinates for every vertex.`)
+  }
+  for (let index = 0; index < uv.count; index += 1) {
+    const coordinates = [uv.getX(index), uv.getY(index)]
+    if (!coordinates.every(Number.isFinite)) {
+      throw new Error(`Scenery kit root ${name} has invalid texture coordinates.`)
+    }
+    if (coordinates.some((coordinate) => coordinate < -1e-5 || coordinate > 1 + 1e-5)) {
+      throw new Error(`Scenery kit root ${name} has texture coordinates outside the shared atlas.`)
+    }
+  }
+}
+
+function validateMaterial(material: THREE.MeshStandardMaterial, name: TemplateName): readonly THREE.Texture[] {
+  const { map, normalMap, roughnessMap, metalnessMap, aoMap } = material
+  if (!map || !normalMap || !roughnessMap || metalnessMap !== roughnessMap || aoMap !== roughnessMap) {
+    throw new Error(`Scenery kit root ${name} has invalid PBR texture bindings.`)
+  }
+  const textures = [map, normalMap, roughnessMap] as const
+  let sharedDimensions: string | undefined
+  for (const texture of textures) {
+    const image = texture.image as { width?: unknown; height?: unknown } | undefined
+    if (typeof image?.width !== 'number' || !Number.isInteger(image.width) || image.width <= 0
+      || typeof image.height !== 'number' || !Number.isInteger(image.height) || image.height <= 0) {
+      throw new Error(`Scenery kit root ${name} has an invalid decoded PBR atlas.`)
+    }
+    const dimensions = `${image.width}x${image.height}`
+    if (sharedDimensions && dimensions !== sharedDimensions) {
+      throw new Error(`Scenery kit root ${name} has mismatched PBR atlas dimensions.`)
+    }
+    sharedDimensions = dimensions
+  }
+  if (map.colorSpace !== THREE.SRGBColorSpace
+    || normalMap.colorSpace !== THREE.NoColorSpace || roughnessMap.colorSpace !== THREE.NoColorSpace) {
+    throw new Error(`Scenery kit root ${name} has invalid PBR texture colour spaces.`)
+  }
+  return textures
 }
 
 function validateTransform(root: THREE.Object3D, name: string): void {
