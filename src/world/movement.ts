@@ -3,8 +3,8 @@ import { heightAt, riverCenterAt, riverHalfWidthAt, WORLD_BOUNDS } from './terra
 
 export const MAX_FRAME_DELTA = 0.1
 const STEP_SECONDS = 1 / 60
-const WALK_SPEED = 5.2
-const SPRINT_SPEED = 8
+export const WALK_SPEED = 5.2
+export const SPRINT_SPEED = 8
 const MAX_SLOPE_RADIANS = 35 * Math.PI / 180
 
 export interface Explorer extends WorldPoint {

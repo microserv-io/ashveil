@@ -88,7 +88,8 @@ grounding share the grid's explicit triangle split and barycentric interpolation
 representative controller has a 0.72-unit radius, rejects movement above 35 degrees,
 advances in 1/60-second substeps and caps one rendered frame's movement time at 0.1
 seconds. Grounding must agree with the rendered triangles within 0.001 world units.
-These are slice tolerances for testing, not final character or world scale.
+These are slice tolerances for testing. The controllable explorer uses the committed
+`masculine-v3` body at its canonical 1.8-metre height; the world scale remains provisional.
 
 The runtime's single terrain material blends the existing meadow-grass, worn-earth and
 ash-ground albedo candidates through a 512-pixel paint-weight map. Road strokes have
@@ -102,9 +103,15 @@ visible source seams still require retouching before production use. Provenance,
 and the limitations of these colour-only maps are recorded in
 [`public/textures/first-zone/README.md`](../public/textures/first-zone/README.md).
 
-Desktop exploration uses camera-relative WASD or arrow-key movement, Shift to run,
-pointer drag to orbit and the wheel to zoom. Coarse-pointer devices receive a movement
-joystick and hold-to-run control while the canvas remains available for camera orbit.
+Desktop exploration uses W/S or the up/down arrows to move forward and backward, A/D or
+the left/right arrows to turn, Q/E to strafe and Shift to run. Keyboard turning retains
+the camera's orbit offset; pointer drag orbits the camera independently and the wheel
+zooms. Coarse-pointer devices retain camera-relative movement through a joystick and a
+hold-to-run control while the canvas remains available for camera orbit.
+The explorer keeps the existing 5.2-unit movement and 8-unit sprint speeds. Its verified
+procedural rig uses actual travelled distance, so both speeds read as running at different
+cadences and an obstructed explorer returns to idle. Backward and strafe movement reuse
+that forward locomotion pose; this bounded pass does not add directional clips.
 The temporary camera uses a 48-degree field of view, a 4.8–18-unit zoom range and a
 roughly 9–60-degree pitch range. A ray from the player toward the desired camera keeps it
 in front of terrain and scenery. Overview and return-to-refuge controls support review;
@@ -112,7 +119,7 @@ these bindings and values remain validation settings rather than final design de
 
 In development, the browser exposes `globalThis.ashveilWorld` for repeatable validation.
 Its controls can move, stop, reset or toggle overview, while its state reports position,
-nearest landmark, overview mode, camera position and facing, average frame time, the last
+explorer facing, nearest landmark, overview mode, camera position and facing, average frame time, the last
 240 raw frame times, draw calls, triangles and captured runtime errors. This diagnostic
 surface is review tooling, not a gameplay or networking API, and production preview
 builds do not expose it.
@@ -138,9 +145,14 @@ Building footprints, including porches, must fit the existing collision disks; a
 roots must fit the smallest shared radius of 1.1 metres, and orchard roots the 1.15-metre
 disk, while crowns may overhang. Tree footprint measurement includes geometry through
 1.0 metre above the ground datum and excludes the overhanging crown above that cutoff.
-Preserve authored positions, yaw, route clearance and all movement truth. Foundations
-extend below the placement plane to meet slopes; tree camera proxies exclude foliage.
-Secondary props remain procedural.
+Each tree placement derives a repeatable yaw, restrained colour tint, and independent
+height and horizontal scale from its stable solid ID. Horizontal X/Z scale remains
+uniform and is capped against the actual transformed geometry within that one-metre
+ground zone, so the authored collision disk remains conservative even when a shorter
+tree brings more source geometry into the measured zone. Preserve authored positions,
+building yaw, route clearance and all movement truth. Foundations extend below the
+placement plane to meet slopes; tree camera proxies exclude foliage. Secondary props
+remain procedural.
 
 Load and validate the kit before starting exploration, with visible loading and retry
 states. The loaded templates own the cached atlas textures and treat them as immutable;
