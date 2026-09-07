@@ -1,6 +1,6 @@
 # First-zone terrain build slice
 
-**Proposed production slice · Engine choice pending · Runtime not yet changed**
+**Three.js idea-validation slice · Runtime validation in progress**
 
 ## Objective
 
@@ -10,14 +10,13 @@ camera against useful ground, slopes and landmarks while expressing the chapter'
 existing journey from safety toward danger.
 
 This work starts a replacement zone because the current action-RPG demo is deprecated.
-Its code remains available as historical evidence until a replacement route exists, but
-its procedural dungeon, portal progression, elevated camera and demo entry point are not
-the foundation for this zone. No runtime route changes as part of this documentation
-slice.
+Its code remains available at `/legacy.html` as historical evidence, but its procedural
+dungeon, portal progression, elevated camera and runtime modules are not the foundation
+for this zone. The new Three.js terrain slice is the default route.
 
-Whether the replacement is a fresh Three.js route or a switch to another engine remains
-pending. Terrain implementation must wait for that choice rather than allowing a tool or
-existing entry point to settle it implicitly.
+Three.js was selected for this idea-validation slice so the team can test the authored
+terrain, movement and camera in the existing browser toolchain. That choice does not
+commit the final production MMORPG to a browser runtime or settle a later engine review.
 
 ## Source contracts
 
@@ -64,18 +63,59 @@ outcrops to create a place rather than a flat diagram. Required routes must rema
 comfortably traversable; cliffs, vegetation and structures can frame them without
 silently narrowing the travel contract.
 
+Ground materials should meet through soft, rounded brush transitions rather than hard
+geometric cuts. This is a visual treatment only: blending the road, living grass and ash
+does not change the authored route, river boundary or movement collision topology.
+
 ## Implementation boundaries
 
-- Establish a separate replacement route and asset registry after the engine decision.
-  Do not import the deprecated demo's scene, terrain generator, model preload or main
-  entry point to bootstrap the zone.
+- Keep the replacement route and its procedural placeholder scenery separate. Do not
+  import the deprecated demo's scene, terrain generator, model preload or main entry
+  point to bootstrap the zone.
 - Ground rendering and movement collision must derive from an agreed world-space terrain
   representation. Visual slopes, traversable surfaces and movement height must match.
 - Preserve clear seams between authored terrain data, rendering and movement queries so
   later authoritative simulation and networking work can adopt the zone without making
   presentation the source of gameplay truth.
+- The authored `world-data.ts`, terrain geometry/query code and movement rules remain
+  host-agnostic. The Three.js renderer, browser controls and HUD may depend on the browser
+  and presentation libraries; dependencies do not point back from world truth to them.
 - Use placeholder landmark massing where needed. This slice does not approve final
   buildings, vegetation, lighting, materials or environment assets.
+
+The validation map spans 220 by 180 world units on a five-unit height grid. Rendering and
+grounding share the grid's explicit triangle split and barycentric interpolation. The
+representative controller has a 0.72-unit radius, rejects movement above 35 degrees,
+advances in 1/60-second substeps and caps one rendered frame's movement time at 0.1
+seconds. Grounding must agree with the rendered triangles within 0.001 world units.
+These are slice tolerances for testing, not final character or world scale.
+
+The runtime's single terrain material blends the existing meadow-grass, worn-earth and
+ash-ground albedo candidates through a 512-pixel paint-weight map. Road strokes have
+rounded caps and feathered edges; bank earth softens the shoreline and ash fades in over
+the far bank. The paint affects presentation only and the terrain mesh remains the
+collision source. The albedos load as sRGB colour textures with mirrored wrapping at
+their review scales of 2, 2.5 and 2 metres per repeat.
+
+These generated candidates make material scale and colour contrast reviewable; their
+visible source seams still require retouching before production use. Provenance, prompts
+and the limitations of these colour-only maps are recorded in
+[`public/textures/first-zone/README.md`](../public/textures/first-zone/README.md).
+
+Desktop exploration uses camera-relative WASD or arrow-key movement, Shift to run,
+pointer drag to orbit and the wheel to zoom. Coarse-pointer devices receive a movement
+joystick and hold-to-run control while the canvas remains available for camera orbit.
+The temporary camera uses a 48-degree field of view, a 4.8–18-unit zoom range and a
+roughly 9–60-degree pitch range. A ray from the player toward the desired camera keeps it
+in front of terrain and scenery. Overview and return-to-refuge controls support review;
+these bindings and values remain validation settings rather than final design decisions.
+
+In development, the browser exposes `globalThis.ashveilWorld` for repeatable validation.
+Its controls can move, stop, reset or toggle overview, while its state reports position,
+nearest landmark, overview mode, camera position and facing, average frame time, the last
+240 raw frame times, draw calls, triangles and captured runtime errors. This diagnostic
+surface is review tooling, not a gameplay or networking API, and production preview
+builds do not expose it.
 
 ## Non-goals
 
@@ -84,18 +124,18 @@ silently narrowing the travel contract.
 - Networking, persistence, authoritative zone handoff or multiplayer population rules.
 - Fog-of-war behaviour, ash restoration, final world scale or boundaries beyond this
   opening route.
-- Final camera tuning, controls, performance budgets, art bible or engine selection.
-- Removing the deprecated demo before the replacement route is available.
+- Final camera tuning, control bindings, performance budgets, art bible or production
+  engine selection.
+- Removing the deprecated demo as part of this validation slice.
 
-## Acceptance checks for the implementation
+## Acceptance checks
 
 - The refuge, wagon road, fields, each optional branch, Lower Road rally and waystation
   descent form contiguous walkable routes, and each optional branch reconnects without
   blocking the main path.
 - A representative player controller remains grounded on flats, gentle slopes, terraces
-  and transitions. Before implementation, record the selected runtime's maximum walkable
-  slope and ground-clearance tolerance, then prove with automated movement tests that the
-  controller stays within those limits rather than hovering or sinking.
+  and transitions. Automated movement tests prove it stays within the recorded 35-degree
+  slope and 0.001-unit ground-clearance tolerances rather than hovering or sinking.
 - Rendered ground and movement collision agree at sampled points along every required
   route, including slope changes and the waystation descent, within the recorded
   ground-clearance tolerance.
@@ -108,11 +148,13 @@ silently narrowing the travel contract.
 - An overview inspection confirms the refuge and service entrance occupy the same bank,
   the broken crossing does not span the river, optional branches reconnect, and ash is
   visible across the water. The concept panorama is not used as a pixel-exact map.
-- The replacement route loads in the selected engine's actual runtime through its own
-  entry path with no dependency on the deprecated demo scene, terrain generator, model
-  preload or portal flow.
+- The replacement route loads in Three.js through its own browser entry path with no
+  dependency on the deprecated demo scene, terrain generator, model preload or portal
+  flow.
 - Captured runtime verification records the traversed route, visible/collision agreement
-  and runtime errors. Use an actual browser when the selected runtime targets the browser;
-  otherwise use the native editor or an exported native build. Performance evidence
-  measures the replacement route itself; results from the deprecated demo harness do not
-  satisfy this check.
+  and runtime errors in an actual browser. Performance evidence measures the replacement
+  route itself; results from the deprecated demo harness do not satisfy this check.
+
+Automated terrain and movement checks may land before the visual review is complete.
+Do not treat this document or a successful legacy performance run as evidence that the
+new route has passed browser, camera, touch or performance validation.

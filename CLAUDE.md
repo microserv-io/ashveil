@@ -8,11 +8,12 @@
 
 # Ashveil
 
-Ashveil's product direction is now an MMORPG. The repository still contains the
-earlier isometric action-RPG demo, which is deprecated. Preserve it as historical
-evidence until a replacement route exists, but do not use its loop, camera, procedural
-terrain or entry point as the foundation for new MMORPG zones. The proposed first-zone
-replacement is specified in `docs/first-zone-terrain.md`; its engine choice is pending.
+Ashveil's product direction is now an MMORPG. The default browser route is a fresh
+Three.js idea-validation slice for the first authored zone. The earlier isometric
+action-RPG demo is deprecated and remains at `/legacy.html` as historical evidence; do
+not use its loop, camera, procedural terrain or runtime modules as the foundation for
+new MMORPG zones. The slice contract is in `docs/first-zone-terrain.md`. Using Three.js
+for this slice does not settle the final production engine.
 
 Stack: TypeScript (ESM, `strict`) with Three.js for rendering, Vite, Vitest, and a
 headless CLI harness. No UI framework; the HUD is plain DOM with Tailwind utilities.
@@ -23,6 +24,7 @@ Small dependency set on purpose.
 | Path | What it is |
 |---|---|
 | `src/sim/` | **The game. Deterministic, host-agnostic, the source of truth.** Has its own `CLAUDE.md`: read it before changing anything here. |
+| `src/world/` | The first-zone validation slice. `world-data.ts`, `terrain.ts` and `movement.ts` are host-agnostic world truth; browser rendering, controls and HUD live beside them but depend inward on those pure modules. |
 | `src/session/` | Characters, persistence, the authoritative session. Owns what outlives an area. |
 | `src/net/` | Transport interface and wire protocol. Loopback today. No gameplay. |
 | `src/render/` | Three.js scene, models, effects, screen overlay, and the input layer (actions, device profiles, gamepad). Reads sim state, never mutates it. `models.ts` loads the committed body and fetched dungeon kit, `rig.ts` owns pose precedence, `riginput.ts` projects sim state into the procedural-motion seam, `profiles/` describes fitted skeletons, `terrain.ts` builds the dungeon, and `actorview.ts` builds one body. |
@@ -39,8 +41,9 @@ Small dependency set on purpose.
 
 ## Commands
 
-- `npm run dev` fetches the art if missing, then plays it at http://localhost:5273.
-  `?seed=7` reproduces an exact run. `npm run assets` fetches the models on their own.
+- `npm run dev` serves the first-zone slice at http://100.103.10.11:5300. The deprecated
+  action-RPG demo remains at http://100.103.10.11:5300/legacy.html. `npm run assets`
+  fetches its models on its own.
 - `npm test` runs Vitest. Prefer one file while iterating: `npx vitest run tests/loop.test.ts`.
 - `npm run typecheck` and `npm run build` are the other two gates. `build` fetches the
   art too, so a `dist/` is always a playable one.
@@ -50,8 +53,8 @@ Small dependency set on purpose.
 - `npm run sim -- trace --seed 7 --every 2` prints a second-by-second readout.
 - `npm run gate` is typecheck, tests and build. `npm run gate:balance` adds a sweep,
   `npm run gate:perf` adds the frame budget.
-- `npm run perf` measures the frame against the 60fps budget in real Chrome, and
-  `npm run perf -- --record` makes the current numbers the baseline.
+- `npm run perf` measures the deprecated demo against its 60fps baseline in real Chrome.
+  It is not performance evidence for the first-zone route.
 - `npm run spike:dev` serves the Deck shell diagnostics on :5274.
 - `npm run art:fit -- --input <mesh> --family humanoid --body <name> [--helpers]` puts
   one body through the asset path into `public/bodies/<name>/`, and fails closed with
@@ -65,8 +68,10 @@ Small dependency set on purpose.
   `npm run site:test` validates content and both supported base paths, and
   `npm run site:build` writes the standalone public artifact to `website/dist/`.
 
-In dev the browser exposes `globalThis.ashveil` as `{ sim, host, view, controls }`,
-which is the fastest way to poke at a live game from the console.
+On the legacy route, dev exposes `globalThis.ashveil` as `{ sim, host, view, controls }`.
+In dev, the first-zone route exposes `globalThis.ashveilWorld` with repeatable movement,
+reset and overview controls plus diagnostic state for browser validation. Production
+preview builds do not expose it.
 
 ## Default task workflow
 
@@ -96,6 +101,12 @@ say why in the message.
 - **`src/sim/` is host-agnostic.** No DOM, no `three`, no wall-clock, no network, and
   no imports from `render/`, `ui/`, `net/` or `session/`. It must run unchanged in
   Node and the browser.
+- **First-zone truth is host-agnostic.** `src/world/world-data.ts`, `terrain.ts` and
+  `movement.ts` do not import Three.js, browser APIs or presentation modules. Rendering
+  and browser input consume those modules; they never become terrain or collision truth.
+- **Soften terrain transitions.** Blend ground materials with broad, rounded brush shapes;
+  avoid hard cut lines between grass, road earth and ash unless the world calls for a
+  genuinely sharp physical boundary.
 - **Determinism.** Fixed 60 Hz tick (`DT` in `src/sim/types.ts`). All randomness goes
   through `Rng` (`src/sim/rng.ts`). Never `Math.random`, `Date.now`, or
   `performance.now` in sim logic. Same seed, same run.

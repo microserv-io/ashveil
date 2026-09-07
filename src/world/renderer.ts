@@ -1,0 +1,161 @@
+import * as THREE from 'three'
+import { buildScenery } from './scenery'
+import { createTerrainGeometryData, heightAt, riverCenterAt, riverHalfWidthAt, WORLD_BOUNDS } from './terrain'
+import { LANDMARKS, PATHS, SOLIDS, type WorldPoint } from './world-data'
+import type { Explorer } from './movement'
+import { createWorldMaterial } from './world-material'
+
+function buildTerrain(): THREE.Mesh {
+  const data = createTerrainGeometryData()
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(data.vertices.flatMap((vertex) => [vertex.x, vertex.y, vertex.z]), 3))
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(data.colors.flat(), 3))
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(data.vertices.flatMap((vertex) => [vertex.x / 2, vertex.z / 2]), 2))
+  geometry.setAttribute('paintUv', new THREE.Float32BufferAttribute(data.vertices.flatMap((vertex) => [
+    (vertex.x - WORLD_BOUNDS.minX) / (WORLD_BOUNDS.maxX - WORLD_BOUNDS.minX),
+    (vertex.z - WORLD_BOUNDS.minZ) / (WORLD_BOUNDS.maxZ - WORLD_BOUNDS.minZ),
+  ]), 2))
+  geometry.setIndex([...data.indices])
+  geometry.computeVertexNormals()
+  return new THREE.Mesh(geometry, createWorldMaterial(PATHS))
+}
+
+function buildRiver(): THREE.Mesh {
+  const positions: number[] = []
+  const indices: number[] = []
+  for (let z = -90, row = 0; z <= 90; z += 5, row += 1) {
+    const center = riverCenterAt(z)
+    const half = riverHalfWidthAt(z) - 0.35
+    positions.push(center - half, -0.55, z, center + half, -0.55, z)
+    if (row > 0) {
+      const start = row * 2
+      indices.push(start - 2, start, start - 1, start, start + 1, start - 1)
+    }
+  }
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+  geometry.setIndex(indices)
+  geometry.computeVertexNormals()
+  return new THREE.Mesh(geometry, new THREE.MeshPhysicalMaterial({ color: 0x5b8490, roughness: 0.28, metalness: 0.04, transparent: true, opacity: 0.84 }))
+}
+
+function buildExplorer(): THREE.Group {
+  const group = new THREE.Group()
+  const cloak = new THREE.Mesh(new THREE.ConeGeometry(0.68, 1.65, 7), new THREE.MeshStandardMaterial({ color: 0x284f4b, roughness: 0.9 }))
+  cloak.position.y = 0.88
+  const shoulders = new THREE.Mesh(new THREE.SphereGeometry(0.48, 10, 7), new THREE.MeshStandardMaterial({ color: 0x426864, roughness: 0.85 }))
+  shoulders.scale.y = 0.58
+  shoulders.position.y = 1.42
+  const hood = new THREE.Mesh(new THREE.SphereGeometry(0.3, 10, 8), new THREE.MeshStandardMaterial({ color: 0xd7cfb5, roughness: 1 }))
+  hood.position.set(0, 1.82, 0.05)
+  group.add(cloak, shoulders, hood)
+  group.traverse((object) => { if (object instanceof THREE.Mesh) object.castShadow = true })
+  return group
+}
+
+export class WorldView {
+  readonly renderer: THREE.WebGLRenderer
+  readonly scene = new THREE.Scene()
+  readonly camera = new THREE.PerspectiveCamera(48, 1, 0.1, 600)
+  private readonly terrain = buildTerrain()
+  private readonly scenery: THREE.Group
+  private readonly explorer = buildExplorer()
+  private readonly raycaster = new THREE.Raycaster()
+  private readonly cameraTarget = new THREE.Vector3()
+  private yaw = 0.45
+  private pitch = 0.42
+  private distance = 11.5
+  private overview = false
+
+  constructor(host: HTMLElement) {
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' })
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping
+    this.renderer.toneMappingExposure = 0.96
+    this.renderer.shadowMap.enabled = true
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    host.prepend(this.renderer.domElement)
+    this.scene.background = new THREE.Color(0xb7aa8e)
+    this.scene.fog = new THREE.FogExp2(0xb7aa8e, 0.003)
+    this.terrain.receiveShadow = true
+    this.scene.add(this.terrain, buildRiver(), this.explorer)
+    this.scenery = buildScenery(this.scene, { heightAt, landmarks: LANDMARKS, paths: PATHS, solids: SOLIDS })
+    this.scene.add(new THREE.HemisphereLight(0xf5e8c9, 0x4b5042, 1.55))
+    const sun = new THREE.DirectionalLight(0xffe5b7, 2.8)
+    sun.position.set(-60, 85, 25)
+    sun.castShadow = true
+    sun.shadow.mapSize.set(1024, 1024)
+    Object.assign(sun.shadow.camera, { left: -115, right: 115, top: 95, bottom: -95, near: 10, far: 220 })
+    this.scene.add(sun)
+    this.resize()
+  }
+
+  get canvas(): HTMLCanvasElement { return this.renderer.domElement }
+  get cameraYaw(): number { return this.yaw }
+
+  setExplorer(explorer: Explorer): void {
+    this.explorer.position.set(explorer.x, explorer.y, explorer.z)
+    this.explorer.rotation.y = explorer.facing
+  }
+
+  adjustOrbit(x: number, y: number, zoom: number): void {
+    if (this.overview) return
+    this.yaw -= x * 0.005
+    this.pitch = THREE.MathUtils.clamp(this.pitch + y * 0.004, 0.16, 1.05)
+    this.distance = THREE.MathUtils.clamp(this.distance + zoom, 4.8, 18)
+  }
+
+  setOverview(active: boolean): void { this.overview = active; (this.scene.fog as THREE.FogExp2).density = active ? 0.0013 : 0.003 }
+  resetCamera(): void { this.yaw = 0.45; this.pitch = 0.42; this.distance = 11.5 }
+
+  updateCamera(explorer: Explorer, delta: number): void {
+    if (this.overview) {
+      this.camera.position.lerp(new THREE.Vector3(-18, 175, 96), Math.min(1, delta * 3))
+      this.camera.lookAt(-28, 0, -18)
+      return
+    }
+    this.cameraTarget.set(explorer.x, explorer.y + 1.35, explorer.z)
+    const horizontal = Math.cos(this.pitch) * this.distance
+    const desired = new THREE.Vector3(
+      explorer.x + Math.sin(this.yaw) * horizontal,
+      explorer.y + 1.35 + Math.sin(this.pitch) * this.distance,
+      explorer.z + Math.cos(this.yaw) * horizontal,
+    )
+    const direction = desired.clone().sub(this.cameraTarget)
+    const desiredDistance = direction.length()
+    this.raycaster.set(this.cameraTarget, direction.normalize())
+    this.raycaster.far = desiredDistance
+    const hit = this.raycaster.intersectObjects([this.terrain, this.scenery], true)[0]
+    if (hit) desired.copy(this.cameraTarget).add(direction.multiplyScalar(Math.max(1.8, hit.distance - 0.45)))
+    desired.y = Math.max(desired.y, heightAt(desired.x, desired.z) + 0.85)
+    this.camera.position.lerp(desired, Math.min(1, delta * 12))
+    this.camera.lookAt(this.cameraTarget)
+  }
+
+  resize(): void {
+    const width = window.innerWidth
+    const height = window.innerHeight
+    this.camera.aspect = width / height
+    this.camera.updateProjectionMatrix()
+    this.renderer.setSize(width, height, false)
+  }
+
+  render(): void { this.renderer.render(this.scene, this.camera) }
+
+  diagnostics(): { camera: { x: number; y: number; z: number; yaw: number }; forward: WorldPoint; drawCalls: number; triangles: number } {
+    return {
+      camera: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z, yaw: this.yaw },
+      forward: this.cameraForward(),
+      drawCalls: this.renderer.info.render.calls,
+      triangles: this.renderer.info.render.triangles,
+    }
+  }
+
+  cameraForward(): WorldPoint {
+    const forward = new THREE.Vector3()
+    this.camera.getWorldDirection(forward)
+    const length = Math.hypot(forward.x, forward.z) || 1
+    return { x: forward.x / length, z: forward.z / length }
+  }
+}

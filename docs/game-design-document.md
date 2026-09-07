@@ -14,6 +14,11 @@ Architecture and implementation details live in
 [architecture.md](https://github.com/microserv-io/ashveil/blob/main/docs/architecture.md).
 This document owns the intended player experience.
 
+The current default browser route is a Three.js idea-validation slice for the opening
+river valley. It tests terrain, movement and the decided third-person camera direction;
+it is not evidence that the quests, multiplayer systems or full MMORPG are implemented,
+and it does not settle the final production engine.
+
 ## How to read and maintain this document
 
 | Status | Meaning | Implementation rule |
@@ -150,10 +155,10 @@ These are precedents for research, not blanket adoption.
   bundled outings let players share in ordinary local life without redundant trips
   back to the same creatures. Early Access builds toward this First Season journey
   rather than presenting a later-season reset.
-- A proposed [first-zone terrain build slice](https://github.com/microserv-io/ashveil/blob/main/docs/first-zone-terrain.md)
-  translates that chapter's existing geography into a connected refuge, road,
-  optional local branches and Lower Road approach. It is a production plan rather
-  than implemented content; its engine choice remains open.
+- The [first-zone terrain build slice](https://github.com/microserv-io/ashveil/blob/main/docs/first-zone-terrain.md)
+  is implementing that chapter's existing geography as a connected refuge, road,
+  optional local branches and Lower Road approach. Three.js is the runtime for this
+  idea-validation pass; the final production engine remains open.
 - Exploration reveals places, stories and shared activity while making the boundary
   between life and ash visually meaningful.
 - Classic hand-painted animated fantasy is an emotional reference for wonder,

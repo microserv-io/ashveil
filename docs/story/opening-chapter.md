@@ -12,9 +12,10 @@ rescue those still missing, and discover a reason to investigate further. The
 chapter should resolve its immediate rescue story without pretending to explain
 the whole ash threat.
 
-The proposed [first-zone terrain build slice](https://github.com/microserv-io/ashveil/blob/main/docs/first-zone-terrain.md)
-turns the travel contract below into connected terrain for review. It does not
-implement these quests or settle their encounters, playable scale or staging.
+The [first-zone terrain build slice](https://github.com/microserv-io/ashveil/blob/main/docs/first-zone-terrain.md)
+is implementing this travel contract as connected Three.js terrain for review. It does
+not implement these quests or settle their encounters, production engine, playable
+scale or staging.
 
 ## The story
 

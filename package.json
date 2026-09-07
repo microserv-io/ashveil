@@ -4,7 +4,7 @@
   "description": "An isometric action-RPG core loop: pull a pack, spend skills, loot, get stronger, go deeper.",
   "license": "MIT",
   "scripts": {
-    "dev": "npm run assets && vite",
+    "dev": "vite",
     "build": "npm run assets && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
