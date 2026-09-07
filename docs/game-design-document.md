@@ -15,7 +15,7 @@ Architecture and implementation details live in
 This document owns the intended player experience.
 
 The current default browser route is a Three.js idea-validation slice for the opening
-river valley. It tests terrain, movement and the decided third-person camera direction;
+river valley. It tests terrain, movement, environment art and the decided third-person camera direction;
 it is not evidence that the quests, multiplayer systems or full MMORPG are implemented,
 and it does not settle the final production engine.
 

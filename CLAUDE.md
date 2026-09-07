@@ -107,6 +107,9 @@ say why in the message.
 - **Soften terrain transitions.** Blend ground materials with broad, rounded brush shapes;
   avoid hard cut lines between grass, road earth and ash unless the world calls for a
   genuinely sharp physical boundary.
+- **Model zone buildings and trees in Blender.** Use the actual masculine character and
+  existing concept art as style references. Keep reproducible generators and runtime GLBs;
+  retain editable `.blend` files in the documented local output directory.
 - **Determinism.** Fixed 60 Hz tick (`DT` in `src/sim/types.ts`). All randomness goes
   through `Rng` (`src/sim/rng.ts`). Never `Math.random`, `Date.now`, or
   `performance.now` in sim logic. Same seed, same run.

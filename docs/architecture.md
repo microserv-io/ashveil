@@ -105,6 +105,12 @@ tolerances and outstanding validation are recorded in
 [first-zone-terrain.md](first-zone-terrain.md). Three.js supports this validation pass;
 it does not settle the final production engine.
 
+The zone loads its Blender scenery kit independently of the legacy model registry.
+Four vertex-coloured templates become instanced buildings and trees; authored positions
+and collision disks remain in `world-data.ts`. Tree camera proxies exclude foliage so
+overhanging crowns do not collapse the orbit distance. The kit's Blender generator and
+asset manifest record the source reference, export frame and geometry budgets.
+
 Three kinds of place, with different rules, because they answer different questions:
 
 | | geometry | combat | who is there | entry | cleared? |

@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { disposeSceneryGeometry, SceneryGeometry } from './scenery-geometry'
+import { buildSceneryKitInstances, buildTreeCameraProxies, type SceneryKit } from './scenery-kit'
 import {
-  BUILDING_STYLES,
   routeIsClear,
   type SceneryLandmark,
   type SceneryPath,
@@ -14,83 +14,48 @@ export interface SceneryOptions {
   readonly landmarks: readonly SceneryLandmark[]
   readonly paths: readonly SceneryPath[]
   readonly solids: readonly ScenerySolid[]
+  readonly kit: SceneryKit
 }
 
 interface AnchoredProp extends SceneryPoint {
   readonly radius: number
 }
 
-export function buildScenery(scene: THREE.Scene, options: SceneryOptions): THREE.Group {
+export interface BuiltScenery {
+  readonly root: THREE.Group
+  readonly cameraOccluders: readonly THREE.Object3D[]
+  readonly treeProxies: THREE.Group
+}
+
+export function buildScenery(scene: THREE.Scene, options: SceneryOptions): BuiltScenery {
   const geometry = new SceneryGeometry()
   const solids = new Map(options.solids.map((solid) => [solid.id, solid]))
   const landmarks = new Map(options.landmarks.map((landmark) => [landmark.id, landmark]))
 
-  for (const building of BUILDING_STYLES) {
-    const solid = solids.get(building.id)
-    if (!solid) continue
-    addCottage(geometry, options.heightAt, solid, building.yaw, building.kind)
-  }
-
   const wagon = solids.get('wagon')
   if (wagon) addWagon(geometry, options.heightAt, wagon)
-  addOrchard(geometry, options, solids)
   addFarmFields(geometry, options)
-  addGrove(geometry, options, solids)
-  addWildTrees(geometry, options, solids)
   addWaystation(geometry, options.heightAt, solids)
   addFences(geometry, options)
   addRocks(geometry, options, solids)
   addRallyMarker(geometry, options.heightAt, landmarks.get('rally'))
 
-  const group = geometry.build()
-  scene.add(group)
-  return group
+  const procedural = geometry.build()
+  const instances = buildSceneryKitInstances(options.kit, options)
+  const root = new THREE.Group()
+  root.name = 'scenery'
+  root.add(procedural, instances)
+  scene.add(root)
+  const treeProxies = buildTreeCameraProxies(options)
+  const buildings = instances.children.filter((object) =>
+    object.name === 'kit-refuge_hall' || object.name === 'kit-cottage')
+  return { root, treeProxies, cameraOccluders: [procedural, ...buildings, treeProxies] }
 }
 
-export function disposeScenery(group: THREE.Group): void {
-  group.removeFromParent()
-  disposeSceneryGeometry(group)
-}
-
-function addCottage(
-  geometry: SceneryGeometry,
-  heightAt: SceneryOptions['heightAt'],
-  prop: AnchoredProp,
-  yaw: number,
-  kind: string,
-): void {
-  const y = heightAt(prop.x, prop.z)
-  const scale = Math.max(0.72, prop.radius / 5)
-  const width = prop.radius * (kind === 'hall' ? 1.32 : 1.24)
-  const depth = prop.radius * (kind === 'barn' ? 1.08 : 0.92)
-  const wallHeight = (kind === 'hall' ? 5 : 4.2) * scale
-
-  localBox(geometry, 'limestone', prop, y, yaw, 0, 0.35 * scale, 0, width + 0.5, 0.7 * scale, depth + 0.5)
-  localBox(geometry, 'ivory', prop, y, yaw, 0, 0.8 * scale + wallHeight * 0.5, 0, width, wallHeight, depth)
-
-  for (const x of [-width * 0.42, 0, width * 0.42]) {
-    localBox(geometry, 'timber', prop, y, yaw, x, wallHeight * 0.53, -depth * 0.505, 0.22 * scale, wallHeight, 0.18 * scale)
-  }
-  localBox(geometry, 'timber', prop, y, yaw, 0, wallHeight * 0.72, -depth * 0.52, width, 0.2 * scale, 0.18 * scale)
-  localBox(geometry, 'timber', prop, y, yaw, 0, wallHeight * 0.38, -depth * 0.53, width * 0.92, 0.16 * scale, 0.16 * scale, 0, 0, 0.42)
-  localBox(geometry, 'timber', prop, y, yaw, 0, wallHeight * 0.38, -depth * 0.535, width * 0.92, 0.16 * scale, 0.16 * scale, 0, 0, -0.42)
-
-  const roofY = wallHeight + 1.25 * scale
-  localBox(geometry, 'terracotta', prop, y, yaw, 0, roofY, depth * 0.27, width + 0.9 * scale, 0.32 * scale, depth * 0.64, -0.54)
-  localBox(geometry, 'terracottaLight', prop, y, yaw, 0, roofY, -depth * 0.27, width + 0.9 * scale, 0.32 * scale, depth * 0.64, 0.54)
-  localBox(geometry, 'timber', prop, y, yaw, -width * 0.3, wallHeight * 0.46, -depth * 0.53, 1.25 * scale, 2.5 * scale, 0.25 * scale)
-  localBox(geometry, 'teal', prop, y, yaw, width * 0.25, wallHeight * 0.55, -depth * 0.54, 1.3 * scale, 1.2 * scale, 0.18 * scale)
-  localBox(geometry, 'timber', prop, y, yaw, 0, wallHeight * 0.58, depth * 0.51, width * 0.92, 0.18 * scale, 0.16 * scale)
-  for (const x of [-width * 0.3, width * 0.3]) {
-    localBox(geometry, 'teal', prop, y, yaw, x, wallHeight * 0.56, depth * 0.53, 1.1 * scale, 1.05 * scale, 0.16 * scale)
-  }
-
-  if (kind === 'hall' || kind === 'farmhouse') {
-    localBox(geometry, 'limestone', prop, y, yaw, width * 0.28, wallHeight + 1.25 * scale, 0, 0.8 * scale, 3.2 * scale, 0.8 * scale)
-  }
-  if (kind === 'workshop') {
-    localBox(geometry, 'teal', prop, y, yaw, 0, wallHeight * 0.75, -depth * 0.77, width * 0.75, 0.14 * scale, depth * 0.55, -0.25)
-  }
+export function disposeScenery(scenery: BuiltScenery): void {
+  scenery.root.removeFromParent()
+  disposeSceneryGeometry(scenery.root)
+  disposeSceneryGeometry(scenery.treeProxies)
 }
 
 function addWagon(
@@ -116,58 +81,6 @@ function addWagon(
   localBox(geometry, 'canvas', prop, y, yaw, 0, 3.75, 0, 3.65, 0.18, 2.55)
 }
 
-function addOrchard(
-  geometry: SceneryGeometry,
-  options: SceneryOptions,
-  solids: ReadonlyMap<string, ScenerySolid>,
-): void {
-  for (const tree of matchingSolids(solids, 'orchard-tree-')) {
-    addTree(geometry, options.heightAt, tree, tree.id, false, true)
-  }
-}
-
-function addGrove(
-  geometry: SceneryGeometry,
-  options: SceneryOptions,
-  solids: ReadonlyMap<string, ScenerySolid>,
-): void {
-  for (const tree of matchingSolids(solids, 'grove-tree-')) {
-    addTree(geometry, options.heightAt, tree, tree.id, true, false)
-  }
-}
-
-function addWildTrees(
-  geometry: SceneryGeometry,
-  options: SceneryOptions,
-  solids: ReadonlyMap<string, ScenerySolid>,
-): void {
-  matchingSolids(solids, 'wild-tree-').forEach((tree, index) => {
-    if (!routeIsClear(tree, 2.3, options.paths)) return
-    addTree(geometry, options.heightAt, tree, tree.id, index % 3 === 0, false)
-  })
-}
-
-function addTree(
-  geometry: SceneryGeometry,
-  heightAt: SceneryOptions['heightAt'],
-  prop: AnchoredProp,
-  id: string,
-  large: boolean,
-  fruiting: boolean,
-): void {
-  const variation = stableVariation(id)
-  const y = heightAt(prop.x, prop.z)
-  const trunkHeight = (large ? 5.2 : 3.7) * (0.9 + variation * 0.2)
-  const crownRadius = (large ? 3.8 : 2.5) * (0.9 + variation * 0.22)
-  geometry.cylinder('timber', prop.x, y + trunkHeight * 0.5, prop.z, prop.radius * 0.55, prop.radius * 0.8, trunkHeight, 7)
-  geometry.crown('leafDark', prop.x - crownRadius * 0.32, y + trunkHeight + crownRadius * 0.2, prop.z, crownRadius * 0.78)
-  geometry.crown('leafMid', prop.x + crownRadius * 0.3, y + trunkHeight + crownRadius * 0.32, prop.z + crownRadius * 0.12, crownRadius * 0.72)
-  geometry.crown('leafLight', prop.x, y + trunkHeight + crownRadius * 0.58, prop.z - crownRadius * 0.24, crownRadius * 0.62)
-  if (fruiting) {
-    geometry.crown('fruit', prop.x - 0.8, y + trunkHeight + 0.1, prop.z - crownRadius * 0.56, 0.18, 1)
-    geometry.crown('fruit', prop.x + 0.5, y + trunkHeight + 0.55, prop.z - crownRadius * 0.6, 0.16, 1)
-  }
-}
 
 function addFarmFields(geometry: SceneryGeometry, options: SceneryOptions): void {
   for (let row = 0; row < 7; row += 1) {

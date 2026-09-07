@@ -1,5 +1,6 @@
 import * as THREE from 'three'
-import { buildScenery } from './scenery'
+import { buildScenery, type BuiltScenery } from './scenery'
+import type { SceneryKit } from './scenery-kit'
 import { createTerrainGeometryData, heightAt, riverCenterAt, riverHalfWidthAt, WORLD_BOUNDS } from './terrain'
 import { LANDMARKS, PATHS, SOLIDS, type WorldPoint } from './world-data'
 import type { Explorer } from './movement'
@@ -58,7 +59,7 @@ export class WorldView {
   readonly scene = new THREE.Scene()
   readonly camera = new THREE.PerspectiveCamera(48, 1, 0.1, 600)
   private readonly terrain = buildTerrain()
-  private readonly scenery: THREE.Group
+  private readonly scenery: BuiltScenery
   private readonly explorer = buildExplorer()
   private readonly raycaster = new THREE.Raycaster()
   private readonly cameraTarget = new THREE.Vector3()
@@ -67,7 +68,7 @@ export class WorldView {
   private distance = 11.5
   private overview = false
 
-  constructor(host: HTMLElement) {
+  constructor(host: HTMLElement, kit: SceneryKit) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' })
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
@@ -80,7 +81,7 @@ export class WorldView {
     this.scene.fog = new THREE.FogExp2(0xb7aa8e, 0.003)
     this.terrain.receiveShadow = true
     this.scene.add(this.terrain, buildRiver(), this.explorer)
-    this.scenery = buildScenery(this.scene, { heightAt, landmarks: LANDMARKS, paths: PATHS, solids: SOLIDS })
+    this.scenery = buildScenery(this.scene, { heightAt, landmarks: LANDMARKS, paths: PATHS, solids: SOLIDS, kit })
     this.scene.add(new THREE.HemisphereLight(0xf5e8c9, 0x4b5042, 1.55))
     const sun = new THREE.DirectionalLight(0xffe5b7, 2.8)
     sun.position.set(-60, 85, 25)
@@ -126,7 +127,7 @@ export class WorldView {
     const desiredDistance = direction.length()
     this.raycaster.set(this.cameraTarget, direction.normalize())
     this.raycaster.far = desiredDistance
-    const hit = this.raycaster.intersectObjects([this.terrain, this.scenery], true)[0]
+    const hit = this.raycaster.intersectObjects([this.terrain, ...this.scenery.cameraOccluders], true)[0]
     if (hit) desired.copy(this.cameraTarget).add(direction.multiplyScalar(Math.max(1.8, hit.distance - 0.45)))
     desired.y = Math.max(desired.y, heightAt(desired.x, desired.z) + 0.85)
     this.camera.position.lerp(desired, Math.min(1, delta * 12))
@@ -134,11 +135,11 @@ export class WorldView {
   }
 
   resize(): void {
-    const width = window.innerWidth
-    const height = window.innerHeight
+    const width = document.documentElement.clientWidth
+    const height = document.documentElement.clientHeight
     this.camera.aspect = width / height
     this.camera.updateProjectionMatrix()
-    this.renderer.setSize(width, height, false)
+    this.renderer.setSize(width, height)
   }
 
   render(): void { this.renderer.render(this.scene, this.camera) }

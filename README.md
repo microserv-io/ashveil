@@ -13,6 +13,12 @@ chapter's connected river-valley geography. It tests authored terrain, movement 
 freely controlled third-person camera; it is not a commitment to the final production
 engine or an implementation of the full MMORPG.
 
+The environment pass uses Blender-authored buildings and trees guided by the
+[character-and-village style reference](docs/art-pipeline/concepts/opening-chapter/environment-kit.png).
+The reference sets an art direction; it is not a screenshot of the playable zone.
+See the [Blender kit instructions](scripts/art/scenery/README.md) for the editable
+source, generator and exported models.
+
 This repository still contains the earlier isometric action-RPG demo, which is now
 deprecated and available at `/legacy.html`. Its loop, camera, procedural dungeon and
 runtime modules are not the foundation for the new zone. See the

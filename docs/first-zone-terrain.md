@@ -1,6 +1,6 @@
 # First-zone terrain build slice
 
-**Three.js idea-validation slice · Runtime validation in progress**
+**Three.js idea-validation slice · Playable Blender environment pass**
 
 ## Objective
 
@@ -69,7 +69,7 @@ does not change the authored route, river boundary or movement collision topolog
 
 ## Implementation boundaries
 
-- Keep the replacement route and its procedural placeholder scenery separate. Do not
+- Keep the replacement route and its environment assets separate. Do not
   import the deprecated demo's scene, terrain generator, model preload or main entry
   point to bootstrap the zone.
 - Ground rendering and movement collision must derive from an agreed world-space terrain
@@ -80,8 +80,8 @@ does not change the authored route, river boundary or movement collision topolog
 - The authored `world-data.ts`, terrain geometry/query code and movement rules remain
   host-agnostic. The Three.js renderer, browser controls and HUD may depend on the browser
   and presentation libraries; dependencies do not point back from world truth to them.
-- Use placeholder landmark massing where needed. This slice does not approve final
-  buildings, vegetation, lighting, materials or environment assets.
+- Use placeholder landmark massing where needed alongside the Blender building and tree
+  kit. This slice does not approve final buildings, vegetation, lighting or materials.
 
 The validation map spans 220 by 180 world units on a five-unit height grid. Rendering and
 grounding share the grid's explicit triangle split and barycentric interpolation. The
@@ -116,6 +116,32 @@ nearest landmark, overview mode, camera position and facing, average frame time,
 240 raw frame times, draw calls, triangles and captured runtime errors. This diagnostic
 surface is review tooling, not a gameplay or networking API, and production preview
 builds do not expose it.
+
+## Blender environment pass
+
+The next environment pass replaces the six building and 33 tree placeholders with four
+Blender-authored templates: a refuge hall, cottage, mature alder and orchard tree.
+The [environment reference](art-pipeline/concepts/opening-chapter/environment-kit.png)
+combines a Blender render of the actual `masculine-v3` character with the existing village
+concept art. It establishes human scale, softened stonework, structural timber,
+terracotta tile courses, teal cloth and irregular branching foliage. It is an art target,
+not an in-game screenshot. The character remains a scale reference for this pass.
+
+Export the templates as one GLB with a joined, vertex-coloured mesh per template for
+instanced rendering. Retain a reproducible Blender generator and an editable local
+`.blend` source under `scripts/art/scenery/.output/first-zone/`, which survives application
+builds. Building footprints, including porches, must fit the existing collision
+disks; alder roots must fit the smallest shared radius of 1.1 metres, and orchard roots
+the 1.15-metre disk, while crowns may overhang. Preserve authored
+positions, yaw, route clearance and all movement truth. Foundations extend below the
+placement plane to meet slopes; tree camera proxies exclude foliage. Secondary props
+remain procedural.
+
+Load and validate the kit before starting exploration, with visible loading and retry
+states. Check real exported geometry, placement, resource ownership and failed-load
+recovery. Review the Blender render and actual browser scene for scale, grounding,
+silhouette, camera obstruction and material quality. Repeat route/touch validation and
+record frame timing and draw calls after integration. These remain prototype assets.
 
 ## Non-goals
 
@@ -158,3 +184,30 @@ builds do not expose it.
 Automated terrain and movement checks may land before the visual review is complete.
 Do not treat this document or a successful legacy performance run as evidence that the
 new route has passed browser, camera, touch or performance validation.
+
+## Recorded verification — 7 September 2026
+
+The final Blender kit exports four templates deterministically: hall 8,580 triangles,
+cottage 6,320, alder 4,400 and orchard tree 3,180. The exported GLB, reference hashes,
+frame and footprint metadata are recorded in its manifest. All 39 instance transforms,
+including the six building yaws, are checked against the authored layout.
+
+The post-fix gate passed with `npm run typecheck && npm test -- --maxWorkers=1 && npm run build`:
+56 test files, 915 passing tests and one existing skipped test; both browser entries built.
+Website tests passed 18/18. One earlier run timed out in a legacy
+allocation test; isolated and full single-worker runs passed with unchanged test limits.
+
+Actual Chrome on Apple M4/ANGLE Metal traversed the main route and all 17 optional-loop
+control points without runtime errors. Loading failure and retry recovered one canvas
+and HUD. The iPhone 13 emulation exposed a high-DPI canvas sizing bug; the corrected
+390×664 logical viewport keeps the player, joystick and Run button visible. In-viewport
+movement, simultaneous orbit and touch cancellation passed after that correction.
+
+The canopy camera retained the full 4.8–18-metre zoom range. Exported foundation skirts
+cover the measured downhill relief at all six building placements. Production preview
+loaded the world and legacy entries without page errors or development diagnostics;
+the editable `.blend` remained present after the application build.
+
+A warmed desktop sample recorded 26 draw calls and 356,420 submitted triangles; CPU frame
+durations had a 1.9 ms median, 5.2 ms p95 and 42.4 ms p99, with a 193.9 ms maximum. These
+are measurements from this machine, not a production frame-rate guarantee or budget.
