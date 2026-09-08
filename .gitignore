@@ -6,6 +6,10 @@ website/public/downloads/
 website/public/media/
 website/public/brand/ashveil-emblem.svg
 website/public/brand/ashveil-wordmark.svg
+website/public/LICENSE
+website/public/LICENSE-CODE
+website/public/LICENSE-ASSETS
+website/public/THIRD_PARTY_NOTICES.md
 workspaces/
 .DS_Store
 *.local
@@ -19,3 +23,6 @@ public/models/
 public/bodies/*/*.review.png
 __pycache__/
 scripts/art/scenery/.output/
+scripts/art/humans/.output/
+scripts/art/humans/*.blend[0-9]
+scripts/art/humans/*.blend~

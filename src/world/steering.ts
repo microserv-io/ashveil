@@ -8,6 +8,8 @@ export interface KeyboardSteering {
   readonly strafe: number
   readonly turn: number
   readonly sprint: boolean
+  readonly walk?: boolean
+  readonly jump?: boolean
 }
 
 export interface SteeringResult {
@@ -32,6 +34,8 @@ export function steerExplorer(
       x: sin * input.forward - cos * input.strafe,
       z: cos * input.forward + sin * input.strafe,
       sprint: input.sprint,
+      walk: input.walk,
+      jump: input.jump,
     },
     seconds,
     solids,

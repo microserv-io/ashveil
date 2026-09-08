@@ -249,11 +249,13 @@ not what the dressing looks like.
 
 ## License
 
-MIT. Client, server, simulation and all — see [LICENSE](LICENSE).
+Ashveil uses split terms. Source code and ordinary documentation are MIT-licensed;
+see [LICENSE-CODE](LICENSE-CODE). Project-controlled art and asset data are proprietary
+and may be used only for local, personal, non-commercial Ashveil play, evaluation, and
+development; see [LICENSE-ASSETS](LICENSE-ASSETS). The asset terms prohibit reshipping
+the game or its assets without written permission. [LICENSE](LICENSE) is the scope index.
 
-The dependency set is deliberately small and permissively licensed (Three.js, Vite
-and Vitest are all MIT). Every actor currently uses the committed masculine-v3 body,
-generated with Tripo and fitted by the repository's humanoid pipeline. The dungeon,
-loot and portal remain from KayKit Dungeon Remastered by Kay Lousberg
-(kaylousberg.com), released under CC0 1.0, until their replacement models land; they
-are fetched by `npm run assets`. There is no audio.
+Third-party material keeps its own license. In particular, fetched KayKit Dungeon
+Remastered files remain CC0 1.0 and the website fonts remain under the SIL Open Font
+License 1.1. Paths, notices, and provider/provenance distinctions are recorded in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). There is no audio.

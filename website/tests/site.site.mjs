@@ -82,7 +82,7 @@ function publicTarget(root, base, reference, fromFile) {
 
 for (const [base, root] of builds) {
   test(`${base} build contains every public route`, async () => {
-    for (const relative of ['index.html', 'design/index.html', 'story/first-chapter/index.html', 'brand/index.html', '404.html']) {
+    for (const relative of ['index.html', 'design/index.html', 'story/first-chapter/index.html', 'brand/index.html', 'licenses/index.html', '404.html']) {
       assert.ok((await stat(resolve(root, relative))).isFile(), `${relative} is missing`)
     }
   })
@@ -237,6 +237,24 @@ test('public site output contains no game models or runtime scripts', async () =
   for (const root of builds.values()) {
     const files = await listFiles(root)
     assert.equal(files.some((file) => /\.(?:glb|gltf|js|mjs)$/.test(file)), false)
+  }
+})
+
+test('public site carries the full split-scope notices and links them from every footer', async () => {
+  const noticeNames = ['LICENSE', 'LICENSE-CODE', 'LICENSE-ASSETS', 'THIRD_PARTY_NOTICES.md']
+  for (const [base, root] of builds) {
+    for (const name of noticeNames) {
+      assert.deepEqual(await readFile(resolve(root, name)), await readFile(resolve(repositoryRoot, name)))
+    }
+    const licensePage = await readFile(resolve(root, 'licenses/index.html'), 'utf8')
+    assert.match(licensePage, /Ashveil Asset License/)
+    assert.match(licensePage, /MIT License/)
+    assert.match(licensePage, /KayKit Dungeon Remastered/)
+    for (const name of noticeNames) assert.match(licensePage, new RegExp(`href="${base.replaceAll('/', '\\/')}${name.replace('.', '\\.') }"`))
+    for (const relative of ['index.html', 'design/index.html', 'story/first-chapter/index.html', 'brand/index.html', 'licenses/index.html', '404.html']) {
+      const rendered = await readFile(resolve(root, relative), 'utf8')
+      assert.match(rendered, new RegExp(`href="${base.replaceAll('/', '\\/')}licenses/"`))
+    }
   }
 })
 

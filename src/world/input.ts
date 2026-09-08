@@ -5,6 +5,8 @@ export interface InputFrame {
   readonly touchForward: number
   readonly touchRight: number
   readonly sprint: boolean
+  readonly walk?: boolean
+  readonly jump: boolean
   readonly orbitX: number
   readonly orbitY: number
   readonly zoom: number
@@ -41,12 +43,14 @@ export class WorldInput {
   private joystickY = 0
   private sprintTouch = false
   private sprintPointer: number | undefined
+  private jumpQueued = false
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
     private readonly joystick: HTMLElement,
     private readonly joystickKnob: HTMLElement,
     sprintButton: HTMLButtonElement,
+    jumpButton: HTMLButtonElement,
   ) {
     window.addEventListener('keydown', this.onKeyDown)
     window.addEventListener('keyup', this.onKeyUp)
@@ -77,6 +81,10 @@ export class WorldInput {
     sprintButton.addEventListener('pointerup', stopSprint)
     sprintButton.addEventListener('pointercancel', stopSprint)
     sprintButton.addEventListener('lostpointercapture', stopSprint)
+    jumpButton.addEventListener('pointerdown', (event) => {
+      event.preventDefault()
+      this.jumpQueued = true
+    })
   }
 
   read(): InputFrame {
@@ -88,6 +96,8 @@ export class WorldInput {
       touchForward: -this.joystickY,
       touchRight: this.joystickX,
       sprint: this.sprintTouch || this.keys.has('ShiftLeft') || this.keys.has('ShiftRight'),
+      walk: this.keys.has('AltLeft') || this.keys.has('AltRight'),
+      jump: this.jumpQueued,
       orbitX: this.orbitX,
       orbitY: this.orbitY,
       zoom: this.zoom,
@@ -95,6 +105,7 @@ export class WorldInput {
     this.orbitX = 0
     this.orbitY = 0
     this.zoom = 0
+    this.jumpQueued = false
     return frame
   }
 
@@ -109,11 +120,23 @@ export class WorldInput {
     this.orbitX = 0
     this.orbitY = 0
     this.zoom = 0
+    this.jumpQueued = false
     this.joystickKnob.style.transform = 'translate(0, 0)'
   }
 
-  private onKeyDown = (event: KeyboardEvent): void => { this.keys.add(event.code) }
-  private onKeyUp = (event: KeyboardEvent): void => { this.keys.delete(event.code) }
+  private onKeyDown = (event: KeyboardEvent): void => {
+    if (isEditableTarget(event.target) || !GAMEPLAY_KEYS.has(event.code)) return
+    event.preventDefault()
+    if (event.code === 'Space') {
+      if (!event.repeat) this.jumpQueued = true
+      return
+    }
+    this.keys.add(event.code)
+  }
+  private onKeyUp = (event: KeyboardEvent): void => {
+    if (!this.keys.delete(event.code)) return
+    event.preventDefault()
+  }
   private onWheel = (event: WheelEvent): void => { event.preventDefault(); this.zoom += event.deltaY * 0.012 }
 
   private onPointerDown = (event: PointerEvent): void => {
@@ -167,4 +190,15 @@ export class WorldInput {
     this.joystickY = y / radius
     this.joystickKnob.style.transform = `translate(${x}px, ${y}px)`
   }
+}
+
+const GAMEPLAY_KEYS = new Set([
+  'KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyQ', 'KeyE',
+  'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+  'ShiftLeft', 'ShiftRight', 'AltLeft', 'AltRight', 'Space',
+])
+
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!target || typeof (target as Element).closest !== 'function') return false
+  return (target as Element).closest('input, select, textarea, button, [contenteditable]') !== null
 }

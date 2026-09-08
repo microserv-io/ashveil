@@ -1,0 +1,18 @@
+{
+  "schema": "ashveil.approved-character.v1",
+  "body": "masculine-clean-v1",
+  "glb": {
+    "file": "masculine-clean-v1.glb",
+    "sha256": "d586edf0e2b2e86247932a9f9e62f514463d6daa05569228f9076edb9f67479c",
+    "bytes": 2779012
+  },
+  "clips": [
+    { "name": "idle", "duration": 0, "loop": false, "nominalSpeed": 0 },
+    { "name": "walk_forward", "duration": 1.3333333333333333, "loop": true, "nominalSpeed": 2 },
+    { "name": "run_forward", "duration": 0.6666666666666666, "loop": true, "nominalSpeed": 5 },
+    { "name": "sprint_forward", "duration": 0.5833333333333334, "loop": true, "nominalSpeed": 7 },
+    { "name": "jump_start", "duration": 0.2916666666666667, "loop": false, "nominalSpeed": 0 },
+    { "name": "jump_air", "duration": 0.625, "loop": true, "nominalSpeed": 0 },
+    { "name": "jump_land", "duration": 0.4583333333333333, "loop": false, "nominalSpeed": 0 }
+  ]
+}

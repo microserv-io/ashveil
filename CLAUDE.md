@@ -248,8 +248,9 @@ deferred, and several would change the balance the loop is tuned around.
 Flasks and potions, currency and crafting, more than one character archetype, skill
 gems and supports, uniques, trade, a real endgame, and sound.
 
-Art is built: every actor uses the committed Tripo-fitted masculine-v3 body. Terrain,
-loot and the portal remain KayKit models (CC0), fetched into `public/models` until
+Art is built: legacy and simulation actors use the committed Tripo-fitted masculine-v3
+body; the first zone uses the new approved [authored GLB and clips](docs/approved-character-game.md).
+Terrain, loot and the portal remain KayKit models (CC0), fetched into `public/models` until
 their Tripo replacement lands. **Effects and affordances stay procedural on purpose**
 — projectiles, the cleave arc, aim arrows, target rings and rarity auras are read-aids,
 not scenery, and giving them meshes would make them harder to read, not easier.

@@ -14,7 +14,7 @@ import {
 import { createGaitParams, gaitParams } from '../src/render/procedural/gait'
 import { buildRigGeometry } from '../src/render/procedural/geometry'
 import fixture from '../src/render/procedural/fixtures/masculine.json'
-import { createExplorer, SPRINT_SPEED, WALK_SPEED } from '../src/world/movement'
+import { createExplorer, RUN_SPEED, SPRINT_SPEED } from '../src/world/movement'
 
 const BODY_PATH = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v3', 'masculine-v3.glb')
 
@@ -183,19 +183,19 @@ describe('first-zone masculine character asset', () => {
     character.update(start, 0.1)
     expect(character.animationState).toEqual({ state: 'idle', speed: 0, time: 0.1 })
 
-    const walked = { ...start, x: start.x + WALK_SPEED * 0.1 }
-    character.update(walked, 0.1)
+    const ran = { ...start, x: start.x + RUN_SPEED * 0.1 }
+    character.update(ran, 0.1)
     expect(character.animationState.state).toBe('moving')
-    expect(character.animationState.speed).toBeCloseTo(WALK_SPEED)
+    expect(character.animationState.speed).toBeCloseTo(RUN_SPEED)
     expect(bone(character.root, 'thigh_L').quaternion.angleTo(bindThigh)).toBeGreaterThan(0.01)
 
-    const sprinted = { ...walked, x: walked.x + SPRINT_SPEED * 0.1 }
+    const sprinted = { ...ran, x: ran.x + SPRINT_SPEED * 0.1 }
     character.update(sprinted, 0.1)
     expect(character.animationState.speed).toBeCloseTo(SPRINT_SPEED)
     const geometry = buildRigGeometry(fixture.joints, 1, fixture.standingHeight, fixture.footprint)
     const running = createGaitParams()
     const faster = createGaitParams()
-    gaitParams(geometry, WALK_SPEED, running)
+    gaitParams(geometry, RUN_SPEED, running)
     gaitParams(geometry, SPRINT_SPEED, faster)
     expect(running.runBlend).toBe(1)
     expect(faster.runBlend).toBe(1)

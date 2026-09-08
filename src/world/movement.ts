@@ -3,20 +3,47 @@ import { heightAt, riverCenterAt, riverHalfWidthAt, WORLD_BOUNDS } from './terra
 
 export const MAX_FRAME_DELTA = 0.1
 const STEP_SECONDS = 1 / 60
-export const WALK_SPEED = 5.2
-export const SPRINT_SPEED = 8
+export const WALK_SPEED = 2
+export const RUN_SPEED = 5
+export const SPRINT_SPEED = 7
+export const GRAVITY = 9.81
+export const JUMP_SPEED = 4.5
+export const JUMP_PREPARATION_SECONDS = 0.18
 const MAX_SLOPE_RADIANS = 35 * Math.PI / 180
+const TIME_EPSILON = 1e-9
+
+export type JumpPhase = 'grounded' | 'preparing' | 'ascending' | 'descending' | 'landing'
 
 export interface Explorer extends WorldPoint {
   readonly y: number
+  readonly groundY: number
   readonly radius: number
   readonly facing: number
+  readonly grounded: boolean
+  readonly verticalVelocity: number
+  readonly jumpPhase: JumpPhase
+  readonly jumpPreparationRemaining: number
 }
 
-export interface MoveIntent extends WorldPoint { readonly sprint: boolean }
+export interface MoveIntent extends WorldPoint {
+  readonly sprint: boolean
+  readonly walk?: boolean
+  readonly jump?: boolean
+}
 
 export function createExplorer(at: WorldPoint): Explorer {
-  return { ...at, y: heightAt(at.x, at.z), radius: 0.72, facing: 0 }
+  const groundY = heightAt(at.x, at.z)
+  return {
+    ...at,
+    y: groundY,
+    groundY,
+    radius: 0.72,
+    facing: 0,
+    grounded: true,
+    verticalVelocity: 0,
+    jumpPhase: 'grounded',
+    jumpPreparationRemaining: 0,
+  }
 }
 
 function insideWorld(x: number, z: number, radius: number): boolean {
@@ -39,13 +66,14 @@ export function canOccupy(explorer: Explorer, x: number, z: number, solids = SOL
   if (!outsideSolids(x, z, explorer.radius, solids)) return false
   const horizontal = Math.hypot(x - explorer.x, z - explorer.z)
   if (horizontal === 0) return true
-  return Math.atan2(Math.abs(heightAt(x, z) - explorer.y), horizontal) <= MAX_SLOPE_RADIANS
+  return Math.atan2(Math.abs(heightAt(x, z) - heightAt(explorer.x, explorer.z)), horizontal) <= MAX_SLOPE_RADIANS
 }
 
-function moveStep(explorer: Explorer, intent: MoveIntent, seconds: number, solids: readonly WorldSolid[]): Explorer {
+function moveHorizontal(explorer: Explorer, intent: MoveIntent, seconds: number, solids: readonly WorldSolid[]): Explorer {
   const inputLength = Math.hypot(intent.x, intent.z)
   if (inputLength < 0.001) return explorer
-  const distance = (intent.sprint ? SPRINT_SPEED : WALK_SPEED) * seconds
+  const speed = intent.sprint ? SPRINT_SPEED : intent.walk ? WALK_SPEED : RUN_SPEED
+  const distance = speed * seconds
   const dx = intent.x / Math.max(1, inputLength) * distance
   const dz = intent.z / Math.max(1, inputLength) * distance
   let x = explorer.x
@@ -55,19 +83,78 @@ function moveStep(explorer: Explorer, intent: MoveIntent, seconds: number, solid
     z += dz
   } else {
     if (canOccupy(explorer, x + dx, z, solids)) x += dx
-    const xMoved = { ...explorer, x, y: heightAt(x, z) }
+    const xMoved = { ...explorer, x, groundY: heightAt(x, z) }
     if (canOccupy(xMoved, x, z + dz, solids)) z += dz
   }
-  return { ...explorer, x, z, y: heightAt(x, z), facing: Math.atan2(dx, dz) }
+  return { ...explorer, x, z, groundY: heightAt(x, z), facing: Math.atan2(dx, dz) }
+}
+
+function moveStep(
+  explorer: Explorer,
+  intent: MoveIntent,
+  seconds: number,
+  solids: readonly WorldSolid[],
+  jump: boolean,
+): Explorer {
+  let next = moveHorizontal(explorer, intent, seconds, solids)
+  let y = next.y
+  let verticalVelocity = next.verticalVelocity
+  let grounded = next.grounded
+  let jumpPhase: JumpPhase = next.jumpPhase === 'landing' ? 'grounded' : next.jumpPhase
+  let jumpPreparationRemaining = next.jumpPreparationRemaining
+  let physicsSeconds = seconds
+
+  if (jump && grounded && jumpPhase !== 'preparing') {
+    jumpPhase = 'preparing'
+    jumpPreparationRemaining = JUMP_PREPARATION_SECONDS
+  }
+
+  if (jumpPhase === 'preparing') {
+    y = next.groundY
+    verticalVelocity = 0
+    grounded = true
+    if (jumpPreparationRemaining - physicsSeconds > TIME_EPSILON) {
+      jumpPreparationRemaining -= physicsSeconds
+      physicsSeconds = 0
+    } else {
+      physicsSeconds = Math.max(0, physicsSeconds - jumpPreparationRemaining)
+      jumpPreparationRemaining = 0
+      grounded = false
+      verticalVelocity = JUMP_SPEED
+      jumpPhase = 'ascending'
+    }
+  }
+
+  if (grounded) {
+    y = next.groundY
+    verticalVelocity = 0
+  } else if (physicsSeconds > 0) {
+    y += verticalVelocity * physicsSeconds - 0.5 * GRAVITY * physicsSeconds * physicsSeconds
+    verticalVelocity -= GRAVITY * physicsSeconds
+    if (y <= next.groundY) {
+      y = next.groundY
+      verticalVelocity = 0
+      grounded = true
+      jumpPhase = 'landing'
+    } else {
+      jumpPhase = verticalVelocity > 0 ? 'ascending' : 'descending'
+    }
+  }
+  next = { ...next, y, verticalVelocity, grounded, jumpPhase, jumpPreparationRemaining }
+  return next
 }
 
 export function moveExplorer(explorer: Explorer, intent: MoveIntent, delta: number, solids = SOLIDS): Explorer {
   let remaining = Math.min(Math.max(delta, 0), MAX_FRAME_DELTA)
   let next = explorer
+  let jump = intent.jump === true
+  let landed = false
   while (remaining > 0) {
     const step = Math.min(STEP_SECONDS, remaining)
-    next = moveStep(next, intent, step, solids)
+    next = moveStep(next, intent, step, solids, jump)
+    jump = false
+    landed ||= next.jumpPhase === 'landing'
     remaining -= step
   }
-  return next
+  return landed ? { ...next, jumpPhase: 'landing' } : next
 }

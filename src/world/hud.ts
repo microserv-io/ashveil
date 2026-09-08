@@ -2,6 +2,7 @@ export interface WorldHud {
   readonly joystick: HTMLElement
   readonly joystickKnob: HTMLElement
   readonly sprintButton: HTMLButtonElement
+  readonly jumpButton: HTMLButtonElement
   readonly overviewButton: HTMLButtonElement
   readonly resetButton: HTMLButtonElement
   setLocation(name: string): void
@@ -21,12 +22,15 @@ export function createWorldHud(root: HTMLElement): WorldHud {
           <button id="reset" class="rounded-lg border border-stone-200/15 bg-stone-950/70 px-3 py-2 text-xs font-medium backdrop-blur-md hover:bg-stone-800">Return to refuge</button>
         </div>
       </section>
-      <div class="pointer-events-none fixed bottom-5 left-1/2 z-20 hidden -translate-x-1/2 rounded-full border border-stone-200/10 bg-stone-950/65 px-5 py-2 text-xs text-stone-300 backdrop-blur-md md:block">W/S move · A/D turn · Q/E strafe · Shift to run · Drag to look · Scroll to zoom</div>
+      <div class="pointer-events-none fixed bottom-5 left-1/2 z-20 hidden -translate-x-1/2 rounded-full border border-stone-200/10 bg-stone-950/65 px-5 py-2 text-xs text-stone-300 backdrop-blur-md md:block">W/S run · A/D turn · Q/E strafe · Alt walk · Shift sprint · Space jump · Drag look · Scroll zoom</div>
       <section aria-label="Touch controls" class="touch-controls pointer-events-none fixed inset-x-0 bottom-5 z-30 flex items-end justify-between px-5">
         <div id="joystick" class="pointer-events-auto relative h-28 w-28 touch-none rounded-full border border-stone-100/20 bg-stone-950/35 backdrop-blur-sm">
           <div id="joystick-knob" class="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full border border-amber-100/30 bg-amber-100/20"></div>
         </div>
-        <button id="sprint" class="pointer-events-auto h-20 w-20 touch-none rounded-full border border-stone-100/20 bg-stone-950/45 text-xs font-semibold uppercase tracking-widest text-amber-100 backdrop-blur-sm">Run</button>
+        <div class="pointer-events-auto flex gap-3">
+          <button id="jump" class="h-20 w-20 touch-none rounded-full border border-stone-100/20 bg-stone-950/45 text-xs font-semibold uppercase tracking-widest text-amber-100 backdrop-blur-sm">Jump</button>
+          <button id="sprint" class="h-20 w-20 touch-none rounded-full border border-stone-100/20 bg-stone-950/45 text-xs font-semibold uppercase tracking-widest text-amber-100 backdrop-blur-sm">Sprint</button>
+        </div>
       </section>
     </main>`
   const get = <T extends HTMLElement>(id: string): T => {
@@ -40,6 +44,7 @@ export function createWorldHud(root: HTMLElement): WorldHud {
     joystick: get('joystick'),
     joystickKnob: get('joystick-knob'),
     sprintButton: get('sprint'),
+    jumpButton: get('jump'),
     overviewButton,
     resetButton: get('reset'),
     setLocation: (name) => { location.textContent = name },
