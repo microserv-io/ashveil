@@ -26,3 +26,7 @@ scripts/art/scenery/.output/
 scripts/art/humans/.output/
 scripts/art/humans/*.blend[0-9]
 scripts/art/humans/*.blend~
+
+# Local starter-gear review and Blender recovery files.
+artifacts/starter-leather/
+preserved-untitled-scene.blend

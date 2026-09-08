@@ -7,6 +7,7 @@ import { GLTFLoader, type GLTFParser } from 'three/examples/jsm/loaders/GLTFLoad
 import { ApprovedWorldCharacter } from '../src/world/approved-character'
 import { APPROVED_CLIPS, ApprovedCharacterSource, validateApprovedCharacterTemplate, validateApprovedManifest, type ApprovedCharacterTemplate } from '../src/world/approved-character-source'
 import { createExplorer, RUN_SPEED } from '../src/world/movement'
+import { STARTER_GEAR_SLOTS, type StarterGearSlot, type StarterGearTemplate } from '../src/world/starter-gear-source'
 
 const ROOT = join(import.meta.dirname, '..')
 const DIRECTORY = join(ROOT, 'public', 'bodies', 'masculine-clean-v1')
@@ -59,6 +60,39 @@ async function actualTemplate(): Promise<ApprovedCharacterTemplate> {
   }))
   const data = MODEL.buffer.slice(MODEL.byteOffset, MODEL.byteOffset + MODEL.byteLength)
   return validateApprovedCharacterTemplate(await loader.parseAsync(data, ''), MANIFEST)
+}
+
+function fittedGearTemplate(character: ApprovedCharacterTemplate): StarterGearTemplate {
+  let body: THREE.SkinnedMesh | undefined
+  character.scene.traverse((object) => { if (object instanceof THREE.SkinnedMesh) body = object })
+  if (!body) throw new Error('Test character has no skinned mesh.')
+  const meshNames: Record<StarterGearSlot, string> = {
+    chest: 'StarterLeatherChest', legs: 'StarterLeatherLegs', boots: 'StarterLeatherBoots',
+    waist: 'StarterLeatherWaist',
+  }
+  const meshes = new Map<StarterGearSlot, readonly THREE.SkinnedMesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>[]>()
+  for (const slot of STARTER_GEAR_SLOTS) {
+    const bones = body.skeleton.bones.map((source) => Object.assign(new THREE.Bone(), { name: source.name }))
+    const skeleton = new THREE.Skeleton(bones, body.skeleton.boneInverses.map((inverse) => inverse.clone()))
+    const material = new THREE.MeshStandardMaterial()
+    material.name = slot === 'chest' ? 'Starter Leather' : 'Starter Dark Leather'
+    const mesh = new THREE.SkinnedMesh(new THREE.BufferGeometry(), material)
+    mesh.name = meshNames[slot]
+    mesh.bind(skeleton, body.bindMatrix)
+    meshes.set(slot, [mesh])
+  }
+  return {
+    scene: new THREE.Group(),
+    meshes,
+    dyeChannels: new Map(STARTER_GEAR_SLOTS.map((slot) => [slot, new Set(['primary'] as const)])),
+    manifest: {
+      schema: 'ashveil.starter-gear.v1', body: 'masculine-clean-v1', bodySha256: MANIFEST.glb.sha256,
+      glb: { file: 'starter-leather.glb', bytes: 1, sha256: 'a'.repeat(64) },
+      jointNames: body.skeleton.bones.map((bone) => bone.name), inverseBindSha256: 'b'.repeat(64),
+      slots: STARTER_GEAR_SLOTS.map((slot) => ({ slot, mesh: meshNames[slot], triangles: 1, bounds: { min: [0, 0, 0], max: [1, 1, 1] } })),
+      budget: { triangles: 4, materials: 4 },
+    },
+  }
 }
 
 describe('approved first-zone character asset', () => {
@@ -197,4 +231,40 @@ describe('approved first-zone character asset', () => {
     })
     character.dispose()
   }, 30_000)
+
+  it('keeps visual gear choices through reset and drives the shared gear skeleton while moving', async () => {
+    const characterTemplate = await actualTemplate()
+    const start = createExplorer({ x: -70, z: -70 })
+    const character = new ApprovedWorldCharacter(characterTemplate, start, fittedGearTemplate(characterTemplate))
+    expect(character.gearAppearance).toEqual({
+      chest: { equipped: true, primaryTint: null, trimTint: null },
+      legs: { equipped: true, primaryTint: null, trimTint: null },
+      boots: { equipped: true, primaryTint: null, trimTint: null },
+      waist: { equipped: true, primaryTint: null, trimTint: null },
+    })
+    character.setGearEquipped('legs', false)
+    character.setGearDye('chest', 'primary', '#b06a3c')
+    character.reset(start)
+    expect(character.gearAppearance.legs.equipped).toBe(false)
+    expect(character.gearAppearance.chest).toEqual({ equipped: true, primaryTint: '#b06a3c', trimTint: null })
+
+    const chestRoot = character.root.getObjectByName('StarterLeatherChest')
+    let chest: THREE.SkinnedMesh | undefined
+    chestRoot?.traverse((object) => { if (!chest && object instanceof THREE.SkinnedMesh) chest = object })
+    let body: THREE.SkinnedMesh | undefined
+    character.root.traverse((object) => {
+      if (object instanceof THREE.SkinnedMesh && object.name !== 'StarterLeatherChest'
+        && !object.name.startsWith('StarterLeather')) body = object
+    })
+    expect(chest?.skeleton).toBe(body?.skeleton)
+    chest!.skeleton.update()
+    const before = [...(chest!.skeleton.boneMatrices ?? [])]
+    for (let frame = 1; frame <= 4; frame += 1) {
+      character.update({ ...start, z: start.z + RUN_SPEED * frame * 0.1 }, 0.1)
+    }
+    character.root.updateMatrixWorld(true)
+    chest!.skeleton.update()
+    expect([...(chest!.skeleton.boneMatrices ?? [])]).not.toEqual(before)
+    character.dispose()
+  })
 })
