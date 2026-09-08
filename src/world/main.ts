@@ -1,15 +1,17 @@
 import './world.css'
-import { loadWorldCharacter, type WorldCharacterTemplate } from './character'
+import { loadApprovedCharacter, type ApprovedCharacterTemplate } from './approved-character'
 import { createWorldHud } from './hud'
-import { keyboardSteeringActive, WorldInput } from './input'
-import { createExplorer, moveExplorer, type Explorer } from './movement'
+import { WorldInput } from './input'
+import { createExplorer, type Explorer } from './movement'
 import { DEFAULT_CAMERA_YAW, WorldView } from './renderer'
 import { loadSceneryKit, type SceneryKit } from './scenery-kit'
-import { explorerFacingFromCamera, steerExplorer } from './steering'
+import { explorerFacingFromCamera } from './steering'
 import { nearestLandmark, SPAWN } from './world-data'
+import { advanceExplorer } from './world-controls'
 
 interface DiagnosticState {
   position: { x: number; y: number; z: number }; facing: number; location: string; overview: boolean
+  grounded: boolean; jumpPhase: string
   frameMs: number; frameTimes: number[]
   camera: { x: number; y: number; z: number; yaw: number }; forward: { x: number; z: number }
   drawCalls: number; triangles: number; errors: string[]
@@ -47,7 +49,7 @@ async function boot(): Promise<void> {
   booting = true
   showLoading()
   try {
-    const [kit, character] = await Promise.all([loadSceneryKit(), loadWorldCharacter()])
+    const [kit, character] = await Promise.all([loadSceneryKit(), loadApprovedCharacter()])
     app!.replaceChildren()
     startWorld(app!, kit, character)
   } catch (error) {
@@ -61,11 +63,11 @@ function initialExplorer(cameraYaw = DEFAULT_CAMERA_YAW): Explorer {
   return { ...createExplorer(SPAWN), facing: explorerFacingFromCamera(cameraYaw) }
 }
 
-function startWorld(host: HTMLElement, kit: SceneryKit, character: WorldCharacterTemplate): void {
+function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedCharacterTemplate): void {
   let explorer = initialExplorer()
   const hud = createWorldHud(host)
   const view = new WorldView(host, kit, character, explorer)
-  const input = new WorldInput(view.canvas, hud.joystick, hud.joystickKnob, hud.sprintButton)
+  const input = new WorldInput(view.canvas, hud.joystick, hud.joystickKnob, hud.sprintButton, hud.jumpButton)
   let overview = false
   let injected = { x: 0, z: 0, sprint: false }
   let previous = performance.now()
@@ -89,8 +91,8 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: WorldCharacte
     if (overview) toggleOverview()
   }
 
-  hud.resetButton.addEventListener('click', reset)
-  hud.overviewButton.addEventListener('click', toggleOverview)
+  hud.resetButton.addEventListener('click', () => { reset(); hud.resetButton.blur() })
+  hud.overviewButton.addEventListener('click', () => { toggleOverview(); hud.overviewButton.blur() })
   window.addEventListener('resize', () => view.resize())
   window.addEventListener('error', (event) => { errors.push(event.message) })
   window.addEventListener('unhandledrejection', (event) => { errors.push(String(event.reason)) })
@@ -98,6 +100,7 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: WorldCharacte
   const diagnostics: WorldDiagnostics = {
     state: {
       position: { x: explorer.x, y: explorer.y, z: explorer.z }, facing: explorer.facing, location: 'Alderbank Refuge', overview,
+      grounded: explorer.grounded, jumpPhase: explorer.jumpPhase,
       frameMs: 0, frameTimes: [], camera: { x: 0, y: 0, z: 0, yaw: 0 }, forward: { x: 0, z: 1 },
       drawCalls: 0, triangles: 0, errors,
     },
@@ -115,29 +118,11 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: WorldCharacte
     const controls = input.read()
     view.adjustOrbit(controls.orbitX, controls.orbitY, controls.zoom)
     if (!overview) {
-      const keyboardActive = keyboardSteeringActive(controls)
-      if (keyboardActive) {
-        const steered = steerExplorer(explorer, {
-          forward: controls.keyboardForward,
-          strafe: controls.keyboardStrafe,
-          turn: controls.keyboardTurn,
-          sprint: controls.sprint,
-        }, delta)
-        explorer = steered.explorer
-        view.turnCamera(steered.turnDelta)
-      } else {
-        const forward = view.cameraForward()
-        const right = { x: -forward.z, z: forward.x }
-        const localRight = controls.touchRight + injected.x
-        const localForward = controls.touchForward + injected.z
-        explorer = moveExplorer(explorer, {
-          x: right.x * localRight + forward.x * localForward,
-          z: right.z * localRight + forward.z * localForward,
-          sprint: controls.sprint || injected.sprint,
-        }, delta)
-      }
+      const controlled = advanceExplorer(explorer, controls, view.cameraForward(), injected, delta)
+      explorer = controlled.explorer
+      view.turnCamera(controlled.turnDelta)
     }
-    view.setExplorer(explorer, delta)
+    view.setExplorer(explorer, overview ? 0 : delta)
     view.updateCamera(explorer, delta)
     view.render()
     const frameMs = performance.now() - frameStart
@@ -145,7 +130,8 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: WorldCharacte
     const rendered = view.diagnostics()
     Object.assign(diagnostics.state, {
       position: { x: explorer.x, y: explorer.y, z: explorer.z }, facing: explorer.facing, location: nearestLandmark(explorer.x, explorer.z).label,
-      overview, frameMs: averageFrameMs, camera: rendered.camera, forward: rendered.forward,
+      overview, grounded: explorer.grounded, jumpPhase: explorer.jumpPhase,
+      frameMs: averageFrameMs, camera: rendered.camera, forward: rendered.forward,
       drawCalls: rendered.drawCalls, triangles: rendered.triangles,
     })
     diagnostics.state.frameTimes.push(frameMs)

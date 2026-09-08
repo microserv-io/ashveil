@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { WorldCharacter, type WorldCharacterTemplate } from './character'
+import { ApprovedWorldCharacter, type ApprovedCharacterTemplate } from './approved-character'
 import { buildScenery, type BuiltScenery } from './scenery'
 import type { SceneryKit } from './scenery-kit'
 import { createTerrainGeometryData, heightAt, riverCenterAt, riverHalfWidthAt, WORLD_BOUNDS } from './terrain'
@@ -49,7 +49,7 @@ export class WorldView {
   readonly camera = new THREE.PerspectiveCamera(48, 1, 0.1, 600)
   private readonly terrain = buildTerrain()
   private readonly scenery: BuiltScenery
-  private readonly explorer: WorldCharacter
+  private readonly explorer: ApprovedWorldCharacter
   private readonly raycaster = new THREE.Raycaster()
   private readonly cameraTarget = new THREE.Vector3()
   private yaw = DEFAULT_CAMERA_YAW
@@ -57,7 +57,7 @@ export class WorldView {
   private distance = 11.5
   private overview = false
 
-  constructor(host: HTMLElement, kit: SceneryKit, character: WorldCharacterTemplate, initialExplorer: Explorer) {
+  constructor(host: HTMLElement, kit: SceneryKit, character: ApprovedCharacterTemplate, initialExplorer: Explorer) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' })
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
@@ -66,7 +66,7 @@ export class WorldView {
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
     host.prepend(this.renderer.domElement)
-    this.explorer = new WorldCharacter(character, initialExplorer)
+    this.explorer = new ApprovedWorldCharacter(character, initialExplorer)
     this.scene.background = new THREE.Color(0xb7aa8e)
     this.scene.fog = new THREE.FogExp2(0xb7aa8e, 0.003)
     this.terrain.receiveShadow = true

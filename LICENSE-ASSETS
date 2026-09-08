@@ -1,0 +1,63 @@
+Ashveil Asset License
+Copyright (c) 2026 Microserv.io. All rights reserved.
+
+1. Scope
+
+To the extent Microserv.io holds the relevant rights, this license covers Ashveil
+project art and asset data regardless of file location or extension, including:
+
+- GLB, glTF, mesh, rig, skeleton, skin-weight, and skeletal-animation data;
+- embedded and external textures, material maps, and related asset manifests;
+- Blender files and other source-art or editable production files;
+- renders, illustrations, concept art, logos, wordmarks, and brand artwork;
+- optimized, converted, resized, packed, or otherwise derived media; and
+- asset-specific reports, profiles, measurements, provenance records, and fixture
+  data, including JSON fixtures used to describe or validate an asset.
+
+Representative covered locations include `public/bodies/`, `public/world/`,
+`public/textures/`, art files under `docs/art-pipeline/`, `website/assets/source/`,
+Blender/source art under `scripts/art/humans/`, and asset fixtures such as
+`src/render/procedural/fixtures/masculine.json`.
+
+Source code and ordinary documentation are excluded and are licensed under
+LICENSE-CODE. Code in asset-generation and build scripts is also excluded. Third-party
+exceptions are described in THIRD_PARTY_NOTICES.md.
+
+2. Limited permission
+
+You may copy and modify the covered assets only as reasonably necessary for local,
+personal, non-commercial play, evaluation, or development of Ashveil.
+Every permitted copy must retain `LICENSE`, `LICENSE-ASSETS`, and
+`THIRD_PARTY_NOTICES.md`.
+
+3. Restrictions
+
+Unless Microserv.io gives prior written permission, you may not use a covered asset
+as a standalone work or in another project, or sell, sublicense, redistribute,
+publicly host, publish, or use it to train or improve an artificial-intelligence or
+machine-learning model. No rights are granted by implication.
+
+You also may not redistribute, rehost for public or third-party access, republish, or
+repackage covered assets as part of the original, modified, or repackaged Ashveil game,
+a clone or fork, or any compiled, browser-playable, downloadable, archived, or other
+distribution. Access to repository source does not grant permission to ship a playable
+build containing those assets.
+
+4. Rights that remain unaffected
+
+This license does not restrict non-waivable statutory rights. It does not limit the
+technical viewing and forking rights GitHub necessarily provides under its Terms of
+Service. It does not replace a valid third-party license, provider term, or other
+license that applies to material Microserv.io does not own. It also does not revoke
+rights in a copy or version that a recipient validly received under an earlier
+license.
+
+5. Ownership and automated tools
+
+Microserv.io asserts only rights it actually holds. This license does not claim
+ownership of third-party material and does not represent or guarantee that any
+particular output created with automated or generative tools is protected by
+copyright.
+
+THE COVERED ASSETS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, TO THE
+MAXIMUM EXTENT PERMITTED BY LAW.

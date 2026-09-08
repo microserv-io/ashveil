@@ -88,8 +88,9 @@ grounding share the grid's explicit triangle split and barycentric interpolation
 representative controller has a 0.72-unit radius, rejects movement above 35 degrees,
 advances in 1/60-second substeps and caps one rendered frame's movement time at 0.1
 seconds. Grounding must agree with the rendered triangles within 0.001 world units.
-These are slice tolerances for testing. The controllable explorer uses the committed
-`masculine-v3` body at its canonical 1.8-metre height; the world scale remains provisional.
+These are slice tolerances for testing. The controllable explorer uses the approved
+[`masculine-clean-v1` character](approved-character-game.md) at its authored scale; the
+world scale remains provisional.
 
 The runtime's single terrain material blends the existing meadow-grass, worn-earth and
 ash-ground albedo candidates through a 512-pixel paint-weight map. Road strokes have
@@ -104,14 +105,16 @@ and the limitations of these colour-only maps are recorded in
 [`public/textures/first-zone/README.md`](../public/textures/first-zone/README.md).
 
 Desktop exploration uses W/S or the up/down arrows to move forward and backward, A/D or
-the left/right arrows to turn, Q/E to strafe and Shift to run. Keyboard turning retains
-the camera's orbit offset; pointer drag orbits the camera independently and the wheel
-zooms. Coarse-pointer devices retain camera-relative movement through a joystick and a
-hold-to-run control while the canvas remains available for camera orbit.
-The explorer keeps the existing 5.2-unit movement and 8-unit sprint speeds. Its verified
-procedural rig uses actual travelled distance, so both speeds read as running at different
-cadences and an obstructed explorer returns to idle. Backward and strafe movement reuse
-that forward locomotion pose; this bounded pass does not add directional clips.
+the left/right arrows to turn, Q/E to strafe, Alt to walk, Shift to sprint and Space to
+jump. Keyboard turning retains the camera's orbit offset; pointer drag orbits the camera
+independently and the wheel zooms. Coarse-pointer devices retain camera-relative movement
+through a joystick, a hold-to-sprint control and a jump button while the canvas remains available
+for camera orbit. The explorer runs at 5 units per second, walks at 2 units per second
+with Alt, and sprints at 7 units per second with Shift.
+The approved prototype uses seven authored clips: its forward-only locomotion fallback
+reuses the selected forward gait for reverse, strafe and diagonal movement without changing
+the character's facing. A grounded jump plays its 0.18-second anticipation while preparing,
+then physics starts the jump; the character continues through start, air and landing clips.
 The temporary camera uses a 48-degree field of view, a 4.8–18-unit zoom range and a
 roughly 9–60-degree pitch range. A ray from the player toward the desired camera keeps it
 in front of terrain and scenery. Overview and return-to-refuge controls support review;

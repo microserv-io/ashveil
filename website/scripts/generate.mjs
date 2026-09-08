@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { optimizeArtwork } from './artwork.mjs'
 import { generateBrandAssets } from './brand-assets.mjs'
 import { renderDesignMarkdown } from './markdown.mjs'
+import { copyLicenseNotices } from '../../scripts/copy-license-notices.mjs'
 
 const websiteRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const repositoryRoot = resolve(websiteRoot, '..')
@@ -32,6 +33,7 @@ function createPathHelpers(base) {
     design: path('design/'),
     story: path('story/first-chapter/'),
     brand: path('brand/'),
+    licenses: path('licenses/'),
   }
 }
 
@@ -58,8 +60,8 @@ function siteHeader(paths, current) {
 function siteFooter(paths) {
   return `<footer class="site-footer">
     <section><a class="brand-lockup" href="${paths.home}">${emblem(paths.path, 'footer-mark')}${wordmark(paths.path)}</a><p>A vivid shared world, threatened by ash.</p></section>
-    <nav aria-label="Footer navigation"><a href="${paths.design}">Read the GDD</a><a href="${paths.brand}">Brand resources</a><a href="https://github.com/microserv-io/ashveil">GitHub</a></nav>
-    <small>Early development · Concept art shown · Updated 5 September 2026</small>
+    <nav aria-label="Footer navigation"><a href="${paths.design}">Read the GDD</a><a href="${paths.brand}">Brand resources</a><a href="${paths.licenses}">Licenses</a><a href="https://github.com/microserv-io/ashveil">GitHub</a></nav>
+    <small>Early development · Concept art shown · Updated 8 September 2026</small>
   </footer>`
 }
 
@@ -283,6 +285,13 @@ function notFoundPage(base) {
   return shell({ base, title: 'Page not found', description: 'The requested Ashveil page could not be found.', content, bodyClass: 'not-found-page' })
 }
 
+function licensesPage(base, notices) {
+  const paths = createPathHelpers(base)
+  const sections = notices.map(({ name, body }) => `<section class="license-copy"><h2>${name}</h2><p><a href="${paths.path(name)}">Download the original file</a></p><pre>${escapeHtml(body)}</pre></section>`).join('')
+  const content = `<section class="document-hero"><p class="eyebrow">Legal</p><h1>Licenses and notices</h1><p>Ashveil source code and ordinary documentation use the MIT License. Project-controlled art and asset data have separate terms, and third-party material keeps its own license.</p></section><article class="license-document">${sections}</article>`
+  return shell({ base, current: 'licenses', canonicalPath: paths.licenses, title: 'Licenses', description: 'Ashveil code, asset, and third-party license notices.', content, bodyClass: 'document-page license-page' })
+}
+
 async function writePage(output, relative, html) {
   const file = resolve(output, relative)
   await mkdir(dirname(file), { recursive: true })
@@ -303,10 +312,15 @@ export async function generateSite({
     'opening-side-quests.md',
   ].map((filename) => readFile(resolve(repositoryRoot, 'docs/story', filename), 'utf8')))
   const storyMarkdown = `${storySources.map((source) => source.trimEnd()).join('\n\n')}\n`
+  const licenseNotices = await Promise.all(['LICENSE', 'LICENSE-CODE', 'LICENSE-ASSETS', 'THIRD_PARTY_NOTICES.md'].map(async (name) => ({
+    name,
+    body: await readFile(resolve(repositoryRoot, name), 'utf8'),
+  })))
   if (clean) await rm(outputDir, { recursive: true, force: true })
   await Promise.all([
     optimizeArtwork(websiteRoot, publicDir),
     generateBrandAssets(websiteRoot, publicDir),
+    copyLicenseNotices(publicDir, repositoryRoot),
   ])
   await mkdir(outputDir, { recursive: true })
   await copyFile(resolve(websiteRoot, 'src/styles.css'), resolve(outputDir, 'styles.css'))
@@ -321,6 +335,7 @@ export async function generateSite({
     writePage(outputDir, 'design/index.html', designPage(normalizedBase, markdown)),
     writePage(outputDir, 'story/first-chapter/index.html', storyPage(normalizedBase, storyMarkdown)),
     writePage(outputDir, 'brand/index.html', brandPage(normalizedBase)),
+    writePage(outputDir, 'licenses/index.html', licensesPage(normalizedBase, licenseNotices)),
     writePage(outputDir, '404.html', notFoundPage(normalizedBase)),
   ])
   return { base: normalizedBase, outputDir, publicDir }

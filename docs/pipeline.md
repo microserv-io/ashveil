@@ -192,10 +192,12 @@ irreplaceable), skeleton contracts and manifests, and runtime GLBs under a few M
 Every image dragged into Tripo is first committed under `docs/art-pipeline/concepts/`,
 and every accepted output under `docs/art-pipeline/sources/`, so a body can be rebuilt
 from the exact bytes.
-Not committed: Blender files, diagnostic renders, numpy dumps, anything a script
-regenerates. Only the KayKit dungeon kit stays fetched, pinned to an immutable commit
-with SHA-256 checks, until its Tripo replacement models land. Git LFS is not installed
-and not needed at this size; revisit past roughly 50 MB.
+Not committed: generated Blender files, diagnostic renders, numpy dumps, anything a
+script regenerates. The approved hand-authored checkpoint,
+`scripts/art/humans/tripo-male-cleanup.blend`, is a deliberate tracked exception with
+provenance because it is non-regenerable. Only the KayKit dungeon kit stays fetched,
+pinned to an immutable commit with SHA-256 checks, until its Tripo replacement models
+land. Git LFS is not installed and not needed at this size; revisit past roughly 50 MB.
 
 ## AI motion and rigging models
 

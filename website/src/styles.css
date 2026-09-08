@@ -97,6 +97,11 @@ button { font: inherit; }
 .site-footer nav { display: flex; gap: 1.5rem; font-size: .85rem; }
 .site-footer small { grid-column: 1 / -1; padding-top: 1.5rem; font-size: .72rem; letter-spacing: .05em; border-top: 1px solid rgb(246 240 223 / .12); }
 
+.license-document { width: min(76rem, calc(100% - 2rem)); margin: 0 auto 5rem; display: grid; gap: 2rem; }
+.license-copy { padding: clamp(1.25rem, 3vw, 2.5rem); border: 1px solid rgb(24 54 47 / .16); border-radius: 1rem; background: #fffaf0; box-shadow: 0 1rem 3rem rgb(24 54 47 / .08); }
+.license-copy h2 { margin-top: 0; font-family: Alegreya, Georgia, serif; color: #173b32; }
+.license-copy pre { overflow-x: auto; margin: 1rem 0 0; padding: 1rem; border-radius: .6rem; background: #102f29; color: #f6f0df; font: .78rem/1.6 "Source Sans 3", sans-serif; white-space: pre-wrap; overflow-wrap: anywhere; }
+
 h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: .98; text-wrap: balance; }
 .eyebrow { margin: 0 0 .7rem; color: var(--color-terracotta); font-size: .72rem; font-weight: 750; letter-spacing: .17em; text-transform: uppercase; }
 .button { display: inline-flex; gap: .65rem; align-items: center; justify-content: center; min-height: 3rem; padding: .65rem 1.15rem; font-size: .82rem; font-weight: 750; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; border: 1px solid transparent; }
