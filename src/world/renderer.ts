@@ -6,6 +6,8 @@ import { createTerrainGeometryData, heightAt, riverCenterAt, riverHalfWidthAt, W
 import { LANDMARKS, PATHS, SOLIDS, type WorldPoint } from './world-data'
 import type { Explorer } from './movement'
 import { createWorldMaterial } from './world-material'
+import type { StarterGearAppearance } from './starter-gear'
+import type { StarterGearDyeChannel, StarterGearSlot, StarterGearTemplate } from './starter-gear-source'
 
 function buildTerrain(): THREE.Mesh {
   const data = createTerrainGeometryData()
@@ -57,7 +59,7 @@ export class WorldView {
   private distance = 11.5
   private overview = false
 
-  constructor(host: HTMLElement, kit: SceneryKit, character: ApprovedCharacterTemplate, initialExplorer: Explorer) {
+  constructor(host: HTMLElement, kit: SceneryKit, character: ApprovedCharacterTemplate, gear: StarterGearTemplate, initialExplorer: Explorer) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' })
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
@@ -66,7 +68,7 @@ export class WorldView {
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
     host.prepend(this.renderer.domElement)
-    this.explorer = new ApprovedWorldCharacter(character, initialExplorer)
+    this.explorer = new ApprovedWorldCharacter(character, initialExplorer, gear)
     this.scene.background = new THREE.Color(0xb7aa8e)
     this.scene.fog = new THREE.FogExp2(0xb7aa8e, 0.003)
     this.terrain.receiveShadow = true
@@ -87,6 +89,12 @@ export class WorldView {
 
   setExplorer(explorer: Explorer, delta: number): void { this.explorer.update(explorer, delta) }
   resetExplorer(explorer: Explorer): void { this.explorer.reset(explorer) }
+  get gearAppearance(): StarterGearAppearance { return this.explorer.gearAppearance }
+  get gearDyeChannels(): StarterGearTemplate['dyeChannels'] { return this.explorer.gearDyeChannels }
+  setGearEquipped(slot: StarterGearSlot, equipped: boolean): void { this.explorer.setGearEquipped(slot, equipped) }
+  setGearDye(slot: StarterGearSlot, channel: StarterGearDyeChannel, tint: string | null): void {
+    this.explorer.setGearDye(slot, channel, tint)
+  }
   turnCamera(delta: number): void { this.yaw += delta }
 
   adjustOrbit(x: number, y: number, zoom: number): void {

@@ -2,6 +2,8 @@ import * as THREE from 'three'
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js'
 import { MAX_FRAME_DELTA, RUN_SPEED, SPRINT_SPEED, WALK_SPEED, type Explorer } from './movement'
 import { APPROVED_CLIPS, type ApprovedCharacterTemplate, type ApprovedClipName } from './approved-character-source'
+import { DEFAULT_STARTER_GEAR_APPEARANCE, StarterGear, type StarterGearAppearance } from './starter-gear'
+import type { StarterGearDyeChannel, StarterGearSlot, StarterGearTemplate } from './starter-gear-source'
 
 export { loadApprovedCharacter } from './approved-character-source'
 export type { ApprovedCharacterTemplate } from './approved-character-source'
@@ -9,6 +11,7 @@ export type { ApprovedCharacterTemplate } from './approved-character-source'
 const MOVING_SPEED = 0.05
 const BLEND_SECONDS = 0.1
 const MOVING_LAND_SECONDS = 0.125
+const NO_GEAR_DYE_CHANNELS: StarterGearTemplate['dyeChannels'] = new Map()
 
 export interface ApprovedAnimationState {
   readonly state: 'idle' | 'moving' | 'jumping' | 'landing'
@@ -21,6 +24,7 @@ export class ApprovedWorldCharacter {
   readonly root = new THREE.Group()
   private readonly body: THREE.Object3D
   private readonly mixer: THREE.AnimationMixer
+  private readonly gear: StarterGear | undefined
   private readonly actions: ReadonlyMap<ApprovedClipName, THREE.AnimationAction>
   private readonly materials = new Set<THREE.Material>()
   private previousX: number
@@ -36,7 +40,7 @@ export class ApprovedWorldCharacter {
   private blendTarget = new Map<ApprovedClipName, number>([['idle', 1]])
   private blendElapsed = BLEND_SECONDS
 
-  constructor(private readonly template: ApprovedCharacterTemplate, explorer: Explorer) {
+  constructor(private readonly template: ApprovedCharacterTemplate, explorer: Explorer, gearTemplate?: StarterGearTemplate) {
     this.root.name = 'world-character'
     this.body = cloneSkinned(template.scene)
     const materialClones = new Map<THREE.Material, THREE.Material>()
@@ -56,6 +60,7 @@ export class ApprovedWorldCharacter {
     })
     this.mixer = new THREE.AnimationMixer(this.body)
     this.actions = new Map(APPROVED_CLIPS.map((name) => [name, this.mixer.clipAction(this.clip(name))]))
+    this.gear = gearTemplate ? new StarterGear(this.body, template.manifest.glb.sha256, gearTemplate) : undefined
     this.previousX = explorer.x
     this.previousZ = explorer.z
     this.previousGrounded = explorer.grounded
@@ -70,6 +75,19 @@ export class ApprovedWorldCharacter {
       speed: this.currentSpeed,
       phase: this.locomotionPhase,
     }
+  }
+
+  get gearAppearance(): StarterGearAppearance { return this.gear?.appearanceState ?? DEFAULT_STARTER_GEAR_APPEARANCE }
+  get gearDyeChannels(): StarterGearTemplate['dyeChannels'] { return this.gear?.dyeChannels ?? NO_GEAR_DYE_CHANNELS }
+
+  setGearEquipped(slot: StarterGearSlot, equipped: boolean): void {
+    if (!this.gear) throw new Error('Starter gear is not loaded.')
+    this.gear.setEquipped(slot, equipped)
+  }
+
+  setGearDye(slot: StarterGearSlot, channel: StarterGearDyeChannel, tint: string | null): void {
+    if (!this.gear) throw new Error('Starter gear is not loaded.')
+    this.gear.setDye(slot, channel, tint)
   }
 
   update(explorer: Explorer, delta: number): void {
@@ -142,6 +160,7 @@ export class ApprovedWorldCharacter {
   dispose(): void {
     this.mixer.stopAllAction()
     this.mixer.uncacheRoot(this.body)
+    this.gear?.dispose()
     for (const material of this.materials) material.dispose()
     this.root.removeFromParent()
   }

@@ -8,6 +8,15 @@ import { loadSceneryKit, type SceneryKit } from './scenery-kit'
 import { explorerFacingFromCamera } from './steering'
 import { nearestLandmark, SPAWN } from './world-data'
 import { advanceExplorer } from './world-controls'
+import type { StarterGearAppearance } from './starter-gear'
+import {
+  loadStarterGear,
+  STARTER_GEAR_DYE_CHANNELS,
+  STARTER_GEAR_SLOTS,
+  type StarterGearDyeChannel,
+  type StarterGearSlot,
+  type StarterGearTemplate,
+} from './starter-gear-source'
 
 interface DiagnosticState {
   position: { x: number; y: number; z: number }; facing: number; location: string; overview: boolean
@@ -15,12 +24,15 @@ interface DiagnosticState {
   frameMs: number; frameTimes: number[]
   camera: { x: number; y: number; z: number; yaw: number }; forward: { x: number; z: number }
   drawCalls: number; triangles: number; errors: string[]
+  gearAppearance: StarterGearAppearance
 }
 
 interface WorldDiagnostics {
   readonly state: DiagnosticState
   readonly controls: {
     move(x: number, z: number, sprint?: boolean): void; stop(): void; reset(): void; toggleOverview(): void
+    setGearEquipped(slot: StarterGearSlot, equipped: boolean): void
+    setGearDye(slot: StarterGearSlot, channel: StarterGearDyeChannel, tint: string | null): void
   }
 }
 
@@ -49,9 +61,9 @@ async function boot(): Promise<void> {
   booting = true
   showLoading()
   try {
-    const [kit, character] = await Promise.all([loadSceneryKit(), loadApprovedCharacter()])
+    const [kit, character, gear] = await Promise.all([loadSceneryKit(), loadApprovedCharacter(), loadStarterGear()])
     app!.replaceChildren()
-    startWorld(app!, kit, character)
+    startWorld(app!, kit, character, gear)
   } catch (error) {
     console.error(error)
     booting = false
@@ -63,16 +75,25 @@ function initialExplorer(cameraYaw = DEFAULT_CAMERA_YAW): Explorer {
   return { ...createExplorer(SPAWN), facing: explorerFacingFromCamera(cameraYaw) }
 }
 
-function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedCharacterTemplate): void {
+function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedCharacterTemplate, gear: StarterGearTemplate): void {
   let explorer = initialExplorer()
   const hud = createWorldHud(host)
-  const view = new WorldView(host, kit, character, explorer)
+  const view = new WorldView(host, kit, character, gear, explorer)
   const input = new WorldInput(view.canvas, hud.joystick, hud.joystickKnob, hud.sprintButton, hud.jumpButton)
   let overview = false
+  let gearOpen = false
   let injected = { x: 0, z: 0, sprint: false }
   let previous = performance.now()
   let averageFrameMs = 0
   const errors: string[] = []
+
+  for (const slot of STARTER_GEAR_SLOTS) {
+    const channels = view.gearDyeChannels.get(slot)
+    hud.setGearSlotAvailable(slot, !!channels)
+    if (!channels) continue
+    hud.setGearDyeAvailability(slot, channels)
+    hud.setGearAppearance(slot, view.gearAppearance[slot])
+  }
 
   function toggleOverview(): void {
     overview = !overview
@@ -91,8 +112,48 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
     if (overview) toggleOverview()
   }
 
+  function syncGearAppearance(slot: StarterGearSlot): void {
+    hud.setGearAppearance(slot, view.gearAppearance[slot])
+    diagnostics.state.gearAppearance = view.gearAppearance
+  }
+
+  function setGearEquipped(slot: StarterGearSlot, equipped: boolean): void {
+    view.setGearEquipped(slot, equipped)
+    syncGearAppearance(slot)
+  }
+
+  function setGearDye(slot: StarterGearSlot, channel: StarterGearDyeChannel, tint: string | null): void {
+    view.setGearDye(slot, channel, tint)
+    syncGearAppearance(slot)
+  }
+
+  function pointerBlur(button: HTMLButtonElement, event: MouseEvent): void {
+    if (event.detail > 0) button.blur()
+  }
+
   hud.resetButton.addEventListener('click', () => { reset(); hud.resetButton.blur() })
   hud.overviewButton.addEventListener('click', () => { toggleOverview(); hud.overviewButton.blur() })
+  hud.gearButton.addEventListener('click', (event) => {
+    gearOpen = !gearOpen
+    hud.setGearPanel(gearOpen)
+    pointerBlur(hud.gearButton, event)
+  })
+  for (const slot of STARTER_GEAR_SLOTS) {
+    const button = hud.gearSlotButtons[slot]
+    button.addEventListener('click', (event) => {
+      setGearEquipped(slot, !view.gearAppearance[slot].equipped)
+      pointerBlur(button, event)
+    })
+    for (const channel of STARTER_GEAR_DYE_CHANNELS) {
+      const input = hud.gearDyeInputs[slot][channel]
+      input.addEventListener('input', () => setGearDye(slot, channel, input.value))
+      const clear = hud.gearDyeClearButtons[slot][channel]
+      clear.addEventListener('click', (event) => {
+        setGearDye(slot, channel, null)
+        pointerBlur(clear, event)
+      })
+    }
+  }
   window.addEventListener('resize', () => view.resize())
   window.addEventListener('error', (event) => { errors.push(event.message) })
   window.addEventListener('unhandledrejection', (event) => { errors.push(String(event.reason)) })
@@ -103,10 +164,11 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
       grounded: explorer.grounded, jumpPhase: explorer.jumpPhase,
       frameMs: 0, frameTimes: [], camera: { x: 0, y: 0, z: 0, yaw: 0 }, forward: { x: 0, z: 1 },
       drawCalls: 0, triangles: 0, errors,
+      gearAppearance: view.gearAppearance,
     },
     controls: {
       move: (x, z, sprint = false) => { injected = { x, z, sprint } },
-      stop: () => { injected = { x: 0, z: 0, sprint: false } }, reset, toggleOverview,
+      stop: () => { injected = { x: 0, z: 0, sprint: false } }, reset, toggleOverview, setGearEquipped, setGearDye,
     },
   }
   if (import.meta.env.DEV) globalThis.ashveilWorld = diagnostics
