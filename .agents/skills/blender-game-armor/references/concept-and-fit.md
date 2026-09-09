@@ -12,6 +12,15 @@ Read this reference when defining a visual target, choosing deformation, reusing
 
 Reuse approved reference views when they already answer the task; do not regenerate them by habit. For a new concept, use this compact prompt shape and fill only relevant fields: `Design [piece or set] on [approved body] for [class fantasy], matching [references]. Keep [fixed materials/colors] fixed and show [dyeable channels]. Show front and back in the same neutral pose, camera scale, and proportions; add a side view for [depth-sensitive forms]. Make slot boundaries and overlaps readable.`
 
+## Blender reference-image tracing
+
+1. Import approved image files through Blender's visible UI with **Add > Image > Reference** (or the version-equivalent command); put separate front, back, and side image empties in a reference-only collection.
+2. In each matching orthographic view, align scale and origin to approved body landmarks: feet, head, waist, and shoulders. Preserve the image aspect ratio and the approved body mesh.
+3. Set opacity and draw depth for an effective overlay, then lock reference selection and transforms after alignment.
+4. In Edit Mode, manually trace silhouettes and panel boundaries with vertices, edges, planes, or curves as construction. Do not use automatic image-to-mesh conversion or treat a traced flat outline as final gear.
+5. Build actual 3D depth, thickness, and body clearance from the other orthographic views and perspective; reconcile concept-perspective mismatch without warping the approved body.
+6. Show the overlay on for alignment and off for final 3D inspection. Keep references out of game export and render, then save the `.blend` with relative image paths or packed reference images where appropriate for reopening.
+
 ## Slot and deformation plan
 
 Choose ownership from the visual and animation behavior, not merely where a piece appears in bind pose.

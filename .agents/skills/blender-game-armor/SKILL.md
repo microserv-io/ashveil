@@ -37,6 +37,7 @@ Confirm only missing decisions that would materially change the result: class fa
 If no approved reference already defines the target, use the available image-generation capability to create a concept on the current body before modeling. Keep front and back in the same pose, scale, and proportions; add a side view early for dimensional pieces and hanging garments. Reconcile contradictions explicitly and choose a primary view. Never claim pixel-perfect fidelity from one screenshot.
 
 Read [concept-and-fit.md](references/concept-and-fit.md) before concept creation, slot planning, reuse decisions, or multi-body fitting.
+When approved image views are used for manual construction, follow its **Blender reference-image tracing** section before modeling.
 
 ## Work in evidence-producing stages
 
