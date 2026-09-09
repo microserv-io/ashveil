@@ -1,0 +1,6 @@
+interface:
+  display_name: "Blender Game Armor"
+  short_description: "Author fitted game armor through Blender UI"
+  default_prompt: "Use $blender-game-armor to create and validate a fitted armor piece for the current game character."
+policy:
+  allow_implicit_invocation: true
