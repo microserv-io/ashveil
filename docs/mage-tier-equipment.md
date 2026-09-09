@@ -123,7 +123,7 @@ jump start, jump air, and jump land. The crescent shoulder blades, inner arc,
 outer hooked wing, three hanging plates, and fixed emissive crystal must remain
 readable in that review.
 
-The tenth in-progress export established a numeric regression baseline at
+Historical evidence: the tenth in-progress export established a numeric regression baseline at
 normalized times `0.246` and `0.768`. With all Mage slots equipped, aggregate
 robe/leg segment-triangle hits changed from normal skinning to the garment field
 by `4783 -> 3801` and `4679 -> 3777` in run, and `4842 -> 4004` and
@@ -134,7 +134,7 @@ evidence; they are not a collision-free certificate. Each later manual export
 must repeat the same poses visually. Back views must also check that outward
 robe motion does not create an obvious new crossing with the separate mantle.
 
-The tenth pairwise diagnostic recorded normal skinning -> garment field counts
+Historical evidence: the tenth pairwise diagnostic recorded normal skinning -> garment field counts
 as follows. `I`, `C`, `Iv`, and `V` mean Indigo, Champagne trim, Ivory, and
 Violet; `Back` is the aggregate robe/mantle count.
 
@@ -145,9 +145,10 @@ Violet; `Back` is the aggregate robe/mantle count.
 | sprint `.246` | 4260 -> 4422 | 539 -> 276 | 330 -> 484 | 2384 -> 2349 | 7942 -> 8504 | 3120 -> 3197 | 0 -> 112 |
 | sprint `.768` | 4228 -> 4482 | 424 -> 161 | 348 -> 367 | 2359 -> 2349 | 8252 -> 8855 | 3144 -> 3263 | 132 -> 204 |
 
-Several raw counts increase, including the mantle count. The eleventh export
-was assessed visually at these poses, but its numeric pairwise diagnostic was
-not rerun; no zero-intersection result is claimed for it.
+Several raw counts increase, including the mantle count. Historical evidence:
+the eleventh export was assessed visually at these poses, but its numeric
+pairwise diagnostic was not rerun; no zero-intersection result is claimed for
+it.
 
 The eleventh export passed live idle, walk, run, sprint, jump start, jump air,
 and jump land samples without the prior Ivory/Violet striped crossings or a
@@ -155,10 +156,29 @@ large new robe/mantle crossing. None, Starter, and Mage boots with Mage legs,
 Chest/waist None selections, slot mixing, dyes, fixed Ivory/crystal channels,
 and paused poses also worked in that review.
 A pronounced outward sprint flare and a small angular Ivory side patch remain
-visible limitations. The current GLB is `8,327,984`
-bytes with SHA-256 `cdd4ad0cacb34baa9592704a855477f35e9cd8e344dd9c7aec7b4efecb657cab`;
-its manifest records `94,318` triangles, `7` source materials, `39` draw calls,
-and `31` per-character material instances.
+visible limitations.
+
+The current fourteenth manual shoulder pass was made in Blender's 3D UI and
+mirrored the existing attachment. It raises and insets the layered plate faces,
+uses fuller faceted crystals, refines the crescent curve and tapered tips,
+turns the shoulder forms ±45° to face front, and adds a matching rear gold wing.
+Shoulder faces were triangulated, degenerate geometry was dissolved, and normals
+were reset with edges sharper than 40° marked sharp. The current GLB is
+`8,797,500` bytes with SHA-256
+`8608be556b266eff6f279d07bd28ffbb23a5b3db6fda7472ab9eda763a8a8da7`; its manifest
+records `111,080` triangles, `39` draw calls, `7` source materials, `31`
+per-character material instances, and `19,622` triangles per shoulder.
+
+An independent audit found the eight non-shoulder roots, materials, image,
+skin, and inverse-bind matrices exact to the historical eleventh export. It
+also found 68 joints, 58,546 skinned vertices, at most four influences, and a
+nearly exact shoulder mirror (about `2e-7 m`). Live cold review covered front
+and back idle plus `jump_air` at `.5` from Front for the fourteenth pass: the
+attachment and shading were clean. The thirteenth live review covered run at
+`.246` from Left and `.768` from Right, sprint at `.246` from Front and `.768`
+from Back, and `jump_air` at `.5` from Front; it found no obvious new head or
+collar crossing. These visual samples do not claim pixel-perfect body fit or
+zero intersections. Microscopic Champagne seams and normals remain nonblocking.
 
 The hanging skirt uses authored skin weights on the existing rig. The renderer
 consumes the four influences in `JOINTS_0` and `WEIGHTS_0`; exports with
