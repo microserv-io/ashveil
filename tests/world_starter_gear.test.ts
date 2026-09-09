@@ -8,6 +8,7 @@ import * as THREE from 'three'
 import { GLTFLoader, type GLTFParser } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { ApprovedWorldCharacter } from '../src/world/approved-character'
 import { validateApprovedCharacterTemplate, validateApprovedManifest } from '../src/world/approved-character-source'
+import { adaptStarterGearTemplate } from '../src/world/gear-source'
 import { createExplorer } from '../src/world/movement'
 import { StarterGear } from '../src/world/starter-gear'
 import {
@@ -181,12 +182,10 @@ describe('starter gear asset contract', () => {
     const bodyData = bodyFile.buffer.slice(bodyFile.byteOffset, bodyFile.byteOffset + bodyFile.byteLength)
     const bodyGltf = await assetLoader().parseAsync(bodyData, '')
     const bodyTemplate = validateApprovedCharacterTemplate(bodyGltf, bodyManifest)
-    const character = new ApprovedWorldCharacter(bodyTemplate, createExplorer({ x: 0, z: 0 }), gearTemplate)
-    expect(character.gearAppearance).toEqual({
-      chest: { equipped: true, primaryTint: null, trimTint: null },
-      legs: { equipped: true, primaryTint: null, trimTint: null },
-      boots: { equipped: true, primaryTint: null, trimTint: null },
-      waist: { equipped: gearTemplate.meshes.has('waist'), primaryTint: null, trimTint: null },
+    const character = new ApprovedWorldCharacter(bodyTemplate, createExplorer({ x: 0, z: 0 }), [adaptStarterGearTemplate(gearTemplate)])
+    expect(character.gearAppearance.selected).toMatchObject({
+      chest: 'starter-leather', legs: 'starter-leather', boots: 'starter-leather',
+      waist: gearTemplate.meshes.has('waist') ? 'starter-leather' : null,
     })
     character.dispose()
   }, 30_000)
@@ -196,6 +195,8 @@ describe('starter gear asset contract', () => {
     expect(validateStarterGearManifest(manifest(true)).slots.map((slot) => slot.slot)).toEqual(STARTER_GEAR_SLOTS)
     expect(() => validateStarterGearManifest({ ...manifest(), slots: manifest().slots.slice(1) })).toThrow(/slot is incomplete/)
     expect(() => validateStarterGearManifest({ ...manifest(), budget: { triangles: 30_001, materials: 3 } })).toThrow(/budget/)
+    expect(() => adaptStarterGearTemplate(template())).toThrow(/exactly four runtime slots/)
+    expect(adaptStarterGearTemplate(template({ includeWaist: true })).parts.size).toBe(4)
   })
 
   it('accepts semantic primary and trim primitives with arbitrary manifest mesh names', () => {
@@ -224,6 +225,74 @@ describe('starter gear asset contract', () => {
     const check = spawnSync(process.execPath, [MANIFEST_SCRIPT, '--check'], { encoding: 'utf8' })
     expect(check.status, check.stderr).toBe(0)
     expect(readFileSync(manifestPath)).toEqual(before)
+
+    const mageContract = spawnSync(process.execPath, ['--input-type=module', '-e', `
+      import {
+        ALL_MAGE_SLOTS, MAGE_PARTS, hasPunctualLights, validateNodeHierarchy,
+        loadTrustedRigProfiles, validatePinnedGlb, validateRigProfiles,
+        TRUSTED_STARTER_ROUNDTRIP, validateSelfContainedDocument, validateTrustedStarterProfile,
+      } from ${JSON.stringify(pathToFileURL(MANIFEST_SCRIPT).href)}
+      import { createHash } from 'node:crypto'
+      import { readFileSync } from 'node:fs'
+      const chest = MAGE_PARTS.filter((part) => part.slot === 'chest')
+      const shoulders = MAGE_PARTS.filter((part) => part.slot === 'shoulders')
+      if (ALL_MAGE_SLOTS.length !== 8 || chest.length !== 2 || !chest.some((part) => part.node === 'ArcaneMageRobeSkirt')) process.exit(2)
+      if (shoulders.length !== 2 || shoulders.some((part) => part.deformation.kind !== 'rigid')) process.exit(3)
+      let hierarchy = ''
+      try { validateNodeHierarchy([{ children: [1] }, { children: [0] }]) } catch (error) { hierarchy = String(error) }
+      if (!/cycle/.test(hierarchy)) process.exit(4)
+      if (!hasPunctualLights({ nodes: [{}], extensions: { KHR_lights_punctual: { lights: [{}] } } })) process.exit(5)
+      try { validateSelfContainedDocument({ buffers: [{}], images: [{ bufferView: 0 }] }) } catch { process.exit(6) }
+
+      const trusted = loadTrustedRigProfiles()
+      const body = trusted.profiles.find((profile) => profile.id === 'approved-body-direct')
+      const starter = trusted.profiles.find((profile) => profile.id === 'starter-roundtrip')
+      if (!body || !starter || validateRigProfiles(body, trusted.profiles) !== body.id
+        || validateRigProfiles(starter, trusted.profiles) !== starter.id) process.exit(7)
+      const rejects = (operation, pattern, code) => {
+        let error = ''
+        try { operation() } catch (caught) { error = String(caught) }
+        if (!pattern.test(error)) process.exit(code)
+      }
+      rejects(() => validateRigProfiles({ ...starter, inverseBindSha256: '0'.repeat(64) }, trusted.profiles), /complete trusted rig profile/, 8)
+
+      const nonRigidJoint = starter.jointNames.at(-1)
+      const changedMatrices = Object.fromEntries(Object.entries(starter.jointRestMatrices)
+        .map(([joint, matrix]) => [joint, [...matrix]]))
+      changedMatrices[nonRigidJoint][12] += Number.EPSILON
+      rejects(() => validateRigProfiles({ ...starter, jointRestMatrices: changedMatrices }, trusted.profiles), /complete trusted rig profile/, 9)
+      rejects(() => validateRigProfiles({
+        ...body, inverseBindSha256: starter.inverseBindSha256,
+      }, trusted.profiles), /complete trusted rig profile/, 10)
+
+      const starterPath = ${JSON.stringify(join(ROOT, 'public', 'gear', 'starter-leather', 'starter-leather.glb'))}
+      const starterFile = readFileSync(starterPath)
+      const starterExpected = {
+        schema: 'ashveil.starter-gear.v1', body: 'masculine-clean-v1',
+        file: 'starter-leather.glb', label: 'Starter roundtrip',
+        bytes: TRUSTED_STARTER_ROUNDTRIP.bytes, sha256: TRUSTED_STARTER_ROUNDTRIP.sha256,
+      }
+      validatePinnedGlb(starterFile, trusted.starterManifest, starterExpected)
+      const tamperedFile = Buffer.from(starterFile)
+      tamperedFile[tamperedFile.length - 1] ^= 1
+      const pairedTamperedManifest = {
+        ...trusted.starterManifest,
+        glb: {
+          ...trusted.starterManifest.glb,
+          sha256: createHash('sha256').update(tamperedFile).digest('hex'),
+        },
+      }
+      rejects(() => validatePinnedGlb(tamperedFile, pairedTamperedManifest, starterExpected), /pinned manifest/, 11)
+      rejects(() => validateTrustedStarterProfile(
+        { ...trusted.starterManifest, inverseBindSha256: 'f'.repeat(64) }, starter,
+        trusted.bodyManifest, body,
+      ), /bind identity/, 12)
+      rejects(() => validateTrustedStarterProfile(
+        { ...trusted.starterManifest, bodySha256: 'f'.repeat(64) }, starter,
+        trusted.bodyManifest, body,
+      ), /approved body/, 13)
+    `], { encoding: 'utf8' })
+    expect(mageContract.status, mageContract.stderr).toBe(0)
 
     const validation = spawnSync(process.execPath, ['--input-type=module', '-e', `
       import { validateRawSkinAttributes } from ${JSON.stringify(pathToFileURL(MANIFEST_SCRIPT).href)}

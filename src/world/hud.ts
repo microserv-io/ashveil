@@ -1,10 +1,22 @@
-import type { StarterGearSlotAppearance } from './starter-gear'
 import {
-  STARTER_GEAR_DYE_CHANNELS,
-  STARTER_GEAR_SLOTS,
-  type StarterGearDyeChannel,
-  type StarterGearSlot,
-} from './starter-gear-source'
+  GEAR_DYE_CHANNELS,
+  GEAR_SET_IDS,
+  VISUAL_GEAR_SLOTS,
+  type GearDyeChannel,
+  type GearSetId,
+  type VisualGearSlot,
+} from './gear-source'
+import type { GearSlotDyes } from './gear'
+
+const GEAR_SET_LABELS: Readonly<Record<GearSetId, string>> = {
+  'starter-leather': 'Starter leather',
+  'arcane-mage-tier': 'Arcane mage',
+}
+
+const GEAR_PRESET_LABELS: Readonly<Record<GearSetId, string>> = {
+  'starter-leather': 'Full starter set',
+  'arcane-mage-tier': 'Full mage set',
+}
 
 export interface WorldHud {
   readonly joystick: HTMLElement
@@ -14,15 +26,17 @@ export interface WorldHud {
   readonly overviewButton: HTMLButtonElement
   readonly resetButton: HTMLButtonElement
   readonly gearButton: HTMLButtonElement
-  readonly gearSlotButtons: Readonly<Record<StarterGearSlot, HTMLButtonElement>>
-  readonly gearDyeInputs: Readonly<Record<StarterGearSlot, Readonly<Record<StarterGearDyeChannel, HTMLInputElement>>>>
-  readonly gearDyeClearButtons: Readonly<Record<StarterGearSlot, Readonly<Record<StarterGearDyeChannel, HTMLButtonElement>>>>
+  readonly gearSetSelects: Readonly<Record<VisualGearSlot, HTMLSelectElement>>
+  readonly gearPresetButtons: Readonly<Record<GearSetId, HTMLButtonElement>>
+  readonly gearDyeInputs: Readonly<Record<VisualGearSlot, Readonly<Record<GearDyeChannel, HTMLInputElement>>>>
+  readonly gearDyeClearButtons: Readonly<Record<VisualGearSlot, Readonly<Record<GearDyeChannel, HTMLButtonElement>>>>
   setLocation(name: string): void
   setOverview(active: boolean): void
   setGearPanel(open: boolean): void
-  setGearSlotAvailable(slot: StarterGearSlot, available: boolean): void
-  setGearDyeAvailability(slot: StarterGearSlot, channels: ReadonlySet<StarterGearDyeChannel>): void
-  setGearAppearance(slot: StarterGearSlot, appearance: StarterGearSlotAppearance): void
+  setGearSetAvailable(id: GearSetId, available: boolean): void
+  setGearOptions(slot: VisualGearSlot, ids: readonly GearSetId[]): void
+  setGearDyeAvailability(slot: VisualGearSlot, channels: ReadonlySet<GearDyeChannel>): void
+  setGearAppearance(slot: VisualGearSlot, selected: GearSetId | null, dyes: GearSlotDyes): void
 }
 
 export function createWorldHud(root: HTMLElement): WorldHud {
@@ -41,12 +55,16 @@ export function createWorldHud(root: HTMLElement): WorldHud {
       </section>
       <section id="gear-panel" aria-labelledby="gear-title" hidden class="pointer-events-auto fixed right-4 top-36 z-30 max-h-[calc(100vh-10rem)] w-72 overflow-y-auto rounded-xl border border-amber-100/15 bg-stone-950/85 p-3 shadow-2xl backdrop-blur-md min-[440px]:top-20 sm:right-6 sm:top-24">
         <h2 id="gear-title" class="px-2 pb-2 font-serif text-lg text-stone-50">Gear</h2>
+        <div class="mb-3 grid grid-cols-2 gap-2">
+          ${GEAR_SET_IDS.map((id) => `<button id="gear-preset-${id}" type="button" class="rounded-md border border-amber-200/20 bg-amber-100/10 px-2 py-2 text-xs text-amber-50 hover:bg-amber-100/15">${GEAR_PRESET_LABELS[id]}</button>`).join('')}
+        </div>
         <div class="grid gap-2">
-          ${STARTER_GEAR_SLOTS.map((slot) => `
+          ${VISUAL_GEAR_SLOTS.map((slot) => `
             <section id="gear-${slot}-section" class="rounded-lg border border-stone-200/15 bg-stone-900/55 p-2">
-              <button id="gear-${slot}" aria-label="Toggle ${slot}" aria-pressed="true" class="flex min-h-11 w-full items-center justify-between rounded-md border border-amber-200/30 bg-amber-100/10 px-3 py-2 text-left text-sm capitalize hover:bg-amber-100/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-200"><span>${slot}</span><span data-state>Equipped</span></button>
+              <label for="gear-${slot}" class="mb-1 block text-xs capitalize text-stone-300">${slot}</label>
+              <select id="gear-${slot}" aria-label="${slot} appearance" class="min-h-11 w-full rounded-md border border-amber-200/30 bg-stone-900 px-3 py-2 text-sm text-stone-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-200"><option value="">None</option></select>
               <div class="mt-2 grid gap-2 px-1">
-                ${STARTER_GEAR_DYE_CHANNELS.map((channel) => `
+                ${GEAR_DYE_CHANNELS.map((channel) => `
                   <div id="gear-${slot}-${channel}-row" class="grid grid-cols-[1fr_auto_auto] items-center gap-2">
                     <label for="gear-${slot}-${channel}" class="text-xs capitalize text-stone-300">${channel}</label>
                     <input id="gear-${slot}-${channel}" type="color" value="#ffffff" aria-label="${slot} ${channel} dye" class="h-8 w-10 cursor-pointer rounded border border-stone-200/20 bg-transparent p-0.5 disabled:cursor-not-allowed disabled:opacity-40">
@@ -76,7 +94,8 @@ export function createWorldHud(root: HTMLElement): WorldHud {
   const overviewButton = get<HTMLButtonElement>('overview')
   const gearButton = get<HTMLButtonElement>('gear')
   const gearPanel = get<HTMLElement>('gear-panel')
-  const gearSlotButtons = Object.fromEntries(STARTER_GEAR_SLOTS.map((slot) => [slot, get<HTMLButtonElement>(`gear-${slot}`)])) as Record<StarterGearSlot, HTMLButtonElement>
+  const gearSetSelects = Object.fromEntries(VISUAL_GEAR_SLOTS.map((slot) => [slot, get<HTMLSelectElement>(`gear-${slot}`)])) as Record<VisualGearSlot, HTMLSelectElement>
+  const gearPresetButtons = Object.fromEntries(GEAR_SET_IDS.map((id) => [id, get<HTMLButtonElement>(`gear-preset-${id}`)])) as Record<GearSetId, HTMLButtonElement>
   const gearDyeInputs = gearControlRecord((slot, channel) => get<HTMLInputElement>(`gear-${slot}-${channel}`))
   const gearDyeClearButtons = gearControlRecord((slot, channel) => get<HTMLButtonElement>(`gear-${slot}-${channel}-clear`))
   return {
@@ -87,7 +106,8 @@ export function createWorldHud(root: HTMLElement): WorldHud {
     overviewButton,
     resetButton: get('reset'),
     gearButton,
-    gearSlotButtons,
+    gearSetSelects,
+    gearPresetButtons,
     gearDyeInputs,
     gearDyeClearButtons,
     setLocation: (name) => { location.textContent = name },
@@ -96,27 +116,25 @@ export function createWorldHud(root: HTMLElement): WorldHud {
       gearPanel.hidden = !open
       gearButton.setAttribute('aria-expanded', String(open))
     },
-    setGearSlotAvailable: (slot, available) => {
-      get<HTMLElement>(`gear-${slot}-section`).hidden = !available
+    setGearSetAvailable: (id, available) => {
+      gearPresetButtons[id].disabled = !available
+      gearPresetButtons[id].hidden = !available
+    },
+    setGearOptions: (slot, ids) => {
+      const select = gearSetSelects[slot]
+      select.replaceChildren(new Option('None', ''), ...ids.map((id) => new Option(GEAR_SET_LABELS[id], id)))
     },
     setGearDyeAvailability: (slot, channels) => {
-      for (const channel of STARTER_GEAR_DYE_CHANNELS) {
+      for (const channel of GEAR_DYE_CHANNELS) {
         const available = channels.has(channel)
         get<HTMLElement>(`gear-${slot}-${channel}-row`).hidden = !available
         gearDyeInputs[slot][channel].disabled = !available
       }
     },
-    setGearAppearance: (slot, appearance) => {
-      const button = gearSlotButtons[slot]
-      button.setAttribute('aria-pressed', String(appearance.equipped))
-      button.classList.toggle('border-amber-200/30', appearance.equipped)
-      button.classList.toggle('bg-amber-100/10', appearance.equipped)
-      button.classList.toggle('border-stone-200/15', !appearance.equipped)
-      button.classList.toggle('bg-stone-900/70', !appearance.equipped)
-      const state = button.querySelector<HTMLElement>('[data-state]')
-      if (state) state.textContent = appearance.equipped ? 'Equipped' : 'Unequipped'
-      for (const channel of STARTER_GEAR_DYE_CHANNELS) {
-        const tint = channel === 'primary' ? appearance.primaryTint : appearance.trimTint
+    setGearAppearance: (slot, selected, dyes) => {
+      gearSetSelects[slot].value = selected ?? ''
+      for (const channel of GEAR_DYE_CHANNELS) {
+        const tint = channel === 'primary' ? dyes.primaryTint : dyes.trimTint
         gearDyeInputs[slot][channel].value = tint ?? '#ffffff'
         gearDyeClearButtons[slot][channel].disabled = tint === null || gearDyeInputs[slot][channel].disabled
       }
@@ -124,9 +142,9 @@ export function createWorldHud(root: HTMLElement): WorldHud {
   }
 }
 
-function gearControlRecord<T>(create: (slot: StarterGearSlot, channel: StarterGearDyeChannel) => T): Record<StarterGearSlot, Record<StarterGearDyeChannel, T>> {
-  return Object.fromEntries(STARTER_GEAR_SLOTS.map((slot) => [
+function gearControlRecord<T>(create: (slot: VisualGearSlot, channel: GearDyeChannel) => T): Record<VisualGearSlot, Record<GearDyeChannel, T>> {
+  return Object.fromEntries(VISUAL_GEAR_SLOTS.map((slot) => [
     slot,
-    Object.fromEntries(STARTER_GEAR_DYE_CHANNELS.map((channel) => [channel, create(slot, channel)])),
-  ])) as Record<StarterGearSlot, Record<StarterGearDyeChannel, T>>
+    Object.fromEntries(GEAR_DYE_CHANNELS.map((channel) => [channel, create(slot, channel)])),
+  ])) as Record<VisualGearSlot, Record<GearDyeChannel, T>>
 }

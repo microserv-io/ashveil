@@ -1,0 +1,353 @@
+{
+  "schema": "ashveil.gear-set.v2",
+  "id": "arcane-mage-tier",
+  "body": "masculine-clean-v1",
+  "bodySha256": "d586edf0e2b2e86247932a9f9e62f514463d6daa05569228f9076edb9f67479c",
+  "glb": {
+    "file": "arcane-mage-tier.glb",
+    "bytes": 8327984,
+    "sha256": "cdd4ad0cacb34baa9592704a855477f35e9cd8e344dd9c7aec7b4efecb657cab"
+  },
+  "jointNames": [
+    "root.x",
+    "spine_01.x",
+    "spine_02.x",
+    "spine_03.x",
+    "neck.x",
+    "head.x",
+    "shoulder.l",
+    "arm_stretch.l",
+    "arm_twist.l",
+    "forearm_stretch.l",
+    "forearm_twist.l",
+    "hand.l",
+    "index1_base.l",
+    "index1.l",
+    "index2.l",
+    "index3.l",
+    "middle1_base.l",
+    "middle1.l",
+    "middle2.l",
+    "middle3.l",
+    "pinky1_base.l",
+    "pinky1.l",
+    "pinky2.l",
+    "pinky3.l",
+    "ring1_base.l",
+    "ring1.l",
+    "ring2.l",
+    "ring3.l",
+    "thumb1.l",
+    "thumb2.l",
+    "thumb3.l",
+    "shoulder.r",
+    "arm_stretch.r",
+    "arm_twist.r",
+    "forearm_stretch.r",
+    "forearm_twist.r",
+    "hand.r",
+    "index1_base.r",
+    "index1.r",
+    "index2.r",
+    "index3.r",
+    "middle1_base.r",
+    "middle1.r",
+    "middle2.r",
+    "middle3.r",
+    "pinky1_base.r",
+    "pinky1.r",
+    "pinky2.r",
+    "pinky3.r",
+    "ring1_base.r",
+    "ring1.r",
+    "ring2.r",
+    "ring3.r",
+    "thumb1.r",
+    "thumb2.r",
+    "thumb3.r",
+    "thigh_stretch.l",
+    "leg_stretch.l",
+    "foot.l",
+    "toes_01.l",
+    "leg_twist.l",
+    "thigh_twist.l",
+    "thigh_stretch.r",
+    "leg_stretch.r",
+    "foot.r",
+    "toes_01.r",
+    "leg_twist.r",
+    "thigh_twist.r"
+  ],
+  "inverseBindSha256": "18beee7f914be495ddf42602b18e92960b8511a561c8bee0dd1daab71c03b1bc",
+  "materials": [
+    {
+      "name": "Dye Trim | Mage Champagne Metal",
+      "dye": "trim"
+    },
+    {
+      "name": "Mage Arcane Crystal",
+      "dye": null
+    },
+    {
+      "name": "Dye Primary | Mage Indigo Cloth",
+      "dye": "primary"
+    },
+    {
+      "name": "Dye Primary | Mage Violet Cloth",
+      "dye": "primary"
+    },
+    {
+      "name": "Mage Arcane Orbit Glow",
+      "dye": null
+    },
+    {
+      "name": "Dye Primary | Mage Dark Cloth",
+      "dye": "primary"
+    },
+    {
+      "name": "Mage Ivory Cloth",
+      "dye": null
+    }
+  ],
+  "slots": [
+    {
+      "slot": "head",
+      "parts": [
+        {
+          "node": "ArcaneMageHead",
+          "deformation": {
+            "kind": "rigid",
+            "joint": "head.x"
+          },
+          "triangles": 1123,
+          "bounds": {
+            "min": [
+              -0.08329886198041116,
+              1.6983877090555597,
+              -0.10610630898543273
+            ],
+            "max": [
+              0.08329878002413398,
+              1.7485520497244784,
+              0.11172524111664614
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slot": "shoulders",
+      "parts": [
+        {
+          "node": "ArcaneMageShoulderL",
+          "deformation": {
+            "kind": "rigid",
+            "joint": "shoulder.l"
+          },
+          "triangles": 11274,
+          "bounds": {
+            "min": [
+              0.1414963052474368,
+              1.2466998555079234,
+              -0.20145173580720105
+            ],
+            "max": [
+              0.36413053154109865,
+              1.6435687099033092,
+              0.07919335222140748
+            ]
+          }
+        },
+        {
+          "node": "ArcaneMageShoulderR",
+          "deformation": {
+            "kind": "rigid",
+            "joint": "shoulder.r"
+          },
+          "triangles": 11208,
+          "bounds": {
+            "min": [
+              -0.36395589230457737,
+              1.2466999241707866,
+              -0.20211998630972133
+            ],
+            "max": [
+              -0.14132163206859577,
+              1.6435687855033185,
+              0.08001457655262632
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slot": "chest",
+      "parts": [
+        {
+          "node": "ArcaneMageChest",
+          "deformation": {
+            "kind": "skinned"
+          },
+          "triangles": 6355,
+          "bounds": {
+            "min": [
+              -0.4271300733089447,
+              0.9700335264205933,
+              -0.16196610033512115
+            ],
+            "max": [
+              0.42165470123291016,
+              1.5675045251846313,
+              0.14145627617835999
+            ]
+          }
+        },
+        {
+          "node": "ArcaneMageRobeSkirt",
+          "deformation": {
+            "kind": "skinned"
+          },
+          "triangles": 34658,
+          "bounds": {
+            "min": [
+              -0.40086421370506287,
+              0.15499994158744812,
+              -0.4012466371059418
+            ],
+            "max": [
+              0.400346040725708,
+              1.0800000429153442,
+              0.19784630835056305
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slot": "hands",
+      "parts": [
+        {
+          "node": "ArcaneMageHands",
+          "deformation": {
+            "kind": "skinned"
+          },
+          "triangles": 11915,
+          "bounds": {
+            "min": [
+              -0.4786444902420044,
+              0.7462080121040344,
+              -0.13162922859191895
+            ],
+            "max": [
+              0.4786444902420044,
+              1.155398964881897,
+              0.10531697422266006
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slot": "waist",
+      "parts": [
+        {
+          "node": "ArcaneMageWaist",
+          "deformation": {
+            "kind": "skinned"
+          },
+          "triangles": 1892,
+          "bounds": {
+            "min": [
+              -0.1794768124818802,
+              0.9467607140541077,
+              -0.14671573042869568
+            ],
+            "max": [
+              0.1794767528772354,
+              1.1467636823654175,
+              0.1738257110118866
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slot": "legs",
+      "parts": [
+        {
+          "node": "ArcaneMageLegs",
+          "deformation": {
+            "kind": "skinned"
+          },
+          "triangles": 4948,
+          "bounds": {
+            "min": [
+              -0.2433253526687622,
+              0.13554629683494568,
+              -0.15657790005207062
+            ],
+            "max": [
+              0.24336358904838562,
+              1.1113998889923096,
+              0.11610891669988632
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slot": "boots",
+      "parts": [
+        {
+          "node": "ArcaneMageBoots",
+          "deformation": {
+            "kind": "skinned"
+          },
+          "triangles": 7517,
+          "bounds": {
+            "min": [
+              -0.31019535660743713,
+              -0.0013578999787569046,
+              -0.17829838395118713
+            ],
+            "max": [
+              0.30958372354507446,
+              0.5724414587020874,
+              0.1721825897693634
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slot": "back",
+      "parts": [
+        {
+          "node": "ArcaneMageBack",
+          "deformation": {
+            "kind": "skinned"
+          },
+          "triangles": 3428,
+          "bounds": {
+            "min": [
+              -0.18000000715255737,
+              0.3821139931678772,
+              -0.4537220597267151
+            ],
+            "max": [
+              0.18000000715255737,
+              1.548235535621643,
+              -0.09699998050928116
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "budget": {
+    "triangles": 94318,
+    "sourceMaterials": 7,
+    "drawCalls": 39,
+    "instanceMaterials": 31
+  }
+}

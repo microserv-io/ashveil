@@ -2,8 +2,8 @@ import * as THREE from 'three'
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js'
 import { MAX_FRAME_DELTA, RUN_SPEED, SPRINT_SPEED, WALK_SPEED, type Explorer } from './movement'
 import { APPROVED_CLIPS, type ApprovedCharacterTemplate, type ApprovedClipName } from './approved-character-source'
-import { DEFAULT_STARTER_GEAR_APPEARANCE, StarterGear, type StarterGearAppearance } from './starter-gear'
-import type { StarterGearDyeChannel, StarterGearSlot, StarterGearTemplate } from './starter-gear-source'
+import { GearWardrobe, type GearLoadout } from './gear'
+import { VISUAL_GEAR_SLOTS, type GearDyeChannel, type GearSetId, type GearSetTemplate, type VisualGearSlot } from './gear-source'
 
 export { loadApprovedCharacter } from './approved-character-source'
 export type { ApprovedCharacterTemplate } from './approved-character-source'
@@ -11,7 +11,10 @@ export type { ApprovedCharacterTemplate } from './approved-character-source'
 const MOVING_SPEED = 0.05
 const BLEND_SECONDS = 0.1
 const MOVING_LAND_SECONDS = 0.125
-const NO_GEAR_DYE_CHANNELS: StarterGearTemplate['dyeChannels'] = new Map()
+const EMPTY_GEAR: GearLoadout = {
+  selected: Object.fromEntries(VISUAL_GEAR_SLOTS.map((slot) => [slot, null])) as Record<VisualGearSlot, null>,
+  dyes: {},
+}
 
 export interface ApprovedAnimationState {
   readonly state: 'idle' | 'moving' | 'jumping' | 'landing'
@@ -20,11 +23,26 @@ export interface ApprovedAnimationState {
   readonly phase: number
 }
 
+export interface ApprovedMotionReviewState {
+  readonly clip: ApprovedClipName
+  readonly playing: boolean
+  readonly time: number
+  readonly duration: number
+  readonly normalizedTime: number
+}
+
+interface MutableMotionReviewState {
+  clip: ApprovedClipName
+  playing: boolean
+  time: number
+}
+
 export class ApprovedWorldCharacter {
   readonly root = new THREE.Group()
   private readonly body: THREE.Object3D
   private readonly mixer: THREE.AnimationMixer
-  private readonly gear: StarterGear | undefined
+  private readonly gear: GearWardrobe | undefined
+  private readonly gearLoadErrors: string[] = []
   private readonly actions: ReadonlyMap<ApprovedClipName, THREE.AnimationAction>
   private readonly materials = new Set<THREE.Material>()
   private previousX: number
@@ -39,8 +57,9 @@ export class ApprovedWorldCharacter {
   private blendFrom = new Map<ApprovedClipName, number>([['idle', 1]])
   private blendTarget = new Map<ApprovedClipName, number>([['idle', 1]])
   private blendElapsed = BLEND_SECONDS
+  private motionReview: MutableMotionReviewState | undefined
 
-  constructor(private readonly template: ApprovedCharacterTemplate, explorer: Explorer, gearTemplate?: StarterGearTemplate) {
+  constructor(private readonly template: ApprovedCharacterTemplate, explorer: Explorer, gearTemplates: readonly GearSetTemplate[] = []) {
     this.root.name = 'world-character'
     this.body = cloneSkinned(template.scene)
     const materialClones = new Map<THREE.Material, THREE.Material>()
@@ -60,7 +79,16 @@ export class ApprovedWorldCharacter {
     })
     this.mixer = new THREE.AnimationMixer(this.body)
     this.actions = new Map(APPROVED_CLIPS.map((name) => [name, this.mixer.clipAction(this.clip(name))]))
-    this.gear = gearTemplate ? new StarterGear(this.body, template.manifest.glb.sha256, gearTemplate) : undefined
+    this.gear = gearTemplates.length > 0 ? new GearWardrobe(this.body, template.manifest.glb.sha256) : undefined
+    for (const gearTemplate of gearTemplates) {
+      try {
+        this.gear!.addSet(gearTemplate)
+      } catch (error) {
+        if (gearTemplate.manifest.id === 'starter-leather') throw error
+        this.gearLoadErrors.push(error instanceof Error ? error.message : String(error))
+      }
+    }
+    if (this.gear?.setIds.includes('starter-leather')) this.gear.equipSet('starter-leather')
     this.previousX = explorer.x
     this.previousZ = explorer.z
     this.previousGrounded = explorer.grounded
@@ -69,6 +97,15 @@ export class ApprovedWorldCharacter {
   }
 
   get animationState(): ApprovedAnimationState {
+    if (this.motionReview) {
+      const clip = this.motionReview.clip
+      return {
+        state: clip === 'idle' ? 'idle' : clip === 'jump_land' ? 'landing' : clip.startsWith('jump_') ? 'jumping' : 'moving',
+        dominantClip: clip,
+        speed: this.template.manifest.clips.find((record) => record.name === clip)!.nominalSpeed,
+        phase: this.motionReviewState!.normalizedTime,
+      }
+    }
     return {
       state: this.mode === 'land' ? 'landing' : this.mode ? 'jumping' : this.dominantClip === 'idle' ? 'idle' : 'moving',
       dominantClip: this.dominantClip,
@@ -77,21 +114,79 @@ export class ApprovedWorldCharacter {
     }
   }
 
-  get gearAppearance(): StarterGearAppearance { return this.gear?.appearanceState ?? DEFAULT_STARTER_GEAR_APPEARANCE }
-  get gearDyeChannels(): StarterGearTemplate['dyeChannels'] { return this.gear?.dyeChannels ?? NO_GEAR_DYE_CHANNELS }
-
-  setGearEquipped(slot: StarterGearSlot, equipped: boolean): void {
-    if (!this.gear) throw new Error('Starter gear is not loaded.')
-    this.gear.setEquipped(slot, equipped)
+  get gearAppearance(): GearLoadout { return this.gear?.appearanceState ?? EMPTY_GEAR }
+  get gearErrors(): readonly string[] { return this.gearLoadErrors }
+  get gearSetIds(): readonly GearSetId[] { return this.gear?.setIds ?? [] }
+  availableGearSets(slot: VisualGearSlot): readonly GearSetId[] { return this.gear?.availableSets(slot) ?? [] }
+  gearDyeChannels(slot: VisualGearSlot): ReadonlySet<GearDyeChannel> { return this.gear?.dyeChannels(slot) ?? new Set() }
+  get motionReviewState(): ApprovedMotionReviewState | undefined {
+    if (!this.motionReview) return undefined
+    const duration = this.clip(this.motionReview.clip).duration
+    return {
+      ...this.motionReview,
+      duration,
+      normalizedTime: duration > 0 ? this.motionReview.time / duration : 0,
+    }
   }
 
-  setGearDye(slot: StarterGearSlot, channel: StarterGearDyeChannel, tint: string | null): void {
-    if (!this.gear) throw new Error('Starter gear is not loaded.')
+  enableMotionReview(): void {
+    if (this.motionReview) return
+    this.motionReview = { clip: 'idle', playing: true, time: 0 }
+    this.applyMotionReviewPose()
+  }
+
+  disableMotionReview(explorer: Explorer): void {
+    if (!this.motionReview) return
+    this.motionReview = undefined
+    this.reset(explorer)
+  }
+
+  setMotionReviewClip(clip: ApprovedClipName): void {
+    if (!this.motionReview) return
+    if (!APPROVED_CLIPS.includes(clip)) throw new Error(`Unknown approved motion-review clip: ${clip}.`)
+    this.motionReview.clip = clip
+    this.motionReview.time = 0
+    this.applyMotionReviewPose()
+  }
+
+  setMotionReviewPlaying(playing: boolean): void {
+    if (!this.motionReview) return
+    this.motionReview.playing = playing
+  }
+
+  setMotionReviewProgress(progress: number): void {
+    if (!this.motionReview) return
+    const duration = this.clip(this.motionReview.clip).duration
+    this.motionReview.time = duration * THREE.MathUtils.clamp(Number.isFinite(progress) ? progress : 0, 0, 1)
+    this.applyMotionReviewPose()
+  }
+
+  selectGear(slot: VisualGearSlot, id: GearSetId | null): void {
+    if (!this.gear) throw new Error('Gear wardrobe is not loaded.')
+    this.gear.select(slot, id)
+  }
+
+  equipGearSet(id: GearSetId): void {
+    if (!this.gear) throw new Error('Gear wardrobe is not loaded.')
+    this.gear.equipSet(id)
+  }
+
+  setGearEquipped(slot: VisualGearSlot, equipped: boolean): void {
+    if (!this.gear) throw new Error('Gear wardrobe is not loaded.')
+    this.gear.select(slot, equipped ? 'starter-leather' : null)
+  }
+
+  setGearDye(slot: VisualGearSlot, channel: GearDyeChannel, tint: string | null): void {
+    if (!this.gear) throw new Error('Gear wardrobe is not loaded.')
     this.gear.setDye(slot, channel, tint)
   }
 
   update(explorer: Explorer, delta: number): void {
     const seconds = Math.min(Math.max(delta, 0), MAX_FRAME_DELTA)
+    if (this.motionReview) {
+      this.updateMotionReview(explorer, seconds)
+      return
+    }
     if (seconds === 0) {
       this.root.position.set(explorer.x, explorer.y, explorer.z)
       this.root.rotation.y = explorer.facing
@@ -155,6 +250,7 @@ export class ApprovedWorldCharacter {
     this.root.position.set(explorer.x, explorer.y, explorer.z)
     this.root.rotation.y = explorer.facing
     this.mixer.update(0)
+    if (this.motionReview) this.applyMotionReviewPose()
   }
 
   dispose(): void {
@@ -178,6 +274,35 @@ export class ApprovedWorldCharacter {
       }
     } else if (this.mode === 'air') this.modeTime += seconds
     this.previousGrounded = explorer.grounded
+  }
+
+  private updateMotionReview(explorer: Explorer, seconds: number): void {
+    const duration = this.clip(this.motionReview!.clip).duration
+    if (this.motionReview!.playing && seconds > 0 && duration > 0) {
+      this.motionReview!.time = (this.motionReview!.time + seconds) % duration
+    }
+    this.applyMotionReviewPose()
+    this.root.position.set(explorer.x, explorer.y, explorer.z)
+    this.root.rotation.y = explorer.facing
+    this.previousX = explorer.x
+    this.previousZ = explorer.z
+    this.previousGrounded = explorer.grounded
+  }
+
+  private applyMotionReviewPose(): void {
+    if (!this.motionReview) return
+    for (const [name, action] of this.actions) {
+      const selected = name === this.motionReview.clip
+      action.enabled = selected
+      action.setEffectiveWeight(selected ? 1 : 0)
+      action.setEffectiveTimeScale(0)
+      action.setLoop(THREE.LoopRepeat, Infinity)
+      action.clampWhenFinished = false
+      if (selected) action.time = this.motionReview.time
+    }
+    this.dominantClip = this.motionReview.clip
+    this.currentSpeed = 0
+    this.mixer.update(0)
   }
 
   private beginMode(mode: 'start' | 'land'): void {

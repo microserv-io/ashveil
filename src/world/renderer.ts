@@ -1,13 +1,24 @@
 import * as THREE from 'three'
-import { ApprovedWorldCharacter, type ApprovedCharacterTemplate } from './approved-character'
+import {
+  ApprovedWorldCharacter,
+  type ApprovedCharacterTemplate,
+  type ApprovedMotionReviewState,
+} from './approved-character'
+import type { ApprovedClipName } from './approved-character-source'
+import {
+  cameraMinimumDistance,
+  cameraTargetHeight,
+  gearReviewCameraYaw,
+  type GearReviewCameraPreset,
+} from './gear-motion-review-gate'
 import { buildScenery, type BuiltScenery } from './scenery'
 import type { SceneryKit } from './scenery-kit'
 import { createTerrainGeometryData, heightAt, riverCenterAt, riverHalfWidthAt, WORLD_BOUNDS } from './terrain'
 import { LANDMARKS, PATHS, SOLIDS, type WorldPoint } from './world-data'
 import type { Explorer } from './movement'
 import { createWorldMaterial } from './world-material'
-import type { StarterGearAppearance } from './starter-gear'
-import type { StarterGearDyeChannel, StarterGearSlot, StarterGearTemplate } from './starter-gear-source'
+import type { GearLoadout } from './gear'
+import type { GearDyeChannel, GearSetId, GearSetTemplate, VisualGearSlot } from './gear-source'
 
 function buildTerrain(): THREE.Mesh {
   const data = createTerrainGeometryData()
@@ -59,7 +70,14 @@ export class WorldView {
   private distance = 11.5
   private overview = false
 
-  constructor(host: HTMLElement, kit: SceneryKit, character: ApprovedCharacterTemplate, gear: StarterGearTemplate, initialExplorer: Explorer) {
+  constructor(
+    host: HTMLElement,
+    kit: SceneryKit,
+    character: ApprovedCharacterTemplate,
+    gear: readonly GearSetTemplate[],
+    initialExplorer: Explorer,
+    private readonly gearReview = false,
+  ) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' })
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
@@ -69,6 +87,10 @@ export class WorldView {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
     host.prepend(this.renderer.domElement)
     this.explorer = new ApprovedWorldCharacter(character, initialExplorer, gear)
+    if (gearReview) {
+      this.explorer.enableMotionReview()
+      this.setGearReviewCamera('front', initialExplorer.facing)
+    }
     this.scene.background = new THREE.Color(0xb7aa8e)
     this.scene.fog = new THREE.FogExp2(0xb7aa8e, 0.003)
     this.terrain.receiveShadow = true
@@ -86,14 +108,28 @@ export class WorldView {
 
   get canvas(): HTMLCanvasElement { return this.renderer.domElement }
   get cameraYaw(): number { return this.yaw }
+  get motionReviewState(): ApprovedMotionReviewState | undefined { return this.explorer.motionReviewState }
 
   setExplorer(explorer: Explorer, delta: number): void { this.explorer.update(explorer, delta) }
   resetExplorer(explorer: Explorer): void { this.explorer.reset(explorer) }
-  get gearAppearance(): StarterGearAppearance { return this.explorer.gearAppearance }
-  get gearDyeChannels(): StarterGearTemplate['dyeChannels'] { return this.explorer.gearDyeChannels }
-  setGearEquipped(slot: StarterGearSlot, equipped: boolean): void { this.explorer.setGearEquipped(slot, equipped) }
-  setGearDye(slot: StarterGearSlot, channel: StarterGearDyeChannel, tint: string | null): void {
+  get gearAppearance(): GearLoadout { return this.explorer.gearAppearance }
+  get gearErrors(): readonly string[] { return this.explorer.gearErrors }
+  get gearSetIds(): readonly GearSetId[] { return this.explorer.gearSetIds }
+  availableGearSets(slot: VisualGearSlot): readonly GearSetId[] { return this.explorer.availableGearSets(slot) }
+  gearDyeChannels(slot: VisualGearSlot): ReadonlySet<GearDyeChannel> { return this.explorer.gearDyeChannels(slot) }
+  selectGear(slot: VisualGearSlot, id: GearSetId | null): void { this.explorer.selectGear(slot, id) }
+  equipGearSet(id: GearSetId): void { this.explorer.equipGearSet(id) }
+  setGearDye(slot: VisualGearSlot, channel: GearDyeChannel, tint: string | null): void {
     this.explorer.setGearDye(slot, channel, tint)
+  }
+  setMotionReviewClip(clip: ApprovedClipName): void { this.explorer.setMotionReviewClip(clip) }
+  setMotionReviewPlaying(playing: boolean): void { this.explorer.setMotionReviewPlaying(playing) }
+  setMotionReviewProgress(progress: number): void { this.explorer.setMotionReviewProgress(progress) }
+  setGearReviewCamera(preset: GearReviewCameraPreset, facing: number): void {
+    if (!this.gearReview) return
+    this.yaw = gearReviewCameraYaw(preset, facing)
+    this.pitch = 0.16
+    this.distance = 3.2
   }
   turnCamera(delta: number): void { this.yaw += delta }
 
@@ -101,11 +137,15 @@ export class WorldView {
     if (this.overview) return
     this.yaw -= x * 0.005
     this.pitch = THREE.MathUtils.clamp(this.pitch + y * 0.004, 0.16, 1.05)
-    this.distance = THREE.MathUtils.clamp(this.distance + zoom, 4.8, 18)
+    this.distance = THREE.MathUtils.clamp(this.distance + zoom, cameraMinimumDistance(this.gearReview), 18)
   }
 
   setOverview(active: boolean): void { this.overview = active; (this.scene.fog as THREE.FogExp2).density = active ? 0.0013 : 0.003 }
-  resetCamera(): void { this.yaw = DEFAULT_CAMERA_YAW; this.pitch = 0.42; this.distance = 11.5 }
+  resetCamera(): void {
+    this.yaw = DEFAULT_CAMERA_YAW
+    this.pitch = this.gearReview ? 0.16 : 0.42
+    this.distance = this.gearReview ? 3.2 : 11.5
+  }
 
   updateCamera(explorer: Explorer, delta: number): void {
     if (this.overview) {
@@ -113,11 +153,12 @@ export class WorldView {
       this.camera.lookAt(-28, 0, -18)
       return
     }
-    this.cameraTarget.set(explorer.x, explorer.y + 1.35, explorer.z)
+    const targetHeight = cameraTargetHeight(this.gearReview)
+    this.cameraTarget.set(explorer.x, explorer.y + targetHeight, explorer.z)
     const horizontal = Math.cos(this.pitch) * this.distance
     const desired = new THREE.Vector3(
       explorer.x + Math.sin(this.yaw) * horizontal,
-      explorer.y + 1.35 + Math.sin(this.pitch) * this.distance,
+      explorer.y + targetHeight + Math.sin(this.pitch) * this.distance,
       explorer.z + Math.cos(this.yaw) * horizontal,
     )
     const direction = desired.clone().sub(this.cameraTarget)
