@@ -15,7 +15,8 @@
     "spike:build": "vite build --config spike/deck/vite.config.ts",
     "assets": "node scripts/fetch-assets.mjs",
     "art:fit": "node scripts/art/fit.mjs",
-    "art:gear-manifest": "node scripts/art/gear/update_starter_gear_manifest.mjs",
+    "art:gear-manifest": "node scripts/art/gear/update_starter_gear_manifest.mjs --set=starter-leather",
+    "art:gear-manifest:mage": "node scripts/art/gear/update_starter_gear_manifest.mjs --set=arcane-mage-tier",
     "art:profile": "node scripts/art/profile.mjs",
     "motion:dev": "npm run assets && vite --config spike/motion/vite.config.ts",
     "texture:dev": "vite --config spike/zone-textures/vite.config.ts",
@@ -31,6 +32,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@noble/hashes": "^2.4.0",
     "three": "^0.185.1"
   },
   "devDependencies": {

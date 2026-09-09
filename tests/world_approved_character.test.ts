@@ -7,6 +7,13 @@ import { GLTFLoader, type GLTFParser } from 'three/examples/jsm/loaders/GLTFLoad
 import { ApprovedWorldCharacter } from '../src/world/approved-character'
 import { APPROVED_CLIPS, ApprovedCharacterSource, validateApprovedCharacterTemplate, validateApprovedManifest, type ApprovedCharacterTemplate } from '../src/world/approved-character-source'
 import { createExplorer, RUN_SPEED } from '../src/world/movement'
+import {
+  cameraMinimumDistance,
+  cameraTargetHeight,
+  gearMotionReviewEnabled,
+  gearReviewCameraYaw,
+} from '../src/world/gear-motion-review-gate'
+import { adaptStarterGearTemplate, GearSetSource, type GearSetTemplate } from '../src/world/gear-source'
 import { STARTER_GEAR_SLOTS, type StarterGearSlot, type StarterGearTemplate } from '../src/world/starter-gear-source'
 
 const ROOT = join(import.meta.dirname, '..')
@@ -48,8 +55,8 @@ function template(): ApprovedCharacterTemplate {
   return { scene, animations, manifest: MANIFEST }
 }
 
-async function actualTemplate(): Promise<ApprovedCharacterTemplate> {
-  const loader = new GLTFLoader().register((parser: GLTFParser) => ({
+function assetLoader(): GLTFLoader {
+  return new GLTFLoader().register((parser: GLTFParser) => ({
     name: 'ASHVEIL_test_embedded_character_image',
     loadTexture: (textureIndex: number) => {
       const texture = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1)
@@ -58,8 +65,26 @@ async function actualTemplate(): Promise<ApprovedCharacterTemplate> {
       return Promise.resolve(texture)
     },
   }))
+}
+
+async function actualTemplate(): Promise<ApprovedCharacterTemplate> {
+  const loader = assetLoader()
   const data = MODEL.buffer.slice(MODEL.byteOffset, MODEL.byteOffset + MODEL.byteLength)
   return validateApprovedCharacterTemplate(await loader.parseAsync(data, ''), MANIFEST)
+}
+
+async function actualMageTemplate(): Promise<GearSetTemplate> {
+  const directory = join(ROOT, 'public', 'gear', 'arcane-mage-tier')
+  const manifest = JSON.parse(readFileSync(join(directory, 'arcane-mage-tier.manifest.json'), 'utf8'))
+  const file = readFileSync(join(directory, 'arcane-mage-tier.glb'))
+  const source = new GearSetSource(assetLoader(), async (url) => url.endsWith('.json')
+    ? { ok: true, json: async () => manifest, arrayBuffer: async () => new ArrayBuffer(0) }
+    : {
+        ok: true,
+        json: async () => ({}),
+        arrayBuffer: async () => file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength),
+      })
+  return source.load('arcane-mage-tier')
 }
 
 function fittedGearTemplate(character: ApprovedCharacterTemplate): StarterGearTemplate {
@@ -116,6 +141,107 @@ describe('approved first-zone character asset', () => {
     )) }
     expect(() => validateApprovedManifest(invalidLoop)).toThrow(/clip metadata/)
   })
+
+  it('requires both development mode and the exact review query value', () => {
+    expect(gearMotionReviewEnabled(true, '?gearReview=1')).toBe(true)
+    expect(gearMotionReviewEnabled(false, '?gearReview=1')).toBe(false)
+    expect(gearMotionReviewEnabled(true, '')).toBe(false)
+    expect(gearMotionReviewEnabled(true, '?gearReview=0')).toBe(false)
+    expect(gearMotionReviewEnabled(true, '?gearReview')).toBe(false)
+    expect(cameraMinimumDistance(false)).toBe(4.8)
+    expect(cameraMinimumDistance(true)).toBe(2.3)
+    expect(cameraTargetHeight(false)).toBe(1.35)
+    expect(cameraTargetHeight(true)).toBe(0.95)
+    expect(gearReviewCameraYaw('front', 0.7)).toBe(0.7)
+    expect(gearReviewCameraYaw('back', 0.7)).toBeCloseTo(0.7 + Math.PI)
+    expect(gearReviewCameraYaw('left', 0.7)).toBeCloseTo(0.7 - Math.PI / 2)
+    expect(gearReviewCameraYaw('right', 0.7)).toBeCloseTo(0.7 + Math.PI / 2)
+  })
+
+  it('plays, pauses, scrubs, and loops an approved review clip without changing normal mode', () => {
+    const start = createExplorer({ x: -70, z: -70 })
+    const normal = new ApprovedWorldCharacter(template(), start)
+    normal.setMotionReviewClip('jump_air')
+    normal.setMotionReviewPlaying(false)
+    normal.setMotionReviewProgress(0.75)
+    expect(normal.motionReviewState).toBeUndefined()
+    normal.update({ ...start, z: start.z + RUN_SPEED * 0.1 }, 0.1)
+    expect(normal.animationState.dominantClip).toBe('run_forward')
+    normal.dispose()
+
+    const character = new ApprovedWorldCharacter(template(), start)
+    character.enableMotionReview()
+    character.setMotionReviewClip('jump_land')
+    character.setMotionReviewPlaying(false)
+    character.setMotionReviewProgress(0.5)
+    const duration = MANIFEST.clips.find((clip) => clip.name === 'jump_land')!.duration
+    const pose = character.root.getObjectByName('Pose')!
+    expect(character.motionReviewState).toMatchObject({
+      clip: 'jump_land', playing: false, time: duration / 2, normalizedTime: 0.5,
+    })
+    expect(pose.position.y).toBeCloseTo(duration / 2)
+
+    character.update(start, 0.1)
+    expect(character.motionReviewState?.time).toBe(duration / 2)
+    character.setMotionReviewProgress(1)
+    expect(pose.position.y).toBeCloseTo(duration)
+    character.setMotionReviewPlaying(true)
+    character.update(start, 0.1)
+    expect(character.motionReviewState?.time).toBeCloseTo(0.1)
+    expect(character.animationState.dominantClip).toBe('jump_land')
+
+    character.setMotionReviewClip('walk_forward')
+    expect(character.motionReviewState).toMatchObject({ clip: 'walk_forward', playing: true, time: 0 })
+    character.update(start, 0.1)
+    expect(character.animationState.dominantClip).toBe('walk_forward')
+    character.disableMotionReview(start)
+    expect(character.motionReviewState).toBeUndefined()
+    character.update({ ...start, z: start.z + RUN_SPEED * 0.1 }, 0.1)
+    expect(character.animationState.dominantClip).toBe('run_forward')
+    character.dispose()
+  })
+
+  it('drives skinned and rigid Mage attachments through the reviewed body mixer', async () => {
+    const [characterTemplate, mage] = await Promise.all([actualTemplate(), actualMageTemplate()])
+    const start = createExplorer({ x: -70, z: -70 })
+    const character = new ApprovedWorldCharacter(characterTemplate, start, [mage])
+    character.equipGearSet('arcane-mage-tier')
+
+    let body: THREE.SkinnedMesh | undefined
+    let chest: THREE.SkinnedMesh | undefined
+    let robe: THREE.SkinnedMesh | undefined
+    let rigidHead: THREE.Object3D | undefined
+    character.root.traverse((object) => {
+      if (object.name.includes('gear:arcane-mage-tier:head:')) rigidHead = object
+      if (!(object instanceof THREE.SkinnedMesh)) return
+      if (object.name.includes('gear:arcane-mage-tier:chest:')) {
+        chest = object
+        if (object.name.includes(':ArcaneMageRobeSkirt:')) robe = object
+      }
+      else if (!object.name.startsWith('gear:')) body = object
+    })
+    expect(chest?.skeleton).toBe(body?.skeleton)
+    expect(robe?.skeleton).toBe(body?.skeleton)
+    expect(robe?.customDepthMaterial?.customProgramCacheKey()).toContain('ashveil-gear-capsules-v4')
+    expect(robe?.customDistanceMaterial?.customProgramCacheKey()).toContain('ashveil-gear-capsules-v4')
+    expect(rigidHead).toBeDefined()
+
+    character.enableMotionReview()
+    character.setMotionReviewClip('walk_forward')
+    character.setMotionReviewPlaying(false)
+    character.setMotionReviewProgress(0)
+    character.root.updateMatrixWorld(true)
+    body!.skeleton.update()
+    const bonesAtStart = [...(body!.skeleton.boneMatrices ?? [])]
+    const rigidAtStart = rigidHead!.matrixWorld.clone()
+
+    character.setMotionReviewProgress(0.5)
+    character.root.updateMatrixWorld(true)
+    body!.skeleton.update()
+    expect([...(body!.skeleton.boneMatrices ?? [])]).not.toEqual(bonesAtStart)
+    expect(rigidHead!.matrixWorld.equals(rigidAtStart)).toBe(false)
+    character.dispose()
+  }, 30_000)
 
   it('evicts a failed source load and shares the successful retry', async () => {
     let fails = true
@@ -235,26 +361,22 @@ describe('approved first-zone character asset', () => {
   it('keeps visual gear choices through reset and drives the shared gear skeleton while moving', async () => {
     const characterTemplate = await actualTemplate()
     const start = createExplorer({ x: -70, z: -70 })
-    const character = new ApprovedWorldCharacter(characterTemplate, start, fittedGearTemplate(characterTemplate))
-    expect(character.gearAppearance).toEqual({
-      chest: { equipped: true, primaryTint: null, trimTint: null },
-      legs: { equipped: true, primaryTint: null, trimTint: null },
-      boots: { equipped: true, primaryTint: null, trimTint: null },
-      waist: { equipped: true, primaryTint: null, trimTint: null },
+    const character = new ApprovedWorldCharacter(characterTemplate, start, [adaptStarterGearTemplate(fittedGearTemplate(characterTemplate))])
+    expect(character.gearAppearance.selected).toMatchObject({
+      chest: 'starter-leather', legs: 'starter-leather', boots: 'starter-leather', waist: 'starter-leather',
     })
     character.setGearEquipped('legs', false)
     character.setGearDye('chest', 'primary', '#b06a3c')
     character.reset(start)
-    expect(character.gearAppearance.legs.equipped).toBe(false)
-    expect(character.gearAppearance.chest).toEqual({ equipped: true, primaryTint: '#b06a3c', trimTint: null })
+    expect(character.gearAppearance.selected.legs).toBeNull()
+    expect(character.gearAppearance.dyes['starter-leather']?.chest).toEqual({ primaryTint: '#b06a3c', trimTint: null })
 
-    const chestRoot = character.root.getObjectByName('StarterLeatherChest')
     let chest: THREE.SkinnedMesh | undefined
-    chestRoot?.traverse((object) => { if (!chest && object instanceof THREE.SkinnedMesh) chest = object })
     let body: THREE.SkinnedMesh | undefined
     character.root.traverse((object) => {
-      if (object instanceof THREE.SkinnedMesh && object.name !== 'StarterLeatherChest'
-        && !object.name.startsWith('StarterLeather')) body = object
+      if (!(object instanceof THREE.SkinnedMesh)) return
+      if (object.name.includes('gear:starter-leather:chest:')) chest = object
+      else if (!object.name.startsWith('gear:')) body = object
     })
     expect(chest?.skeleton).toBe(body?.skeleton)
     chest!.skeleton.update()
@@ -265,6 +387,49 @@ describe('approved first-zone character asset', () => {
     character.root.updateMatrixWorld(true)
     chest!.skeleton.update()
     expect([...(chest!.skeleton.boneMatrices ?? [])]).not.toEqual(before)
+    character.dispose()
+  })
+
+  it('keeps starter playable when optional mage construction fails', async () => {
+    const characterTemplate = await actualTemplate()
+    const starter = adaptStarterGearTemplate(fittedGearTemplate(characterTemplate))
+    const brokenMage: GearSetTemplate = {
+      ...starter,
+      manifest: { ...starter.manifest, id: 'arcane-mage-tier', bodySha256: 'c'.repeat(64) },
+    }
+    const character = new ApprovedWorldCharacter(
+      characterTemplate,
+      createExplorer({ x: -70, z: -70 }),
+      [starter, brokenMage],
+    )
+    expect(character.gearSetIds).toEqual(['starter-leather'])
+    expect(character.gearErrors).toEqual([expect.stringMatching(/different approved body/)])
+    expect(character.gearAppearance.selected.chest).toBe('starter-leather')
+    character.dispose()
+  })
+
+  it('keeps starter gear playable when optional mage construction fails', async () => {
+    const characterTemplate = await actualTemplate()
+    const starter = adaptStarterGearTemplate(fittedGearTemplate(characterTemplate))
+    const brokenMage: GearSetTemplate = {
+      ...starter,
+      manifest: {
+        ...starter.manifest,
+        id: 'arcane-mage-tier',
+        glb: { ...starter.manifest.glb, file: 'arcane-mage-tier.glb' },
+        bodySha256: 'c'.repeat(64),
+      },
+    }
+    const character = new ApprovedWorldCharacter(
+      characterTemplate,
+      createExplorer({ x: -70, z: -70 }),
+      [starter, brokenMage],
+    )
+    expect(character.gearSetIds).toEqual(['starter-leather'])
+    expect(character.gearErrors).toEqual([expect.stringMatching(/different approved body/)])
+    expect(character.gearAppearance.selected).toMatchObject({
+      chest: 'starter-leather', waist: 'starter-leather', legs: 'starter-leather', boots: 'starter-leather',
+    })
     character.dispose()
   })
 })
