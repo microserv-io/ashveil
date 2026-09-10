@@ -123,7 +123,8 @@ these bindings and values remain validation settings rather than final design de
 In development, the browser exposes `globalThis.ashveilWorld` for repeatable validation.
 Its controls can move, stop, reset or toggle overview, while its state reports position,
 explorer facing, nearest landmark, overview mode, camera position and facing, average frame time, the last
-240 raw frame times, draw calls, triangles and captured runtime errors. This diagnostic
+240 raw frame times, draw calls, triangles, captured runtime errors and the ambient
+[wandering wolf's](wandering-wolf.md) position, facing, action, clip time and attack count. This diagnostic
 surface is review tooling, not a gameplay or networking API, and production preview
 builds do not expose it.
 

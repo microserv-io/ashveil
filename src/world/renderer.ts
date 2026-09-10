@@ -6,6 +6,9 @@ import { createTerrainGeometryData, heightAt, riverCenterAt, riverHalfWidthAt, W
 import { LANDMARKS, PATHS, SOLIDS, type WorldPoint } from './world-data'
 import type { Explorer } from './movement'
 import { createWorldMaterial } from './world-material'
+import { WolfView } from './wolf'
+import type { WanderingWolfState } from './wandering-wolf'
+import type { WolfTemplate } from './wolf-source'
 
 function buildTerrain(): THREE.Mesh {
   const data = createTerrainGeometryData()
@@ -50,6 +53,7 @@ export class WorldView {
   private readonly terrain = buildTerrain()
   private readonly scenery: BuiltScenery
   private readonly explorer: ApprovedWorldCharacter
+  private readonly wolf: WolfView
   private readonly raycaster = new THREE.Raycaster()
   private readonly cameraTarget = new THREE.Vector3()
   private yaw = DEFAULT_CAMERA_YAW
@@ -57,7 +61,14 @@ export class WorldView {
   private distance = 11.5
   private overview = false
 
-  constructor(host: HTMLElement, kit: SceneryKit, character: ApprovedCharacterTemplate, initialExplorer: Explorer) {
+  constructor(
+    host: HTMLElement,
+    kit: SceneryKit,
+    character: ApprovedCharacterTemplate,
+    initialExplorer: Explorer,
+    wolfTemplate: WolfTemplate,
+    initialWolf: WanderingWolfState,
+  ) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' })
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
@@ -67,10 +78,11 @@ export class WorldView {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
     host.prepend(this.renderer.domElement)
     this.explorer = new ApprovedWorldCharacter(character, initialExplorer)
+    this.wolf = new WolfView(wolfTemplate, initialWolf)
     this.scene.background = new THREE.Color(0xb7aa8e)
     this.scene.fog = new THREE.FogExp2(0xb7aa8e, 0.003)
     this.terrain.receiveShadow = true
-    this.scene.add(this.terrain, buildRiver(), this.explorer.root)
+    this.scene.add(this.terrain, buildRiver(), this.explorer.root, this.wolf.root)
     this.scenery = buildScenery(this.scene, { heightAt, landmarks: LANDMARKS, paths: PATHS, solids: SOLIDS, kit })
     this.scene.add(new THREE.HemisphereLight(0xf5e8c9, 0x4b5042, 1.55))
     const sun = new THREE.DirectionalLight(0xffe5b7, 2.8)
@@ -87,6 +99,8 @@ export class WorldView {
 
   setExplorer(explorer: Explorer, delta: number): void { this.explorer.update(explorer, delta) }
   resetExplorer(explorer: Explorer): void { this.explorer.reset(explorer) }
+  setWolf(wolf: WanderingWolfState, delta: number): void { this.wolf.update(wolf, delta) }
+  resetWolf(wolf: WanderingWolfState): void { this.wolf.reset(wolf) }
   turnCamera(delta: number): void { this.yaw += delta }
 
   adjustOrbit(x: number, y: number, zoom: number): void {

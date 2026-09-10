@@ -39,6 +39,11 @@ function of replicated sim state, sim time and per-body memory that itself deriv
 only from replicated state. No clips are authored, downloaded or retargeted for
 gameplay motion.
 
+The first-zone [wandering wolf](wandering-wolf.md) is a bounded prototype exception:
+its recovered quadruped rig loads three Blender-authored clips and uses walk and attack
+in the isolated first-zone viewer. It has no combat or replicated simulation behavior and does not replace the
+procedural motion contract for gameplay actors.
+
 - It is the only path that is fully agent-producible on this hardware and
   licence-clean by construction. See "AI motion and rigging models" below for what
   the research found and where it fits.
@@ -198,6 +203,10 @@ script regenerates. The approved hand-authored checkpoint,
 provenance because it is non-regenerable. Only the KayKit dungeon kit stays fetched,
 pinned to an immutable commit with SHA-256 checks, until its Tripo replacement models
 land. Git LFS is not installed and not needed at this size; revisit past roughly 50 MB.
+The first-zone wolf likewise retains its original Tripo GLB under
+`docs/art-pipeline/sources/`, its non-regenerable editable checkpoint under
+`scripts/art/creatures/`, and the exact reviewed runtime export under
+`public/creatures/wolf/`.
 
 ## AI motion and rigging models
 

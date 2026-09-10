@@ -1,0 +1,21 @@
+{
+  "schema": "ashveil.wolf.v1",
+  "creature": "wolf",
+  "glb": {
+    "file": "wolf.glb",
+    "sha256": "33834135c5c5856afef9783939b4917f22097170becd527bfe9096a45c71e77d",
+    "bytes": 4561180
+  },
+  "clips": [
+    { "name": "attack", "duration": 1, "loop": false },
+    { "name": "run", "duration": 0.6666666666666666, "loop": true },
+    { "name": "walk", "duration": 1, "loop": true }
+  ],
+  "frame": {
+    "forward": "+Z",
+    "up": "+Y",
+    "rootNodeQuaternion": [0, -0.7071068286895752, -0.7071068286895752, 0.00000003090862321641907],
+    "restCenterZ": 0.327885,
+    "groundOffsetY": 0
+  }
+}

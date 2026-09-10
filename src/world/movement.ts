@@ -25,6 +25,8 @@ export interface Explorer extends WorldPoint {
   readonly jumpPreparationRemaining: number
 }
 
+export type Occupant = Pick<Explorer, 'x' | 'z' | 'radius'>
+
 export interface MoveIntent extends WorldPoint {
   readonly sprint: boolean
   readonly walk?: boolean
@@ -61,7 +63,7 @@ function outsideSolids(x: number, z: number, radius: number, solids: readonly Wo
   return solids.every((solid) => Math.hypot(x - solid.x, z - solid.z) >= radius + solid.radius)
 }
 
-export function canOccupy(explorer: Explorer, x: number, z: number, solids = SOLIDS): boolean {
+export function canOccupy(explorer: Occupant, x: number, z: number, solids = SOLIDS): boolean {
   if (!insideWorld(x, z, explorer.radius) || !outsideRiver(x, z, explorer.radius)) return false
   if (!outsideSolids(x, z, explorer.radius, solids)) return false
   const horizontal = Math.hypot(x - explorer.x, z - explorer.z)
