@@ -4,6 +4,15 @@ import { resolvePositions } from '../../src/render/procedural/pose'
 import { Joint, LEFT } from '../../src/render/procedural/joints'
 import type { Pose } from '../../src/render/procedural/pose'
 import { quatRotate } from '../../src/render/procedural/quat'
+import { MOTION_TIMINGS, type MotionTimings, type PoseClipName } from '../../src/render/procedural/clips'
+import { skill } from '../../src/sim/skills'
+import type { SkillId } from '../../src/sim/types'
+
+export function clipTimings(name: PoseClipName): MotionTimings {
+  if (name === 'dead') throw new Error('dead has no cast timings')
+  if (name in MOTION_TIMINGS) return MOTION_TIMINGS[name as keyof typeof MOTION_TIMINGS]
+  return skill(name as SkillId)
+}
 
 /**
  * What a posed body is standing on, read back out of the pose by forward

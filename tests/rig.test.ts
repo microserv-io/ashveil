@@ -1,6 +1,7 @@
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { ProceduralDriver } from '../src/render/proceduraldriver'
+import { MOTION_CLIPS } from '../src/render/procedural/clips'
 import { MASCULINE_PROFILE } from '../src/render/profiles/masculine'
 import { rigStateOf, type RigState } from '../src/render/rig'
 import { createRigInputOwner } from '../src/render/riginput'
@@ -16,7 +17,7 @@ import { loadGlbSkeleton } from './fixtures/glbskeleton'
 
 describe('animation coverage', () => {
   const bodyPath = join(import.meta.dirname, '..', 'public', 'bodies', 'masculine-v3', 'masculine-v3.glb')
-  const states: RigState[] = ['idle', 'moving', 'dead', ...(Object.keys(SKILLS) as RigState[])]
+  const states: RigState[] = ['idle', 'moving', 'dead', ...(Object.keys(SKILLS) as RigState[]), ...MOTION_CLIPS]
 
   it('procedurally poses every RigState on masculine-v3', () => {
     for (const state of states) {

@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { createPoseGenerator } from '../src/render/procedural/generator'
 import { Joint, JOINT_NAMES } from '../src/render/procedural/joints'
 import { createPose, resolvePositions } from '../src/render/procedural/pose'
-import { DEATH_SETTLE } from '../src/render/procedural/clips'
+import { DEATH_SETTLE, MOTION_CLIPS } from '../src/render/procedural/clips'
 import { quatAngleBetween, quatLength } from '../src/render/procedural/quat'
 import type { ArmCarry } from '../src/render/profiles/profile'
 import type { RigState } from '../src/render/rig'
@@ -20,7 +20,7 @@ const TEST_CARRY: ArmCarry = {
     swingScale: 0.5,
   },
 }
-const STATES: RigState[] = ['idle', 'moving', 'dead', ...Object.keys(SKILLS) as RigState[]]
+const STATES: RigState[] = ['idle', 'moving', 'dead', ...Object.keys(SKILLS) as RigState[], ...MOTION_CLIPS]
 
 function input(overrides: Partial<RigInput> = {}): RigInput {
   return {

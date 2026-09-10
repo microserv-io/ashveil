@@ -1,4 +1,5 @@
 import { clamp, ease, mix } from './curves'
+import { gatherOffset } from './gather'
 import type { RigGeometry } from './geometry'
 import { Joint, LEFT, RIGHT } from './joints'
 import { plantLeg, resolveTorso, stanceOffset, writeArm, writeLeg, type LimbScratch } from './limbs'
@@ -11,7 +12,6 @@ import type { PoseClip } from './posekeys'
  * the phase, then solve the limbs onto the targets that come out. The format the
  * keys are written in lives in `posekeys.ts`.
  */
-
 /** Writes the clip at a normalised phase. Out of range holds the nearest end. */
 export function writeClipPose(
   geometry: RigGeometry,
@@ -19,6 +19,7 @@ export function writeClipPose(
   phase: number,
   scratch: LimbScratch,
   out: Pose,
+  time = 0,
 ): void {
   resetPose(out)
   const count = clip.times.length
@@ -49,8 +50,8 @@ export function writeClipPose(
   resolveTorso(geometry, out, scratch)
   writeClipFoot(geometry, clip, index, t, scratch, out, LEFT, 0)
   writeClipFoot(geometry, clip, index, t, scratch, out, RIGHT, 3)
-  writeClipArm(geometry, clip, index, t, scratch, out, LEFT, 0)
-  writeClipArm(geometry, clip, index, t, scratch, out, RIGHT, 3)
+  writeClipArm(geometry, clip, at, time, index, t, scratch, out, LEFT, 0)
+  writeClipArm(geometry, clip, at, time, index, t, scratch, out, RIGHT, 3)
 }
 
 /** A stated foot is solved onto its target; an unstated one stands where it is. */
@@ -90,6 +91,8 @@ function writeClipLeg(
 function writeClipArm(
   geometry: RigGeometry,
   clip: PoseClip,
+  phase: number,
+  time: number,
   index: number,
   t: number,
   scratch: LimbScratch,
@@ -98,6 +101,13 @@ function writeClipArm(
   lane: number,
 ): void {
   const reach = geometry.armLength
+  let handY = mix(clip.hands, index * 6 + lane + 1, (index + 1) * 6 + lane + 1, t)
+  let handZ = mix(clip.hands, index * 6 + lane + 2, (index + 1) * 6 + lane + 2, t)
+  if (clip.gather !== null) {
+    gatherOffset(clip.gather, phase, time, side, GATHER_OFFSET)
+    handY += GATHER_OFFSET[0]!
+    handZ += GATHER_OFFSET[1]!
+  }
   for (let axis = 0; axis < 3; axis++) {
     POLE[axis] = mix(clip.poles, index * 6 + lane + axis, (index + 1) * 6 + lane + axis, t)
   }
@@ -107,8 +117,8 @@ function writeClipArm(
     out,
     side,
     mix(clip.hands, index * 6 + lane, (index + 1) * 6 + lane, t) * reach,
-    mix(clip.hands, index * 6 + lane + 1, (index + 1) * 6 + lane + 1, t) * reach,
-    mix(clip.hands, index * 6 + lane + 2, (index + 1) * 6 + lane + 2, t) * reach,
+    handY * reach,
+    handZ * reach,
     POLE,
   )
 }
@@ -116,3 +126,4 @@ function writeClipArm(
 /** Module-level because writing a clip pose is on the frame path and must not allocate. */
 const POLE = new Float32Array(3)
 const KNEE_POLE = new Float32Array(3)
+const GATHER_OFFSET = new Float32Array(2)

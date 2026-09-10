@@ -42,10 +42,14 @@ const BUDGETS: Readonly<Record<string, number>> = {
   'src/render/procedural/foot.ts': 65,
   'src/render/procedural/arms.ts': 120,
   'src/render/procedural/armpace.ts': 70,
-  'src/render/procedural/stances.ts': 95,
+  'src/render/procedural/stances.ts': 59,
+  // The held charge stance, split from stances.ts.
+  'src/render/procedural/dash.ts': 105,
   // The pose-clip player. The key format and its compiler are in posekeys.ts.
   'src/render/procedural/poses.ts': 130,
   'src/render/procedural/posekeys.ts': 130,
+  // The time-driven hand roll, split from poses.ts and posekeys.ts.
+  'src/render/procedural/gather.ts': 32,
   'src/render/procedural/geometry.ts': 187,
   'src/render/procedural/generator.ts': 145,
   'src/sim/pathfind.ts': 300,

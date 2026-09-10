@@ -3,7 +3,7 @@ import { writeCarriedArm } from './arms'
 import { TAU } from './curves'
 import type { RigGeometry } from './geometry'
 import { Joint, LEFT, RIGHT } from './joints'
-import { plantFeet, resolveTorso, stanceOffset, writeLeg, writeTorso } from './limbs'
+import { plantFeet, stanceOffset, writeTorso } from './limbs'
 import { resetPose, type Pose } from './pose'
 import type { ArmCarry } from '../profiles/profile'
 import { seedOffset, type GaitDrive, type GaitParams, type GaitState } from './gait'
@@ -19,15 +19,8 @@ const IDLE_SHIFT_HZ = 0.11
 const IDLE_SWAY = 0.06
 const IDLE_ROLL = 0.045
 const IDLE_BREATH_PITCH = 0.03
-const DASH_HIP = 0.84
-const DASH_LEAN = 0.5
-const DASH_LUNGE = 0.12
-const DASH_TRAIL = 0.3
-const DASH_FOOT_LIFT = 0.18
-const FOOT_SWING_PITCH = 0.45
-/** Hands back, and barely moving at rest: a dash throws the body past its arms. */
-const DASH_ARM_TUCK = 0.9
 const IDLE_ARM_DRIFT = 0.03
+
 export function writeIdle(geometry: RigGeometry, drive: GaitDrive, state: GaitState, out: Pose, armCarry?: ArmCarry): void {
   resetPose(out)
   plant(state.params)
@@ -53,37 +46,8 @@ export function writeIdle(geometry: RigGeometry, drive: GaitDrive, state: GaitSt
   writeCarriedArm(geometry, state, out, RIGHT, breath * IDLE_ARM_DRIFT, pace, armCarry?.right)
 }
 
-/** A held pose, not a sprint: `dash` outlives the skill, so the body stays committed. */
-export function writeDash(geometry: RigGeometry, _drive: GaitDrive, state: GaitState, out: Pose, armCarry?: ArmCarry): void {
-  resetPose(out)
-  plant(state.params)
-  out.offset[0] = 0
-  out.offset[1] = geometry.ankleHeight + geometry.legLength * DASH_HIP - geometry.hipHeight
-  out.offset[2] = geometry.legLength * DASH_LUNGE
-
-  writeTorso(out, Joint.Pelvis, DASH_LEAN * 0.3, 0, 0, state)
-  writeTorso(out, Joint.Spine, DASH_LEAN * 0.4, 0, 0, state)
-  writeTorso(out, Joint.Chest, DASH_LEAN * 0.3, 0, 0, state)
-  writeTorso(out, Joint.Head, -DASH_LEAN * 0.6, 0, 0, state)
-  resolveTorso(geometry, out, state)
-
-  trailLeg(geometry, state, out, LEFT)
-  trailLeg(geometry, state, out, RIGHT)
-  const pace = armPace(geometry, 1)
-  writeCarriedArm(geometry, state, out, LEFT, -DASH_ARM_TUCK, pace, armCarry?.left)
-  writeCarriedArm(geometry, state, out, RIGHT, -DASH_ARM_TUCK, pace, armCarry?.right)
-}
-
-
-function trailLeg(geometry: RigGeometry, state: GaitState, out: Pose, side: number): void {
-  const hip = (side === LEFT ? Joint.HipL : Joint.HipR) * 3
-  state.target[0] = side * geometry.hipWidth
-  state.target[1] = geometry.ankleHeight + geometry.legLength * DASH_FOOT_LIFT
-  state.target[2] = state.positions[hip + 2]! - geometry.legLength * DASH_TRAIL
-  writeLeg(geometry, state, out, side, FOOT_SWING_PITCH * 0.5)
-}
-
-function plant(params: GaitParams): void {
+/** Idle and dash both hold the gait still while their stance is posed. */
+export function plant(params: GaitParams): void {
   params.frequency = 0
   params.duty = 1
   params.halfStep = 0

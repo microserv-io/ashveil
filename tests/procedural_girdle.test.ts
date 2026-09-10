@@ -85,26 +85,26 @@ describe('the shoulder girdle follows the arm', () => {
     expect(axis[1]!, 'the clavicle lifted more than a shoulder can').toBeLessThan(Math.sin(25 * Math.PI / 180))
   })
 
-  it('lifts both clavicles when frost nova takes the hands overhead', () => {
+  it('lifts both clavicles when the slam takes the hands overhead', () => {
     // The windup's peak, wherever this body's arm reaches it: a shorter or lower
     // arm gets there at a different phase, and the lift is what is being tested.
     const peak = { [OptionalJoint.ClavicleL]: 0, [OptionalJoint.ClavicleR]: 0 } as Record<number, number>
     for (let phase = 0.25; phase <= 0.75; phase += 0.025) {
-      writeClipPose(MASCULINE, POSE_CLIPS.frost_nova, phase, state, pose)
+      writeClipPose(MASCULINE, POSE_CLIPS.monster_slam, phase, state, pose)
       writeShoulderGirdle(MASCULINE, pose)
       for (const [clavicle, side] of [[OptionalJoint.ClavicleL, LEFT], [OptionalJoint.ClavicleR, RIGHT]] as const) {
         peak[clavicle] = Math.max(peak[clavicle]!, elevation(clavicle, side))
       }
     }
     for (const clavicle of [OptionalJoint.ClavicleL, OptionalJoint.ClavicleR]) {
-      // Frost nova takes the hands to about fifty-five degrees, not straight up, so
+      // The slam takes the hands to about fifty-five degrees, not straight up, so
       // the lift is well under way here; the straight-up case is asserted below.
       expect(peak[clavicle], 'a clavicle stayed down while the arm went up').toBeGreaterThan(0.1)
     }
   })
 
   it('leaves the clavicles alone while the arms hang', () => {
-    writeClipPose(MASCULINE, POSE_CLIPS.frost_nova, 0, state, pose)
+    writeClipPose(MASCULINE, POSE_CLIPS.monster_slam, 0, state, pose)
     writeShoulderGirdle(MASCULINE, pose)
     for (const [clavicle, side] of [[OptionalJoint.ClavicleL, LEFT], [OptionalJoint.ClavicleR, RIGHT]] as const) {
       expect(Math.abs(elevation(clavicle, side)), 'a hanging arm lifted its shoulder').toBeLessThan(0.05)

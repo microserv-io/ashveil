@@ -8,11 +8,14 @@ import {
   writeLocomotion,
   type GaitDrive,
 } from '../src/render/procedural/gait'
-import { writeDash, writeIdle } from '../src/render/procedural/stances'
+import { writeDash } from '../src/render/procedural/dash'
+import { writeIdle } from '../src/render/procedural/stances'
 import { Joint, LEFT } from '../src/render/procedural/joints'
 import { createPose, resolvePositions } from '../src/render/procedural/pose'
+import { quatLength } from '../src/render/procedural/quat'
+import type { RigGeometry } from '../src/render/procedural/geometry'
 import { footContact } from './fixtures/motion'
-import { MASCULINE as geometry } from './fixtures/bodies'
+import { HUMAN, MASCULINE as geometry } from './fixtures/bodies'
 
 const SPEEDS = [0.5, 1.5, 3, 6]
 const SAMPLES = 720
@@ -157,11 +160,75 @@ describe('the other locomotion poses', () => {
     expect(chestMoved, 'idle must breathe, not freeze').toBeGreaterThan(1e-4)
   })
 
-  it('leans forward with its legs trailing in a dash', () => {
+})
+
+/**
+ * The dash is a shoulder charge, and every number here is a landmark measured off
+ * the posed body rather than a constant read back out of `stances.ts`: the torso
+ * over its leading foot, the right shoulder first, and the arms outside the ribs.
+ */
+describe.each([['human', HUMAN], ['masculine-v3', geometry]] as const)('%s charges in a dash', (_body, body) => {
+  /** The same torso capsule `tests/procedural_selfintersection.test.ts` measures against. */
+  const TORSO_RADIUS = 0.6
+
+  function at(joint: Joint, lane: number): number {
+    return positions[joint * 3 + lane]!
+  }
+
+  /** Distance from a point to the pelvis-to-chest axis, capped to the torso's own height. */
+  function fromTorso(joint: Joint): number {
+    const low = at(Joint.Pelvis, 1)
+    const high = at(Joint.Chest, 1)
+    const on = Math.min(high, Math.max(low, at(joint, 1)))
+    const t = high > low ? (on - low) / (high - low) : 0
+    const axisX = at(Joint.Pelvis, 0) + (at(Joint.Chest, 0) - at(Joint.Pelvis, 0)) * t
+    const axisZ = at(Joint.Pelvis, 2) + (at(Joint.Chest, 2) - at(Joint.Pelvis, 2)) * t
+    return Math.hypot(at(joint, 0) - axisX, at(joint, 1) - on, at(joint, 2) - axisZ)
+  }
+
+  function dash(geometry: RigGeometry): void {
     writeDash(geometry, createGaitDrive(), state, pose)
     resolvePositions(geometry, pose, positions)
-    expect(positions[Joint.Chest * 3 + 2], 'the chest leads').toBeGreaterThan(0.05)
-    expect(positions[Joint.FootL * 3 + 2], 'the feet trail').toBeLessThan(0)
-    expect(positions[Joint.FootL * 3 + 1]).toBeGreaterThan(geometry.ankleHeight)
+  }
+
+  it('pitches the torso well forward', () => {
+    dash(body)
+    const lean = Math.atan2(at(Joint.Chest, 2) - at(Joint.Pelvis, 2), at(Joint.Chest, 1) - at(Joint.Pelvis, 1))
+    expect(lean, 'the body is not committed to the lunge').toBeGreaterThan(0.35)
+  })
+
+  it('turns the right shoulder into the direction of travel', () => {
+    dash(body)
+    const halfWidth = Math.abs(body.rest[Joint.ShoulderL * 3]!)
+    expect(at(Joint.ShoulderR, 2) - at(Joint.ShoulderL, 2), 'the leading shoulder does not lead')
+      .toBeGreaterThan(halfWidth * 0.4)
+  })
+
+  it('slides on a planted lead foot with the other leg trailing', () => {
+    dash(body)
+    expect(at(Joint.FootR, 2) - at(Joint.HipR, 2), 'the lead foot is not ahead of its hip')
+      .toBeGreaterThan(body.legLength * 0.15)
+    expect(at(Joint.FootR, 1), 'the lead foot left the ground').toBeCloseTo(body.ankleHeight, 3)
+    expect(at(Joint.FootL, 2) - at(Joint.HipL, 2), 'the trailing foot is not behind its hip')
+      .toBeLessThan(-body.legLength * 0.15)
+    expect(at(Joint.FootL, 1) - body.ankleHeight, 'the trailing foot is not off the ground')
+      .toBeGreaterThan(body.legLength * 0.03)
+    const toe = footContact(body, pose, LEFT).toe
+    expect(toe[1], 'the trailing toe went through the floor').toBeGreaterThan(0)
+  })
+
+  it('keeps both hands outside the torso', () => {
+    dash(body)
+    const radius = Math.abs(body.rest[Joint.ShoulderL * 3]!) * TORSO_RADIUS
+    expect(fromTorso(Joint.HandR), 'the braced hand is inside the chest').toBeGreaterThan(radius)
+    expect(fromTorso(Joint.HandL), 'the trailing hand is inside the chest').toBeGreaterThan(radius)
+  })
+
+  it('holds a finite, unit pose', () => {
+    dash(body)
+    for (let joint = 0; joint < Joint.Count; joint++) {
+      expect(quatLength(pose.rotations, joint * 4), `joint ${joint}`).toBeCloseTo(1, 4)
+    }
+    for (let lane = 0; lane < 3; lane++) expect(Number.isFinite(pose.offset[lane]!)).toBe(true)
   })
 })

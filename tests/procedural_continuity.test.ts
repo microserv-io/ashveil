@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { POSE_CLIPS, SKILL_CLIPS, type PoseClipName } from '../src/render/procedural/clips'
+import { MOTION_CLIPS, POSE_CLIPS, SKILL_CLIPS, type PoseClipName } from '../src/render/procedural/clips'
 import { createGaitState } from '../src/render/procedural/gait'
 import type { RigGeometry } from '../src/render/procedural/geometry'
 import { Joint, JOINT_NAMES } from '../src/render/procedural/joints'
 import { createPose } from '../src/render/procedural/pose'
 import { writeClipPose } from '../src/render/procedural/poses'
 import { quatAngleBetween } from '../src/render/procedural/quat'
-import { skill } from '../src/sim/skills'
-import { DT, type SkillId } from '../src/sim/types'
+import { DT } from '../src/sim/types'
 import { HUMAN, MASCULINE } from './fixtures/bodies'
+import { clipTimings } from './fixtures/motion'
 
 /**
  * A skill is played at the speed the sim casts it, not at the speed it was
@@ -52,17 +52,24 @@ interface Jump {
 function play(geometry: RigGeometry, name: PoseClipName, windup: number, recovery: number): Jump {
   const clip = POSE_CLIPS[name]
   const phases: number[] = []
-  for (let t = 0; t < windup; t += DT) phases.push(castPhase(Math.min(1, t / windup), null))
-  for (let t = 0; t <= recovery; t += DT) phases.push(castPhase(null, Math.min(1, t / recovery)))
+  const times: number[] = []
+  for (let t = 0; t < windup; t += DT) {
+    phases.push(castPhase(Math.min(1, t / windup), null))
+    times.push(t)
+  }
+  for (let t = 0; t <= recovery; t += DT) {
+    phases.push(castPhase(null, Math.min(1, t / recovery)))
+    times.push(windup + t)
+  }
   let worst = 0
   let joint = 0
   let at = ''
   let worstArm = 0
   let armJoint = 0
   let armAt = ''
-  writeClipPose(geometry, clip, phases[0]!, state, before)
+  writeClipPose(geometry, clip, phases[0]!, state, before, times[0]!)
   for (let step = 1; step < phases.length; step++) {
-    writeClipPose(geometry, clip, phases[step]!, state, after)
+    writeClipPose(geometry, clip, phases[step]!, state, after, times[step]!)
     for (let index = 0; index < Joint.Count; index++) {
       const moved = quatAngleBetween(before.rotations, index * 4, after.rotations, index * 4)
       if (CARRIED.includes(index)) {
@@ -85,9 +92,9 @@ function play(geometry: RigGeometry, name: PoseClipName, windup: number, recover
 describe.each([['human', HUMAN], ['masculine-v3', MASCULINE]] as const)(
   '%s plays a skill at the speed the sim casts it',
   (_body, geometry) => {
-    for (const name of SKILL_CLIPS) {
+    for (const name of [...SKILL_CLIPS, ...MOTION_CLIPS]) {
       it(`${name} never jumps a joint in one frame`, () => {
-        const timings = skill(name as SkillId)
+        const timings = clipTimings(name)
         const jump = play(geometry, name, timings.windup, timings.recovery)
         expect(
           jump.worst,

@@ -2,13 +2,14 @@ import '../../src/style.css'
 import * as THREE from 'three'
 import { disposeActorView, orientActorView, type ActorView } from '../../src/render/actorview'
 import { loadModels } from '../../src/render/models'
+import { MOTION_CLIPS, POSE_CLIPS, type MotionTimings, type PoseClipName } from '../../src/render/procedural/clips'
 import type { RigState } from '../../src/render/rig'
 import type { RigInput } from '../../src/render/riginput'
 import { SceneHost } from '../../src/render/scene'
 import { SKILLS } from '../../src/sim/skills'
 import { Sim } from '../../src/sim/sim'
 import { DT, HIT_FLASH_DURATION, type Actor } from '../../src/sim/types'
-import { CAST_LENGTH, castLeft, castPhase, describePhase, recovering } from './cast'
+import { advanceCast, castLeft, castLength, castPhase, castTimings, describePhase, recovering, resting, withWindup } from './cast'
 import {
   createReviewBodyView,
   loadReviewBodies,
@@ -50,15 +51,17 @@ const state = element<HTMLSelectElement>('state')
 const bodySelect = element<HTMLSelectElement>('body')
 const speed = element<HTMLInputElement>('speed')
 const scale = element<HTMLInputElement>('scale')
+const cast = element<HTMLInputElement>('cast')
 const distance = element<HTMLInputElement>('distance')
 const pitch = element<HTMLInputElement>('pitch')
 const orbit = element<HTMLInputElement>('orbit')
+const loop = element<HTMLInputElement>('loop')
 const readout = element<HTMLPreElement>('readout')
 const controls = element('controls')
 const toggle = element<HTMLButtonElement>('panel-toggle')
 
 fill(bodySelect, bodies.map((entry) => entry.id))
-fill(state, ['idle', 'moving', 'dead', ...Object.keys(SKILLS)])
+fill(state, ['idle', 'moving', 'dead', ...Object.keys(SKILLS), ...MOTION_CLIPS])
 state.value = 'moving'
 
 const input: RigInput = {
@@ -94,6 +97,7 @@ bodySelect.addEventListener('change', rebuild)
 element('turn').addEventListener('click', () => (turnLeft = TURN_DURATION))
 element('cycle').addEventListener('click', cycle)
 state.addEventListener('change', cycle)
+cast.addEventListener('input', cycle)
 element('hit').addEventListener('click', () => (hitAge = 0))
 element('step').addEventListener('click', () => (stepQueued = true))
 element('recenter').addEventListener('click', recentre)
@@ -142,7 +146,8 @@ function frame(now: number): void {
   element('orbit-value').textContent = Number(orbit.value).toFixed(0)
   element('speed-value').textContent = Number(speed.value).toFixed(1)
   element('scale-value').textContent = timeScale.toFixed(2)
-  readout.textContent = describe(wall)
+  element('cast-value').textContent = Number(cast.value) === 0 ? 'sim' : `${Number(cast.value).toFixed(1)}s`
+  readout.textContent = describe(wall, withWindup(castTimings(state.value as RigState), Number(cast.value)))
   requestAnimationFrame(frame)
 }
 
@@ -195,6 +200,8 @@ function steerHome(delta: number): void {
 function writeInput(delta: number): void {
   const chosen = state.value as RigState
   const acting = chosen !== 'idle' && chosen !== 'moving' && chosen !== 'dead'
+  const timings = withWindup(castTimings(chosen), Number(cast.value))
+  const clipLoops = chosen in POSE_CLIPS && POSE_CLIPS[chosen as PoseClipName].loop
 
   input.state = chosen
   input.speed = chosen === 'moving' ? Number(speed.value) : 0
@@ -211,14 +218,22 @@ function writeInput(delta: number): void {
     input.phase = null
     input.castLeft = 0
     input.recovering = false
-    castAt = CAST_LENGTH
+    castAt = castLength(timings)
     return
   }
-  // The cast plays once and holds, so a struck pose can be looked at. Cycle runs it again.
-  castAt = Math.min(CAST_LENGTH, castAt + delta)
-  input.phase = castPhase(castAt)
-  input.castLeft = castLeft(castAt)
-  input.recovering = recovering(castAt)
+  const mode = clipLoops ? 'wrap' : loop.checked ? 'repeat' : 'hold'
+  castAt = advanceCast(castAt, delta, timings, mode)
+  if (resting(castAt, timings)) {
+    input.state = 'idle'
+    input.dashing = false
+    input.phase = null
+    input.castLeft = 0
+    input.recovering = false
+    return
+  }
+  input.phase = castPhase(castAt, timings)
+  input.castLeft = castLeft(castAt, timings)
+  input.recovering = recovering(castAt, timings)
 }
 
 function cycle(): void {
@@ -254,12 +269,12 @@ function collectBodies(): ReviewBody[] {
   return REVIEW_BODIES.map((body) => ({ id: body.id, actor: sim.player, definition: body }))
 }
 
-function describe(wall: number): string {
+function describe(wall: number, timings: MotionTimings): string {
   return [
     'driver     procedural',
     `body       ${bodySelect.value}`,
     `bodyScale  ${bodyScale.toFixed(6)}`,
-    `cast       ${castAt.toFixed(2)}s of ${CAST_LENGTH.toFixed(2)}`,
+    `cast       ${castAt.toFixed(2)}s of ${castLength(timings).toFixed(2)} (windup ${timings.windup.toFixed(2)}, recovery ${timings.recovery.toFixed(2)})${resting(castAt, timings) ? ' (rest)' : ''}`,
     `frame      ${(wall * 1000).toFixed(1)}ms`,
     '',
     `state      ${input.state}`,
