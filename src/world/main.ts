@@ -8,6 +8,8 @@ import { loadSceneryKit, type SceneryKit } from './scenery-kit'
 import { explorerFacingFromCamera } from './steering'
 import { nearestLandmark, SPAWN } from './world-data'
 import { advanceExplorer } from './world-controls'
+import { WanderingWolfController, type WanderingWolfSnapshot } from './wandering-wolf'
+import { loadWolf, type WolfTemplate } from './wolf-source'
 
 interface DiagnosticState {
   position: { x: number; y: number; z: number }; facing: number; location: string; overview: boolean
@@ -15,6 +17,7 @@ interface DiagnosticState {
   frameMs: number; frameTimes: number[]
   camera: { x: number; y: number; z: number; yaw: number }; forward: { x: number; z: number }
   drawCalls: number; triangles: number; errors: string[]
+  wolf: WanderingWolfSnapshot
 }
 
 interface WorldDiagnostics {
@@ -49,9 +52,9 @@ async function boot(): Promise<void> {
   booting = true
   showLoading()
   try {
-    const [kit, character] = await Promise.all([loadSceneryKit(), loadApprovedCharacter()])
+    const [kit, character, wolf] = await Promise.all([loadSceneryKit(), loadApprovedCharacter(), loadWolf()])
     app!.replaceChildren()
-    startWorld(app!, kit, character)
+    startWorld(app!, kit, character, wolf)
   } catch (error) {
     console.error(error)
     booting = false
@@ -63,10 +66,11 @@ function initialExplorer(cameraYaw = DEFAULT_CAMERA_YAW): Explorer {
   return { ...createExplorer(SPAWN), facing: explorerFacingFromCamera(cameraYaw) }
 }
 
-function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedCharacterTemplate): void {
+function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedCharacterTemplate, wolfTemplate: WolfTemplate): void {
   let explorer = initialExplorer()
+  const wolf = new WanderingWolfController()
   const hud = createWorldHud(host)
-  const view = new WorldView(host, kit, character, explorer)
+  const view = new WorldView(host, kit, character, explorer, wolfTemplate, wolf.state)
   const input = new WorldInput(view.canvas, hud.joystick, hud.joystickKnob, hud.sprintButton, hud.jumpButton)
   let overview = false
   let injected = { x: 0, z: 0, sprint: false }
@@ -88,6 +92,8 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
     view.resetCamera()
     explorer = initialExplorer(view.cameraYaw)
     view.resetExplorer(explorer)
+    view.resetWolf(wolf.reset())
+    diagnostics.state.wolf = wolf.snapshot()
     if (overview) toggleOverview()
   }
 
@@ -103,6 +109,7 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
       grounded: explorer.grounded, jumpPhase: explorer.jumpPhase,
       frameMs: 0, frameTimes: [], camera: { x: 0, y: 0, z: 0, yaw: 0 }, forward: { x: 0, z: 1 },
       drawCalls: 0, triangles: 0, errors,
+      wolf: wolf.snapshot(),
     },
     controls: {
       move: (x, z, sprint = false) => { injected = { x, z, sprint } },
@@ -121,8 +128,10 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
       const controlled = advanceExplorer(explorer, controls, view.cameraForward(), injected, delta)
       explorer = controlled.explorer
       view.turnCamera(controlled.turnDelta)
+      wolf.advance(delta)
     }
     view.setExplorer(explorer, overview ? 0 : delta)
+    view.setWolf(wolf.state, overview ? 0 : delta)
     view.updateCamera(explorer, delta)
     view.render()
     const frameMs = performance.now() - frameStart
@@ -133,6 +142,7 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
       overview, grounded: explorer.grounded, jumpPhase: explorer.jumpPhase,
       frameMs: averageFrameMs, camera: rendered.camera, forward: rendered.forward,
       drawCalls: rendered.drawCalls, triangles: rendered.triangles,
+      wolf: wolf.snapshot(),
     })
     diagnostics.state.frameTimes.push(frameMs)
     if (diagnostics.state.frameTimes.length > 240) diagnostics.state.frameTimes.shift()

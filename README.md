@@ -240,7 +240,8 @@ not what the dressing looks like.
 
 - On the first-zone route in dev, `globalThis.ashveilWorld` exposes repeatable move,
   stop, reset and overview controls plus position, camera, recent frame times, draw-call,
-  triangle and error state. Production preview builds do not expose it.
+  triangle, error and ambient-wolf state. The normal route includes the noncombat
+  [wandering wolf](docs/wandering-wolf.md). Production preview builds do not expose it.
 - On `/legacy.html`, `?seed=7` reproduces an exact run; omit it for a random one.
 - On `/legacy.html` in dev, `globalThis.ashveil` exposes `{ sim, host, view, controls }`
   for poking at the old demo from the console.
