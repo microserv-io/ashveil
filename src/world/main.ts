@@ -4,6 +4,7 @@ import { createWorldHud } from './hud'
 import { WorldInput } from './input'
 import { createExplorer, type Explorer } from './movement'
 import { DEFAULT_CAMERA_YAW, WorldView } from './renderer'
+import { WorldQuestController } from './quest-controller'
 import { loadSceneryKit, type SceneryKit } from './scenery-kit'
 import { explorerFacingFromCamera } from './steering'
 import { nearestLandmark, SPAWN } from './world-data'
@@ -68,6 +69,7 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
   const hud = createWorldHud(host)
   const view = new WorldView(host, kit, character, explorer)
   const input = new WorldInput(view.canvas, hud.joystick, hud.joystickKnob, hud.sprintButton, hud.jumpButton)
+  const quests = new WorldQuestController(host, view, input, explorer)
   let overview = false
   let injected = { x: 0, z: 0, sprint: false }
   let previous = performance.now()
@@ -96,6 +98,7 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
   window.addEventListener('resize', () => view.resize())
   window.addEventListener('error', (event) => { errors.push(event.message) })
   window.addEventListener('unhandledrejection', (event) => { errors.push(String(event.reason)) })
+  void quests.initialize()
 
   const diagnostics: WorldDiagnostics = {
     state: {
@@ -123,6 +126,7 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
       view.turnCamera(controlled.turnDelta)
     }
     view.setExplorer(explorer, overview ? 0 : delta)
+    quests.update(explorer)
     view.updateCamera(explorer, delta)
     view.render()
     const frameMs = performance.now() - frameStart
