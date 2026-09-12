@@ -13,6 +13,16 @@ chapter's connected river-valley geography. It tests authored terrain, movement 
 freely controlled third-person camera; it is not a commitment to the final production
 engine or an implementation of the full MMORPG.
 
+The [quest system](docs/quest-system.md) adds the opening safe-bank outing: two main
+story quests and five optional side quests, with distinct markers, dialogue, a
+journal, local saves and one-time rewards. Named NPCs temporarily reuse copies of
+the main character. All ten MSQs and twenty side quests are catalogued; the class,
+combat and dungeon-dependent continuation remains planned. Quest XP is reserved
+until class selection is implemented, and supply rewards have no combat effects yet.
+Use **F** to interact nearby and **J** for the journal, or use their on-screen buttons.
+Progress is stored for one offline character per browser origin; returning to the
+refuge does not reset it. This is separate from the deprecated demo's saves.
+
 The environment pass uses Blender-authored buildings and trees guided by the
 [character-and-village style reference](docs/art-pipeline/concepts/opening-chapter/environment-kit.png).
 The reference sets an art direction; it is not a screenshot of the playable zone.
@@ -56,6 +66,8 @@ and movement truth host-agnostic while the team validates how it should join tha
 ```
 src/sim/      deterministic core — seeded RNG, fixed 60Hz tick, no DOM, no wall-clock
 src/world/    first-zone authored data, terrain, movement and browser presentation
+src/quests/   pure quest definitions, progress, reward rules and journal projections
+src/persistence/ first-zone offline save repository and atomic browser transactions
 src/session/  characters, persistence, the authoritative session
 src/net/      transport abstraction and wire protocol
 src/render/   three.js scene, meshes, effects, screen-space overlay, input

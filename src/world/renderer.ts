@@ -5,6 +5,9 @@ import type { SceneryKit } from './scenery-kit'
 import { createTerrainGeometryData, heightAt, riverCenterAt, riverHalfWidthAt, WORLD_BOUNDS } from './terrain'
 import { LANDMARKS, PATHS, SOLIDS, type WorldPoint } from './world-data'
 import type { Explorer } from './movement'
+import { QuestNpcView } from './quest-npcs'
+import { QuestTargetView, type VisibleQuestMarker } from './quest-target-view'
+import { QUEST_NPCS, QUEST_TARGETS, questTarget } from './quest-world-data'
 import { createWorldMaterial } from './world-material'
 
 function buildTerrain(): THREE.Mesh {
@@ -50,6 +53,8 @@ export class WorldView {
   private readonly terrain = buildTerrain()
   private readonly scenery: BuiltScenery
   private readonly explorer: ApprovedWorldCharacter
+  private readonly questNpcs: QuestNpcView
+  private readonly questTargets: QuestTargetView
   private readonly raycaster = new THREE.Raycaster()
   private readonly cameraTarget = new THREE.Vector3()
   private yaw = DEFAULT_CAMERA_YAW
@@ -71,6 +76,8 @@ export class WorldView {
     this.scene.fog = new THREE.FogExp2(0xb7aa8e, 0.003)
     this.terrain.receiveShadow = true
     this.scene.add(this.terrain, buildRiver(), this.explorer.root)
+    this.questNpcs = new QuestNpcView(this.scene, character, QUEST_NPCS)
+    this.questTargets = new QuestTargetView(this.scene, QUEST_TARGETS)
     this.scenery = buildScenery(this.scene, { heightAt, landmarks: LANDMARKS, paths: PATHS, solids: SOLIDS, kit })
     this.scene.add(new THREE.HemisphereLight(0xf5e8c9, 0x4b5042, 1.55))
     const sun = new THREE.DirectionalLight(0xffe5b7, 2.8)
@@ -85,9 +92,21 @@ export class WorldView {
   get canvas(): HTMLCanvasElement { return this.renderer.domElement }
   get cameraYaw(): number { return this.yaw }
 
-  setExplorer(explorer: Explorer, delta: number): void { this.explorer.update(explorer, delta) }
+  setExplorer(explorer: Explorer, delta: number): void {
+    this.explorer.update(explorer, delta)
+    this.questNpcs.updateLabels(explorer)
+  }
   resetExplorer(explorer: Explorer): void { this.explorer.reset(explorer) }
   turnCamera(delta: number): void { this.yaw += delta }
+
+  setQuestMarkers(markers: readonly VisibleQuestMarker[]): void {
+    this.questNpcs.clearMarkers()
+    this.questTargets.show(markers)
+    for (const marker of markers) {
+      const target = questTarget(marker.id)
+      if (target?.kind !== 'prop') this.questNpcs.setMarker(marker.id, marker.category, marker.status)
+    }
+  }
 
   adjustOrbit(x: number, y: number, zoom: number): void {
     if (this.overview) return

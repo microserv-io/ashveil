@@ -1,6 +1,11 @@
 # Chapter One: A Fire Worth Keeping
 
-**Authored story draft · First Early Access chapter · Not implemented content**
+**Authored story draft · First Early Access chapter · Opening safe-bank quest slice**
+
+M01/M02 and S01–S05 have an offline placeholder implementation described in
+[quest-system.md](https://github.com/microserv-io/ashveil/blob/main/docs/quest-system.md). The remainder, including class selection,
+combat and the dungeon, remains authored draft content. The cinematic is represented
+by an arrival introduction in the current runtime.
 
 This script brings together the opening cinematic, ten main scenario quests,
 twenty side quests and the first four-player dungeon. Names, geography, dialogue,
@@ -13,9 +18,9 @@ chapter should resolve its immediate rescue story without pretending to explain
 the whole ash threat.
 
 The [first-zone terrain build slice](https://github.com/microserv-io/ashveil/blob/main/docs/first-zone-terrain.md)
-is implementing this travel contract as connected Three.js terrain for review. It does
-not implement these quests or settle their encounters, production engine, playable
-scale or staging.
+implements this travel contract as connected Three.js terrain for review. The quest
+slice adds only the safe-bank outing; it does not settle later encounters, production
+engine, playable scale or final staging.
 
 ## The story
 
