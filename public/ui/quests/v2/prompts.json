@@ -1,0 +1,20 @@
+{
+  "tool": "Built-in image_gen",
+  "date": "2026-09-13",
+  "mode": "generate",
+  "prompts": [
+    "Use case: stylized-concept. Asset type: floating fantasy MMO side-quest marker icon, Ashveil. Design a NEW very simple UI glyph inspired by the immediate readability of classic MMORPG quest markers. Minimal broad silhouette, smooth flat color with only a subtle two-tone bevel and a crisp charcoal outline. Softly tapered corners, tasteful fantasy shape, readable at 24 pixels. NOT a realistic metal object, NO surface texture, NO scratches, NO cracks, NO stone, NO ornament, NO frame or circular ring, NO medallion, NO border container, NO diamond, NO shield. One isolated glyph centered on a square canvas with 20% empty padding around its maximum extent. Genuine transparent PNG background with alpha. No backdrop, no shadow cloud, no rendered checkerboard, no labels, letters or watermark. Subject: a SINGLE bold upright exclamation mark including its separate round dot. Pale warm ivory front face, restrained muted teal edge accent and thin near-black outline. Available optional side quest. Slight taper from broad top to narrower stem, oversized simple round dot, uniform clean surfaces. Only the exclamation mark is present.",
+    "Use case: stylized-concept. Asset type: floating fantasy MMO side-quest marker icon, Ashveil. Design a NEW very simple UI glyph inspired by the immediate readability of classic MMORPG quest markers. Minimal broad silhouette, smooth flat color with only a subtle two-tone bevel and a crisp charcoal outline. Softly tapered corners, tasteful fantasy shape, readable at 24 pixels. NOT a realistic metal object, NO surface texture, NO scratches, NO cracks, NO stone, NO ornament, NO frame or circular ring, NO medallion, NO border container, NO diamond, NO shield. One isolated glyph centered on a square canvas with 20% empty padding around its maximum extent. Genuine transparent PNG background with alpha. No backdrop, no shadow cloud, no rendered checkerboard, no labels, letters or watermark. Subject: a SINGLE short bold horizontal bar / dash with slightly rounded corners. Pale cool gray front face, restrained muted teal edge accent and thin near-black outline. Accepted optional side quest with unfinished objectives. Use the same clean bevel language as an ivory exclamation glyph, but subdued brightness. The bar occupies about 60% canvas width and 17% canvas height. Only the bar is present; no exclamation mark, dot, question mark, enclosing ring or second symbol."
+  ],
+  "references": [
+    {
+      "url": "https://na.finalfantasyxiv.com/uiguide/know/faq-display/interface_npc_icon.html",
+      "lesson": "Main scenario and content-unlock quests have distinctive category icons."
+    },
+    {
+      "url": "https://worldofwarcraft.blizzard.com/en-us/news/24117139",
+      "lesson": "Quest types use distinct iconography; category and progress remain separate concepts."
+    }
+  ],
+  "direction": "New unframed side quest glyphs with restrained teal accents; retain v1 gold MSQ diamonds. Original Ashveil assets, not copies of either game's artwork."
+}
