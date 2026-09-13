@@ -13,7 +13,48 @@ import {
 } from '../src/world/movement'
 import { LANDMARKS, PATHS, SPAWN } from '../src/world/world-data'
 import { heightAt, riverCenterAt, riverHalfWidthAt, WORLD_BOUNDS } from '../src/world/terrain'
-import { mapToWorld } from '../src/world/zone-default'
+import { compileZone } from '../src/world/zone-compiler'
+import { DEFAULT_ZONE, mapToWorld } from '../src/world/zone-default'
+import type { CompiledZone } from '../src/world/zone-types'
+
+function openingRegionReachesRefuge(zone: CompiledZone): boolean {
+  const landing = zone.landmarks.find((landmark) => landmark.id === 'safe-landing')!
+  const refuge = zone.landmarks.find((landmark) => landmark.id === 'refuge')!
+  const corners = [mapToWorld(500, 40), mapToWorld(850, 235)]
+  const bounds = {
+    minX: Math.min(corners[0]!.x, corners[1]!.x), maxX: Math.max(corners[0]!.x, corners[1]!.x),
+    minZ: Math.min(corners[0]!.z, corners[1]!.z), maxZ: Math.max(corners[0]!.z, corners[1]!.z),
+  }
+  const step = 5
+  const columns = Math.floor((bounds.maxX - bounds.minX) / step) + 1
+  const rows = Math.floor((bounds.maxZ - bounds.minZ) / step) + 1
+  const cell = (x: number, z: number) => [
+    Math.max(0, Math.min(columns - 1, Math.round((x - bounds.minX) / step))),
+    Math.max(0, Math.min(rows - 1, Math.round((z - bounds.minZ) / step))),
+  ] as const
+  const point = (column: number, row: number) => ({ x: bounds.minX + column * step, z: bounds.minZ + row * step })
+  const [startColumn, startRow] = cell(landing.x, landing.z)
+  const [targetColumn, targetRow] = cell(refuge.x, refuge.z)
+  const pending: (readonly [number, number])[] = [[startColumn, startRow]]
+  const visited = new Set([startRow * columns + startColumn])
+  for (let cursor = 0; cursor < pending.length; cursor += 1) {
+    const [column, row] = pending[cursor]!
+    const from = point(column, row)
+    for (let dz = -1; dz <= 1; dz += 1) for (let dx = -1; dx <= 1; dx += 1) {
+      const nextColumn = column + dx
+      const nextRow = row + dz
+      if (nextColumn < 0 || nextColumn >= columns || nextRow < 0 || nextRow >= rows) continue
+      const key = nextRow * columns + nextColumn
+      if (visited.has(key)) continue
+      const to = point(nextColumn, nextRow)
+      if (!zone.canOccupyPoint(to.x, to.z, 0.72)
+        || !zone.canOccupyPoint((from.x + to.x) * 0.5, (from.z + to.z) * 0.5, 0.72)) continue
+      visited.add(key)
+      pending.push([nextColumn, nextRow])
+    }
+  }
+  return visited.has(targetRow * columns + targetColumn)
+}
 
 describe('first-zone movement', () => {
   it('substeps a long frame and caps elapsed time', () => {
@@ -209,7 +250,7 @@ describe('first-zone movement', () => {
 
   it('runs the full main road continuously in five minutes without resetting explorer state', () => {
     const routeIds = ['refuge-road', 'lower-road', 'waystation-descent']
-    let explorer = createExplorer(SPAWN)
+    let explorer = createExplorer(PATHS.find((path) => path.id === routeIds[0])!.points[0]!)
     let elapsed = 0
     for (const path of routeIds.map((id) => PATHS.find((path) => path.id === id)!)) {
       for (const target of path.points.slice(1)) {
@@ -230,6 +271,46 @@ describe('first-zone movement', () => {
     expect(Math.hypot(explorer.x - waystation.x, explorer.z - waystation.z)).toBeLessThan(0.001)
     expect(elapsed).toBeGreaterThanOrEqual(285)
     expect(elapsed).toBeLessThanOrEqual(315)
+  })
+
+  it('starts at Safe Landing and reaches the refuge only by following the authored approach', () => {
+    const landing = LANDMARKS.find((landmark) => landmark.id === 'safe-landing')!
+    const refuge = LANDMARKS.find((landmark) => landmark.id === 'refuge')!
+    expect(SPAWN).toEqual({ x: landing.x + 86, z: landing.z })
+
+    const path = PATHS.find((candidate) => candidate.id === 'landing-road')!
+    let explorer = createExplorer(SPAWN)
+    for (const target of [...path.points].reverse()) for (let frame = 0; frame < 30_000; frame += 1) {
+      const dx = target.x - explorer.x
+      const dz = target.z - explorer.z
+      const distance = Math.hypot(dx, dz)
+      if (distance < 1e-6) break
+      const next = moveExplorer(explorer, { x: dx / distance, z: dz / distance, sprint: false }, Math.min(1 / 60, distance / RUN_SPEED))
+      expect(Math.hypot(next.x - explorer.x, next.z - explorer.z), 'landing road stalled').toBeGreaterThan(0)
+      explorer = next
+    }
+    expect(Math.hypot(explorer.x - refuge.x, explorer.z - refuge.z)).toBeLessThan(0.001)
+
+    explorer = createExplorer(SPAWN)
+    for (let frame = 0; frame < 12_000; frame += 1) {
+      const dx = refuge.x - explorer.x
+      const dz = refuge.z - explorer.z
+      const distance = Math.hypot(dx, dz)
+      const next = moveExplorer(explorer, { x: dx / distance, z: dz / distance, sprint: true, jump: frame % 90 === 0 }, 1 / 60)
+      if (Math.hypot(next.x - explorer.x, next.z - explorer.z) < 1e-8 && frame > 300) break
+      explorer = next
+    }
+    expect(Math.hypot(explorer.x - refuge.x, explorer.z - refuge.z)).toBeGreaterThan(100)
+  })
+
+  it('has no landing-to-refuge shortcut inside the opening region north of the road entry', () => {
+    expect(openingRegionReachesRefuge(compileZone(DEFAULT_ZONE))).toBe(false)
+    const withoutBluff = {
+      ...DEFAULT_ZONE,
+      terrain: { ...DEFAULT_ZONE.terrain,
+        landforms: DEFAULT_ZONE.terrain.landforms!.filter((landform) => landform.id !== 'refuge-west-bluff') },
+    }
+    expect(openingRegionReachesRefuge(compileZone(withoutBluff))).toBe(true)
   })
 
   it('keeps the full authored road width grounded and traversable', () => {

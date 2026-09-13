@@ -120,6 +120,13 @@ initialization; local storage never becomes a dependency of the terrain compiler
 Water animation and ground materials remain rendering concerns. Neither changes the
 collision surface or the authored traversal boundary.
 
+Quest target placement follows the same named-landmark boundary through the pure
+`quest-staging.ts` projector. Stable catalogue target IDs are resolved into Safe Landing
+or refuge local contexts after the active zone is compiled; world coordinates are not
+stored in quest progress or reward receipts. The committed default starts on the shore at
+Safe Landing, while imported older drafts retain their authored spawn. Initial location
+and reset text derive from that active spawn landmark so a custom draft is not mislabeled.
+
 Three kinds of place, with different rules, because they answer different questions:
 
 | | geometry | combat | who is there | entry | cleared? |
@@ -148,7 +155,8 @@ transport is an interface rather than a single socket.
 
 ### First-zone quest system
 
-The first-zone quest implementation is specified in [quest-system.md](quest-system.md).
+The first-zone quest implementation is specified in [quest-system.md](quest-system.md),
+with runtime placement recorded in [quest-staging.md](quest-staging.md).
 It keeps the authored quest library separate from each character's progress and
 resolved rewards. The pure `src/quests/` rules consume intents and validated world
 events; `src/persistence/` stores the complete offline character aggregate using

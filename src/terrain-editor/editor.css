@@ -12,12 +12,16 @@ button:focus-visible, input:focus-visible, select:focus-visible, .map-control:fo
 .map-stage svg { overflow: visible; }
 .map-path { fill: none; stroke: #e7bd62; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
 .map-ridge { fill: none; stroke: rgba(79, 70, 56, 0.72); stroke-linecap: round; stroke-linejoin: round; }
+.map-landform { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.map-landform-hill { stroke: rgba(126, 156, 91, 0.62); }
+.map-landform-barrier { stroke: rgba(174, 139, 94, 0.78); }
 .map-river { fill: none; stroke: rgba(63, 129, 151, 0.72); stroke-linecap: round; stroke-linejoin: round; }
 .map-control { cursor: grab; stroke: #171a16; stroke-width: 2; vector-effect: non-scaling-stroke; }
 .map-control:active { cursor: grabbing; }
 .map-control-landmark { fill: #f5c451; }
 .map-control-path { fill: #fff0c8; }
 .map-control-ridge { fill: #b9a88e; }
+.map-control-landform { fill: #d59b58; }
 .map-control-river { fill: #6dd2e5; }
 .map-control.is-selected { stroke: #fff; stroke-width: 4; }
 .editor-panel { border-left: 1px solid rgba(245, 232, 201, 0.14); background: #211f1b; }

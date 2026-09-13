@@ -77,6 +77,34 @@ describe('world quest command host', () => {
     expect(second.state?.accepted.M02).toBeUndefined()
   })
 
+  it('progresses M01 at the landing and M02 between the bank and refuge', async () => {
+    const host = new WorldQuestHost('offline', new MemoryQuestStateRepository(), QUEST_TARGETS)
+    await host.initialize()
+
+    for (const questId of ['M01', 'M02'] as const) {
+      const definition = openingQuestResolver.get(questId)!
+      expect((await host.dispatch(
+        { kind: 'accept', questId, giverId: definition.giverId }, at(definition.giverId),
+      )).kind).toBe('committed')
+      for (const objective of definition.objectives) {
+        for (const targetId of objective.targetIds.slice(0, objective.count)) {
+          expect((await host.dispatch(
+            { kind: 'interact', questId, objectiveId: objective.id, targetId }, at(targetId),
+          )).kind).toBe('committed')
+        }
+      }
+      expect((await host.dispatch(
+        { kind: 'turn_in', questId, turnInId: definition.turnInId }, at(definition.turnInId),
+      )).kind).toBe('committed')
+    }
+
+    expect(host.state?.completedIds).toEqual(expect.arrayContaining(['M01', 'M02']))
+    expect(host.state?.receipts).toMatchObject({
+      M01: { characterId: 'offline', questId: 'M01' },
+      M02: { characterId: 'offline', questId: 'M02' },
+    })
+  })
+
   it('prefers an accepted objective over an overlapping early discovery', () => {
     let state = createQuestState('offline')
     state = reduceQuestIntent(state, { kind: 'accept', questId: 'S01', giverId: 'npc_mara' }).state

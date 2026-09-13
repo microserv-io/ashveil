@@ -82,7 +82,7 @@ describe('first-zone terrain', () => {
     expect(character).not.toMatch(/src\/main|\.\.\/(sim|ui|session|net)\//)
     for (const file of [
       'terrain.ts', 'world-data.ts', 'movement.ts', 'zone-types.ts', 'zone-default.ts',
-      'zone-compiler.ts', 'zone-active.ts', 'anchored-placement.ts',
+      'zone-compiler.ts', 'zone-active.ts', 'zone-landforms.ts', 'anchored-placement.ts',
     ]) {
       const source = readFileSync(join(worldRoot, file), 'utf8')
       expect(source).not.toMatch(/from ['"]three['"]|\b(document|window|performance|localStorage|indexedDB)\b/)

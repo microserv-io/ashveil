@@ -3,6 +3,7 @@ import type {
   WorldPoint, ZoneDefinition, ZonePath, ZoneRiverPoint, ZoneRidge,
 } from './zone-types'
 import { projectZoneSolids } from './zone-placements'
+import { CompiledLandforms } from './zone-landforms'
 
 const MAX_JSON_BYTES = 512 * 1024
 const MAX_GRID_VERTICES = 300_000
@@ -167,6 +168,42 @@ export function validateZoneDefinition(value: unknown): string[] {
     if (item && validPoint(item) && !pointInBounds(item)) errors.push(`terrain stroke ${String(item.id)} lies outside bounds`)
   }
 
+  const rawLandforms = terrain && Array.isArray(terrain.landforms) ? terrain.landforms : []
+  const landforms = rawLandforms.slice(0, 16)
+  if (terrain && terrain.landforms !== undefined && !Array.isArray(terrain.landforms)) errors.push('terrain landforms must be an array')
+  if (rawLandforms.length > 16) errors.push('terrain landforms must contain at most 16 entries')
+  let landformPointCount = 0
+  const landformIds = new Set<string>()
+  for (const candidate of landforms) {
+    const item = record(candidate)
+    const rawPoints = item && Array.isArray(item.points) ? item.points : []
+    const points = rawPoints.slice(0, 129)
+    const halfWidth = item && finite(item.halfWidth) ? item.halfWidth : NaN
+    const height = item && finite(item.height) ? item.height : NaN
+    landformPointCount += points.length
+    if (rawPoints.length > 128) errors.push('terrain landforms exceed 128 total points')
+    const commonMalformed = !item || !id(item.id) || !['hill', 'barrier'].includes(String(item.kind))
+      || points.length < 2 || points.some((point) => !validPoint(point))
+      || !Number.isFinite(halfWidth) || !Number.isFinite(height)
+    if (commonMalformed) errors.push('terrain landform is malformed')
+    else if (item.kind === 'hill'
+      && (height <= 0 || height > 40 || halfWidth < 20 || halfWidth > 200 || halfWidth < height * 2.5)) {
+      errors.push(`hill landform ${item.id} must be broad and walkable`)
+    } else if (item.kind === 'barrier'
+      && (height < 12 || height > 80 || halfWidth < (finite(zone.cellSize) ? zone.cellSize * 5 : 20)
+        || halfWidth > 100 || height / halfWidth < 0.55)) {
+      errors.push(`barrier landform ${item.id} must have a visible multi-cell rock core`)
+    }
+    if (item && id(item.id)) {
+      if (landformIds.has(item.id) || ridgeIds.has(item.id) || strokeIds.has(item.id)) errors.push(`duplicate terrain feature ID ${item.id}`)
+      landformIds.add(item.id)
+    }
+    if (item && points.some((point) => validPoint(point) && !pointInBounds(point))) {
+      errors.push(`terrain landform ${String(item.id)} lies outside bounds`)
+    }
+  }
+  if (landformPointCount > 128) errors.push('terrain landforms exceed 128 total points')
+
   const spawn = record(zone.spawn)
   if (!spawn || !id(spawn.landmarkId) || !landmarkIds.has(spawn.landmarkId) || !validPoint(spawn.offset)) {
     errors.push('spawn must reference a known landmark with a finite offset')
@@ -284,6 +321,7 @@ export function compileZone(source: ZoneDefinition): CompiledZone {
   const columns = Math.round((bounds.maxX - bounds.minX) / cellSize) + 1
   const rows = Math.round((bounds.maxZ - bounds.minZ) / cellSize) + 1
   const riverAt = (z: number): ZoneRiverPoint => interpolateRiver(definition.river.points, z)
+  const landforms = new CompiledLandforms(definition.terrain.landforms ?? [])
 
   function dryHeight(x: number, z: number): number {
     const river = riverAt(z)
@@ -295,6 +333,10 @@ export function compileZone(source: ZoneDefinition): CompiledZone {
     return height
   }
 
+  function hillFoundation(x: number, z: number): number {
+    return dryHeight(x, z) + landforms.sample(x, z).hillHeight
+  }
+
   function generatedHeight(x: number, z: number): number {
     const river = riverAt(z)
     const riverDistance = Math.abs(x - river.x)
@@ -302,9 +344,13 @@ export function compileZone(source: ZoneDefinition): CompiledZone {
       const channel = 1 - Math.min(1, riverDistance / river.halfWidth)
       return definition.river.waterLevel - river.depth * (0.35 + channel * 0.65)
     }
-    let height = dryHeight(x, z)
+    const landform = landforms.sample(x, z)
+    let height = dryHeight(x, z) + landform.hillHeight + landform.barrierHeight
     for (const ridge of definition.ridges) height += ridgeHeight(ridge, x, z)
-    if (!definition.ridges.some((ridge) => distanceToPolyline({ x, z }, ridge.points) <= ridge.halfWidth * 1.8)) {
+    if (!definition.ridges.some((ridge) => distanceToPolyline({ x, z }, ridge.points) <= ridge.halfWidth * 1.8)
+      && !landforms.overlapsBarrierFootprint({ x, z }, 0)) {
+      let gradeBlend = 0
+      let gradeHeight = height
       for (const path of definition.paths) {
         for (let index = 1; index < path.points.length; index += 1) {
           const start = path.points[index - 1]!
@@ -315,7 +361,10 @@ export function compileZone(source: ZoneDefinition): CompiledZone {
           const roadX = start.x + (end.x - start.x) * nearest.t
           const roadZ = start.z + (end.z - start.z) * nearest.t
           const blend = (1 + Math.cos(Math.PI * nearest.distance / gradeRadius)) * 0.5
-          height += (dryHeight(roadX, roadZ) - height) * blend
+          if (blend > gradeBlend) {
+            gradeBlend = blend
+            gradeHeight = hillFoundation(roadX, roadZ)
+          }
         }
       }
       for (const landmark of definition.landmarks) {
@@ -323,8 +372,12 @@ export function compileZone(source: ZoneDefinition): CompiledZone {
         const padRadius = landmark.radius + cellSize
         if (distance >= padRadius) continue
         const blend = (1 + Math.cos(Math.PI * distance / padRadius)) * 0.5
-        height += (dryHeight(landmark.x, landmark.z) - height) * blend
+        if (blend > gradeBlend) {
+          gradeBlend = blend
+          gradeHeight = hillFoundation(landmark.x, landmark.z)
+        }
       }
+      height += (gradeHeight - height) * gradeBlend
     }
     return Math.max(-100, Math.min(500, height))
   }
@@ -345,8 +398,9 @@ export function compileZone(source: ZoneDefinition): CompiledZone {
       return Math.abs(stroke.x - river.x) <= river.halfWidth + horizontalRadius
     }).some(Boolean)
     if (overlapsRiver
+      || landforms.overlapsBarrierFootprint(stroke, stroke.radius)
       || definition.ridges.some((ridge) => distanceToPolyline(stroke, ridge.points) <= ridge.halfWidth * 1.8 + stroke.radius)) {
-      throw new Error(`Invalid zone definition: terrain stroke ${stroke.id} overlaps protected water or mountain terrain`)
+      throw new Error(`Invalid zone definition: terrain stroke ${stroke.id} overlaps protected water or mountain terrain or barrier terrain`)
     }
     const minColumn = Math.max(0, Math.floor((stroke.x - stroke.radius - bounds.minX) / cellSize))
     const maxColumn = Math.min(columns - 1, Math.ceil((stroke.x + stroke.radius - bounds.minX) / cellSize))
@@ -389,15 +443,22 @@ export function compileZone(source: ZoneDefinition): CompiledZone {
     const d = c + 1
     indices.push(a, c, b, d, b, c)
   }
-  const colors: [number, number, number][] = vertices.map((vertex) => {
+  const barrierStoneWeights = vertices.map((vertex) => landforms.sample(vertex.x, vertex.z).stoneWeight)
+  const mountainStoneWeights = vertices.map((vertex) => Math.max(
+    ...definition.ridges.map((ridge) => Math.min(1, ridgeHeight(ridge, vertex.x, vertex.z) / Math.max(1, ridge.height * 0.6))),
+  ))
+  const stoneWeights = vertices.map((_vertex, index) => Math.max(barrierStoneWeights[index]!, mountainStoneWeights[index]!))
+  const colors: [number, number, number][] = vertices.map((vertex, index) => {
     const river = riverAt(vertex.z)
     if (Math.abs(vertex.x - river.x) < river.halfWidth + 4) return [0.58, 0.7, 0.62]
     if (vertex.x > river.x) return [0.78, 0.8, 0.79]
-    if (definition.ridges.some((ridge) => distanceToPolyline(vertex, ridge.points) < ridge.halfWidth * 1.8)) return [0.86, 0.85, 0.8]
+    if (barrierStoneWeights[index]! > 0.1) return [0.7, 0.69, 0.64]
+    if (mountainStoneWeights[index]! > 0.1) return [0.86, 0.85, 0.8]
     return [0.67, 0.84, 0.59]
   })
   const geometry: TerrainGeometryData = Object.freeze({
-    vertices: Object.freeze(vertices), indices: Object.freeze(indices), colors: Object.freeze(colors), columns,
+    vertices: Object.freeze(vertices), indices: Object.freeze(indices), colors: Object.freeze(colors),
+    stoneWeights: Object.freeze(stoneWeights), columns,
   })
 
   function terrainTriangleAt(x: number, z: number): readonly WeightedTerrainVertex[] {
@@ -425,7 +486,7 @@ export function compileZone(source: ZoneDefinition): CompiledZone {
   const inRidge = (x: number, z: number, radius: number): boolean => definition.ridges.some((ridge) =>
     distanceToPolyline({ x, z }, ridge.points) <= ridge.halfWidth + radius)
   const canOccupyPoint = (x: number, z: number, radius: number): boolean => insideBounds(x, z, radius)
-    && !isWaterAt(x, z, radius) && !inRidge(x, z, radius)
+    && !isWaterAt(x, z, radius) && !inRidge(x, z, radius) && !landforms.blocks(x, z, radius)
   const landmarkById = new Map(definition.landmarks.map((item) => [item.id, item]))
   const spawnLandmark = landmarkById.get(definition.spawn.landmarkId)!
   const spawn = Object.freeze({ x: spawnLandmark.x + definition.spawn.offset.x, z: spawnLandmark.z + definition.spawn.offset.z })

@@ -5,6 +5,7 @@ export type EditorControl =
   | { readonly kind: 'landmark'; readonly id: string }
   | { readonly kind: 'path'; readonly id: string; readonly index: number }
   | { readonly kind: 'ridge'; readonly id: string; readonly index: number }
+  | { readonly kind: 'landform'; readonly id: string; readonly index: number }
   | { readonly kind: 'river'; readonly index: number }
 
 function copyDefinition(definition: ZoneDefinition): ZoneDefinition {
@@ -52,6 +53,15 @@ export function moveEditorControl(
     ridges: definition.ridges.map((ridge) => ridge.id === control.id
       ? { ...ridge, points: ridge.points.map((point, index) => index === control.index ? movedPoint(point, x, z) : point) }
       : ridge),
+  }
+  if (control.kind === 'landform') return {
+    ...definition,
+    terrain: {
+      ...definition.terrain,
+      landforms: (definition.terrain.landforms ?? []).map((landform) => landform.id === control.id
+        ? { ...landform, points: landform.points.map((point, index) => index === control.index ? movedPoint(point, x, z) : point) }
+        : landform),
+    },
   }
   return {
     ...definition,

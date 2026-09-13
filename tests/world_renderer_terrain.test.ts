@@ -7,6 +7,7 @@ import { bridgeDeckLayout } from '../src/world/scenery'
 import { terrainCameraHitDistance } from '../src/world/terrain-camera-collision'
 import { compileZone } from '../src/world/zone-compiler'
 import { DEFAULT_ZONE } from '../src/world/zone-default'
+import { BARRIER_CORE_RATIO } from '../src/world/zone-landforms'
 import type { TerrainGeometryData } from '../src/world/zone-types'
 
 describe('compiled-zone terrain presentation', () => {
@@ -24,7 +25,7 @@ describe('compiled-zone terrain presentation', () => {
     expect(paint.data[(row * paint.width + column) * 4]).toBeGreaterThan(240)
   })
 
-  it('blends limestone onto steep and high vertices', () => {
+  it('blends limestone onto steep and authored stone vertices', () => {
     const data: TerrainGeometryData = {
       columns: 2,
       vertices: [
@@ -33,10 +34,58 @@ describe('compiled-zone terrain presentation', () => {
       ],
       indices: [0, 2, 1, 3, 1, 2],
       colors: [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]],
+      stoneWeights: [0, 0, 0, 0],
     }
     const weights = terrainStoneWeights(data, 5, 4)
     expect(weights[0]).toBe(0)
     expect(weights[3]).toBeGreaterThan(0.7)
+  })
+
+  it('paints authored barrier cores as stone while broad hill crests stay grassy', () => {
+    const data = zone.geometry()
+    const weights = terrainStoneWeights(data, zone.cellSize, zone.definition.terrain.baseHeight)
+    const nearestIndex = (point: { x: number; z: number }): number => data.vertices.reduce((nearest, vertex, index) =>
+      Math.hypot(vertex.x - point.x, vertex.z - point.z)
+        < Math.hypot(data.vertices[nearest]!.x - point.x, data.vertices[nearest]!.z - point.z) ? index : nearest, 0)
+    const barrier = DEFAULT_ZONE.terrain.landforms!.find((landform) => landform.id === 'refuge-west-bluff')!
+    const hill = DEFAULT_ZONE.terrain.landforms!.find((landform) => landform.id === 'farm-rolling-fields')!
+    const barrierIndex = nearestIndex(barrier.points[2]!)
+    const hillIndex = nearestIndex(hill.points[1]!)
+    expect(data.stoneWeights[barrierIndex]).toBeGreaterThan(0.9)
+    expect(weights[barrierIndex]).toBeGreaterThan(0.9)
+    expect(data.colors[barrierIndex]).toEqual([0.7, 0.69, 0.64])
+    expect(data.stoneWeights[hillIndex]).toBe(0)
+    expect(weights[hillIndex]).toBeLessThan(0.2)
+    expect(data.colors[hillIndex]).toEqual([0.67, 0.84, 0.59])
+    expect(zone.canOccupyPoint(data.vertices[hillIndex]!.x, data.vertices[hillIndex]!.z, 0.72)).toBe(true)
+  })
+
+  it('keeps both interpolated faces of every barrier core visibly rocky and raised', () => {
+    const data = zone.geometry()
+    const stoneAt = (x: number, z: number): number => zone.terrainTriangleAt(x, z).reduce((sum, vertex) => {
+      const column = Math.round((vertex.x - zone.bounds.minX) / zone.cellSize)
+      const row = Math.round((vertex.z - zone.bounds.minZ) / zone.cellSize)
+      return sum + data.stoneWeights[row * data.columns + column]! * vertex.weight
+    }, 0)
+    for (const barrier of DEFAULT_ZONE.terrain.landforms!.filter((landform) => landform.kind === 'barrier')) {
+      for (let segment = 1; segment < barrier.points.length; segment += 1) {
+        const from = barrier.points[segment - 1]!
+        const to = barrier.points[segment]!
+        const length = Math.hypot(to.x - from.x, to.z - from.z)
+        const normal = { x: -(to.z - from.z) / length, z: (to.x - from.x) / length }
+        for (let tenth = 1; tenth < 10; tenth += 1) for (const side of [-1, 1]) {
+          const centre = { x: from.x + (to.x - from.x) * tenth / 10, z: from.z + (to.z - from.z) * tenth / 10 }
+          const coreOffset = barrier.halfWidth * (BARRIER_CORE_RATIO - 0.001) * side
+          const point = { x: centre.x + normal.x * coreOffset, z: centre.z + normal.z * coreOffset }
+          const outside = { x: centre.x + normal.x * barrier.halfWidth * 1.05 * side,
+            z: centre.z + normal.z * barrier.halfWidth * 1.05 * side }
+          expect(zone.canOccupyPoint(point.x, point.z, 0.72), `${barrier.id} ${segment}:${tenth}:${side}`).toBe(false)
+          expect(stoneAt(point.x, point.z), `${barrier.id} stone ${segment}:${tenth}:${side}`).toBeGreaterThan(0.7)
+          expect(zone.heightAt(point.x, point.z) - zone.heightAt(outside.x, outside.z),
+            `${barrier.id} relief ${segment}:${tenth}:${side}`).toBeGreaterThan(5)
+        }
+      }
+    }
   })
 
   it('builds animated transparent water from compiled river queries and disposes it', () => {

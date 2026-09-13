@@ -40,7 +40,7 @@ root.innerHTML = `
           <canvas id="terrain-map" aria-hidden="true"></canvas>
           <svg id="terrain-controls" role="application" aria-label="Editable landmarks and terrain controls"></svg>
         </div>
-        <p class="mt-2 text-xs leading-5 text-stone-400">The map artwork is a translucent planning overlay. Gold points are landmarks, cream points are road controls, grey points are ridges, and blue points shape the river. Drag commits on release.</p>
+        <p class="mt-2 text-xs leading-5 text-stone-400">The map artwork is a translucent planning overlay. Gold points are landmarks, cream points are roads, grey points are boundary ridges, ochre points are hills or barriers, and blue points shape the river. Drag commits on release.</p>
       </section>
       <aside class="editor-panel p-4 sm:p-5" aria-label="Terrain inspector">
         <section aria-labelledby="status-title">
@@ -95,7 +95,7 @@ function controlFrom(element: Element): EditorControl | null {
   const indexValue = element.getAttribute('data-index')
   const index = indexValue === null ? undefined : Number(indexValue)
   if (kind === 'landmark' && id) return { kind, id }
-  if ((kind === 'path' || kind === 'ridge') && id && Number.isInteger(index)) return { kind, id, index: index! }
+  if ((kind === 'path' || kind === 'ridge' || kind === 'landform') && id && Number.isInteger(index)) return { kind, id, index: index! }
   if (kind === 'river' && Number.isInteger(index)) return { kind, index: index! }
   return null
 }
@@ -104,6 +104,7 @@ function currentPoint(control: EditorControl): { x: number; z: number } | undefi
   if (control.kind === 'landmark') return history.current.landmarks.find((item) => item.id === control.id)
   if (control.kind === 'path') return history.current.paths.find((item) => item.id === control.id)?.points[control.index]
   if (control.kind === 'ridge') return history.current.ridges.find((item) => item.id === control.id)?.points[control.index]
+  if (control.kind === 'landform') return (history.current.terrain.landforms ?? []).find((item) => item.id === control.id)?.points[control.index]
   return history.current.river.points[control.index]
 }
 
@@ -128,6 +129,10 @@ function renderInspector(): void {
     const item = history.current.ridges.find((candidate) => candidate.id === control.id)!
     details = numberField('Ridge half-width', 'selected-width', item.halfWidth, 10, 400)
       + numberField('Ridge height', 'selected-height', item.height, 0, 500)
+  } else if (control.kind === 'landform') {
+    const item = (history.current.terrain.landforms ?? []).find((candidate) => candidate.id === control.id)!
+    details = numberField(`${item.kind} half-width`, 'selected-width', item.halfWidth, 20, 200)
+      + numberField(`${item.kind} height`, 'selected-height', item.height, 0.1, 80)
   } else {
     const item = history.current.river.points[control.index]!
     details = numberField('River half-width', 'selected-width', item.halfWidth, 4, 300)
@@ -227,6 +232,15 @@ function applySelectedValues(): void {
     ridges: definition.ridges.map((item) => item.id === control.id
       ? { ...item, halfWidth: Number.isFinite(width) ? width! : item.halfWidth, height: Number.isFinite(height) ? height! : item.height }
       : item),
+  }
+  if (control.kind === 'landform') definition = {
+    ...definition,
+    terrain: {
+      ...definition.terrain,
+      landforms: (definition.terrain.landforms ?? []).map((item) => item.id === control.id
+        ? { ...item, halfWidth: Number.isFinite(width) ? width! : item.halfWidth, height: Number.isFinite(height) ? height! : item.height }
+        : item),
+    },
   }
   if (control.kind === 'river') definition = {
     ...definition,
