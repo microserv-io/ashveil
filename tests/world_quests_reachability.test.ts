@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { OPENING_QUESTS } from '../src/quests'
 import { createExplorer, moveExplorer } from '../src/world/movement'
 import { QUEST_TARGETS } from '../src/world/quest-world-data'
-import { SPAWN } from '../src/world/world-data'
+import { LANDMARKS, SPAWN } from '../src/world/world-data'
 
 describe('safe-bank quest target placement', () => {
   it('keeps quest rules and world target truth host-agnostic', () => {
@@ -35,5 +35,14 @@ describe('safe-bank quest target placement', () => {
       }
       expect(Math.hypot(target.x - explorer.x, target.z - explorer.z), target.id).toBeLessThanOrEqual(Math.min(1, target.interactionRadius))
     }
+  })
+
+  it('preserves the playable quest cluster as human-scale offsets around the refuge', () => {
+    const refuge = LANDMARKS.find((landmark) => landmark.id === 'refuge')!
+    const mara = QUEST_TARGETS.find((target) => target.id === 'npc_mara')!
+    const furthest = QUEST_TARGETS.reduce((distance, target) => Math.max(distance,
+      Math.hypot(target.x - refuge.x, target.z - refuge.z)), 0)
+    expect(mara).toMatchObject({ x: refuge.x - 1, z: refuge.z - 3 })
+    expect(furthest).toBeLessThanOrEqual(17)
   })
 })

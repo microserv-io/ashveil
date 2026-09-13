@@ -9,6 +9,7 @@ import {
   buildSceneryKitInstances,
   buildTreeCameraProxies,
   SceneryKitSource,
+  TREE_CULL_CELL_SIZE,
   TREE_GROUND_ZONE_CUTOFF,
   validateSceneryKit,
 } from '../src/world/scenery-kit'
@@ -99,18 +100,17 @@ function isTree(solid: { readonly id: string }): boolean {
 }
 
 function treeSnapshots(group: THREE.Group, solids: readonly { readonly id: string }[]): Map<string, readonly number[]> {
+  const solidsById = new Map(solids.map((solid) => [solid.id, solid]))
   const snapshots = new Map<string, readonly number[]>()
   for (const batch of group.children as THREE.InstancedMesh[]) {
     if (batch.name !== 'kit-alder_tree' && batch.name !== 'kit-orchard_tree') continue
-    const placements = solids.filter((solid) => batch.name === 'kit-orchard_tree'
-      ? solid.id.startsWith('orchard-tree-')
-      : solid.id.startsWith('grove-tree-') || solid.id.startsWith('wild-tree-'))
-    placements.forEach((solid, index) => {
+    const placementIds = batch.userData.placementIds as readonly string[]
+    placementIds.forEach((id, index) => {
       const matrix = new THREE.Matrix4()
       const color = new THREE.Color()
       batch.getMatrixAt(index, matrix)
       batch.getColorAt(index, color)
-      snapshots.set(solid.id, [...matrix.elements, color.r, color.g, color.b])
+      if (solidsById.has(id)) snapshots.set(id, [...matrix.elements, color.r, color.g, color.b])
     })
   }
   return snapshots
@@ -321,15 +321,18 @@ describe('first-zone Blender scenery kit', () => {
     expect(authoredGroundRadii.orchard_tree).toBeCloseTo(0.9917995, 5)
 
     const instances = buildSceneryKitInstances(kit, { heightAt: () => 2, solids: SOLIDS })
+    const solidsById = new Map(SOLIDS.map((solid) => [solid.id, solid]))
+    const checkedTreeTemplates = new Set<string>()
     for (const batch of instances.children as THREE.InstancedMesh[]) {
       if (batch.name !== 'kit-alder_tree' && batch.name !== 'kit-orchard_tree') continue
       const source = batch.name === 'kit-alder_tree' ? kit.alder_tree : kit.orchard_tree
-      const placements = SOLIDS.filter((solid) => batch.name === 'kit-orchard_tree'
-        ? solid.id.startsWith('orchard-tree-')
-        : solid.id.startsWith('grove-tree-') || solid.id.startsWith('wild-tree-'))
-      expect(batch.geometry).not.toBe(source.geometry)
-      expect(batch.material).not.toBe(source.material)
-      expect((batch.material as THREE.MeshStandardMaterial).map).toBe(source.material.map)
+      const placements = (batch.userData.placementIds as readonly string[]).map((id) => solidsById.get(id)!)
+      if (!checkedTreeTemplates.has(batch.name)) {
+        checkedTreeTemplates.add(batch.name)
+        expect(batch.geometry === source.geometry).toBe(false)
+        expect(batch.material === source.material).toBe(false)
+        expect((batch.material as THREE.MeshStandardMaterial).map).toBe(source.material.map)
+      }
       placements.forEach((solid, instanceIndex) => {
         const matrix = new THREE.Matrix4()
         batch.getMatrixAt(instanceIndex, matrix)
@@ -347,21 +350,15 @@ describe('first-zone Blender scenery kit', () => {
     }
   }, 15_000)
 
-  it('creates four instance batches at authoritative solid anchors', () => {
+  it('creates spatially culled tree batches at authoritative solid anchors', () => {
     const kit = validateSceneryKit(kitScene())
     const group = buildSceneryKitInstances(kit, { heightAt: (x, z) => x * 0.01 + z * 0.02, solids: SOLIDS })
     const batches = group.children as THREE.InstancedMesh[]
-    expect(batches.map((batch) => [batch.name, batch.count])).toEqual([
-      ['kit-refuge_hall', 2], ['kit-cottage', 4], ['kit-alder_tree', 21], ['kit-orchard_tree', 12],
-    ])
     const buildingYaws = new Map<string, number>(BUILDING_STYLES.map((building) => [building.id, building.yaw]))
-    const expected = [
-      SOLIDS.filter((solid) => solid.id === 'refuge-hall' || solid.id === 'farm-barn'),
-      SOLIDS.filter((solid) => buildingYaws.has(solid.id) && solid.id !== 'refuge-hall' && solid.id !== 'farm-barn'),
-      SOLIDS.filter((solid) => solid.id.startsWith('grove-tree-') || solid.id.startsWith('wild-tree-')),
-      SOLIDS.filter((solid) => solid.id.startsWith('orchard-tree-')),
-    ]
-    expect(expected.flat()).toHaveLength(39)
+    const solidsById = new Map(SOLIDS.map((solid) => [solid.id, solid]))
+    const placedIds = batches.flatMap((batch) => batch.userData.placementIds as readonly string[])
+    expect(placedIds).toHaveLength(SOLIDS.filter((solid) => buildingYaws.has(solid.id) || isTree(solid)).length)
+    expect(new Set(placedIds).size).toBe(placedIds.length)
     const familyScales = {
       orchard: { widths: [] as number[], heights: [] as number[] },
       grove: { widths: [] as number[], heights: [] as number[] },
@@ -370,7 +367,8 @@ describe('first-zone Blender scenery kit', () => {
     const normalizedYaws: number[] = []
     const tintShades: number[] = []
     const tintWarmths: number[] = []
-    batches.forEach((batch, batchIndex) => expected[batchIndex]!.forEach((solid, index) => {
+    batches.forEach((batch) => (batch.userData.placementIds as readonly string[]).forEach((id, index) => {
+      const solid = solidsById.get(id)!
       const matrix = new THREE.Matrix4()
       const position = new THREE.Vector3()
       const rotation = new THREE.Quaternion()
@@ -380,7 +378,7 @@ describe('first-zone Blender scenery kit', () => {
       expect(position.x).toBeCloseTo(solid.x)
       expect(position.y).toBeCloseTo(solid.x * 0.01 + solid.z * 0.02)
       expect(position.z).toBeCloseTo(solid.z)
-      const template = kit[batches[batchIndex]!.name.replace('kit-', '') as keyof typeof kit]
+      const template = kit[batch.name.replace('kit-', '') as keyof typeof kit]
       const yaw = new THREE.Euler().setFromQuaternion(rotation, 'YXZ').y
       if (isTree(solid)) {
         expect(scale.x).toBeGreaterThanOrEqual(0.82)
@@ -419,8 +417,13 @@ describe('first-zone Blender scenery kit', () => {
     expect(span(normalizedYaws)).toBeGreaterThan(5.5)
     expect(span(tintShades)).toBeGreaterThan(0.025)
     expect(span(tintWarmths)).toBeGreaterThan(0.05)
-    expect(batches.slice(0, 2).every((batch) => batch.instanceColor === null)).toBe(true)
-    expect(batches.slice(2).every((batch) => (batch.instanceColor?.version ?? 0) > 0)).toBe(true)
+    expect(batches.filter((batch) => !batch.name.endsWith('_tree')).every((batch) => batch.instanceColor === null)).toBe(true)
+    expect(batches.filter((batch) => batch.name.endsWith('_tree')).every((batch) => (batch.instanceColor?.version ?? 0) > 0)).toBe(true)
+    for (const batch of batches.filter((candidate) => candidate.name.endsWith('_tree'))) {
+      const box = batch.boundingBox!
+      expect(box.max.x - box.min.x).toBeLessThan(TREE_CULL_CELL_SIZE + 20)
+      expect(box.max.z - box.min.z).toBeLessThan(TREE_CULL_CELL_SIZE + 20)
+    }
   })
 
   it('keeps per-tree transforms and tints stable across placement order changes', () => {

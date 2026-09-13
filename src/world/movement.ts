@@ -1,5 +1,5 @@
 import { SOLIDS, type WorldPoint, type WorldSolid } from './world-data'
-import { heightAt, riverCenterAt, riverHalfWidthAt, WORLD_BOUNDS } from './terrain'
+import { heightAt, terrainAllowsOccupancy } from './terrain'
 
 export const MAX_FRAME_DELTA = 0.1
 const STEP_SECONDS = 1 / 60
@@ -46,23 +46,12 @@ export function createExplorer(at: WorldPoint): Explorer {
   }
 }
 
-function insideWorld(x: number, z: number, radius: number): boolean {
-  return x - radius >= WORLD_BOUNDS.minX && x + radius <= WORLD_BOUNDS.maxX
-    && z - radius >= WORLD_BOUNDS.minZ && z + radius <= WORLD_BOUNDS.maxZ
-}
-
-function outsideRiver(x: number, z: number, radius: number): boolean {
-  const center = riverCenterAt(z)
-  const halfWidth = riverHalfWidthAt(z)
-  return x + radius <= center - halfWidth || x - radius >= center + halfWidth
-}
-
 function outsideSolids(x: number, z: number, radius: number, solids: readonly WorldSolid[]): boolean {
   return solids.every((solid) => Math.hypot(x - solid.x, z - solid.z) >= radius + solid.radius)
 }
 
 export function canOccupy(explorer: Explorer, x: number, z: number, solids = SOLIDS): boolean {
-  if (!insideWorld(x, z, explorer.radius) || !outsideRiver(x, z, explorer.radius)) return false
+  if (!terrainAllowsOccupancy(x, z, explorer.radius)) return false
   if (!outsideSolids(x, z, explorer.radius, solids)) return false
   const horizontal = Math.hypot(x - explorer.x, z - explorer.z)
   if (horizontal === 0) return true

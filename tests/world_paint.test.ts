@@ -17,7 +17,8 @@ describe('terrain paint field', () => {
 
   it('keeps round caps and connected junctions soft', () => {
     const cap = paintWeightsAt(PATHS[0]!.points[0]!.x - 1, PATHS[0]!.points[0]!.z, [PATHS[0]!])
-    const junction = paintWeightsAt(-55.2, -10.2, PATHS)
+    const junctionPoint = PATHS[0]!.points.at(-1)!
+    const junction = paintWeightsAt(junctionPoint.x, junctionPoint.z, PATHS)
     expect(cap.earth).toBeGreaterThan(0.5)
     expect(junction.earth).toBeGreaterThan(0.9)
   })

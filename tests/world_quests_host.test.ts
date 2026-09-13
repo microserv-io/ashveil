@@ -86,7 +86,8 @@ describe('world quest command host', () => {
     state = reduceQuestIntent(state, {
       kind: 'interact', targetId: 'reed_flash_1', questId: 'S01', objectiveId: 'follow_flashes',
     }).state
-    const selected = selectQuestInteraction(state, { ...createExplorer({ x: -38, z: 13 }), x: -38, z: 13 })
+    const target = at('reed_flash_2')
+    const selected = selectQuestInteraction(state, createExplorer(target))
     expect(selected).toMatchObject({ mode: 'active', target: { id: 'reed_flash_2' }, definition: { id: 'S01' } })
   })
 })

@@ -88,17 +88,23 @@ does not change the authored route, river boundary or movement collision topolog
 - Use placeholder landmark massing where needed alongside the Blender building and tree
   kit. This slice does not approve final buildings, vegetation, lighting or materials.
 
-The validation map spans 220 by 180 world units on a five-unit height grid. Rendering and
+The current authored map spans 2,485 by 1,385 world units on a five-unit height grid,
+replacing the original 220 by 180-unit validation layout. The user-selected main-road
+run from refuge to waystation is five minutes. The [zone authoring guide](zone-authoring.md)
+records the compiler, natural boundaries, animated water and editor workflow. Rendering and
 grounding share the grid's explicit triangle split and barycentric interpolation. The
 representative controller has a 0.72-unit radius, rejects movement above 35 degrees,
 advances in 1/60-second substeps and caps one rendered frame's movement time at 0.1
 seconds. Grounding must agree with the rendered triangles within 0.001 world units.
 These are slice tolerances for testing. The controllable explorer uses the approved
 [`masculine-clean-v1` character](approved-character-game.md) at its authored scale; the
-world scale remains provisional.
+world units preserve that character scale; production engine and world-scale decisions
+remain separate from this selected route-time target.
 
-The runtime's single terrain material blends the existing meadow-grass, worn-earth and
-ash-ground albedo candidates through a 512-pixel paint-weight map. Road strokes have
+The runtime's terrain material blends the existing meadow-grass, worn-earth,
+ash-ground and ivory-limestone albedo candidates. Its paint-weight map targets one
+world unit per texel, capped at 4,096 pixels per axis and 16 million total pixels.
+Road strokes have
 rounded caps and feathered edges; bank earth softens the shoreline and ash fades in over
 the far bank. The paint affects presentation only and the terrain mesh remains the
 collision source. The albedos load as sRGB colour textures with mirrored wrapping at

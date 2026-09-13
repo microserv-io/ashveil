@@ -11,6 +11,7 @@ import {
 
 export interface SceneryOptions {
   readonly heightAt: (x: number, z: number) => number
+  readonly isWaterAt?: (x: number, z: number, radius?: number) => boolean
   readonly landmarks: readonly SceneryLandmark[]
   readonly paths: readonly SceneryPath[]
   readonly solids: readonly ScenerySolid[]
@@ -21,9 +22,16 @@ interface AnchoredProp extends SceneryPoint {
   readonly radius: number
 }
 
+export interface BridgeDeckLayout {
+  readonly centers: readonly SceneryPoint[]
+  readonly direction: SceneryPoint
+  readonly yaw: number
+  readonly shoreForward: number
+}
+
 export interface BuiltScenery {
   readonly root: THREE.Group
-  readonly cameraOccluders: readonly THREE.Object3D[]
+  readonly cameraOccluders: THREE.Object3D[]
   readonly treeProxies: THREE.Group
 }
 
@@ -34,9 +42,9 @@ export function buildScenery(scene: THREE.Scene, options: SceneryOptions): Built
 
   const wagon = solids.get('wagon')
   if (wagon) addWagon(geometry, options.heightAt, wagon)
-  addFarmFields(geometry, options)
-  addWaystation(geometry, options.heightAt, solids)
-  addFences(geometry, options)
+  addFarmFields(geometry, options, landmarks.get('farm'))
+  addWaystation(geometry, options, solids)
+  addFences(geometry, options, landmarks)
   addRocks(geometry, options, solids)
   addRallyMarker(geometry, options.heightAt, landmarks.get('rally'))
 
@@ -82,11 +90,16 @@ function addWagon(
 }
 
 
-function addFarmFields(geometry: SceneryGeometry, options: SceneryOptions): void {
+function addFarmFields(
+  geometry: SceneryGeometry,
+  options: SceneryOptions,
+  farm: SceneryLandmark | undefined,
+): void {
+  if (!farm) return
   for (let row = 0; row < 7; row += 1) {
     for (let stem = 0; stem < 10; stem += 1) {
-      const x = -104 + stem * 1.5
-      const z = 16 + row * 1.65
+      const x = farm.x - 19 + stem * 1.5
+      const z = farm.z - 4 + row * 1.65
       if (!routeIsClear({ x, z }, 0.45, options.paths)) continue
       const y = options.heightAt(x, z)
       geometry.cylinder('field', x, y + 0.55, z, 0.04, 0.1, 1.1, 5, 0, 0, (stem % 3 - 1) * 0.08)
@@ -96,13 +109,13 @@ function addFarmFields(geometry: SceneryGeometry, options: SceneryOptions): void
 
 function addWaystation(
   geometry: SceneryGeometry,
-  heightAt: SceneryOptions['heightAt'],
+  options: SceneryOptions,
   solids: ReadonlyMap<string, ScenerySolid>,
 ): void {
   const gate = solids.get('waystation-gate')
   const abutment = solids.get('bridge-abutment')
   if (!gate || !abutment) return
-  const gateY = heightAt(gate.x, gate.z)
+  const gateY = options.heightAt(gate.x, gate.z)
   geometry.box('limestone', gate.x - 4.1, gateY + 2.4, gate.z, 3.4, 4.8, 3.4)
   geometry.box('limestone', gate.x + 4.1, gateY + 2.4, gate.z, 3.4, 4.8, 3.4)
   geometry.box('limestone', gate.x, gateY + 5.2, gate.z, 5.2, 1.4, 3.4)
@@ -125,27 +138,95 @@ function addWaystation(
   geometry.box('teal', gate.x, gateY + 6.25, gate.z - 1.96, 2.1, 0.36, 0.25, 0, 0, -Math.PI / 4)
   geometry.box('teal', gate.x - 4.8, gateY + 3.75, gate.z - 2.15, 3.8, 0.14, 3.3, -0.18)
 
-  const bridgeY = heightAt(abutment.x, abutment.z)
+  const bridgeY = options.heightAt(abutment.x, abutment.z)
   geometry.box('limestone', abutment.x, bridgeY + 2.1, abutment.z, 5, 4.2, 5.5)
   geometry.box('ivory', abutment.x, bridgeY + 4.4, abutment.z, 6, 0.8, 6.2)
-  for (const x of [8.5, 11.5, 14.2]) {
-    const deckY = heightAt(abutment.x, abutment.z) + 4.55
-    geometry.box('timber', x, deckY, abutment.z, 2.6, 0.34, 4.2, 0, 0, x === 14.2 ? 0.08 : 0)
+  const layout = bridgeDeckLayout(gate, abutment, options.isWaterAt)
+  const bridgePoint = (center: SceneryPoint, lateral = 0): SceneryPoint => ({
+    x: center.x - layout.direction.z * lateral,
+    z: center.z + layout.direction.x * lateral,
+  })
+  for (const [index, center] of layout.centers.entries()) {
+    geometry.box('timber', center.x, bridgeY + 4.55, center.z, 2.6, 0.34, 4.2, 0, layout.yaw, index === layout.centers.length - 1 ? 0.08 : 0)
   }
-  for (const z of [-2.35, 2.35]) {
-    geometry.box('timber', 11.2, bridgeY + 5.2, abutment.z + z, 8.5, 0.24, 0.24)
+  const railStart = layout.centers[0]!
+  const railEnd = layout.centers.at(-1)!
+  const railCenter = { x: (railStart.x + railEnd.x) * 0.5, z: (railStart.z + railEnd.z) * 0.5 }
+  const railLength = Math.hypot(railEnd.x - railStart.x, railEnd.z - railStart.z) + 2.6
+  for (const lateral of [-2.35, 2.35]) {
+    const rail = bridgePoint(railCenter, lateral)
+    geometry.box('timber', rail.x, bridgeY + 5.2, rail.z, railLength, 0.24, 0.24, 0, layout.yaw, 0)
   }
 }
 
-function addFences(geometry: SceneryGeometry, options: SceneryOptions): void {
-  const lines: readonly [SceneryPoint, SceneryPoint][] = [
-    [{ x: -96, z: -50 }, { x: -70, z: -50 }],
-    [{ x: -96, z: -18 }, { x: -84, z: -18 }],
-    [{ x: -76, z: -18 }, { x: -70, z: -18 }],
-    [{ x: -96, z: -50 }, { x: -96, z: -26 }],
-    [{ x: -70, z: -42 }, { x: -70, z: -18 }],
-    [{ x: -108, z: 12 }, { x: -108, z: 32 }],
-    [{ x: -108, z: 32 }, { x: -96, z: 32 }],
+const BRIDGE_BOARD_START = 4.5
+const BRIDGE_BOARD_LENGTH = 2.6
+const BRIDGE_BOARD_PITCH = 2.8
+const BRIDGE_OVERHANG = 4.5
+
+export function bridgeDeckLayout(
+  gate: SceneryPoint,
+  abutment: SceneryPoint,
+  isWaterAt: SceneryOptions['isWaterAt'],
+): BridgeDeckLayout {
+  const approachLength = Math.hypot(abutment.x - gate.x, abutment.z - gate.z) || 1
+  const direction = {
+    x: (abutment.x - gate.x) / approachLength,
+    z: (abutment.z - gate.z) / approachLength,
+  }
+  const pointAt = (forward: number): SceneryPoint => ({
+    x: abutment.x + direction.x * forward,
+    z: abutment.z + direction.z * forward,
+  })
+
+  // The landmark sits on dry ground. Query the compiled river to find the actual
+  // bank along the authored approach, then leave only a short ruined overhang.
+  const searchLimit = Math.max(32, approachLength * 0.5)
+  let shoreForward = BRIDGE_BOARD_START + BRIDGE_BOARD_PITCH * 4
+  if (isWaterAt) {
+    let dryForward = 0
+    for (let forward = 0.5; forward <= searchLimit; forward += 0.5) {
+      if (!isWaterAt(pointAt(forward).x, pointAt(forward).z)) {
+        dryForward = forward
+        continue
+      }
+      let low = dryForward
+      let high = forward
+      for (let iteration = 0; iteration < 10; iteration += 1) {
+        const middle = (low + high) * 0.5
+        const point = pointAt(middle)
+        if (isWaterAt(point.x, point.z)) high = middle
+        else low = middle
+      }
+      shoreForward = high
+      break
+    }
+  }
+  const finalCenter = shoreForward + BRIDGE_OVERHANG - BRIDGE_BOARD_LENGTH * 0.5
+  const boardCount = Math.max(1, Math.ceil((finalCenter - BRIDGE_BOARD_START) / BRIDGE_BOARD_PITCH) + 1)
+  const centers = Array.from({ length: boardCount }, (_, index) => pointAt(BRIDGE_BOARD_START + index * BRIDGE_BOARD_PITCH))
+  return { centers, direction, yaw: -Math.atan2(direction.z, direction.x), shoreForward }
+}
+
+function addFences(
+  geometry: SceneryGeometry,
+  options: SceneryOptions,
+  landmarks: ReadonlyMap<string, SceneryLandmark>,
+): void {
+  const orchard = landmarks.get('orchard')
+  const farm = landmarks.get('farm')
+  const lines: readonly (readonly [SceneryPoint, SceneryPoint])[] = [
+    ...(orchard ? [
+      [offsetPoint(orchard, -16, -15), offsetPoint(orchard, 10, -15)],
+      [offsetPoint(orchard, -16, 17), offsetPoint(orchard, -4, 17)],
+      [offsetPoint(orchard, 4, 17), offsetPoint(orchard, 10, 17)],
+      [offsetPoint(orchard, -16, -15), offsetPoint(orchard, -16, 9)],
+      [offsetPoint(orchard, 10, -7), offsetPoint(orchard, 10, 17)],
+    ] as const : []),
+    ...(farm ? [
+      [offsetPoint(farm, -23, -8), offsetPoint(farm, -23, 12)],
+      [offsetPoint(farm, -23, 12), offsetPoint(farm, -11, 12)],
+    ] as const : []),
   ]
   for (const [start, end] of lines) addFenceLine(geometry, options, start, end)
 }
@@ -194,10 +275,15 @@ function addRallyMarker(
   heightAt: SceneryOptions['heightAt'],
   landmark: SceneryLandmark | undefined,
 ): void {
-  const rally = landmark ?? { x: -25, z: -60, radius: 5 }
+  if (!landmark) return
+  const rally = landmark
   const y = heightAt(rally.x, rally.z)
   geometry.box('timber', rally.x - 3.3, y + 2.2, rally.z + 1.8, 0.22, 4.4, 0.22)
   geometry.box('teal', rally.x - 2.2, y + 3.4, rally.z + 1.8, 2.1, 1.1, 0.08, 0, 0, -0.08)
+}
+
+function offsetPoint(root: SceneryPoint, x: number, z: number): SceneryPoint {
+  return { x: root.x + x, z: root.z + z }
 }
 
 function localBox(

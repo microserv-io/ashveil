@@ -1,0 +1,30 @@
+@import 'tailwindcss';
+
+:root { color-scheme: dark; background: #171a16; font-family: ui-sans-serif, system-ui, sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; background: #171a16; color: #f5f1e8; }
+button, input, select { font: inherit; }
+button:focus-visible, input:focus-visible, select:focus-visible, .map-control:focus-visible { outline: 2px solid #f5c451; outline-offset: 2px; }
+.editor-shell { min-height: 100vh; display: grid; grid-template-rows: auto 1fr; }
+.editor-body { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 20rem; }
+.map-stage { position: relative; align-self: start; aspect-ratio: 1510 / 840; overflow: hidden; background: #283125; touch-action: none; }
+.map-stage canvas, .map-stage svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.map-stage svg { overflow: visible; }
+.map-path { fill: none; stroke: #e7bd62; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.map-ridge { fill: none; stroke: rgba(79, 70, 56, 0.72); stroke-linecap: round; stroke-linejoin: round; }
+.map-river { fill: none; stroke: rgba(63, 129, 151, 0.72); stroke-linecap: round; stroke-linejoin: round; }
+.map-control { cursor: grab; stroke: #171a16; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.map-control:active { cursor: grabbing; }
+.map-control-landmark { fill: #f5c451; }
+.map-control-path { fill: #fff0c8; }
+.map-control-ridge { fill: #b9a88e; }
+.map-control-river { fill: #6dd2e5; }
+.map-control.is-selected { stroke: #fff; stroke-width: 4; }
+.editor-panel { border-left: 1px solid rgba(245, 232, 201, 0.14); background: #211f1b; }
+.field { display: grid; gap: .35rem; color: #d3cabc; font-size: .8rem; }
+.field input, .field select { width: 100%; border: 1px solid rgba(245, 232, 201, .18); border-radius: .45rem; background: #171a16; padding: .55rem .65rem; color: #fff; }
+.tool-active { border-color: #f5c451 !important; background: rgba(245, 196, 81, .15) !important; color: #fff4cd !important; }
+@media (max-width: 760px) {
+  .editor-body { display: block; }
+  .editor-panel { border-left: 0; border-top: 1px solid rgba(245, 232, 201, 0.14); }
+}

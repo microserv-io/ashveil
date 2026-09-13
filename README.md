@@ -13,6 +13,12 @@ chapter's connected river-valley geography. It tests authored terrain, movement 
 freely controlled third-person camera; it is not a commitment to the final production
 engine or an implementation of the full MMORPG.
 
+The [authored zone and terrain editor](docs/zone-authoring.md) follow the Alderbank
+map at a five-minute refuge-to-waystation run, with mountain boundaries and animated
+water over a shaped riverbed. Open `/terrain-editor.html` to edit control points,
+brush terrain, and save/import/export a private draft; **Play saved draft** loads it
+explicitly, while the normal game continues to use the committed layout.
+
 The [quest system](docs/quest-system.md) adds the opening safe-bank outing: two main
 story quests and five optional side quests, with distinct markers, dialogue, a
 journal, local saves and one-time rewards. Named NPCs temporarily reuse copies of
@@ -251,8 +257,9 @@ not what the dressing looks like.
 ## Notes
 
 - On the first-zone route in dev, `globalThis.ashveilWorld` exposes repeatable move,
-  stop, reset and overview controls plus position, camera, recent frame times, draw-call,
-  triangle and error state. Production preview builds do not expose it.
+  stop, reset, landmark visits and overview controls plus position, camera, water time,
+  recent frame times, draw-call, triangle and error state. Production preview builds
+  do not expose it.
 - On `/legacy.html`, `?seed=7` reproduces an exact run; omit it for a random one.
 - On `/legacy.html` in dev, `globalThis.ashveil` exposes `{ sim, host, view, controls }`
   for poking at the old demo from the console.

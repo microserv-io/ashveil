@@ -2,12 +2,12 @@ import './world.css'
 import { loadApprovedCharacter, type ApprovedCharacterTemplate } from './approved-character'
 import { createWorldHud } from './hud'
 import { WorldInput } from './input'
-import { createExplorer, type Explorer } from './movement'
+import { canOccupy, createExplorer, type Explorer } from './movement'
 import { DEFAULT_CAMERA_YAW, WorldView } from './renderer'
 import { WorldQuestController } from './quest-controller'
 import { loadSceneryKit, type SceneryKit } from './scenery-kit'
 import { explorerFacingFromCamera } from './steering'
-import { nearestLandmark, SPAWN } from './world-data'
+import { LANDMARKS, nearestLandmark, SPAWN } from './world-data'
 import { advanceExplorer } from './world-controls'
 
 interface DiagnosticState {
@@ -15,13 +15,14 @@ interface DiagnosticState {
   grounded: boolean; jumpPhase: string
   frameMs: number; frameTimes: number[]
   camera: { x: number; y: number; z: number; yaw: number }; forward: { x: number; z: number }
-  drawCalls: number; triangles: number; errors: string[]
+  drawCalls: number; triangles: number; water: { elapsedSeconds: number; level: number }; errors: string[]
 }
 
 interface WorldDiagnostics {
   readonly state: DiagnosticState
   readonly controls: {
     move(x: number, z: number, sprint?: boolean): void; stop(): void; reset(): void; toggleOverview(): void
+    visitLandmark(id: string): void
   }
 }
 
@@ -74,7 +75,39 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
   let injected = { x: 0, z: 0, sprint: false }
   let previous = performance.now()
   let averageFrameMs = 0
+  let animationFrame = 0
+  let pausedForPageCache = false
+  let disposed = false
   const errors: string[] = []
+
+  function dispose(): void {
+    if (disposed) return
+    disposed = true
+    cancelAnimationFrame(animationFrame)
+    window.removeEventListener('pagehide', handlePageHide)
+    window.removeEventListener('pageshow', handlePageShow)
+    if (import.meta.env.DEV && globalThis.ashveilWorld === diagnostics) globalThis.ashveilWorld = undefined
+    view.dispose()
+  }
+
+  function handlePageHide(event: PageTransitionEvent): void {
+    if (!event.persisted) {
+      dispose()
+      return
+    }
+    pausedForPageCache = true
+    cancelAnimationFrame(animationFrame)
+    animationFrame = 0
+    injected = { x: 0, z: 0, sprint: false }
+    input.clear()
+  }
+
+  function handlePageShow(event: PageTransitionEvent): void {
+    if (!event.persisted || !pausedForPageCache || disposed) return
+    pausedForPageCache = false
+    previous = performance.now()
+    animationFrame = requestAnimationFrame(frame)
+  }
 
   function toggleOverview(): void {
     overview = !overview
@@ -93,11 +126,26 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
     if (overview) toggleOverview()
   }
 
+  function visitLandmark(id: string): void {
+    const landmark = LANDMARKS.find((candidate) => candidate.id === id)
+    if (!landmark) throw new Error(`Unknown landmark: ${id}`)
+    const candidate = createExplorer(landmark)
+    if (!canOccupy(candidate, candidate.x, candidate.z)) throw new Error(`Landmark is not safe to visit: ${id}`)
+    injected = { x: 0, z: 0, sprint: false }
+    input.clear()
+    view.resetCamera()
+    explorer = { ...candidate, facing: explorerFacingFromCamera(view.cameraYaw) }
+    view.resetExplorer(explorer)
+    if (overview) toggleOverview()
+  }
+
   hud.resetButton.addEventListener('click', () => { reset(); hud.resetButton.blur() })
   hud.overviewButton.addEventListener('click', () => { toggleOverview(); hud.overviewButton.blur() })
   window.addEventListener('resize', () => view.resize())
   window.addEventListener('error', (event) => { errors.push(event.message) })
   window.addEventListener('unhandledrejection', (event) => { errors.push(String(event.reason)) })
+  window.addEventListener('pagehide', handlePageHide)
+  window.addEventListener('pageshow', handlePageShow)
   void quests.initialize()
 
   const diagnostics: WorldDiagnostics = {
@@ -105,16 +153,17 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
       position: { x: explorer.x, y: explorer.y, z: explorer.z }, facing: explorer.facing, location: 'Alderbank Refuge', overview,
       grounded: explorer.grounded, jumpPhase: explorer.jumpPhase,
       frameMs: 0, frameTimes: [], camera: { x: 0, y: 0, z: 0, yaw: 0 }, forward: { x: 0, z: 1 },
-      drawCalls: 0, triangles: 0, errors,
+      drawCalls: 0, triangles: 0, water: { elapsedSeconds: 0, level: 0 }, errors,
     },
     controls: {
       move: (x, z, sprint = false) => { injected = { x, z, sprint } },
-      stop: () => { injected = { x: 0, z: 0, sprint: false } }, reset, toggleOverview,
+      stop: () => { injected = { x: 0, z: 0, sprint: false } }, reset, toggleOverview, visitLandmark,
     },
   }
   if (import.meta.env.DEV) globalThis.ashveilWorld = diagnostics
 
   function frame(now: number): void {
+    if (disposed) return
     const frameStart = performance.now()
     const delta = Math.min((now - previous) / 1000, 0.1)
     previous = now
@@ -136,16 +185,16 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
       position: { x: explorer.x, y: explorer.y, z: explorer.z }, facing: explorer.facing, location: nearestLandmark(explorer.x, explorer.z).label,
       overview, grounded: explorer.grounded, jumpPhase: explorer.jumpPhase,
       frameMs: averageFrameMs, camera: rendered.camera, forward: rendered.forward,
-      drawCalls: rendered.drawCalls, triangles: rendered.triangles,
+      drawCalls: rendered.drawCalls, triangles: rendered.triangles, water: rendered.water,
     })
     diagnostics.state.frameTimes.push(frameMs)
     if (diagnostics.state.frameTimes.length > 240) diagnostics.state.frameTimes.shift()
     hud.setLocation(diagnostics.state.location)
-    requestAnimationFrame(frame)
+    animationFrame = requestAnimationFrame(frame)
   }
 
   view.updateCamera(explorer, 1)
-  requestAnimationFrame(frame)
+  animationFrame = requestAnimationFrame(frame)
 }
 
 void boot()

@@ -1,4 +1,6 @@
 import type { CharacterQuestState, QuestDefinition, QuestJournalEntry, QuestTargetId } from '../quests'
+import { projectLegacyPlacement } from './anchored-placement'
+import { getActiveZone } from './zone-active'
 import type { WorldQuestTarget } from './quest-host'
 
 export interface WorldQuestNpcPlacement extends WorldQuestTarget {
@@ -7,14 +9,17 @@ export interface WorldQuestNpcPlacement extends WorldQuestTarget {
   readonly castsShadow: boolean
 }
 
+const zone = getActiveZone()
+const LEGACY_REFUGE = { x: -40, z: 25 }
+const anchored = (x: number, z: number) => projectLegacyPlacement(zone, 'refuge', LEGACY_REFUGE, { x, z })
 const npc = (id: string, label: string, x: number, z: number, castsShadow = false): WorldQuestNpcPlacement => ({
-  id, label, name: label, x, z, facing: Math.PI, castsShadow, interactionRadius: 3.2, kind: 'npc',
+  id, label, name: label, ...anchored(x, z), facing: Math.PI, castsShadow, interactionRadius: 3.2, kind: 'npc',
 })
 const patient = (id: string, label: string, x: number, z: number): WorldQuestNpcPlacement => ({
-  id, label, name: label, x, z, facing: Math.PI * 0.75, castsShadow: false, interactionRadius: 2.7, kind: 'patient',
+  id, label, name: label, ...anchored(x, z), facing: Math.PI * 0.75, castsShadow: false, interactionRadius: 2.7, kind: 'patient',
 })
 const prop = (id: string, label: string, x: number, z: number): WorldQuestTarget => ({
-  id, label, x, z, interactionRadius: 2.35, kind: 'prop',
+  id, label, ...anchored(x, z), interactionRadius: 2.35, kind: 'prop',
 })
 
 export const QUEST_NPCS: readonly WorldQuestNpcPlacement[] = [
