@@ -13,11 +13,22 @@ build produces their public JPEG and WebP derivatives.
 | Broken waystation | Broken waystation · a proposed threshold where the road begins to fail | `website/assets/source/chapter/broken-waystation.png` | [`prompts.json`](prompts.json), asset `waystation` |
 | Ward engine | Ward engine · a proposed visual direction for the first dungeon’s central mechanism | `website/assets/source/chapter/ward-engine.png` | [`prompts.json`](prompts.json), asset `engine` |
 | First-zone terrain overview | Atmospheric river-valley composition for the proposed terrain slice | [`terrain-overview.png`](terrain-overview.png) | [`terrain-prompts.json`](terrain-prompts.json) |
+| Starting-zone map | North-up regional planning map for chapter geography, route bundles and return staging | [`starting-zone-map-v1.png`](starting-zone-map-v1.png) | [`starting-zone-map-v1.prompt.json`](starting-zone-map-v1.prompt.json) |
 
 The terrain overview supports the [first-zone terrain build slice](../../../first-zone-terrain.md).
 It is not an exact spatial map or evidence of implemented content. Its composition
 places the waystation unusually close to the refuge; playable distance and scale must
 follow the story's travel contract and later terrain review instead.
+
+The starting-zone map is a north-up regional staging study, not an exact-scale map,
+collision layout or runtime integration plan. It maps the refuge/S01–S05 hub, the
+M04–M05 wagon and fields outing with S06–S10, the optional Westmere Farm chain
+S11–S13, the orchard chain S14–S16 (not the grove), the M06–M07 Lower Road approach
+with S17–S18, and the M08 entrance area with S19–S20. North is `+world z` and east is
+`-world x`, a provisional presentation choice to honour the story's east-verge staging.
+Its two crossing depictions are provisional story-beat interpretations. The numbered
+regions are not one continuous outing: the story also returns to the refuge after
+M04–M05 before M06–M07, and the shared road supports that intermediate visit.
 
 ## Generation record
 
@@ -32,3 +43,8 @@ into this branch by the gallery.
 The terrain overview was generated with the same tool on 7 September 2026.
 [`terrain-prompts.json`](terrain-prompts.json) preserves its prompt, correction and
 reference role.
+
+The starting-zone map was generated with the same tool on 13 September 2026.
+[`starting-zone-map-v1.prompt.json`](starting-zone-map-v1.prompt.json) preserves the
+exact prompt, corrections, source documents, visual research, measured dimensions and
+source SHA-256.
