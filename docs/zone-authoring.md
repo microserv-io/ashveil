@@ -22,26 +22,26 @@ arrival staging; it does not add new cinematic or quest implementation.
 
 ## Map feedback revision targets
 
-The [v2 planning map](art-pipeline/concepts/opening-chapter/starting-zone-map-v2.png)
-responds to feedback that the interior reads as open and flat. It is the terrain-shape
-target for a later authoring pass and has not yet been translated into the active terrain:
-the editor overlay and runtime geometry still use v1.
+The [v3 planning map](art-pipeline/concepts/opening-chapter/starting-zone-map-v3.png)
+sets a moderate terrain target after v2 made the interior too rocky and enclosed. It has
+not yet been translated into the active terrain: the editor overlay and runtime geometry
+still use v1.
 
 The Safe Landing remains a low riverside rescue shelf and Alderbank Refuge becomes a
-raised, sheltered bench. A substantial limestone bluff blocks the direct diagonal climb;
-one broad, natural graded approach carries the existing opening path into the refuge.
-The low-bank rescue shelf and its route remain continuous. A future terrain translation
-must verify at player height that the refuge roof and bell remain visible from the wet
-shingle; this top-down map cannot prove that sightline. Cliff faces, ridges, steep
-escarpments and talus must create the traversal boundary; trees alone do not count as
-blockers.
+raised, sheltered bench. A compact, low but steep limestone bluff blocks the direct
+diagonal climb; one broad, natural graded approach carries the existing opening path into
+the refuge. The low-bank rescue shelf and its route remain continuous. A future terrain
+translation must verify at player height that the refuge roof and bell remain visible from
+the wet shingle; this top-down map cannot prove that sightline. Where blockers are intended, cliff
+faces, ridges, steep escarpments and talus must define them; trees alone do not count.
 
-Branching central spurs, gullies and stone-backed terraces divide the east bank into
-readable route and quest pockets. They retain the named landmarks and existing route graph:
-the waystation return follows the same main road through the rally and wagon, while the farm
-and orchard/grove loops stay optional rather than becoming gates. The five-minute
-Refuge-to-Waystation runtime contract remains unchanged. This map revision adds no plot,
-quests, quest stages or named locations.
+A few purposeful rocky ridges and outcrops guide routes and define readable pockets. Most
+of the interior remains grassland, wooded rolling hills, broad fields and gentle orchard
+terraces rather than enclosing every location with cliffs. The named landmarks and route
+graph remain intact: the waystation return follows the same main road through the rally and
+wagon, while the farm and orchard/grove loops stay optional rather than becoming gates. The
+five-minute Refuge-to-Waystation runtime contract remains unchanged for the future terrain
+translation. This map revision adds no plot, quests, quest stages or named locations.
 
 ## One authored definition
 

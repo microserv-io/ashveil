@@ -13,7 +13,8 @@ build produces their public JPEG and WebP derivatives.
 | Broken waystation | Broken waystation · a proposed threshold where the road begins to fail | `website/assets/source/chapter/broken-waystation.png` | [`prompts.json`](prompts.json), asset `waystation` |
 | Ward engine | Ward engine · a proposed visual direction for the first dungeon’s central mechanism | `website/assets/source/chapter/ward-engine.png` | [`prompts.json`](prompts.json), asset `engine` |
 | First-zone terrain overview | Atmospheric river-valley composition for the proposed terrain slice | [`terrain-overview.png`](terrain-overview.png) | [`terrain-prompts.json`](terrain-prompts.json) |
-| Starting-zone map v2 (current planning) | Terrain-shape revision with substantial interior ridges, escarpments and sheltered route pockets | [`starting-zone-map-v2.png`](starting-zone-map-v2.png) | [`starting-zone-map-v2.prompt.json`](starting-zone-map-v2.prompt.json) |
+| Starting-zone map v3 (current planning) | Gentler rolling-valley revision with a few purposeful natural blockers | [`starting-zone-map-v3.png`](starting-zone-map-v3.png) | [`starting-zone-map-v3.prompt.json`](starting-zone-map-v3.prompt.json) |
+| Starting-zone map v2 (historical) | Heavier interior-ridge study retained as terrain-feedback history | [`starting-zone-map-v2.png`](starting-zone-map-v2.png) | [`starting-zone-map-v2.prompt.json`](starting-zone-map-v2.prompt.json) |
 | Starting-zone map v1 (historical) | Original north-up regional study for chapter geography, route bundles and return staging | [`starting-zone-map-v1.png`](starting-zone-map-v1.png) | [`starting-zone-map-v1.prompt.json`](starting-zone-map-v1.prompt.json) |
 
 The terrain overview supports the [first-zone terrain build slice](../../../first-zone-terrain.md).
@@ -53,5 +54,11 @@ source SHA-256.
 The v2 terrain-shape revision was generated with the same tool on 13 September 2026.
 [`starting-zone-map-v2.prompt.json`](starting-zone-map-v2.prompt.json) preserves its
 exact edit prompt, v1 source path and hash, generated hash and dimensions, and the
-adopted layout decisions. V2 is the current planning reference and awaits translation
-into authored terrain; the active editor overlay and runtime geometry still use v1.
+adopted layout decisions. V2 is retained as the heavier historical blocker study.
+
+The v3 revision was generated with the same tool on 13 September 2026 after feedback
+that v2 was too rocky and enclosed. [`starting-zone-map-v3.prompt.json`](starting-zone-map-v3.prompt.json)
+preserves the exact edit prompt, v2 source path and hash, generated hash and dimensions,
+and the gentler layout decisions. V3 is the current planning reference and awaits
+translation into authored terrain; the active editor overlay and runtime geometry still
+use v1.
