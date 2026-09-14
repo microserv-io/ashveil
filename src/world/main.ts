@@ -13,7 +13,7 @@ import { loadWorldAssets, type WorldAssets } from './world-assets'
 import { WorldClock } from './world-clock'
 import { getActiveZone } from './zone-active'
 import { LANDMARKS, nearestLandmark, SPAWN } from './world-data'
-import { advanceExplorer } from './world-controls'
+import { advanceExplorer, suspendInjectedMovement } from './world-controls'
 import { worldStartPresentation } from './world-start'
 import { loadBaselineTerrainTextures, type TerrainTextureSet } from './terrain-textures'
 
@@ -48,7 +48,7 @@ function showLoading(failed = false): void {
   app!.innerHTML = `
     <main class="grid min-h-full place-items-center bg-stone-950 px-6 text-center text-stone-100">
       <section class="max-w-md rounded-2xl border border-amber-100/15 bg-stone-900 px-8 py-7 shadow-2xl">
-        <p class="text-[0.65rem] font-semibold uppercase tracking-[0.28em] text-amber-200/65">Terrain exploration</p>
+        <p class="text-[0.65rem] font-semibold uppercase tracking-[0.28em] text-amber-200/65">Ashveil</p>
         <h1 class="mt-3 font-serif text-2xl">${failed ? 'Alderbank could not be opened' : 'Preparing Alderbank'}</h1>
         <p class="mt-2 text-sm leading-6 text-stone-400">${failed ? 'The world assets did not arrive. Try loading the valley again.' : 'Setting the valley and refuge in place…'}</p>
         ${failed ? '<button id="retry-world" class="mt-5 rounded-lg border border-amber-100/20 bg-amber-100/10 px-4 py-2 text-sm font-medium text-amber-50 hover:bg-amber-100/15">Try again</button>' : ''}
@@ -252,7 +252,7 @@ function startWorld(host: HTMLElement, assets: WorldAssets, baseline?: TerrainTe
     },
   }
   if (hillsideRoute.enabled) {
-    hillsidePanel = createHillsideReviewPanel(host, {
+    hillsidePanel = createHillsideReviewPanel(hud.developerTools, {
       clearMovement,
       retry: () => { void retryBaselineTerrain() },
       setLook: setTerrainLook,
@@ -263,7 +263,7 @@ function startWorld(host: HTMLElement, assets: WorldAssets, baseline?: TerrainTe
   if (import.meta.env.DEV) {
     globalThis.ashveilWorld = diagnostics
     if (!hillsideRoute.enabled) {
-      timePanel = createTimePanel(host, { clearMovement, setHour, setDuration: setDayDuration, setPaused: setTimePaused })
+      timePanel = createTimePanel(hud.developerTools, { clearMovement, setHour, setDuration: setDayDuration, setPaused: setTimePaused })
       timePanel.update(diagnostics.state.time)
     }
   }
@@ -273,6 +273,7 @@ function startWorld(host: HTMLElement, assets: WorldAssets, baseline?: TerrainTe
     const frameStart = performance.now()
     const delta = Math.min((now - previous) / 1000, 0.1)
     previous = now
+    injected = suspendInjectedMovement(injected, quests.modalOpen)
     const controls = input.read()
     const intendedMouseFacing = explorerFacingFromCamera(view.cameraYawAfterOrbit(controls.mouseSteeringOrbitX))
     view.adjustOrbit(controls.orbitX, controls.orbitY, controls.zoom)

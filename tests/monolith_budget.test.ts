@@ -26,6 +26,9 @@ const BUDGETS: Readonly<Record<string, number>> = {
   'src/sim/harness.ts': 420,
   'src/sim/policies.ts': 400,
   'src/ui/hud.ts': 520,
+  // First-zone shell composition and its shared game/quest modal coordinator.
+  'src/world/hud.ts': 80,
+  'src/world/quest-hud.ts': 320,
   // Actor bodies moved to actorview.ts and terrain to terrain.ts when art landed.
   'src/render/views.ts': 290,
   // Binding a pose onto a real skeleton: the resolve, the units and the axis

@@ -1,3 +1,5 @@
+import { menuIcon } from './menu-icons'
+
 export interface WorldHud {
   readonly joystick: HTMLElement
   readonly joystickKnob: HTMLElement
@@ -5,51 +7,60 @@ export interface WorldHud {
   readonly jumpButton: HTMLButtonElement
   readonly overviewButton: HTMLButtonElement
   readonly resetButton: HTMLButtonElement
+  readonly developerTools: HTMLElement
   setLocation(name: string): void
   setOverview(active: boolean): void
 }
 
+const MENUS = [
+  ['character', 'Character', 'KeyC'], ['pack', 'Pack', 'KeyB'], ['map', 'Map', 'KeyM'],
+  ['journal', 'Journal', 'KeyJ'], ['finder', 'Finder', 'KeyG'], ['social', 'Social', 'KeyO'],
+  ['settings', 'Settings', 'KeyU'],
+] as const
+
+const KEYBOARD_BINDINGS = [
+  ...Array.from({ length: 10 }, (_, index) => index === 9 ? '0' : String(index + 1)),
+  ...Array.from({ length: 10 }, (_, index) => `Shift + ${index === 9 ? 0 : index + 1}`),
+  ...Array.from({ length: 10 }, (_, index) => `Ctrl + ${index === 9 ? 0 : index + 1}`),
+]
+const XHB_BINDINGS = ['↑', '→', '↓', '←', 'Y', 'B', 'A', 'X']
+
 export function createWorldHud(root: HTMLElement, start: { readonly locationLabel: string; readonly resetLabel: string }): WorldHud {
   root.innerHTML = `
-    <main id="world-shell" class="pointer-events-none fixed inset-0 overflow-hidden text-stone-100">
-      <section aria-label="Terrain exploration" class="pointer-events-none fixed inset-x-0 top-0 z-20 flex flex-col items-start justify-between gap-3 p-4 min-[440px]:flex-row sm:p-6">
-        <div class="rounded-xl border border-amber-100/15 bg-stone-950/70 px-4 py-3 shadow-2xl backdrop-blur-md">
-          <p class="text-[0.65rem] font-semibold uppercase tracking-[0.28em] text-amber-200/65">Terrain exploration</p>
-          <h1 id="location" class="mt-1 font-serif text-xl tracking-wide text-stone-50"></h1>
-        </div>
-        <div class="pointer-events-auto flex gap-2">
-          <button id="overview" class="rounded-lg border border-stone-200/15 bg-stone-950/70 px-3 py-2 text-xs font-medium backdrop-blur-md hover:bg-stone-800">Overview</button>
-          <button id="reset" class="rounded-lg border border-stone-200/15 bg-stone-950/70 px-3 py-2 text-xs font-medium backdrop-blur-md hover:bg-stone-800"></button>
-        </div>
+    <main id="world-shell" class="world-hud" aria-label="Alderbank interface">
+      <aside class="hud-right-rail">
+        <section class="hud-minimap" aria-label="Map unavailable">
+          <div class="hud-minimap-face"></div>
+          <strong id="location"></strong><small>Alderbank</small>
+        </section>
+        <section id="quest-tracker" class="hud-quest-tracker" aria-label="Quest tracker"></section>
+      </aside>
+      <section id="quest-save-status" class="hud-save-status" role="status" hidden></section>
+      <section class="hud-action-layout" aria-label="Unavailable action slots">
+        <div id="keyboard-actions" class="hud-keyboard-actions">${KEYBOARD_BINDINGS.map((binding) => `<span><kbd>${binding}</kbd></span>`).join('')}</div>
+        <div id="controller-actions" class="hud-controller-actions" hidden><div><b>LT</b>${XHB_BINDINGS.map((binding) => `<span><kbd>${binding}</kbd></span>`).join('')}</div><div><b>RT</b>${XHB_BINDINGS.map((binding) => `<span><kbd>${binding}</kbd></span>`).join('')}</div></div>
       </section>
-      <div class="pointer-events-none fixed bottom-5 left-1/2 z-20 hidden max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-2xl border border-stone-200/10 bg-stone-950/65 px-4 py-2 text-center text-xs leading-5 text-stone-300 backdrop-blur-md md:block xl:whitespace-nowrap">W/S move · A/D turn · Q/E strafe · RMB steer · RMB+A/D strafe · LMB look · LMB+RMB move · Alt walk · Shift sprint · Space jump · Scroll zoom</div>
-      <section aria-label="Touch controls" class="touch-controls pointer-events-none fixed inset-x-0 bottom-5 z-30 flex items-end justify-between px-5">
-        <div id="joystick" class="pointer-events-auto relative h-28 w-28 touch-none rounded-full border border-stone-100/20 bg-stone-950/35 backdrop-blur-sm">
-          <div id="joystick-knob" class="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full border border-amber-100/30 bg-amber-100/20"></div>
-        </div>
-        <div class="pointer-events-auto flex gap-3">
-          <button id="jump" class="h-20 w-20 touch-none rounded-full border border-stone-100/20 bg-stone-950/45 text-xs font-semibold uppercase tracking-widest text-amber-100 backdrop-blur-sm">Jump</button>
-          <button id="sprint" class="h-20 w-20 touch-none rounded-full border border-stone-100/20 bg-stone-950/45 text-xs font-semibold uppercase tracking-widest text-amber-100 backdrop-blur-sm">Sprint</button>
-        </div>
-      </section>
+      <nav class="hud-utility" aria-label="Game menus">
+        ${MENUS.map(([id, label, shortcut]) => `<button type="button" data-game-menu="${id}" data-shortcut="${shortcut}" aria-label="${label}"><span class="hud-menu-icon">${menuIcon(id === 'pack' ? 'inventory' : id)}</span><span class="hud-menu-label">${label}</span></button>`).join('')}
+      </nav>
+      <section aria-label="Context action" class="hud-interact-wrap"><button id="quest-interact" type="button" hidden><kbd>F</kbd><span id="quest-interact-label">Talk</span></button></section>
+      <section aria-label="Touch controls" class="touch-controls"><div id="joystick"><div id="joystick-knob"></div></div><div class="touch-buttons"><button id="jump">Jump</button><button id="sprint">Sprint</button></div></section>
+      <aside id="developer-tools" class="hud-dev-tools"><details><summary>Development tools</summary><div id="developer-tools-body"><div class="hud-dev-actions"><button id="overview">Overview</button><button id="reset"></button></div></div></details></aside>
     </main>`
   const get = <T extends HTMLElement>(id: string): T => {
-    const element = document.getElementById(id)
+    const element = root.querySelector<HTMLElement>(`#${id}`)
     if (!element) throw new Error(`Missing world UI: ${id}`)
     return element as T
   }
-  const location = get<HTMLElement>('location')
+  const location = get('location')
   const overviewButton = get<HTMLButtonElement>('overview')
   const resetButton = get<HTMLButtonElement>('reset')
   location.textContent = start.locationLabel
   resetButton.textContent = start.resetLabel
+  if (!import.meta.env.DEV) get('developer-tools').hidden = true
   return {
-    joystick: get('joystick'),
-    joystickKnob: get('joystick-knob'),
-    sprintButton: get('sprint'),
-    jumpButton: get('jump'),
-    overviewButton,
-    resetButton,
+    joystick: get('joystick'), joystickKnob: get('joystick-knob'), sprintButton: get('sprint'), jumpButton: get('jump'),
+    overviewButton, resetButton, developerTools: get('developer-tools-body'),
     setLocation: (name) => { location.textContent = name },
     setOverview: (active) => { overviewButton.textContent = active ? 'Return to trail' : 'Overview' },
   }

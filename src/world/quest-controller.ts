@@ -13,6 +13,7 @@ import type { WorldInput } from './input'
 import { createQuestHud, type QuestHud, type QuestHudAction } from './quest-hud'
 import { WorldQuestHost, type QuestHostMutation, type WorldQuestTarget } from './quest-host'
 import { QUEST_TARGETS, destinationForEntry, questTarget } from './quest-world-data'
+import { projectHudQuests } from './quest-presentation'
 import type { Explorer } from './movement'
 import type { WorldView } from './renderer'
 
@@ -31,7 +32,6 @@ export class WorldQuestController {
   private explorer: Explorer
   private nearby: InteractionCandidate | null = null
   private candidates: readonly InteractionCandidate[] = []
-  private trackedDestination: WorldQuestTarget | null = null
   private busy = false
 
   constructor(root: HTMLElement, private readonly view: WorldView, private readonly input: WorldInput, initialExplorer: Explorer) {
@@ -40,8 +40,13 @@ export class WorldQuestController {
     this.hud.setModalListener((open) => this.input.setEnabled(!open))
     this.hud.setTrackListener((questId, tracked) => { void this.setTracked(questId, tracked) })
     this.host.onStatus((status) => {
-      if (status.kind === 'ready') this.render(status.state)
-      else this.hud.showMessage('Quest save needs attention', status.reason)
+      if (status.kind === 'ready') {
+        this.hud.setSaveStatus(null)
+        this.render(status.state)
+      } else {
+        this.hud.setSaveStatus(`Quest progress could not be loaded: ${status.reason}`)
+        this.hud.showMessage('Quest save needs attention', status.reason)
+      }
     })
   }
 
@@ -68,7 +73,6 @@ export class WorldQuestController {
     }
     this.nearby = selectCandidate(this.candidates, explorer)
     this.hud.setInteractPrompt(this.nearby ? promptFor(this.nearby) : null)
-    this.updateDestination(explorer)
   }
 
   openJournal(): void { this.hud.openJournal() }
@@ -190,6 +194,7 @@ export class WorldQuestController {
     if (result.kind === 'conflict') {
       this.hud.showMessage('Progress changed in another tab', 'The current save was reloaded. Review your objective and try again.')
     } else if (result.kind === 'save_error') {
+      this.hud.setSaveStatus(`Quest progress was not saved: ${result.reason}`)
       this.hud.showMessage('Could not save progress', `${result.reason}. Your last committed progress is still safe; try again.`)
     } else {
       this.hud.showMessage('That cannot be done yet', readableReason(result.reason))
@@ -198,22 +203,12 @@ export class WorldQuestController {
 
   private render(state: CharacterQuestState): void {
     const entries = projectJournal(state)
+    const hudProjection = projectHudQuests(state)
     this.candidates = interactionCandidates(state)
-    const tracked = [...state.trackedIds].reverse().map((id) => entries.find((entry) => entry.id === id)).find((entry) => entry !== undefined)
-    const definition = tracked ? pinnedDefinition(tracked, state) : undefined
-    this.trackedDestination = tracked && definition ? destinationForEntry(tracked, definition, state) ?? null : null
-    this.hud.setJournal(entries, state)
-    this.view.setQuestMarkers(markerProjection(entries, state))
+    const continuationLabel = hudProjection.story.kind === 'continue' ? questTarget(hudProjection.story.giverId)?.label : undefined
+    this.hud.setJournal(hudProjection, state, continuationLabel)
+    this.view.setQuestMarkers(projectQuestMarkers(entries, state))
     this.update(this.explorer)
-  }
-
-  private updateDestination(explorer: Explorer): void {
-    const destination = this.trackedDestination
-    if (!destination) { this.hud.setDestination(null); return }
-    const dx = destination.x - explorer.x
-    const dz = destination.z - explorer.z
-    const distance = Math.hypot(dx, dz)
-    this.hud.setDestination(`${destination.label} · ${Math.round(distance)} m ${relativeDirection(dx, dz, explorer.facing)}`)
   }
 }
 
@@ -279,7 +274,7 @@ function earlyCandidates(definition: QuestDefinition, state: CharacterQuestState
   return []
 }
 
-function markerProjection(entries: readonly QuestJournalEntry[], state: CharacterQuestState) {
+export function projectQuestMarkers(entries: readonly QuestJournalEntry[], state: CharacterQuestState) {
   const markers = new Map<string, { id: string; category: QuestDefinition['category']; status: 'available' | 'active' | 'ready' }>()
   for (const entry of entries) {
     const definition = pinnedDefinition(entry, state)
@@ -317,13 +312,6 @@ function promptFor(candidate: InteractionCandidate): string {
   if (candidate.mode === 'ready') return `Turn in to ${candidate.target.label}`
   if (candidate.mode === 'available' || candidate.mode === 'introduction' || candidate.mode === 'reminder') return `Talk to ${candidate.target.label}`
   return candidate.target.id === 'seli_continue' ? 'Continue with Seli' : `Interact · ${candidate.target.label}`
-}
-function relativeDirection(dx: number, dz: number, facing: number): string {
-  const angle = Math.atan2(dx, dz) - facing
-  const normalized = Math.atan2(Math.sin(angle), Math.cos(angle))
-  if (Math.abs(normalized) < Math.PI / 4) return 'ahead'
-  if (Math.abs(normalized) > Math.PI * 3 / 4) return 'behind'
-  return normalized > 0 ? 'right' : 'left'
 }
 function choiceLabel(choiceId: string): string {
   return ({ sit_nearby: 'Sit nearby', give_space: 'Give Seli space', include_parn: 'Include Parn', leave_space: 'Leave the space open' } as Record<string, string>)[choiceId] ?? choiceId

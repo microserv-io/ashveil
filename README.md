@@ -25,7 +25,14 @@ journal, local saves and one-time rewards. Named NPCs temporarily reuse copies o
 the main character. All ten MSQs and twenty side quests are catalogued; the class,
 combat and dungeon-dependent continuation remains planned. Quest XP is reserved
 until class selection is implemented, and supply rewards have no combat effects yet.
+The default HUD uses the approved forest, ivory and brass interface over the live world.
+Its journal and tracker contain accepted active or ready quests only; available quests
+remain visible through NPC markers and offers. When no playable main quest is active,
+the interface names the next actual giver, or reports that the current story is complete.
 Use **F** to interact nearby and **J** for the journal, or use their on-screen buttons.
+The seven brass menu buttons open truthful Character, Pack, Map, Journal, Finder, Social
+and Settings panels. Settings switches between empty keyboard and controller action layouts;
+combat actions and gamepad movement are not implemented by this interface pass.
 Progress is stored for one offline character per browser origin; returning to the
 refuge does not reset it. This is separate from the deprecated demo's saves.
 
@@ -34,7 +41,9 @@ turn, Q/E strafe, Alt walks, Shift sprints and Space jumps. Left mouse drag free
 right drag steers the character with the camera and changes A/D into strafing; holding
 both buttons moves forward. The wheel zooms. Touch keeps its camera-relative joystick
 and independent canvas orbit. This validation route does not yet provide rebinding,
-camera settings, a camera-relative Legacy mode or gamepad input.
+camera settings, a camera-relative Legacy mode or gamepad input. The minimap frame stays
+blank until a real map system exists, and the HUD does not calculate objective distance
+or relative direction.
 
 The environment pass uses Blender-authored buildings and trees guided by the
 [character-and-village style reference](docs/art-pipeline/concepts/opening-chapter/environment-kit.png).

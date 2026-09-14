@@ -89,6 +89,16 @@ change that footprint when they connect to the river seed.
 - Use placeholder landmark massing where needed alongside the Blender building and tree
   kit. This slice does not approve final buildings, vegetation, lighting or materials.
 
+The default route now carries the approved Ember & Bloom forest, ivory and brass HUD over
+the live world. A blank circular minimap frame and current location anchor the top-right;
+the accepted-only quest tracker sits below it, seven clipped painted menu icons stay 24
+pixels from the desktop bottom-right edge, and empty keyboard or controller action layouts
+stay bottom-centred. Character and reward panels project only saved first-zone data. Map,
+Finder and Social explain their unavailable state without simulated gameplay values.
+One modal host owns every player panel and quest dialogue, suspends all world input while
+open, traps focus, and returns it safely on close. Development overview, reset, clock and
+the explicit hillside comparison remain in one collapsed development-only region.
+
 The current authored map spans 2,485 by 1,385 world units on a five-unit height grid,
 replacing the original 220 by 180-unit validation layout. The user-selected main-road
 run from refuge to waystation is five minutes. The [zone authoring guide](zone-authoring.md)
