@@ -6,6 +6,7 @@ import { WorldInput } from './input'
 import { canOccupy, createExplorer, type Explorer } from './movement'
 import { DEFAULT_CAMERA_YAW, WorldView } from './renderer'
 import { WorldQuestController } from './quest-controller'
+import { NpcTargetController } from './npc-target-controller'
 import { sampleSkyState } from './sky-environment'
 import { explorerFacingFromCamera } from './steering'
 import { createTimePanel, type TimePanel } from './time-panel'
@@ -96,6 +97,14 @@ function startWorld(host: HTMLElement, assets: WorldAssets, baseline?: TerrainTe
   if (hillsideRoute.enabled) view.adjustOrbit(0, -80, 0)
   const input = new WorldInput(view.canvas, hud.joystick, hud.joystickKnob, hud.sprintButton, hud.jumpButton)
   const quests = new WorldQuestController(host, view, input, explorer)
+  const targetSelection = new NpcTargetController({
+    canvas: view.canvas,
+    inputEnabled: () => input.isEnabled,
+    modalOpen: () => quests.modalOpen,
+    onInputClear: (listener) => input.addClearListener(listener),
+    pick: (clientX, clientY) => view.pickQuestNpc(clientX, clientY),
+    show: (target) => hud.setTarget(target),
+  })
   let overview = false
   let injected = { x: 0, z: 0, sprint: false }
   let previous = performance.now()
@@ -175,6 +184,7 @@ function startWorld(host: HTMLElement, assets: WorldAssets, baseline?: TerrainTe
     if (import.meta.env.DEV && globalThis.ashveilWorld === diagnostics) globalThis.ashveilWorld = undefined
     timePanel?.dispose()
     hillsidePanel?.dispose()
+    targetSelection.dispose()
     view.dispose()
   }
 

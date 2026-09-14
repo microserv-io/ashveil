@@ -10,6 +10,7 @@ import { QuestTargetView, type VisibleQuestMarker } from './quest-target-view'
 import { QUEST_NPCS, QUEST_TARGETS, questTarget } from './quest-world-data'
 import { buildTerrainSurface, type BuiltTerrainSurface } from './terrain-surface'
 import { terrainCameraHitDistance } from './terrain-camera-collision'
+import { pickNpcFromCamera, type PickedNpc } from './npc-picker'
 import { getActiveZone } from './zone-active'
 import type { CompiledZone } from './zone-types'
 import type { HillsideTerrainLook } from './hillside-review'
@@ -36,6 +37,7 @@ export class WorldView {
   private readonly questNpcs: QuestNpcView
   private readonly questTargets: QuestTargetView
   private readonly raycaster = new THREE.Raycaster()
+  private readonly pointer = new THREE.Vector2()
   private readonly cameraTarget = new THREE.Vector3()
   private readonly desiredCamera = new THREE.Vector3()
   private readonly cameraDirection = new THREE.Vector3()
@@ -126,6 +128,23 @@ export class WorldView {
       const target = questTarget(marker.id)
       if (target?.kind !== 'prop') this.questNpcs.setMarker(marker.id, marker.category, marker.status)
     }
+  }
+
+  pickQuestNpc(clientX: number, clientY: number): PickedNpc | null {
+    const bounds = this.canvas.getBoundingClientRect()
+    if (bounds.width <= 0 || bounds.height <= 0 || clientX < bounds.left || clientX > bounds.right || clientY < bounds.top || clientY > bounds.bottom) return null
+    this.pointer.set(
+      ((clientX - bounds.left) / bounds.width) * 2 - 1,
+      -((clientY - bounds.top) / bounds.height) * 2 + 1,
+    )
+    this.camera.updateMatrixWorld(true)
+    this.scene.updateMatrixWorld(true)
+    return pickNpcFromCamera(
+      this.camera,
+      this.pointer,
+      this.questNpcs.pickCandidates(),
+      [this.explorer.root, this.terrain.mesh, this.scenery.root],
+    )
   }
 
   adjustOrbit(x: number, y: number, zoom: number): void {

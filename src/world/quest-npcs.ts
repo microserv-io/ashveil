@@ -5,6 +5,7 @@ import { createExplorer } from './movement'
 import { heightAt as activeHeightAt } from './terrain'
 import type { WorldQuestNpcPlacement } from './quest-world-data'
 import type { WorldPoint } from './world-data'
+import type { NpcPickCandidate } from './npc-picker'
 
 export type QuestMarkerStatus = 'available' | 'active' | 'ready'
 
@@ -69,6 +70,16 @@ export class QuestNpcView {
 
   clearMarkers(): void {
     for (const actor of this.actors.values()) actor.marker.visible = false
+  }
+
+  pickCandidates(): readonly NpcPickCandidate[] {
+    return [...this.actors.entries()].map(([id, actor]) => {
+      actor.character.root.updateWorldMatrix(true, true)
+      actor.character.root.traverse((object) => {
+        if (object instanceof THREE.SkinnedMesh) object.computeBoundingSphere()
+      })
+      return { id, name: actor.placement.name, root: actor.character.root }
+    })
   }
 
   updateLabels(position: WorldPoint): void {

@@ -1,0 +1,330 @@
+.hud-target-frame {
+  position: absolute;
+  top: var(--hud-edge);
+  left: 50%;
+  width: min(370px, calc(100vw - 48px));
+  padding: 4px 8px;
+  color: #f3ddbb;
+  text-shadow: 0 2px 4px #000;
+  transform: translateX(-50%);
+}
+
+.hud-target-frame header,
+.hud-player-frame header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hud-target-frame header {
+  font: 23px Alegreya, serif;
+}
+
+.hud-target-frame header span,
+.hud-player-frame header span {
+  color: #dac9a6;
+  font: 13px 'Source Sans', sans-serif;
+}
+
+.hud-frame-meter {
+  display: flex;
+  height: 14px;
+  align-items: center;
+  gap: 7px;
+  margin-top: 4px;
+}
+
+.hud-frame-meter i,
+.hud-player-meters i {
+  height: 8px;
+  flex: 1;
+  overflow: hidden;
+  border: 1px solid #b79a6588;
+  border-radius: 3px;
+  background: #281911db;
+}
+
+.hud-frame-meter b {
+  color: #eed7b5;
+  font: 12px 'Source Sans', sans-serif;
+}
+
+.hud-chat-placeholder {
+  position: absolute;
+  bottom: var(--hud-edge);
+  left: var(--hud-edge);
+  width: 300px;
+  min-height: 84px;
+  padding: 9px 12px;
+  border: 1px solid #a9945844;
+  border-radius: 5px;
+  color: #d8d0bd;
+  background: #081b15c9;
+  box-shadow: 0 4px 16px #0005;
+  font-size: 13px;
+  text-shadow: 0 1px 3px #000;
+}
+
+.hud-chat-placeholder p {
+  margin: 3px 0;
+}
+
+.hud-chat-placeholder strong {
+  color: #b2afa0;
+}
+
+.hud-player-frame {
+  width: min(480px, 100%);
+  margin: 0 auto 10px;
+  padding: 4px 12px 7px;
+  border-bottom: 1px solid #c8aa6177;
+  color: #e4ce9b;
+  background: linear-gradient(90deg, transparent, #10261bdb 15%, #10261bdb 85%, transparent);
+  text-shadow: 0 1px 4px #000;
+}
+
+.hud-action-layout .hud-interact-wrap {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.hud-player-frame header {
+  margin-bottom: 5px;
+  font-size: 13px;
+}
+
+.hud-player-frame header strong {
+  font: 19px Alegreya, serif;
+}
+
+.hud-player-meters {
+  display: flex;
+  gap: 18px;
+}
+
+.hud-player-meters > div {
+  display: flex;
+  position: relative;
+  flex: 1;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+}
+
+.hud-player-meters i {
+  height: 13px;
+  border-color: #b3a37088;
+  background: #08170e;
+}
+
+.hud-player-meters b {
+  position: absolute;
+  right: 5px;
+  color: #fff4dc;
+  font-size: 11px;
+}
+
+@media (max-height: 700px) and (min-width: 901px) {
+  .hud-chat-placeholder {
+    bottom: 82px;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .hud-chat-placeholder {
+    top: 12px;
+    bottom: auto;
+    left: 12px;
+    width: min(220px, calc(100vw - 24px));
+    min-height: 0;
+  }
+
+  .hud-action-layout {
+    display: block;
+    bottom: 205px;
+    width: min(420px, calc(100vw - 24px));
+  }
+
+  .hud-keyboard-actions,
+  .hud-controller-actions {
+    display: none !important;
+  }
+}
+
+@media (max-width: 900px) and (hover: hover) and (pointer: fine) {
+  .hud-target-frame {
+    top: 12px;
+    width: min(340px, calc(100vw - 24px));
+  }
+
+  .hud-chat-placeholder {
+    top: 84px;
+    bottom: auto;
+    left: 12px;
+    width: min(260px, calc(100vw - 24px));
+    min-height: 0;
+  }
+
+  .hud-action-layout {
+    width: min(420px, calc(100vw - 24px));
+  }
+}
+
+@media (max-width: 1100px) and (hover: hover) and (pointer: fine) {
+  .hud-action-layout {
+    display: block;
+    bottom: 82px;
+    width: min(420px, calc(100vw - 24px));
+  }
+
+  .hud-keyboard-actions,
+  .hud-controller-actions {
+    display: none !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .hud-action-layout {
+    display: block;
+    bottom: 74px;
+    width: min(420px, calc(100vw - 24px));
+  }
+
+  .hud-keyboard-actions,
+  .hud-controller-actions {
+    display: none !important;
+  }
+
+  .hud-target-frame {
+    top: 12px;
+    left: 12px;
+    width: calc(53vw - 32px);
+    min-width: 140px;
+    min-height: 0;
+    transform: none;
+  }
+
+  .hud-target-frame header {
+    min-width: 0;
+    font-size: 19px;
+  }
+
+  .hud-target-frame header strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .hud-target-frame header span {
+    flex: none;
+    font-size: 11px;
+  }
+
+  .hud-chat-placeholder {
+    top: 82px;
+    bottom: auto;
+    width: calc(53vw - 32px);
+    min-width: 140px;
+  }
+
+  .hud-dev-tools {
+    top: 140px;
+    left: 12px;
+    width: calc(53vw - 32px);
+    min-width: 140px;
+  }
+}
+
+@media (max-width: 560px), (max-height: 560px) {
+  .hud-action-layout {
+    display: block;
+    bottom: 74px;
+    width: min(420px, calc(100vw - 24px));
+  }
+
+  .hud-keyboard-actions,
+  .hud-controller-actions {
+    display: none !important;
+  }
+
+  .hud-player-frame {
+    padding-inline: 6px;
+  }
+
+  .hud-player-meters {
+    gap: 8px;
+  }
+
+  .hud-player-meters > div {
+    min-width: 0;
+  }
+}
+
+@media (max-height: 560px) and (min-width: 701px) {
+  .hud-target-frame {
+    left: 50%;
+    width: 288px;
+  }
+
+  .hud-dev-tools {
+    top: 68px;
+  }
+
+  .hud-action-layout {
+    width: 288px;
+  }
+
+  .hud-right-rail {
+    top: 12px;
+    right: 12px;
+    max-height: 220px;
+    gap: 6px;
+  }
+
+  .hud-minimap,
+  .hud-minimap-face {
+    width: 80px;
+  }
+
+  .hud-minimap strong {
+    font-size: 11px;
+  }
+
+  .hud-minimap small {
+    display: none;
+  }
+
+  .hud-quest-tracker {
+    max-height: 120px;
+    pointer-events: auto;
+  }
+
+  .hud-quest-tracker section + section,
+  .hud-quest-tracker article + article {
+    margin-top: 12px;
+  }
+
+  .hud-quest-tracker h2 {
+    margin-block: 3px;
+    font-size: 18px;
+  }
+
+  .hud-quest-tracker .side h2 {
+    font-size: 17px;
+  }
+
+  .hud-quest-tracker .hud-quest-objective,
+  .hud-quest-tracker .hud-story-cue {
+    margin: 3px 0 3px 18px;
+    font-size: 12px;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .hud-action-layout {
+    bottom: 205px;
+  }
+}

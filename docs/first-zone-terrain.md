@@ -99,6 +99,14 @@ One modal host owns every player panel and quest dialogue, suspends all world in
 open, traps focus, and returns it safely on close. Development overview, reset, clock and
 the explicit hillside comparison remain in one collapsed development-only region.
 
+The shell also reserves the original HUD positions for chat, the player's own frame,
+and a selected target. Until those gameplay systems exist, chat says that it is
+unavailable and the player and target meters show explicit empty values. A short left
+click can select the frontmost visible NPC or survivor by their authored name. Clicking
+empty world space or pressing Escape clears that selection, while a camera drag leaves it
+unchanged. None of these selection gestures dispatches a quest interaction; talking
+remains the proximity-based F action.
+
 The current authored map spans 2,485 by 1,385 world units on a five-unit height grid,
 replacing the original 220 by 180-unit validation layout. The user-selected main-road
 run from refuge to waystation is five minutes. The [zone authoring guide](zone-authoring.md)
