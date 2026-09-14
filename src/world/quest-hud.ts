@@ -139,7 +139,7 @@ export function createQuestHud(root: HTMLElement, onInteract: () => void): Quest
     setSaveStatus: (message) => { saveStatus.hidden = message === null; saveStatus.textContent = message ?? '' },
     showQuest: (definition, scenes, actions, state) => {
       activePanel = null
-      modalKicker.textContent = definition.category === 'main' ? '◆ Main Story' : '● Side Story'
+      modalKicker.textContent = definition.category === 'main' ? 'Main Story' : 'Side Story'
       modalTitle.textContent = definition.title
       modalBody.innerHTML = `<p class="hud-summary">${escapeHtml(definition.summary)}</p>${rewardPreview(definition, state)}${sceneMarkup(scenes)}`
       renderActions(actions)
@@ -159,22 +159,27 @@ export function createQuestHud(root: HTMLElement, onInteract: () => void): Quest
 }
 
 function trackerMarkup(projection: HudQuestProjection, state: CharacterQuestState, continuationLabel?: string): string {
-  const groups = ([['main', '◆ Main Story'], ['side', '● Side Stories']] as const).flatMap(([category, heading]) => {
+  const groups = (['main', 'side'] as const).flatMap((category) => {
     const entries = projection[category].filter((entry) => state.trackedIds.includes(entry.id))
     if (entries.length === 0) return []
-    return [`<section class="${category}"><h2>${heading}</h2>${entries.map(trackerEntry).join('')}</section>`]
+    const label = category === 'main' ? 'Main Story quests' : 'Side Story quests'
+    return [`<section class="${category}" aria-label="${label}">${entries.map((entry) => trackerEntry(entry)).join('')}</section>`]
   })
   if (!projection.main.some((entry) => state.trackedIds.includes(entry.id))) {
-    if (projection.story.kind === 'continue' && continuationLabel) groups.unshift(`<section class="main"><h2>◆ Main Story</h2><p class="hud-story-cue">Talk to ${escapeHtml(continuationLabel)} to continue your story</p></section>`)
-    else if (projection.story.kind === 'complete') groups.unshift('<section class="main"><h2>◆ Main Story</h2><p class="hud-story-cue">Your Alderbank story is complete for now.</p></section>')
-    else if (projection.story.kind === 'in-progress') groups.unshift('<section class="main"><h2>◆ Main Story</h2><p class="hud-story-cue">A main story quest is in progress.</p></section>')
+    if (projection.story.kind === 'continue' && continuationLabel) groups.unshift(storyCue(`Talk to ${escapeHtml(continuationLabel)} to continue your story`))
+    else if (projection.story.kind === 'complete') groups.unshift(storyCue('Your Alderbank story is complete for now.'))
+    else if (projection.story.kind === 'in-progress') groups.unshift(storyCue('A main story quest is in progress.'))
   }
   return groups.join('')
 }
 
 function trackerEntry(entry: QuestJournalEntry): string {
   const objective = entry.status === 'ready' ? 'Ready to turn in' : entry.nextObjective?.label ?? 'In progress'
-  return `<article><h3>${escapeHtml(entry.title)}</h3><p>◇ ${escapeHtml(objective)}</p></article>`
+  return `<article><h2><span class="hud-quest-title-icon" aria-hidden="true">✧</span><span>${escapeHtml(entry.title)}</span></h2><p class="hud-quest-objective"><span aria-hidden="true">◇</span><span>${escapeHtml(objective)}</span></p></article>`
+}
+
+function storyCue(cue: string): string {
+  return `<section class="main" aria-label="Main Story quests"><article><h2><span class="hud-quest-title-icon" aria-hidden="true">✧</span><span>Main Story</span></h2><p class="hud-story-cue">${cue}</p></article></section>`
 }
 
 function panelMarkup(panel: Panel, projection: HudQuestProjection, state: CharacterQuestState, continuationLabel: string | undefined, layout: HudLayout): string {
@@ -195,15 +200,15 @@ function journalMarkup(projection: HudQuestProjection, state: CharacterQuestStat
   const mainEmpty = projection.story.kind === 'continue' && continuationLabel
     ? `Talk to ${escapeHtml(continuationLabel)} to continue your story.`
     : projection.story.kind === 'complete' ? 'Your Alderbank story is complete for now.' : 'No tracked main story quest.'
-  return `<section class="hud-journal-section"><h3>◆ Main Story</h3>${questCards(projection.main, state, mainEmpty)}</section>
-    <section class="hud-journal-section side"><h3>● Side Stories</h3>${questCards(projection.side, state, 'No accepted side stories.')}</section>
+  return `<section class="hud-journal-section"><h3>Main Story</h3>${questCards(projection.main, state, mainEmpty)}</section>
+    <section class="hud-journal-section side"><h3>Side Stories</h3>${questCards(projection.side, state, 'No accepted side stories.')}</section>
     ${projection.history.length ? `<details class="hud-history"><summary>Completed quests (${projection.history.length})</summary>${projection.history.map((entry) => `<p><b>${escapeHtml(entry.title)}</b><span>${entry.category === 'main' ? 'Main Story' : 'Side Story'}</span></p>`).join('')}</details>` : ''}
     ${rewardLedger(state)}`
 }
 
 function questCards(entries: readonly QuestJournalEntry[], state: CharacterQuestState, empty: string): string {
   if (entries.length === 0) return `<p class="hud-empty-copy">${empty}</p>`
-  return `<div class="hud-quest-cards">${entries.map((entry) => `<article><div><h4>${escapeHtml(entry.title)}</h4><span>${entry.status === 'ready' ? 'Ready to turn in' : 'Active'}</span></div><p>${escapeHtml(entry.summary)}</p>${entry.nextObjective ? `<p class="objective">◇ ${escapeHtml(entry.nextObjective.label)}</p>` : ''}<button type="button" data-track-quest="${entry.id}" data-tracked="${state.trackedIds.includes(entry.id)}">${state.trackedIds.includes(entry.id) ? 'Untrack' : 'Track quest'}</button></article>`).join('')}</div>`
+  return `<div class="hud-quest-cards">${entries.map((entry) => `<article><div><h4><span class="hud-quest-title-icon" aria-hidden="true">✧</span><span>${escapeHtml(entry.title)}</span></h4><span>${entry.status === 'ready' ? 'Ready to turn in' : 'Active'}</span></div><p>${escapeHtml(entry.summary)}</p>${entry.nextObjective ? `<p class="objective hud-quest-objective"><span aria-hidden="true">◇</span><span>${escapeHtml(entry.nextObjective.label)}</span></p>` : ''}<button type="button" data-track-quest="${entry.id}" data-tracked="${state.trackedIds.includes(entry.id)}">${state.trackedIds.includes(entry.id) ? 'Untrack' : 'Track quest'}</button></article>`).join('')}</div>`
 }
 
 function packMarkup(state: CharacterQuestState): string {
@@ -213,7 +218,7 @@ function packMarkup(state: CharacterQuestState): string {
 }
 
 function settingsMarkup(layout: HudLayout): string {
-  return `<section class="hud-settings"><label for="hud-layout">Action layout<select id="hud-layout"><option value="keyboard"${layout === 'keyboard' ? ' selected' : ''}>Keyboard</option><option value="controller"${layout === 'controller' ? ' selected' : ''}>Controller cross hotbar</option></select></label><article><h3>Exploration controls</h3><p>W/S move · A/D turn · Q/E strafe · right mouse steers · left mouse looks · Alt walks · Shift sprints · Space jumps · wheel zooms.</p><h3>Interface controls</h3><p>F interacts. J opens the Journal. Menu buttons show their names when focused or hovered. Escape closes the active panel.</p><p>The controller cross hotbar is a layout preview. Gamepad movement and actions are not available yet.</p></article></section>`
+  return `<section class="hud-settings"><label for="hud-layout">Action layout<select id="hud-layout"><option value="keyboard"${layout === 'keyboard' ? ' selected' : ''}>Keyboard</option><option value="controller"${layout === 'controller' ? ' selected' : ''}>Controller cross hotbar</option></select></label><article><h3>Exploration controls</h3><p>W/S move · A/D turn · Q/E strafe · right mouse steers · left-drag looks · Alt walks · Shift sprints · Space jumps · wheel zooms.</p><h3>Interface controls</h3><p>F interacts. Left-click an NPC to target; click empty ground or press Escape to clear the target. J opens the Journal. Menu buttons show their names when focused or hovered. Escape closes the active panel.</p><p>The controller cross hotbar is a layout preview. Gamepad movement and actions are not available yet.</p></article></section>`
 }
 
 function bindSettings(root: HTMLElement, preference: { get(): HudLayout; set(layout: HudLayout): void }): void {

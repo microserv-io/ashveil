@@ -213,7 +213,9 @@ performance tuning remain separate work.
 Both games' official UI documentation distinguishes campaign/main quests from other
 quests: [FFXIV game manual](https://na.finalfantasyxiv.com/game_manual/view/) and
 [WoW quest UI update](https://worldofwarcraft.blizzard.com/en-us/news/24117139).
-Ashveil uses category labels and shapes consistently across giver, journal and tracker.
+Ashveil keeps Main Story and Side Story labels in dialogue and journal sections. The
+original HUD structure marks every quest title with a decorative `✧` and each objective
+row with `◇`; tracker sections expose their category through accessible labels.
 
 [FFXIV side-reward feedback](https://forum.square-enix.com/ffxiv/threads/508033-Side-Quests-XP-is-a-joke)
 shows disagreement over optional reward value, while

@@ -138,46 +138,43 @@
 }
 
 .hud-quest-tracker section + section {
-  margin-top: 20px;
+  margin-top: 21px;
 }
 
-.hud-quest-tracker h2,
-.hud-quest-tracker .hud-tracker-heading {
-  margin: 0 0 7px;
+.hud-quest-tracker article + article {
+  margin-top: 21px;
+}
+
+.hud-quest-tracker h2 {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 4px;
+  margin: 7px 0;
   color: #f0d291;
-  font: 600 21px/1.12 Alegreya, serif;
+  font: 400 23px/1.12 Alegreya, serif;
 }
 
-.hud-quest-tracker article h3 {
-  margin: 0;
-  color: #f0e6ce;
-  font: 600 15px/1.25 'Source Sans', sans-serif;
+.hud-quest-tracker .side h2 {
+  font-size: 21px;
 }
 
-.hud-quest-tracker article,
-.hud-quest-tracker .hud-tracker-entry {
-  margin: 7px 0 0 21px;
+.hud-quest-title-icon {
+  color: #d4ad5e;
 }
 
-.hud-quest-tracker p,
-.hud-quest-tracker small {
-  display: block;
-  margin: 3px 0;
+.hud-quest-tracker .hud-quest-objective,
+.hud-quest-tracker .hud-story-cue {
+  margin: 6px 0 6px 22px;
   color: #ded8c3;
   font-size: 13px;
+  font-weight: 400;
   line-height: 1.35;
 }
 
-.hud-quest-tracker .hud-story-cue {
-  margin-left: 21px;
-}
-
-.hud-quest-tracker strong,
-.hud-quest-tracker b {
-  display: block;
-  margin-bottom: 3px;
-  color: #f0e6ce;
-  font-weight: 600;
+.hud-quest-objective {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 4px;
 }
 
 .hud-save-status {
@@ -749,6 +746,11 @@
 }
 
 .hud-quest-cards h4 {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 5px;
   margin: 0;
   color: #334a38;
   font: 22px Alegreya, serif;
@@ -912,16 +914,9 @@
     width: 220px;
   }
 
-  .hud-quest-tracker p,
-  .hud-quest-tracker small,
   .hud-minimap strong,
   .hud-minimap small {
     font-size: 15px;
-  }
-
-  .hud-quest-tracker h2,
-  .hud-quest-tracker .hud-tracker-heading {
-    font-size: 26px;
   }
 }
 
@@ -1043,22 +1038,6 @@
 
   .hud-quest-tracker {
     max-height: 180px;
-  }
-
-  .hud-quest-tracker h2,
-  .hud-quest-tracker h3,
-  .hud-quest-tracker .hud-tracker-heading {
-    font-size: 17px;
-  }
-
-  .hud-quest-tracker article,
-  .hud-quest-tracker .hud-tracker-entry {
-    margin-left: 12px;
-  }
-
-  .hud-quest-tracker p,
-  .hud-quest-tracker small {
-    font-size: 11px;
   }
 
   .hud-utility {

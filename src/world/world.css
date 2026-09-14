@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import './hud.css';
+@import './hud-frames.css';
 
 html,
 body,

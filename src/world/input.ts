@@ -75,6 +75,7 @@ export class WorldInput {
   private sprintTouch = false
   private sprintPointer: number | undefined
   private jumpQueued = false
+  private readonly clearListeners = new Set<() => void>()
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -150,6 +151,13 @@ export class WorldInput {
     return frame
   }
 
+  get isEnabled(): boolean { return this.enabled }
+
+  addClearListener(listener: () => void): () => void {
+    this.clearListeners.add(listener)
+    return () => { this.clearListeners.delete(listener) }
+  }
+
   setEnabled(enabled: boolean): void {
     if (this.enabled === enabled) return
     this.enabled = enabled
@@ -157,6 +165,7 @@ export class WorldInput {
   }
 
   clear = (): void => {
+    for (const listener of this.clearListeners) listener()
     const dragPointer = this.dragPointer
     const joystickPointer = this.joystickPointer
     const sprintPointer = this.sprintPointer
