@@ -14,36 +14,18 @@ export interface WaterLighting {
   readonly ambientColor: THREE.Color
 }
 
-const ACROSS_RIVER = [-1, -0.72, 0, 0.72, 1] as const
-
 export function buildWaterSurface(zone: CompiledZone, sunlightDirection: THREE.Vector3): BuiltWaterSurface {
-  const rows = Math.ceil((zone.bounds.maxZ - zone.bounds.minZ) / zone.cellSize) + 1
-  const positions = new Float32Array(rows * ACROSS_RIVER.length * 3)
-  const shore = new Float32Array(rows * ACROSS_RIVER.length)
-  const waterDepth = new Float32Array(rows * ACROSS_RIVER.length)
-  const indices: number[] = []
-  for (let row = 0; row < rows; row += 1) {
-    const z = zone.bounds.minZ + (zone.bounds.maxZ - zone.bounds.minZ) * row / (rows - 1)
-    const center = zone.riverCenterAt(z)
-    const halfWidth = zone.riverHalfWidthAt(z)
-    const waterLevel = zone.waterLevelAt(center, z) ?? zone.definition.river.waterLevel
-    ACROSS_RIVER.forEach((across, column) => {
-      const index = row * ACROSS_RIVER.length + column
-      const x = center + halfWidth * across
-      positions.set([x, waterLevel, z], index * 3)
-      shore[index] = Math.abs(across)
-      waterDepth[index] = Math.max(0, waterLevel - zone.heightAt(x, z))
-      if (row === 0 || column === 0) return
-      const current = index
-      const previousRow = current - ACROSS_RIVER.length
-      indices.push(previousRow - 1, current - 1, previousRow, previousRow, current - 1, current)
-    })
-  }
+  const surface = zone.waterGeometry()
+  const positions = new Float32Array(surface.vertices.length * 3)
+  const waterDepth = new Float32Array(surface.vertices.length)
+  surface.vertices.forEach((vertex, index) => {
+    positions.set([vertex.x, zone.definition.river.waterLevel, vertex.z], index * 3)
+    waterDepth[index] = vertex.depth
+  })
   const geometry = new THREE.BufferGeometry()
   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-  geometry.setAttribute('shore', new THREE.BufferAttribute(shore, 1))
   geometry.setAttribute('waterDepth', new THREE.BufferAttribute(waterDepth, 1))
-  geometry.setIndex(indices)
+  geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(surface.indices), 1))
   geometry.computeBoundingBox()
   geometry.computeBoundingSphere()
   const material = new THREE.ShaderMaterial({
@@ -57,15 +39,13 @@ export function buildWaterSurface(zone: CompiledZone, sunlightDirection: THREE.V
       keyLightColor: { value: new THREE.Color(0xffd89c) },
       keyLightIntensity: { value: 2.8 },
       ambientLightColor: { value: new THREE.Color(0xf5e8c9) },
-      shallowColor: { value: new THREE.Color(0x6aa9a9) },
-      deepColor: { value: new THREE.Color(0x173f50) },
-      foamColor: { value: new THREE.Color(0xd5e7dc) },
+      shallowColor: { value: new THREE.Color(0x42bde8) },
+      deepColor: { value: new THREE.Color(0x075ca8) },
+      foamColor: { value: new THREE.Color(0xf4f0dc) },
     }]),
     vertexShader: `
-      attribute float shore;
       attribute float waterDepth;
       uniform float elapsedSeconds;
-      varying float vShore;
       varying float vWaterDepth;
       varying vec3 vWorldPosition;
       #include <fog_pars_vertex>
@@ -73,10 +53,11 @@ export function buildWaterSurface(zone: CompiledZone, sunlightDirection: THREE.V
         vec3 displaced = position;
         float firstWave = sin(position.z * 0.075 - elapsedSeconds * 1.15 + position.x * 0.035);
         float crossWave = sin(position.x * 0.19 + elapsedSeconds * 0.72 + position.z * 0.025);
-        displaced.y += (firstWave * 0.055 + crossWave * 0.028) * (1.0 - smoothstep(0.8, 1.0, shore));
+        float rawDisplacement = firstWave * 0.05 + crossWave * 0.025;
+        float maximumDisplacement = min(0.075, waterDepth * 0.45);
+        displaced.y += clamp(rawDisplacement, -maximumDisplacement, maximumDisplacement);
         vec4 world = modelMatrix * vec4(displaced, 1.0);
         vWorldPosition = world.xyz;
-        vShore = shore;
         vWaterDepth = waterDepth;
         vec4 mvPosition = viewMatrix * world;
         gl_Position = projectionMatrix * mvPosition;
@@ -92,30 +73,52 @@ export function buildWaterSurface(zone: CompiledZone, sunlightDirection: THREE.V
       uniform vec3 shallowColor;
       uniform vec3 deepColor;
       uniform vec3 foamColor;
-      varying float vShore;
       varying float vWaterDepth;
       varying vec3 vWorldPosition;
       #include <common>
       #include <fog_pars_fragment>
+      float waterHash(vec2 point) {
+        return fract(sin(dot(point, vec2(127.1, 311.7))) * 43758.5453123);
+      }
+      float waterNoise(vec2 point) {
+        vec2 cell = floor(point);
+        vec2 local = fract(point);
+        local = local * local * (3.0 - 2.0 * local);
+        return mix(
+          mix(waterHash(cell), waterHash(cell + vec2(1.0, 0.0)), local.x),
+          mix(waterHash(cell + vec2(0.0, 1.0)), waterHash(cell + vec2(1.0, 1.0)), local.x),
+          local.y
+        );
+      }
       void main() {
-        float phaseA = vWorldPosition.z * 0.72 - elapsedSeconds * 1.4 + vWorldPosition.x * 0.18;
-        float phaseB = vWorldPosition.x * 1.25 + vWorldPosition.z * 0.14 + elapsedSeconds * 0.86;
-        float dx = cos(phaseA) * 0.055 * 0.18 + cos(phaseB) * 0.036 * 1.25;
-        float dz = cos(phaseA) * 0.055 * 0.72 + cos(phaseB) * 0.036 * 0.14;
-        vec3 normal = normalize(vec3(-dx, 1.0, -dz));
-        vec3 viewDirection = normalize(cameraPosition - vWorldPosition);
-        float fresnel = pow(1.0 - max(dot(normal, viewDirection), 0.0), 3.0);
-        float keyGlint = pow(max(dot(reflect(-keyLightDirection, normal), viewDirection), 0.0), 96.0);
-        float depthMix = smoothstep(0.3, 6.0, vWaterDepth);
-        vec3 color = mix(shallowColor, deepColor, depthMix);
-        vec3 ambientFactor = 0.38 + ambientLightColor * 0.62;
+        float depthMix = smoothstep(0.25, 6.0, vWaterDepth);
+        vec2 waterPosition = vWorldPosition.xz;
+        float broadWash = waterNoise(waterPosition * 0.012 + vec2(elapsedSeconds * 0.008, 0.0));
+        broadWash = mix(broadWash, waterNoise(waterPosition * 0.005 - vec2(0.0, elapsedSeconds * 0.004)), 0.42);
+        vec3 paintedBlue = mix(shallowColor * 0.88, shallowColor * 1.12, smoothstep(0.12, 0.88, broadWash));
+        vec3 color = mix(paintedBlue, deepColor, depthMix * 0.9);
+        vec3 ambientFactor = vec3(0.55) + ambientLightColor * 0.45;
         color *= ambientFactor;
-        color += ambientLightColor * fresnel * 0.3 + keyLightColor * keyGlint * keyLightIntensity * 0.5;
-        float foamWave = sin(vWorldPosition.z * 0.34 - elapsedSeconds * 1.65 + sin(vWorldPosition.x * 0.13) * 1.8);
-        float foam = smoothstep(0.82, 0.97, vShore) * smoothstep(0.1, 0.72, foamWave);
-        vec3 litFoamColor = foamColor * ambientFactor + keyLightColor * keyLightIntensity * 0.03;
-        color = mix(color, litFoamColor, foam * 0.68);
-        float alpha = mix(0.48, 0.78, depthMix) * mix(1.0, 0.48, smoothstep(0.76, 1.0, vShore)) + foam * 0.28;
+        vec3 paintedNormal = normalize(vec3(-cos(vWorldPosition.x * 0.035) * 0.1, 1.0, -cos(vWorldPosition.z * 0.027) * 0.08));
+        float keyWash = max(dot(paintedNormal, keyLightDirection), 0.0);
+        color += keyLightColor * keyLightIntensity * (0.012 + keyWash * 0.025);
+        float domainWarp = (waterNoise(waterPosition * 0.018 + vec2(4.7, elapsedSeconds * 0.015)) - 0.5) * 13.0;
+        float ribbonPhase = (vWorldPosition.x + domainWarp) * 0.115
+          + sin(vWorldPosition.z * 0.016 + elapsedSeconds * 0.12) * 0.7;
+        float ribbon = 1.0 - smoothstep(0.035, 0.16, abs(sin(ribbonPhase)));
+        float breakup = waterNoise(vec2(vWorldPosition.z * 0.052 - elapsedSeconds * 0.09,
+          vWorldPosition.x * 0.016 + waterNoise(waterPosition * 0.009) * 2.0));
+        float dash = smoothstep(0.58, 0.78, breakup);
+        float distanceFade = 1.0 - smoothstep(90.0, 280.0, distance(cameraPosition, vWorldPosition));
+        float shorelineBreakup = mix(0.32, 0.78, waterNoise(waterPosition * 0.075 + vec2(2.3, 7.1)));
+        float shoreline = (1.0 - smoothstep(0.02, 1.25, vWaterDepth)) * shorelineBreakup;
+        float channelStroke = ribbon * dash * distanceFade * smoothstep(0.35, 1.3, vWaterDepth)
+          * (1.0 - smoothstep(5.8, 7.5, vWaterDepth));
+        float foam = max(shoreline * 0.42, channelStroke * 0.68);
+        vec3 litFoamColor = foamColor * ambientFactor + keyLightColor * keyLightIntensity * 0.035;
+        color = mix(color, litFoamColor, foam * 0.72);
+        color += keyLightColor * keyLightIntensity * channelStroke * 0.018;
+        float alpha = mix(0.52, 0.82, depthMix) + foam * 0.1;
         gl_FragColor = vec4(color, alpha);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>

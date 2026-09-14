@@ -6,8 +6,6 @@ export interface HillsideReviewRoute {
 }
 
 export const HILLSIDE_REVIEW_HOUR = 12
-export const HILLSIDE_REVIEW_CORE_RADIUS = 60
-export const HILLSIDE_REVIEW_OUTER_RADIUS = 100
 
 export function hillsideReviewRoute(search: string): HillsideReviewRoute {
   const parameters = new URLSearchParams(search)

@@ -47,8 +47,12 @@ export function paintWeightsAt(
   const shoreDistance = Math.abs(Math.abs(x - center) - halfWidth)
   const bankEarth = 1 - smoothstep(1.4, 4.4, shoreDistance)
   const earth = Math.max(pathEarthAt(x, z, paths), bankEarth)
-  const ash = smoothstep(center + halfWidth + 1, center + halfWidth + 11, x)
-  return { earth, ash }
+  return { earth, ash: ashInfluenceAt(zone, x, z) }
+}
+
+export function ashInfluenceAt(zone: CompiledZone, x: number, z: number): number {
+  const boundary = zone.riverCenterAt(z) + zone.riverHalfWidthAt(z)
+  return smoothstep(boundary + 1, boundary + 11, x)
 }
 
 function segmentEarthAt(x: number, z: number, width: number, start: WorldPoint, end: WorldPoint): number {
@@ -108,7 +112,7 @@ function createTerrainPaintPixels(
       const shoreDistance = Math.abs(Math.abs(x - center) - halfWidth)
       const offset = (row * width + column) * 4
       data[offset] = Math.round((1 - smoothstep(1.4, 4.4, shoreDistance)) * 255)
-      data[offset + 1] = Math.round(smoothstep(center + halfWidth + 1, center + halfWidth + 11, x) * 255)
+      data[offset + 1] = Math.round(ashInfluenceAt(zone, x, z) * 255)
       data[offset + 2] = 0
       data[offset + 3] = 255
     }

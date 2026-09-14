@@ -1,12 +1,13 @@
 import * as THREE from 'three'
-import { createHillsideReviewMaterial, createWorldMaterial, type HillsideReviewMaterial } from './world-material'
+import { createWorldMaterial, type WorldTerrainMaterial } from './world-material'
 import type { HillsideTerrainLook } from './hillside-review'
+import type { TerrainTextureSet } from './terrain-textures'
 import type { CompiledZone, TerrainGeometryData } from './zone-types'
 
 export interface BuiltTerrainSurface {
   readonly mesh: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>
-  readonly painterlyReady: boolean
-  installPainterlyGrass(texture: THREE.Texture): void
+  readonly baselineReady: boolean
+  installBaseline(textures: TerrainTextureSet): void
   setLook(look: HillsideTerrainLook): boolean
   dispose(): void
 }
@@ -40,7 +41,11 @@ export function terrainStoneWeights(
   return weights
 }
 
-export function buildTerrainSurface(zone: CompiledZone, painterlyGrass?: THREE.Texture): BuiltTerrainSurface {
+export function buildTerrainSurface(
+  zone: CompiledZone,
+  painterlyTextures: TerrainTextureSet,
+  baselineTextures?: TerrainTextureSet,
+): BuiltTerrainSurface {
   const data = zone.geometry()
   const positions = new Float32Array(data.vertices.length * 3)
   const colors = new Float32Array(data.vertices.length * 3)
@@ -66,36 +71,37 @@ export function buildTerrainSurface(zone: CompiledZone, painterlyGrass?: THREE.T
   geometry.computeVertexNormals()
   geometry.computeBoundingBox()
   geometry.computeBoundingSphere()
-  let reviewMaterial: HillsideReviewMaterial | undefined = painterlyGrass
-    ? createHillsideReviewMaterial(painterlyGrass, zone)
-    : undefined
-  let material = reviewMaterial?.material ?? createWorldMaterial(zone)
+  let baseline = baselineTextures
+  const controller: WorldTerrainMaterial = createWorldMaterial(painterlyTextures, zone)
+  if (baseline) controller.installBaseline(baseline)
+  let material = controller.material
   const mesh = new THREE.Mesh(geometry, material)
   mesh.name = 'first-zone-terrain'
   mesh.receiveShadow = true
   return {
     mesh,
-    get painterlyReady() { return Boolean(reviewMaterial) },
-    installPainterlyGrass: (texture) => {
-      if (reviewMaterial) {
-        texture.dispose()
+    get baselineReady() { return controller.baselineReady },
+    installBaseline: (textures) => {
+      if (baseline) {
+        textures.dispose()
         return
       }
-      reviewMaterial = createHillsideReviewMaterial(texture, zone)
-      const previous = material
-      material = reviewMaterial.material
-      mesh.material = material
-      previous.dispose()
+      baseline = textures
+      controller.installBaseline(textures)
     },
     setLook: (look) => {
-      if (!reviewMaterial) return look === 'baseline'
-      reviewMaterial.setLook(look)
+      const next = controller.materialFor(look)
+      if (!next) return false
+      material = next
+      mesh.material = material
       return true
     },
     dispose: () => {
       mesh.removeFromParent()
       geometry.dispose()
-      material.dispose()
+      controller.dispose()
+      painterlyTextures.dispose()
+      baseline?.dispose()
     },
   }
 }

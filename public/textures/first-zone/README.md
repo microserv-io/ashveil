@@ -1,7 +1,7 @@
 # First-zone texture candidates
 
-These four images are a bounded material study for the first zone. They are
-candidates for visual review, not finished zone art or a gameplay commitment.
+The original four images are retained as the first-zone material study and as the
+opt-in runtime comparison baseline. They are not the default terrain art.
 Edge checks found visible discontinuities in ordinary repeat mode. The review page
 therefore starts with mirrored repeat, which conceals the joins but introduces a
 recognisable symmetry. Production use still requires a seam-retouched source.
@@ -41,21 +41,25 @@ in context. They are concept illustrations, not engine screenshots or evidence t
 their depicted environment has been implemented. Their exact prompts and references
 are recorded in `concepts/PROMPTS.md`.
 
-## Safe Landing hillside review
+## Painterly terrain v1
 
-`meadow-grass-painterly-v1.png` is an isolated review-only candidate for the real
-Safe Landing hillside. Its exact generation prompt is retained in
-`meadow-grass-painterly-v1.prompt.txt`, and `hillside-review.json` records its hash,
-dimensions and review status. It was generated with the built-in ImageGen tool on
-14 September 2026 and copied without pixel edits. The source has fresher greens and
-calmer broad brushwork, but still contains recognisable leaf clusters. The review
-shader therefore combines two decorrelated world-space samples, adds broad warm/cool
-variation and quiets detail with camera distance.
+The default terrain uses `meadow-grass-painterly-v1.png`,
+`worn-earth-painterly-v1.png` and `ivory-limestone-painterly-v1.png`. Their exact
+prompts, dimensions, hashes and built-in ImageGen provenance are recorded in
+`painterly-v1.json`; all three were copied without pixel edits on 14 September 2026.
+The grass was approved in the Safe Landing trial. Earth and limestone are edits of
+their respective original albedos. The shader combines decorrelated world-space
+samples, broad variation and distance quieting so large surfaces do not expose one
+obvious repeat.
 
 Open the default route with `?hillsideReview=1` to hold the scene at noon and compare
-Baseline with Painterly on the same terrain, character, sky, camera and clock. The
-trial is feathered from a 60-metre core to a 100-metre outer radius around the authored
-spawn and changes only living grass; road earth, ash, limestone and collision keep their
-normal semantics. This does not replace the default terrain material. Meadow tufts are
-deferred because the current runtime has no reusable grass-detail asset or placement
-mechanism suitable for this bounded material test.
+the original Baseline with Painterly on the same terrain, character, sky, camera and
+clock. Painterly is the ordinary route and covers the whole authored zone; the review
+route alone loads the four original maps.
+
+Ash is a regional effect, not another albedo. The existing continuous ash influence
+drains colour and softens contrast after grass, earth and limestone are composed. The
+same pure world-space influence supplies the paint map and is available for later
+character or creature effects. Sparse world-anchored motes use that influence in a
+bounded patch around the camera without changing the global fog or sky. This terrain
+pass does not change character materials.

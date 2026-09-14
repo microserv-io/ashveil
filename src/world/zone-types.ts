@@ -84,6 +84,15 @@ export interface TerrainGeometryData {
   readonly columns: number
 }
 
+export interface WaterSurfaceVertex extends WorldPoint {
+  readonly depth: number
+}
+
+export interface WaterGeometryData {
+  readonly vertices: readonly WaterSurfaceVertex[]
+  readonly indices: readonly number[]
+}
+
 export interface CompiledRouteMetrics {
   readonly pathIds: readonly string[]
   readonly length: number
@@ -102,6 +111,7 @@ export interface CompiledZone {
   heightAt(x: number, z: number): number
   terrainTriangleAt(x: number, z: number): readonly WeightedTerrainVertex[]
   geometry(): TerrainGeometryData
+  waterGeometry(): WaterGeometryData
   riverCenterAt(z: number): number
   riverHalfWidthAt(z: number): number
   riverDepthAt(z: number): number

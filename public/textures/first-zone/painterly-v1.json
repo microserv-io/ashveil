@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "first-zone-painterly-v1",
+  "colorSpace": "srgb",
+  "maps": ["albedo"],
+  "status": "approved",
+  "scope": "default Alderbank terrain material",
+  "sampling": "shader-assisted decorrelated world-space sampling with broad variation and distance quieting",
+  "textures": [
+    {
+      "surface": "living-grass",
+      "file": "meadow-grass-painterly-v1.png",
+      "dimensions": [1254, 1254],
+      "sha256": "ddc17dce2ce1ce70f4025e30706704f91b94db71d7adf9d8be6f500d5fc67bcf",
+      "promptFile": "meadow-grass-painterly-v1.prompt.txt",
+      "provenance": "Built-in ImageGen generation on 2026-09-14; copied without pixel edits"
+    },
+    {
+      "surface": "worn-earth",
+      "file": "worn-earth-painterly-v1.png",
+      "dimensions": [1254, 1254],
+      "sha256": "70ac0921e44336c077e9a7546ed0b12aa1721795e97e529b6c9aa20c2a40db00",
+      "promptFile": "worn-earth-painterly-v1.prompt.txt",
+      "provenance": "Built-in ImageGen edit of worn-earth.png on 2026-09-14; copied without pixel edits"
+    },
+    {
+      "surface": "ivory-limestone",
+      "file": "ivory-limestone-painterly-v1.png",
+      "dimensions": [1254, 1254],
+      "sha256": "1513e74f87bdcf936535b4ad7297ea9f018b2102e7efd0a6b38c5519a30ff538",
+      "promptFile": "ivory-limestone-painterly-v1.prompt.txt",
+      "provenance": "Built-in ImageGen edit of ivory-limestone.png on 2026-09-14; copied without pixel edits"
+    }
+  ],
+  "ashTreatment": "Regional desaturation and contrast softening of the composed ground; no separate painterly ash albedo"
+}

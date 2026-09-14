@@ -1,5 +1,4 @@
 import './world.css'
-import type * as THREE from 'three'
 import { createWorldHud } from './hud'
 import { HILLSIDE_REVIEW_HOUR, hillsideReviewRoute, type HillsideTerrainLook } from './hillside-review'
 import { createHillsideReviewPanel, type HillsideReviewPanel } from './hillside-review-panel'
@@ -16,7 +15,7 @@ import { getActiveZone } from './zone-active'
 import { LANDMARKS, nearestLandmark, SPAWN } from './world-data'
 import { advanceExplorer } from './world-controls'
 import { worldStartPresentation } from './world-start'
-import { loadPainterlyGrassTexture } from './painterly-grass'
+import { loadBaselineTerrainTextures, type TerrainTextureSet } from './terrain-textures'
 
 interface DiagnosticState {
   position: { x: number; y: number; z: number }; facing: number; location: string; overview: boolean
@@ -64,20 +63,20 @@ async function boot(): Promise<void> {
   booting = true
   showLoading()
   try {
-    const [assetsResult, painterlyResult] = await Promise.allSettled([
+    const [assetsResult, baselineResult] = await Promise.allSettled([
       loadWorldAssets(),
-      hillsideRoute.enabled ? loadPainterlyGrassTexture() : Promise.resolve(undefined),
+      hillsideRoute.enabled ? loadBaselineTerrainTextures() : Promise.resolve(undefined),
     ])
     if (assetsResult.status === 'rejected') {
-      if (painterlyResult.status === 'fulfilled') painterlyResult.value?.dispose()
+      if (baselineResult.status === 'fulfilled') baselineResult.value?.dispose()
       throw assetsResult.reason
     }
-    const painterly = painterlyResult.status === 'fulfilled' ? painterlyResult.value : undefined
-    const painterlyError = painterlyResult.status === 'rejected'
-      ? painterlyResult.reason instanceof Error ? painterlyResult.reason.message : String(painterlyResult.reason)
+    const baseline = baselineResult.status === 'fulfilled' ? baselineResult.value : undefined
+    const baselineError = baselineResult.status === 'rejected'
+      ? baselineResult.reason instanceof Error ? baselineResult.reason.message : String(baselineResult.reason)
       : undefined
     app!.replaceChildren()
-    startWorld(app!, assetsResult.value, painterly, painterlyError)
+    startWorld(app!, assetsResult.value, baseline, baselineError)
   } catch (error) {
     console.error(error)
     booting = false
@@ -89,11 +88,11 @@ function initialExplorer(cameraYaw = DEFAULT_CAMERA_YAW): Explorer {
   return { ...createExplorer(SPAWN), facing: explorerFacingFromCamera(cameraYaw) }
 }
 
-function startWorld(host: HTMLElement, assets: WorldAssets, painterlyGrass?: THREE.Texture, painterlyError?: string): void {
+function startWorld(host: HTMLElement, assets: WorldAssets, baseline?: TerrainTextureSet, baselineError?: string): void {
   let explorer = initialExplorer()
   const start = worldStartPresentation(getActiveZone())
   const hud = createWorldHud(host, start)
-  const view = new WorldView(host, assets.scenery, assets.character, assets.sky, explorer, getActiveZone(), painterlyGrass)
+  const view = new WorldView(host, assets.scenery, assets.character, assets.sky, explorer, assets.terrain, getActiveZone(), baseline)
   if (hillsideRoute.enabled) view.adjustOrbit(0, -80, 0)
   const input = new WorldInput(view.canvas, hud.joystick, hud.joystickKnob, hud.sprintButton, hud.jumpButton)
   const quests = new WorldQuestController(host, view, input, explorer)
@@ -112,9 +111,9 @@ function startWorld(host: HTMLElement, assets: WorldAssets, painterlyGrass?: THR
   const errors: string[] = []
   let timePanel: TimePanel | undefined
   let hillsidePanel: HillsideReviewPanel | undefined
-  let hillsideLook: HillsideTerrainLook = 'baseline'
+  let hillsideLook: HillsideTerrainLook = 'painterly'
   let hillsideLoading = false
-  let hillsideLoadError = painterlyError
+  let hillsideLoadError = baselineError
 
   const clearMovement = (): void => {
     injected = { x: 0, z: 0, sprint: false }
@@ -136,31 +135,31 @@ function startWorld(host: HTMLElement, assets: WorldAssets, painterlyGrass?: THR
     hillsideLook = look
     if (diagnostics.state.hillsideReview) {
       diagnostics.state.hillsideReview.look = look
-      diagnostics.state.hillsideReview.ready = view.painterlyGrassReady
+      diagnostics.state.hillsideReview.ready = view.baselineTerrainReady
       diagnostics.state.hillsideReview.error = hillsideLoadError
     }
     hillsidePanel?.update(hillsidePanelState())
   }
 
-  async function retryPainterlyGrass(): Promise<void> {
+  async function retryBaselineTerrain(): Promise<void> {
     if (hillsideLoading || disposed) return
     hillsideLoading = true
     hillsideLoadError = undefined
     hillsidePanel?.update(hillsidePanelState())
     try {
-      const texture = await loadPainterlyGrassTexture()
+      const textures = await loadBaselineTerrainTextures()
       if (disposed) {
-        texture.dispose()
+        textures.dispose()
         return
       }
-      view.installPainterlyGrass(texture)
-      setTerrainLook('painterly')
+      view.installBaselineTerrain(textures)
+      setTerrainLook('baseline')
     } catch (error) {
       hillsideLoadError = error instanceof Error ? error.message : String(error)
     } finally {
       hillsideLoading = false
       if (diagnostics.state.hillsideReview) {
-        diagnostics.state.hillsideReview.ready = view.painterlyGrassReady
+        diagnostics.state.hillsideReview.ready = view.baselineTerrainReady
         diagnostics.state.hillsideReview.error = hillsideLoadError
       }
       hillsidePanel?.update(hillsidePanelState())
@@ -243,7 +242,7 @@ function startWorld(host: HTMLElement, assets: WorldAssets, painterlyGrass?: THR
       drawCalls: 0, triangles: 0, water: { elapsedSeconds: 0, level: 0 }, errors,
       time: clock.read(previous),
       hillsideReview: hillsideRoute.enabled
-        ? { enabled: true, look: hillsideLook, ready: view.painterlyGrassReady, error: hillsideLoadError }
+        ? { enabled: true, look: hillsideLook, ready: view.baselineTerrainReady, error: hillsideLoadError }
         : undefined,
     },
     controls: {
@@ -255,11 +254,11 @@ function startWorld(host: HTMLElement, assets: WorldAssets, painterlyGrass?: THR
   if (hillsideRoute.enabled) {
     hillsidePanel = createHillsideReviewPanel(host, {
       clearMovement,
-      retry: () => { void retryPainterlyGrass() },
+      retry: () => { void retryBaselineTerrain() },
       setLook: setTerrainLook,
     })
     hillsidePanel.update(hillsidePanelState())
-    if (view.painterlyGrassReady) setTerrainLook('painterly')
+    setTerrainLook('painterly')
   }
   if (import.meta.env.DEV) {
     globalThis.ashveilWorld = diagnostics

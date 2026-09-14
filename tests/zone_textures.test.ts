@@ -26,14 +26,19 @@ interface TextureManifest {
   readonly candidates: readonly TextureCandidate[]
 }
 
-interface HillsideReviewManifest {
+interface PainterlyManifest {
   readonly version: number
   readonly id: string
-  readonly file: string
-  readonly dimensions: readonly [number, number]
-  readonly sha256: string
-  readonly promptFile: string
   readonly status: string
+  readonly textures: readonly {
+    readonly surface: string
+    readonly file: string
+    readonly dimensions: readonly [number, number]
+    readonly sha256: string
+    readonly promptFile: string
+    readonly provenance: string
+  }[]
+  readonly ashTreatment: string
 }
 
 describe('first-zone texture candidates', () => {
@@ -75,22 +80,27 @@ describe('first-zone texture candidates', () => {
     }
   })
 
-  it('records the isolated painterly hillside review asset and exact prompt', () => {
-    const manifestPath = join(TEXTURE_ROOT, 'hillside-review.json')
-    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as HillsideReviewManifest
+  it('records the approved painterly terrain assets, prompts, and provenance', () => {
+    const manifestPath = join(TEXTURE_ROOT, 'painterly-v1.json')
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as PainterlyManifest
     expect(manifest).toEqual(expect.objectContaining({
       version: 1,
-      id: 'meadow-grass-painterly-v1',
-      file: 'meadow-grass-painterly-v1.png',
-      dimensions: [1254, 1254],
-      sha256: 'ddc17dce2ce1ce70f4025e30706704f91b94db71d7adf9d8be6f500d5fc67bcf',
-      promptFile: 'meadow-grass-painterly-v1.prompt.txt',
-      status: 'review-only',
+      id: 'first-zone-painterly-v1',
+      status: 'approved',
     }))
-    const image = readFileSync(join(TEXTURE_ROOT, manifest.file))
-    expect(pngDimensions(image)).toEqual({ width: 1254, height: 1254 })
-    expect(createHash('sha256').update(image).digest('hex')).toBe(manifest.sha256)
-    expect(readFileSync(join(TEXTURE_ROOT, manifest.promptFile), 'utf8')).toContain('Macro landscape color variation will be added separately')
+    expect(manifest.textures.map((texture) => texture.surface)).toEqual([
+      'living-grass', 'worn-earth', 'ivory-limestone',
+    ])
+    for (const texture of manifest.textures) {
+      const image = readFileSync(join(TEXTURE_ROOT, texture.file))
+      expect(pngDimensions(image)).toEqual({ width: 1254, height: 1254 })
+      expect(createHash('sha256').update(image).digest('hex')).toBe(texture.sha256)
+      expect(readFileSync(join(TEXTURE_ROOT, texture.promptFile), 'utf8')).not.toHaveLength(0)
+      expect(texture.provenance).toContain('Built-in ImageGen')
+      expect(texture.provenance).toContain('without pixel edits')
+    }
+    expect(manifest.ashTreatment).toContain('no separate painterly ash albedo')
+    expect(existsSync(join(TEXTURE_ROOT, 'ash-ground-painterly-v1.png'))).toBe(false)
   })
 
   it('has an isolated Vite entry and package scripts', () => {

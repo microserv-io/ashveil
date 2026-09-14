@@ -60,13 +60,19 @@ while jumping as well as while grounded, and include the character footprint.
 Visible mountains and water close the playable perimeter before the outer world
 guard. Bracken Hollow remains visible across the river as desaturated countryside.
 
-The renderer builds a separate animated water surface over the depressed riverbed.
-Water colour, transparent shallows, ripples, Fresnel brightening, direct sun specular
-highlights and foam are presentation. Scene, screen-space and cubemap reflections
-are not implemented;
-the authored water region remains the traversal boundary. This pass does not add
-swimming or a fluid simulation. The terrain uses the existing generated material
-candidates and their documented colour-space, repeat-scale and provenance rules.
+The exact water footprint is the connected set of terrain below the authored water
+level, seeded from the river controls. That one terrain-derived region drives both the
+rendered water geometry and movement collision. Lowering connected ground can therefore
+expand water beyond a control point's nominal half-width; an isolated low basin stays dry
+because it is not connected to the seeded river. The renderer lays the animated surface
+over that wet footprint. Water colour, transparent shallows, ripples, Fresnel brightening,
+direct sun specular highlights and foam are presentation. Scene, screen-space and cubemap
+reflections are not implemented, and this pass does not add swimming or a fluid simulation.
+
+Terrain presentation uses the approved painterly grass, earth and limestone albedos.
+The existing far-bank influence drains colour and softens contrast after those surfaces
+are composed; it does not substitute a separate ash texture. Material presentation does
+not change the authored definition, terrain mesh or collision queries.
 
 ## Editing and drafts
 
@@ -111,10 +117,12 @@ backend.
 
 Acceptance includes continuous route traversal, optional-branch and quest-target
 reachability, footprint clearance, angled sprint/jump perimeter checks, deterministic
-JSON round trips, and matching rendered/queried terrain. Browser review must inspect
-the overview, human scale, water animation and shoreline, editor round trips and
-draft play. Performance measurements must use this world route; the deprecated
-demo's sweep and frame harness are not evidence for it.
+JSON round trips, and matching rendered/queried terrain. Automated checks must prove
+water geometry and collision use the same connected below-water-level footprint,
+including connected expansion and a disconnected dry basin. Browser review must still
+inspect the overview, human scale, water animation and shoreline, editor round trips and
+draft play; topology tests alone are not visual evidence. Performance measurements must
+use this world route; the deprecated demo's sweep and frame harness are not evidence for it.
 
 The current default remains sparse scenery for layout review. The next asset pass can follow the
 [Tripo prop and house brief](art-pipeline/first-zone-prop-brief.md).

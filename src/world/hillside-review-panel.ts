@@ -23,10 +23,10 @@ export function createHillsideReviewPanel(
 ): HillsideReviewPanel {
   const panel = document.createElement('aside')
   panel.id = 'hillside-review-panel'
-  panel.setAttribute('aria-label', 'Hillside material comparison')
+  panel.setAttribute('aria-label', 'Terrain material comparison')
   panel.className = 'pointer-events-auto fixed bottom-32 left-1/2 z-40 w-[min(21rem,calc(100vw-2rem))] -translate-x-1/2 rounded-xl border border-stone-100/20 bg-stone-950/85 p-2 text-stone-100 shadow-2xl backdrop-blur-md sm:bottom-16'
   panel.innerHTML = `
-    <p class="px-1 pb-1.5 text-center text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-amber-100/75">Safe Landing grass study</p>
+    <p class="px-1 pb-1.5 text-center text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-amber-100/75">Alderbank terrain study</p>
     <div class="grid grid-cols-2 gap-1" role="group" aria-label="Terrain look">
       <button type="button" data-look="baseline" class="rounded-lg border px-3 py-2 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-amber-200">Baseline</button>
       <button type="button" data-look="painterly" class="rounded-lg border px-3 py-2 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-amber-200">Painterly</button>
@@ -36,7 +36,7 @@ export function createHillsideReviewPanel(
   host.append(panel)
 
   const buttons = [...panel.querySelectorAll<HTMLButtonElement>('[data-look]')]
-  const painterly = required<HTMLButtonElement>(panel, '[data-look="painterly"]')
+  const baseline = required<HTMLButtonElement>(panel, '[data-look="baseline"]')
   const status = required<HTMLElement>(panel, '[data-status]')
   const retry = required<HTMLButtonElement>(panel, '[data-retry]')
   const stopKey = (event: Event): void => { event.stopPropagation() }
@@ -62,10 +62,10 @@ export function createHillsideReviewPanel(
         button.classList.toggle('bg-amber-100/15', selected)
         button.classList.toggle('border-stone-100/15', !selected)
       }
-      painterly.disabled = state.loading || Boolean(state.error)
-      painterly.classList.toggle('cursor-wait', state.loading)
-      painterly.classList.toggle('opacity-45', painterly.disabled)
-      status.textContent = state.loading ? 'Loading painterly grass…' : state.error ?? ''
+      baseline.disabled = state.loading || Boolean(state.error)
+      baseline.classList.toggle('cursor-wait', state.loading)
+      baseline.classList.toggle('opacity-45', baseline.disabled)
+      status.textContent = state.loading ? 'Loading baseline terrain…' : state.error ?? ''
       status.classList.toggle('hidden', !state.loading && !state.error)
       retry.classList.toggle('hidden', !state.error)
     },
@@ -84,6 +84,6 @@ export function createHillsideReviewPanel(
 
 function required<T extends Element>(root: ParentNode, selector: string): T {
   const element = root.querySelector<T>(selector)
-  if (!element) throw new Error(`Missing hillside review control: ${selector}`)
+    if (!element) throw new Error(`Missing terrain review control: ${selector}`)
   return element
 }

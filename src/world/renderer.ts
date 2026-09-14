@@ -13,8 +13,10 @@ import { terrainCameraHitDistance } from './terrain-camera-collision'
 import { getActiveZone } from './zone-active'
 import type { CompiledZone } from './zone-types'
 import type { HillsideTerrainLook } from './hillside-review'
+import type { TerrainTextureSet } from './terrain-textures'
 import { buildWaterSurface, type BuiltWaterSurface } from './water-surface'
 import { buildSkyEnvironment, sampleSkyState, type BuiltSkyEnvironment, type SkyState } from './sky-environment'
+import { buildAshEnvironment, type BuiltAshEnvironment } from './ash-environment'
 
 const PHYSICAL_CAMERA_MIN_PITCH = 0.16
 
@@ -27,6 +29,7 @@ export class WorldView {
   private readonly zone: CompiledZone
   private readonly terrain: BuiltTerrainSurface
   private readonly water: BuiltWaterSurface
+  private readonly ash: BuiltAshEnvironment
   private readonly environment: BuiltSkyEnvironment
   private readonly scenery: BuiltScenery
   private readonly explorer: ApprovedWorldCharacter
@@ -57,8 +60,9 @@ export class WorldView {
     character: ApprovedCharacterTemplate,
     skyTexture: THREE.Texture,
     initialExplorer: Explorer,
+    painterlyTextures: TerrainTextureSet,
     zone: CompiledZone = getActiveZone(),
-    painterlyGrass?: THREE.Texture,
+    baselineTextures?: TerrainTextureSet,
   ) {
     this.zone = zone
     const spanX = zone.bounds.maxX - zone.bounds.minX
@@ -85,10 +89,11 @@ export class WorldView {
     host.prepend(this.renderer.domElement)
 
     this.explorer = new ApprovedWorldCharacter(character, initialExplorer)
-    this.terrain = buildTerrainSurface(zone, painterlyGrass)
+    this.terrain = buildTerrainSurface(zone, painterlyTextures, baselineTextures)
     const initialSky = sampleSkyState(8)
     this.water = buildWaterSurface(zone, initialSky.sunDirection)
-    this.scene.add(this.terrain.mesh, this.water.mesh, this.explorer.root)
+    this.ash = buildAshEnvironment(zone)
+    this.scene.add(this.terrain.mesh, this.water.mesh, this.ash.points, this.explorer.root)
     this.questNpcs = new QuestNpcView(this.scene, character, QUEST_NPCS, zone.heightAt)
     this.questTargets = new QuestTargetView(this.scene, QUEST_TARGETS, zone.heightAt)
     this.scenery = buildScenery(this.scene, {
@@ -110,8 +115,8 @@ export class WorldView {
 
   resetExplorer(explorer: Explorer): void { this.explorer.reset(explorer) }
   turnCamera(delta: number): void { this.yaw += delta }
-  get painterlyGrassReady(): boolean { return this.terrain.painterlyReady }
-  installPainterlyGrass(texture: THREE.Texture): void { this.terrain.installPainterlyGrass(texture) }
+  get baselineTerrainReady(): boolean { return this.terrain.baselineReady }
+  installBaselineTerrain(textures: TerrainTextureSet): void { this.terrain.installBaseline(textures) }
   setTerrainLook(look: HillsideTerrainLook): boolean { return this.terrain.setLook(look) }
 
   setQuestMarkers(markers: readonly VisibleQuestMarker[]): void {
@@ -209,6 +214,7 @@ export class WorldView {
       intensity: sunDominant ? skyState.sunIntensity : skyState.moonIntensity,
       ambientColor: skyState.hemisphereSkyColor,
     })
+    this.ash.update(elapsedSeconds, this.camera.position)
     this.environment.update(skyState, this.camera.position, explorer)
     this.renderer.render(this.scene, this.camera)
   }
@@ -216,6 +222,7 @@ export class WorldView {
   dispose(): void {
     this.terrain.dispose()
     this.water.dispose()
+    this.ash.dispose()
     this.environment.dispose()
     disposeScenery(this.scenery)
     this.questNpcs.dispose()

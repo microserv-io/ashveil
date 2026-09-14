@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { paintWeightsAt } from '../src/world/terrain-paint'
+import { ashInfluenceAt, paintWeightsAt, terrainPaintTextureData } from '../src/world/terrain-paint'
+import { getActiveZone } from '../src/world/zone-active'
 import { PATHS } from '../src/world/world-data'
 import { riverCenterAt, riverHalfWidthAt } from '../src/world/terrain'
 
@@ -24,6 +25,7 @@ describe('terrain paint field', () => {
   })
 
   it('blends continuously into ash across the far bank', () => {
+    const zone = getActiveZone()
     const z = 5
     const start = riverCenterAt(z) + riverHalfWidthAt(z) + 1
     const near = paintWeightsAt(start, z, []).ash
@@ -33,5 +35,21 @@ describe('terrain paint field', () => {
     expect(middle).toBeGreaterThan(near)
     expect(middle).toBeLessThan(far)
     expect(far).toBeGreaterThan(0.95)
+    expect([near, middle, far]).toEqual([
+      ashInfluenceAt(zone, start, z),
+      ashInfluenceAt(zone, start + 5, z),
+      ashInfluenceAt(zone, start + 10, z),
+    ])
+  })
+
+  it('rasterizes the reusable ash influence without a second boundary formula', () => {
+    const zone = getActiveZone()
+    const paint = terrainPaintTextureData(zone, 20, 128, 128 * 128)
+    const row = Math.floor(paint.height * 0.5)
+    const column = Math.floor(paint.width * 0.75)
+    const x = zone.bounds.minX + (column + 0.5) / paint.width * (zone.bounds.maxX - zone.bounds.minX)
+    const z = zone.bounds.minZ + (row + 0.5) / paint.height * (zone.bounds.maxZ - zone.bounds.minZ)
+    const rasterized = paint.data[(row * paint.width + column) * 4 + 1]! / 255
+    expect(rasterized).toBeCloseTo(ashInfluenceAt(zone, x, z), 2)
   })
 })
