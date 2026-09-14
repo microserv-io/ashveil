@@ -2,6 +2,7 @@ import { installActiveZone } from './zone-active'
 import { compileZone } from './zone-compiler'
 import { DEFAULT_ZONE } from './zone-default'
 import { loadZoneDraft } from './zone-draft'
+import { hillsideReviewRoute } from './hillside-review'
 
 function showDraftFailure(reason: string): void {
   const notice = document.createElement('aside')
@@ -24,7 +25,8 @@ function showDraftFailure(reason: string): void {
 
 async function bootstrap(): Promise<void> {
   let compiled
-  if (new URLSearchParams(location.search).get('zoneDraft') === '1') {
+  const route = hillsideReviewRoute(location.search)
+  if (route.loadZoneDraft) {
     let draft
     try { draft = loadZoneDraft(window.localStorage) } catch (error) {
       draft = { kind: 'invalid' as const, reason: error instanceof Error ? error.message : String(error) }

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "id": "meadow-grass-painterly-v1",
+  "file": "meadow-grass-painterly-v1.png",
+  "dimensions": [1254, 1254],
+  "colorSpace": "srgb",
+  "maps": ["albedo"],
+  "sha256": "ddc17dce2ce1ce70f4025e30706704f91b94db71d7adf9d8be6f500d5fc67bcf",
+  "promptFile": "meadow-grass-painterly-v1.prompt.txt",
+  "status": "review-only",
+  "scope": "Safe Landing hillside material A/B trial",
+  "sampling": "shader-assisted decorrelated sampling with broad world-space tint"
+}

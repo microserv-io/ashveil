@@ -115,6 +115,30 @@ visible source seams still require retouching before production use. Provenance,
 and the limitations of these colour-only maps are recorded in
 [`public/textures/first-zone/README.md`](../public/textures/first-zone/README.md).
 
+An opt-in `?hillsideReview=1` route compares the baseline against the isolated
+`meadow-grass-painterly-v1.png` candidate on the real Safe Landing hillside. It forces
+the committed zone instead of loading a saved terrain draft, pauses the existing world
+clock at noon and switches one warmed terrain material by uniform, so the terrain mesh,
+character, sky, camera and time stay fixed between Baseline and Painterly. The trial
+uses decorrelated world-space samples, broad warm/cool variation and distance quieting
+inside a feathered 60-to-100-metre patch around the authored spawn. Only the living-grass
+input changes; earth, ash, limestone, paint weights, vertex truth and collision remain
+unchanged. The ordinary route does not load or compile the trial material. Candidate
+load failure leaves Baseline active and offers a review-only retry. Meadow tufts remain
+outside this material trial because the runtime has no suitable reusable grass-detail
+asset or placement mechanism.
+
+The 14 September 2026 browser review captured the
+[baseline](art-pipeline/reviews/painterly-hillside/baseline.jpg) and
+[painterly](art-pipeline/reviews/painterly-hillside/painterly.jpg) states at the same
+1,200 by 800 viewport. The [captured diagnostic state](art-pipeline/reviews/painterly-hillside/comparison-state.json)
+records identical explorer position, camera position and yaw, noon paused time, 44 draw
+calls and 1,668,550 submitted triangles for both looks, with the candidate ready and no
+captured runtime errors. The first live attempt exposed a terrain shader compile error
+from treating Three.js's colour varying as three-component; the reviewed capture follows
+the `vColor.rgb` correction. The already-open developer console retained those earlier
+compile messages, so the diagnostic error array is the recorded post-fix runtime signal.
+
 Desktop exploration uses W/S or the up/down arrows to move forward and backward, A/D or
 the left/right arrows to turn, Q/E to strafe, Alt to walk, Shift to sprint and Space to
 jump. Left mouse drag orbits independently. Right mouse drag steers camera and character

@@ -1,9 +1,13 @@
 import * as THREE from 'three'
-import { createWorldMaterial } from './world-material'
+import { createHillsideReviewMaterial, createWorldMaterial, type HillsideReviewMaterial } from './world-material'
+import type { HillsideTerrainLook } from './hillside-review'
 import type { CompiledZone, TerrainGeometryData } from './zone-types'
 
 export interface BuiltTerrainSurface {
   readonly mesh: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>
+  readonly painterlyReady: boolean
+  installPainterlyGrass(texture: THREE.Texture): void
+  setLook(look: HillsideTerrainLook): boolean
   dispose(): void
 }
 
@@ -36,7 +40,7 @@ export function terrainStoneWeights(
   return weights
 }
 
-export function buildTerrainSurface(zone: CompiledZone): BuiltTerrainSurface {
+export function buildTerrainSurface(zone: CompiledZone, painterlyGrass?: THREE.Texture): BuiltTerrainSurface {
   const data = zone.geometry()
   const positions = new Float32Array(data.vertices.length * 3)
   const colors = new Float32Array(data.vertices.length * 3)
@@ -62,12 +66,32 @@ export function buildTerrainSurface(zone: CompiledZone): BuiltTerrainSurface {
   geometry.computeVertexNormals()
   geometry.computeBoundingBox()
   geometry.computeBoundingSphere()
-  const material = createWorldMaterial(zone)
+  let reviewMaterial: HillsideReviewMaterial | undefined = painterlyGrass
+    ? createHillsideReviewMaterial(painterlyGrass, zone)
+    : undefined
+  let material = reviewMaterial?.material ?? createWorldMaterial(zone)
   const mesh = new THREE.Mesh(geometry, material)
   mesh.name = 'first-zone-terrain'
   mesh.receiveShadow = true
   return {
     mesh,
+    get painterlyReady() { return Boolean(reviewMaterial) },
+    installPainterlyGrass: (texture) => {
+      if (reviewMaterial) {
+        texture.dispose()
+        return
+      }
+      reviewMaterial = createHillsideReviewMaterial(texture, zone)
+      const previous = material
+      material = reviewMaterial.material
+      mesh.material = material
+      previous.dispose()
+    },
+    setLook: (look) => {
+      if (!reviewMaterial) return look === 'baseline'
+      reviewMaterial.setLook(look)
+      return true
+    },
     dispose: () => {
       mesh.removeFromParent()
       geometry.dispose()

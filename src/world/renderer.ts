@@ -12,6 +12,7 @@ import { buildTerrainSurface, type BuiltTerrainSurface } from './terrain-surface
 import { terrainCameraHitDistance } from './terrain-camera-collision'
 import { getActiveZone } from './zone-active'
 import type { CompiledZone } from './zone-types'
+import type { HillsideTerrainLook } from './hillside-review'
 import { buildWaterSurface, type BuiltWaterSurface } from './water-surface'
 import { buildSkyEnvironment, sampleSkyState, type BuiltSkyEnvironment, type SkyState } from './sky-environment'
 
@@ -57,6 +58,7 @@ export class WorldView {
     skyTexture: THREE.Texture,
     initialExplorer: Explorer,
     zone: CompiledZone = getActiveZone(),
+    painterlyGrass?: THREE.Texture,
   ) {
     this.zone = zone
     const spanX = zone.bounds.maxX - zone.bounds.minX
@@ -83,7 +85,7 @@ export class WorldView {
     host.prepend(this.renderer.domElement)
 
     this.explorer = new ApprovedWorldCharacter(character, initialExplorer)
-    this.terrain = buildTerrainSurface(zone)
+    this.terrain = buildTerrainSurface(zone, painterlyGrass)
     const initialSky = sampleSkyState(8)
     this.water = buildWaterSurface(zone, initialSky.sunDirection)
     this.scene.add(this.terrain.mesh, this.water.mesh, this.explorer.root)
@@ -108,6 +110,9 @@ export class WorldView {
 
   resetExplorer(explorer: Explorer): void { this.explorer.reset(explorer) }
   turnCamera(delta: number): void { this.yaw += delta }
+  get painterlyGrassReady(): boolean { return this.terrain.painterlyReady }
+  installPainterlyGrass(texture: THREE.Texture): void { this.terrain.installPainterlyGrass(texture) }
+  setTerrainLook(look: HillsideTerrainLook): boolean { return this.terrain.setLook(look) }
 
   setQuestMarkers(markers: readonly VisibleQuestMarker[]): void {
     this.questNpcs.clearMarkers()

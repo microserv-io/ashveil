@@ -40,3 +40,22 @@ The `concepts/` directory contains two scene studies that put the candidate pale
 in context. They are concept illustrations, not engine screenshots or evidence that
 their depicted environment has been implemented. Their exact prompts and references
 are recorded in `concepts/PROMPTS.md`.
+
+## Safe Landing hillside review
+
+`meadow-grass-painterly-v1.png` is an isolated review-only candidate for the real
+Safe Landing hillside. Its exact generation prompt is retained in
+`meadow-grass-painterly-v1.prompt.txt`, and `hillside-review.json` records its hash,
+dimensions and review status. It was generated with the built-in ImageGen tool on
+14 September 2026 and copied without pixel edits. The source has fresher greens and
+calmer broad brushwork, but still contains recognisable leaf clusters. The review
+shader therefore combines two decorrelated world-space samples, adds broad warm/cool
+variation and quiets detail with camera distance.
+
+Open the default route with `?hillsideReview=1` to hold the scene at noon and compare
+Baseline with Painterly on the same terrain, character, sky, camera and clock. The
+trial is feathered from a 60-metre core to a 100-metre outer radius around the authored
+spawn and changes only living grass; road earth, ash, limestone and collision keep their
+normal semantics. This does not replace the default terrain material. Meadow tufts are
+deferred because the current runtime has no reusable grass-detail asset or placement
+mechanism suitable for this bounded material test.
