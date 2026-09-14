@@ -97,8 +97,17 @@ describe('compiled-zone terrain presentation', () => {
     expect(Math.max(...Array.from({ length: positions.count }, (_, index) => positions.getZ(index)))).toBeCloseTo(zone.bounds.maxZ)
     expect([shore.getX(0), shore.getX(2), shore.getX(4)]).toEqual([1, 0, 1])
     expect(water.mesh.material).toMatchObject({ transparent: true, depthWrite: false })
-    water.update(12.5)
+    const direction = new THREE.Vector3(0, 1, 0)
+    const color = new THREE.Color(0xaabbff)
+    const ambientColor = new THREE.Color(0x7788aa)
+    water.update(12.5, { direction, color, intensity: 1.1, ambientColor })
     expect(water.mesh.material.uniforms.elapsedSeconds!.value).toBe(12.5)
+    expect(water.mesh.material.uniforms.keyLightDirection!.value).toEqual(direction)
+    expect(water.mesh.material.uniforms.keyLightColor!.value).toEqual(color)
+    expect(water.mesh.material.uniforms.keyLightIntensity!.value).toBe(1.1)
+    expect(water.mesh.material.uniforms.ambientLightColor!.value).toEqual(ambientColor)
+    expect(water.mesh.material.fragmentShader).toMatch(/litFoamColor = foamColor \* ambientFactor/)
+    expect(water.mesh.material.fragmentShader).toContain('mix(color, litFoamColor, foam * 0.68)')
     let geometryDisposed = false
     let materialDisposed = false
     water.mesh.geometry.addEventListener('dispose', () => { geometryDisposed = true })

@@ -1,0 +1,9 @@
+# Sky generation prompt
+
+Generated using the built-in imagegen tool on 2026-09-14. Reference: docs/art-pipeline/concepts/opening-chapter/environment-kit.png, used for style only. Original output copied without pixel edits. Actual dimensions: 1774 x 887.
+
+Use case: stylized-concept
+Asset type: production game skybox texture, a single seamless 360-degree equirectangular panorama, 2:1 aspect ratio, ideally 3072x1536.
+Primary request: A slightly colorful, gently Studio Ghibli inspired painted fantasy sky for Ashveil, matching its softly sculpted, painterly main character and warm storybook countryside. Use the attached environment art as a STYLE REFERENCE ONLY; do not depict its buildings, trees, character, ground, or scenery.
+Scene: ONLY sky. Luminous azure and restrained turquoise overhead, pale warm ivory-blue haze along the equator/horizon, large graceful hand-painted cumulus cloud banks with creamy sunlit edges and soft dusty periwinkle undersides. Charming and spacious, modest color saturation, organic brushwork, cohesive with painterly 3D game characters. Cloud masses occupy roughly 35 percent with plenty of calm open sky. No sunset orange baked into the whole texture. No sun or moon or stars: the game draws and animates these separately.
+Projection constraints: True latitude-longitude equirectangular sky panorama, horizontal axis is full 360 degrees with matching left and right edges, zenith at top and nadir at bottom, horizon at exact vertical midpoint. Upper hemisphere contains clouds concentrated between horizon and middle elevations, top 12 percent is calm uniform blue to prevent polar pinching. Lower hemisphere is a nearly uniform pale blue/ivory atmospheric continuation with NO ground, ocean, terrain or horizon silhouettes. Matching edge colors and cloud continuity at left/right. Flat texture image only, no mockup, no border, no labels, no text, no watermark.

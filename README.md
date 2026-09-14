@@ -62,6 +62,9 @@ GitHub Pages uses the default `/ashveil/` base.
 The first-zone albedo candidates and their integration notes live in
 [`public/textures/first-zone/`](public/textures/first-zone/README.md). The review
 page compares all four on real Three.js materials and exposes their raw joins.
+The default route also uses the generated painterly panorama and local day-night
+cycle documented in [`public/textures/sky/`](public/textures/sky/README.md)
+and [`docs/first-zone-terrain.md`](docs/first-zone-terrain.md).
 
 ## Architecture
 

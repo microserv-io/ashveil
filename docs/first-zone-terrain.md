@@ -126,18 +126,55 @@ The approved prototype uses seven authored clips: its forward-only locomotion fa
 reuses the selected forward gait for reverse, strafe and diagonal movement without changing
 the character's facing. A grounded jump plays its 0.18-second anticipation while preparing,
 then physics starts the jump; the character continues through start, air and landing clips.
-The temporary camera uses a 48-degree field of view, a 4.8–18-unit zoom range and a
-roughly 9–60-degree pitch range. A ray from the player toward the desired camera keeps it
-in front of terrain and scenery. Overview and return-to-start controls support review;
+The temporary camera uses a 48-degree field of view and a 4.8–18-unit zoom range. Its
+physical orbit remains at least roughly 9 degrees above the explorer so terrain and
+scenery collision stay ground-safe, while upward drag can lift the view almost to the
+zenith without reversing the horizontal movement bearing. A ray from the player toward
+the desired camera keeps it in front of terrain and scenery. Overview and return-to-start controls support review;
 the reset label follows the active zone's authored spawn landmark. These bindings and
 values remain validation settings rather than final design decisions.
 
 In development, the browser exposes `globalThis.ashveilWorld` for repeatable validation.
 Its controls can move, stop, reset or toggle overview, while its state reports position,
 explorer facing, nearest landmark, overview mode, camera position and facing, average frame time, the last
-240 raw frame times, draw calls, triangles and captured runtime errors. This diagnostic
+240 raw frame times, draw calls, triangles, time of day and captured runtime errors.
+The development-only time controls can set the hour, cycle duration and paused state. This diagnostic
 surface is review tooling, not a gameplay or networking API, and production preview
 builds do not expose it.
+
+## Painterly sky and local time
+
+The default route renders `public/textures/sky/ashveil-sky-day-v2.png` on a
+camera-centred inward sphere. The generated 1,774 by 887 panorama uses softly brushed
+azure and turquoise, warm horizon haze, and large cream-edged cloud banks to match the
+sculpted character and storybook countryside. The source image and its seam-corrected
+edit are copied without pixel edits. [`public/textures/sky/README.md`](../public/textures/sky/README.md)
+records both hashes and links both exact 14 September 2026 prompts, including the
+style-reference role, source dimensions and equirectangular corrections. It is project asset data covered by
+[`LICENSE-ASSETS`](../LICENSE-ASSETS), including that license's limits around rights in
+output made with generative tools.
+
+`DEFAULT_DAY_DURATION_SECONDS` in `src/world/world-clock.ts` is the documented local
+cycle setting: 600 real seconds represents 24 visual hours, beginning at 08:00 on each
+load. The host supplies monotonic elapsed time, so a suspended page advances when it
+returns unless the clock was explicitly paused. Movement keeps its independent
+0.1-second frame clamp. Explorer reset does not reset the clock. Development builds add
+the collapsible Time of day panel below the left header with dawn, noon, dusk and
+midnight presets, a phase scrubber, pause/resume, and a 1–604,800-second duration field.
+Production builds retain the cycle without exposing this panel or the diagnostic global.
+
+The environment allocates one sun, one shadowless moon and one hemisphere light for the
+life of the world. Their directions, colours and intensities change continuously, while
+the sun's shadow target follows the explorer. Midnight keeps a cool hemisphere fill and
+moon key so the dark character, terrain and paths remain readable. The water shader
+receives the same key direction, colour, intensity and ambient colour; its waves,
+shoreline and collision stay unchanged. The panorama shader blends mismatched wrap
+edges, softens its pole and fades the lower hemisphere into the current fog colour.
+Celestial discs and deterministic sparse stars are depth-tested behind world geometry;
+stars also fade behind bright low-chroma cloud areas.
+
+The final browser checks and their explicit limits are recorded in
+[`sky-day-night-verification.md`](sky-day-night-verification.md).
 
 ## Blender environment pass
 
