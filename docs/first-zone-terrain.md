@@ -69,8 +69,9 @@ comfortably traversable; cliffs, vegetation and structures can frame them withou
 silently narrowing the travel contract.
 
 Ground materials should meet through soft, rounded brush transitions rather than hard
-geometric cuts. This is a visual treatment only: blending the road, living grass and ash
-does not change the authored route, river boundary or movement collision topology.
+geometric cuts. This visual blending does not change the authored route, the current
+connected wet footprint or movement collision. Terrain edits below the water level can
+change that footprint when they connect to the river seed.
 
 ## Implementation boundaries
 
@@ -101,19 +102,50 @@ These are slice tolerances for testing. The controllable explorer uses the appro
 world units preserve that character scale; production engine and world-scale decisions
 remain separate from this selected route-time target.
 
-The runtime's terrain material blends the existing meadow-grass, worn-earth,
-ash-ground and ivory-limestone albedo candidates. Its paint-weight map targets one
+The runtime's default terrain material blends the approved painterly meadow-grass,
+worn-earth and ivory-limestone albedos. Its paint-weight map targets one
 world unit per texel, capped at 4,096 pixels per axis and 16 million total pixels.
 Road strokes have
 rounded caps and feathered edges; bank earth softens the shoreline and ash fades in over
 the far bank. The paint affects presentation only and the terrain mesh remains the
-collision source. The albedos load as sRGB colour textures with mirrored wrapping at
-their review scales of 2, 2.5 and 2 metres per repeat.
+collision source. The albedos load as sRGB colour textures with mirrored wrapping.
+Decorrelated world-space samples, broad colour variation and distance quieting prevent
+one tile from dominating large hillsides.
 
-These generated candidates make material scale and colour contrast reviewable; their
-visible source seams still require retouching before production use. Provenance, prompts
-and the limitations of these colour-only maps are recorded in
+Ash uses the same composed grass, earth and limestone surfaces with colour drained and
+contrast softened by the existing far-bank influence. The pure world-space influence
+also generates the renderer's paint map, so later enemy or NPC presentation can share
+the same boundary without duplicating it. Sparse deterministic ash motes stay anchored
+to world cells populated within a bounded window around the camera over ash-affected dry
+ground; they do not change global fog, the sky or UI. This pass does not change actor materials.
+Provenance, prompts and the limitations of these colour-only maps are recorded in
 [`public/textures/first-zone/README.md`](../public/textures/first-zone/README.md).
+
+An opt-in `?hillsideReview=1` route compares the baseline against Painterly terrain on
+the real Alderbank zone. It forces the committed zone instead of loading a saved terrain
+draft, pauses the existing world clock at noon and swaps separate baseline and painterly
+material variants on the same terrain mesh, so geometry, character, sky, camera and time
+stay fixed. Painterly is the ordinary whole-zone material; only the review route loads
+the legacy grass, earth, ash and limestone maps. A baseline load failure leaves Painterly
+active and offers a review-only retry. Paint weights, vertex truth and collision remain
+unchanged.
+
+The [painterly environment runtime review](art-pipeline/reviews/painterly-environment/README.md)
+records the final ground, overview and noon/dusk/night river evidence with its explicit
+visual, automated and performance-proof boundaries.
+
+The earlier grass-only trial on 14 September 2026 captured the
+[baseline](art-pipeline/reviews/painterly-hillside/baseline.jpg) and
+[painterly](art-pipeline/reviews/painterly-hillside/painterly.jpg) states at the same
+1,200 by 800 viewport. The [captured diagnostic state](art-pipeline/reviews/painterly-hillside/comparison-state.json)
+records identical explorer position, camera position and yaw, noon paused time, 44 draw
+calls and 1,668,550 submitted triangles for both looks, with the candidate ready and no
+captured runtime errors. The first live attempt exposed a terrain shader compile error
+from treating Three.js's colour varying as three-component; the reviewed capture follows
+the `vColor.rgb` correction. The already-open developer console retained those earlier
+compile messages, so the diagnostic error array is the recorded post-fix runtime signal.
+These historical hillside captures establish the approved grass comparison only; they
+do not validate the later earth, limestone, regional ash or connected-water rollout.
 
 Desktop exploration uses W/S or the up/down arrows to move forward and backward, A/D or
 the left/right arrows to turn, Q/E to strafe, Alt to walk, Shift to sprint and Space to
@@ -259,9 +291,11 @@ remain prototype assets.
 - Rendered ground and movement collision agree at sampled points along every required
   route, including slope changes and the waystation descent, within the recorded
   ground-clearance tolerance.
-- Movement collision prevents the player from entering the river or walking onto the
-  broken bridge's missing span. Automated tests cover both boundaries, including approach
-  at an angle rather than only head-on.
+- Movement collision prevents the player from entering the exact connected
+  below-water-level footprint or walking onto the broken bridge's missing span. Automated
+  tests prove rendered water and collision share that footprint, connected low ground can
+  expand it beyond nominal river half-width, disconnected low basins remain dry, and angled
+  approaches cannot enter it.
 - From the decided third-person camera, a reviewer can walk the whole slice, rotate around
   the character, inspect near-ground transitions and recognise the next route landmark.
   Exact camera tuning remains open.

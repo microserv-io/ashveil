@@ -1,5 +1,7 @@
 import './world.css'
 import { createWorldHud } from './hud'
+import { HILLSIDE_REVIEW_HOUR, hillsideReviewRoute, type HillsideTerrainLook } from './hillside-review'
+import { createHillsideReviewPanel, type HillsideReviewPanel } from './hillside-review-panel'
 import { WorldInput } from './input'
 import { canOccupy, createExplorer, type Explorer } from './movement'
 import { DEFAULT_CAMERA_YAW, WorldView } from './renderer'
@@ -13,6 +15,7 @@ import { getActiveZone } from './zone-active'
 import { LANDMARKS, nearestLandmark, SPAWN } from './world-data'
 import { advanceExplorer } from './world-controls'
 import { worldStartPresentation } from './world-start'
+import { loadBaselineTerrainTextures, type TerrainTextureSet } from './terrain-textures'
 
 interface DiagnosticState {
   position: { x: number; y: number; z: number }; facing: number; location: string; overview: boolean
@@ -21,6 +24,7 @@ interface DiagnosticState {
   camera: { x: number; y: number; z: number; yaw: number }; forward: { x: number; z: number }
   drawCalls: number; triangles: number; water: { elapsedSeconds: number; level: number }; errors: string[]
   time: { hour: number; durationSeconds: number; paused: boolean }
+  hillsideReview?: { enabled: true; look: HillsideTerrainLook; ready: boolean; error?: string }
 }
 
 interface WorldDiagnostics {
@@ -29,6 +33,7 @@ interface WorldDiagnostics {
     move(x: number, z: number, sprint?: boolean): void; stop(): void; reset(): void; toggleOverview(): void
     visitLandmark(id: string): void
     setHour(hour: number): void; setDayDuration(durationSeconds: number): void; setTimePaused(paused: boolean): void
+    setTerrainLook(look: HillsideTerrainLook): void
   }
 }
 
@@ -37,6 +42,7 @@ declare global { var ashveilWorld: WorldDiagnostics | undefined }
 const app = document.querySelector<HTMLElement>('#app')
 if (!app) throw new Error('World root is missing')
 let booting = false
+const hillsideRoute = hillsideReviewRoute(location.search)
 
 function showLoading(failed = false): void {
   app!.innerHTML = `
@@ -57,9 +63,20 @@ async function boot(): Promise<void> {
   booting = true
   showLoading()
   try {
-    const assets = await loadWorldAssets()
+    const [assetsResult, baselineResult] = await Promise.allSettled([
+      loadWorldAssets(),
+      hillsideRoute.enabled ? loadBaselineTerrainTextures() : Promise.resolve(undefined),
+    ])
+    if (assetsResult.status === 'rejected') {
+      if (baselineResult.status === 'fulfilled') baselineResult.value?.dispose()
+      throw assetsResult.reason
+    }
+    const baseline = baselineResult.status === 'fulfilled' ? baselineResult.value : undefined
+    const baselineError = baselineResult.status === 'rejected'
+      ? baselineResult.reason instanceof Error ? baselineResult.reason.message : String(baselineResult.reason)
+      : undefined
     app!.replaceChildren()
-    startWorld(app!, assets)
+    startWorld(app!, assetsResult.value, baseline, baselineError)
   } catch (error) {
     console.error(error)
     booting = false
@@ -71,23 +88,32 @@ function initialExplorer(cameraYaw = DEFAULT_CAMERA_YAW): Explorer {
   return { ...createExplorer(SPAWN), facing: explorerFacingFromCamera(cameraYaw) }
 }
 
-function startWorld(host: HTMLElement, assets: WorldAssets): void {
+function startWorld(host: HTMLElement, assets: WorldAssets, baseline?: TerrainTextureSet, baselineError?: string): void {
   let explorer = initialExplorer()
   const start = worldStartPresentation(getActiveZone())
   const hud = createWorldHud(host, start)
-  const view = new WorldView(host, assets.scenery, assets.character, assets.sky, explorer)
+  const view = new WorldView(host, assets.scenery, assets.character, assets.sky, explorer, assets.terrain, getActiveZone(), baseline)
+  if (hillsideRoute.enabled) view.adjustOrbit(0, -80, 0)
   const input = new WorldInput(view.canvas, hud.joystick, hud.joystickKnob, hud.sprintButton, hud.jumpButton)
   const quests = new WorldQuestController(host, view, input, explorer)
   let overview = false
   let injected = { x: 0, z: 0, sprint: false }
   let previous = performance.now()
-  const clock = new WorldClock({ nowMilliseconds: previous })
+  const clock = new WorldClock({
+    nowMilliseconds: previous,
+    startHour: hillsideRoute.enabled ? HILLSIDE_REVIEW_HOUR : undefined,
+    paused: hillsideRoute.enabled,
+  })
   let averageFrameMs = 0
   let animationFrame = 0
   let pausedForPageCache = false
   let disposed = false
   const errors: string[] = []
   let timePanel: TimePanel | undefined
+  let hillsidePanel: HillsideReviewPanel | undefined
+  let hillsideLook: HillsideTerrainLook = 'painterly'
+  let hillsideLoading = false
+  let hillsideLoadError = baselineError
 
   const clearMovement = (): void => {
     injected = { x: 0, z: 0, sprint: false }
@@ -98,6 +124,48 @@ function startWorld(host: HTMLElement, assets: WorldAssets): void {
   const setDayDuration = (durationSeconds: number): void => { clock.setDuration(durationSeconds, performance.now()) }
   const setTimePaused = (paused: boolean): void => { clock.setPaused(paused, performance.now()) }
 
+  const hillsidePanelState = () => ({
+    look: hillsideLook,
+    loading: hillsideLoading,
+    error: hillsideLoadError,
+  })
+
+  function setTerrainLook(look: HillsideTerrainLook): void {
+    if (!hillsideRoute.enabled || !view.setTerrainLook(look)) return
+    hillsideLook = look
+    if (diagnostics.state.hillsideReview) {
+      diagnostics.state.hillsideReview.look = look
+      diagnostics.state.hillsideReview.ready = view.baselineTerrainReady
+      diagnostics.state.hillsideReview.error = hillsideLoadError
+    }
+    hillsidePanel?.update(hillsidePanelState())
+  }
+
+  async function retryBaselineTerrain(): Promise<void> {
+    if (hillsideLoading || disposed) return
+    hillsideLoading = true
+    hillsideLoadError = undefined
+    hillsidePanel?.update(hillsidePanelState())
+    try {
+      const textures = await loadBaselineTerrainTextures()
+      if (disposed) {
+        textures.dispose()
+        return
+      }
+      view.installBaselineTerrain(textures)
+      setTerrainLook('baseline')
+    } catch (error) {
+      hillsideLoadError = error instanceof Error ? error.message : String(error)
+    } finally {
+      hillsideLoading = false
+      if (diagnostics.state.hillsideReview) {
+        diagnostics.state.hillsideReview.ready = view.baselineTerrainReady
+        diagnostics.state.hillsideReview.error = hillsideLoadError
+      }
+      hillsidePanel?.update(hillsidePanelState())
+    }
+  }
+
   function dispose(): void {
     if (disposed) return
     disposed = true
@@ -106,6 +174,7 @@ function startWorld(host: HTMLElement, assets: WorldAssets): void {
     window.removeEventListener('pageshow', handlePageShow)
     if (import.meta.env.DEV && globalThis.ashveilWorld === diagnostics) globalThis.ashveilWorld = undefined
     timePanel?.dispose()
+    hillsidePanel?.dispose()
     view.dispose()
   }
 
@@ -172,17 +241,31 @@ function startWorld(host: HTMLElement, assets: WorldAssets): void {
       frameMs: 0, frameTimes: [], camera: { x: 0, y: 0, z: 0, yaw: 0 }, forward: { x: 0, z: 1 },
       drawCalls: 0, triangles: 0, water: { elapsedSeconds: 0, level: 0 }, errors,
       time: clock.read(previous),
+      hillsideReview: hillsideRoute.enabled
+        ? { enabled: true, look: hillsideLook, ready: view.baselineTerrainReady, error: hillsideLoadError }
+        : undefined,
     },
     controls: {
       move: (x, z, sprint = false) => { injected = { x, z, sprint } },
       stop: () => { injected = { x: 0, z: 0, sprint: false } }, reset, toggleOverview, visitLandmark,
-      setHour, setDayDuration, setTimePaused,
+      setHour, setDayDuration, setTimePaused, setTerrainLook,
     },
+  }
+  if (hillsideRoute.enabled) {
+    hillsidePanel = createHillsideReviewPanel(host, {
+      clearMovement,
+      retry: () => { void retryBaselineTerrain() },
+      setLook: setTerrainLook,
+    })
+    hillsidePanel.update(hillsidePanelState())
+    setTerrainLook('painterly')
   }
   if (import.meta.env.DEV) {
     globalThis.ashveilWorld = diagnostics
-    timePanel = createTimePanel(host, { clearMovement, setHour, setDuration: setDayDuration, setPaused: setTimePaused })
-    timePanel.update(diagnostics.state.time)
+    if (!hillsideRoute.enabled) {
+      timePanel = createTimePanel(host, { clearMovement, setHour, setDuration: setDayDuration, setPaused: setTimePaused })
+      timePanel.update(diagnostics.state.time)
+    }
   }
 
   function frame(now: number): void {

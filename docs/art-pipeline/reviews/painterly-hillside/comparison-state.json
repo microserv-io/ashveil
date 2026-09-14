@@ -1,0 +1,14 @@
+{
+  "painterly": {
+    "result": {
+      "type": "string",
+      "value": "{\"position\":{\"x\":460.9174355275307,\"y\":4.18444345067334,\"z\":414.382428740955},\"camera\":{\"x\":465.8556487174613,\"y\":7.366602826737169,\"z\":424.6053071277645,\"yaw\":0.45},\"time\":{\"hour\":12,\"durationSeconds\":600,\"paused\":true},\"review\":{\"enabled\":true,\"look\":\"painterly\",\"ready\":true},\"drawCalls\":44,\"triangles\":1668550,\"errors\":[]}"
+    }
+  },
+  "baseline": {
+    "result": {
+      "type": "string",
+      "value": "{\"position\":{\"x\":460.9174355275307,\"y\":4.18444345067334,\"z\":414.382428740955},\"camera\":{\"x\":465.8556487174613,\"y\":7.366602826737169,\"z\":424.6053071277645,\"yaw\":0.45},\"time\":{\"hour\":12,\"durationSeconds\":600,\"paused\":true},\"review\":{\"enabled\":true,\"look\":\"baseline\",\"ready\":true},\"drawCalls\":44,\"triangles\":1668550,\"errors\":[]}"
+    }
+  }
+}

@@ -4,6 +4,7 @@ import type {
 } from './zone-types'
 import { projectZoneSolids } from './zone-placements'
 import { CompiledLandforms } from './zone-landforms'
+import { compileWaterRegion } from './water-region'
 
 const MAX_JSON_BYTES = 512 * 1024
 const MAX_GRID_VERTICES = 300_000
@@ -480,7 +481,9 @@ export function compileZone(source: ZoneDefinition): CompiledZone {
   const riverCenterAt = (z: number): number => riverAt(z).x
   const riverHalfWidthAt = (z: number): number => riverAt(z).halfWidth
   const riverDepthAt = (z: number): number => riverAt(z).depth
-  const isWaterAt = (x: number, z: number, radius = 0): boolean => Math.abs(x - riverCenterAt(z)) <= riverHalfWidthAt(z) + radius
+  const authoredWaterAt = (x: number, z: number): boolean => Math.abs(x - riverCenterAt(z)) <= riverHalfWidthAt(z)
+  const waterRegion = compileWaterRegion(geometry, definition.river.waterLevel, definition.river.points, authoredWaterAt)
+  const isWaterAt = (x: number, z: number, radius = 0): boolean => waterRegion.overlapsCircle(x, z, radius)
   const insideBounds = (x: number, z: number, radius: number): boolean => x - radius >= bounds.minX && x + radius <= bounds.maxX
     && z - radius >= bounds.minZ && z + radius <= bounds.maxZ
   const inRidge = (x: number, z: number, radius: number): boolean => definition.ridges.some((ridge) =>
@@ -594,7 +597,8 @@ export function compileZone(source: ZoneDefinition): CompiledZone {
   return Object.freeze({
     definition, bounds, cellSize, landmarks: definition.landmarks, paths: definition.paths, ridges: definition.ridges,
     spawn, mainRoute: Object.freeze({ pathIds: definition.mainRoute, length: mainLength, runSeconds: mainLength / RUN_SPEED }),
-    heightAt, terrainTriangleAt, geometry: () => geometry, riverCenterAt, riverHalfWidthAt, riverDepthAt,
+    heightAt, terrainTriangleAt, geometry: () => geometry, waterGeometry: () => waterRegion.geometry,
+    riverCenterAt, riverHalfWidthAt, riverDepthAt,
     waterLevelAt: (x: number, z: number) => isWaterAt(x, z) ? definition.river.waterLevel : undefined,
     isWaterAt, canOccupyPoint,
   })
