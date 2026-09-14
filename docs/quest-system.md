@@ -11,8 +11,8 @@ The first delivery implements the safe-bank outing: M01 and M02, plus S01–S05.
 Catalogue all ten MSQs and twenty side quests with stable IDs, dependencies, outing,
 giver, summary, source reference and implementation status. M03 onwards remain
 planned until class selection, practice, combat and dungeon systems exist. A planned
-quest cannot be accepted or rewarded. The journal explains the next unavailable
-chapter step. This pass uses local persistence and the playable opening scope;
+quest cannot be accepted or rewarded. The player journal does not expose planned
+chapters. This pass uses local persistence and the playable opening scope;
 the remaining authored content is tracked in the catalogue.
 
 The prototype starts after the crossing with a short arrival context, not a newly
@@ -23,9 +23,12 @@ another behind a quest giver. Every target must be reachable using current colli
 rules. S04 becomes available after personally speaking to Iven; S05 after M01's
 initial survivor count. Full later-quest text stays in authoring docs rather than
 spoiling the chapter through the live journal.
-New saves seed an `arrived_alderbank` gate. Offers, world markers and tracking show
-implemented content only; after M01/M02, a non-actionable M03 notice explains the
-current boundary. Reference catalogue browsing may show all thirty entries.
+New saves seed an `arrived_alderbank` gate. Offers and world markers show implemented
+available content, while the journal and tracker show accepted active or ready quests.
+When neither playable main quest is accepted, the presentation points to the earliest
+available giver (Mara for M01, then Iven for M02); accepted-but-untracked main quests
+suppress that cue. After M01 and M02, it reports that the story is complete for now
+without exposing M03. Reference catalogue browsing may show all thirty entries.
 Personally opening Iven's introduction records `iven_introduction_heard`; completing
 the three M01 rescue interactions records `initial_survivor_count_known`. These
 typed gates control S04 and S05 respectively, independently of turn-in ordering.
@@ -35,8 +38,9 @@ typed gates control S04 and S05 respectively, independently of turn-in ordering.
 - Main story has a gold diamond marker and an explicit Main Story label. Side
   stories have a teal circular marker and an explicit Optional Side Quest label.
   Available, active and ready-to-turn-in states differ by symbol and text, not color alone.
-- Keep separate journal sections and tracker groups. Track the next objective and
-  location; never silently accept quests. A giver can offer several quests at once.
+- Keep separate journal sections and tracker groups. Track the authored next objective
+  without calculating distance or relative direction; world markers and landmarks guide
+  travel. Never silently accept quests. A giver can offer several quests at once.
 - Walk to a named NPC, interact using F, touch or a visible button, read the offer,
   accept, perform nearby world interactions, then personally turn in for the shown reward.
   E remains strafe. Journal/dialogue supports keyboard focus, Escape and touch;

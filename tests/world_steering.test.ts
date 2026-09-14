@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { keyboardAxes, keyboardSteeringActive, WorldInput } from '../src/world/input'
 import { createExplorer, RUN_SPEED, SPRINT_SPEED, WALK_SPEED } from '../src/world/movement'
 import { explorerFacingFromCamera, steerExplorer, TURN_SPEED } from '../src/world/steering'
-import { advanceExplorer } from '../src/world/world-controls'
+import { advanceExplorer, suspendInjectedMovement } from '../src/world/world-controls'
 
 const DT = 0.1
 const OPEN = { x: -70, z: -70 }
@@ -10,6 +10,15 @@ const OPEN = { x: -70, z: -70 }
 function at(facing = 0) {
   return { ...createExplorer(OPEN), facing }
 }
+
+describe('modal movement suspension', () => {
+  it('clears injected diagnostics movement without resuming it after the modal closes', () => {
+    const suspended = suspendInjectedMovement({ x: 1, z: -1, sprint: true }, true)
+
+    expect(suspended).toEqual({ x: 0, z: 0, sprint: false })
+    expect(suspendInjectedMovement(suspended, false)).toEqual({ x: 0, z: 0, sprint: false })
+  })
+})
 
 describe('first-zone keyboard axes', () => {
   it('maps forward, strafe and positive-left turn independently', () => {

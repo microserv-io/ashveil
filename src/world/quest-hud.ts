@@ -1,11 +1,7 @@
-import type {
-  CharacterQuestState,
-  DialogueScene,
-  QuestCategory,
-  QuestDefinition,
-  QuestId,
-  QuestJournalEntry,
-} from '../quests'
+import type { CharacterQuestState, DialogueScene, QuestDefinition, QuestId, QuestJournalEntry } from '../quests'
+import type { HudQuestProjection } from './quest-presentation'
+import { resolveHudShortcut, type HudPanel } from './hud-shortcuts'
+import { createHudLayoutPreference, type HudLayout } from './hud-layout'
 
 export interface QuestHudAction {
   readonly label: string
@@ -20,86 +16,66 @@ export interface QuestHud {
   setModalListener(listener: (open: boolean) => void): void
   setTrackListener(listener: (questId: QuestId, tracked: boolean) => void): void
   setInteractPrompt(label: string | null): void
-  setDestination(label: string | null): void
-  setJournal(entries: readonly QuestJournalEntry[], state: CharacterQuestState): void
+  setJournal(projection: HudQuestProjection, state: CharacterQuestState, continuationLabel?: string): void
+  setSaveStatus(message: string | null): void
   showQuest(definition: QuestDefinition, scenes: readonly DialogueScene[], actions: readonly QuestHudAction[], state?: CharacterQuestState): void
   showMessage(title: string, body: string, actions?: readonly QuestHudAction[]): void
   openJournal(): void
   closeModal(): void
 }
 
+type Panel = HudPanel
 export function createQuestHud(root: HTMLElement, onInteract: () => void): QuestHud {
-  const shell = root.querySelector<HTMLElement>('#world-shell')
-  if (!shell) throw new Error('World shell must exist before quest UI is created.')
-  shell.insertAdjacentHTML('beforeend', `
-    <section aria-label="Quest controls" class="pointer-events-none fixed inset-x-0 bottom-24 z-30 flex flex-col items-center gap-2 px-4 md:bottom-16">
-      <button id="quest-interact" class="pointer-events-auto hidden min-w-48 rounded-xl border border-amber-200/30 bg-stone-950/90 px-5 py-3 text-sm font-semibold text-amber-50 shadow-2xl backdrop-blur-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
-        <span class="mr-2 rounded border border-amber-100/20 px-1.5 py-0.5 text-[0.65rem] uppercase">F</span><span id="quest-interact-label">Talk</span>
-      </button>
-    </section>
-    <aside aria-label="Quest tracker" class="pointer-events-none fixed right-4 top-28 z-20 hidden w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-stone-100/10 bg-stone-950/75 p-4 shadow-2xl backdrop-blur-md sm:block">
-      <div class="flex items-center justify-between gap-3">
-        <p class="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-stone-400">Quest tracker</p>
-        <button id="quest-journal" class="pointer-events-auto rounded-md border border-stone-100/15 px-2.5 py-1.5 text-xs text-stone-200 hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-amber-300">Journal <span class="text-stone-500">J</span></button>
-      </div>
-      <div id="quest-tracker" class="mt-3 space-y-3"></div>
-      <p id="quest-destination" class="mt-3 hidden border-t border-stone-100/10 pt-3 text-xs text-stone-400"></p>
-    </aside>
-    <button id="quest-journal-mobile" aria-label="Open quest journal" class="pointer-events-auto fixed right-4 top-28 z-20 rounded-full border border-stone-100/15 bg-stone-950/80 px-4 py-3 text-xs text-stone-100 shadow-xl sm:hidden">Journal · J</button>
-    <p id="quest-destination-mobile" class="pointer-events-none fixed right-4 top-44 z-20 hidden max-w-64 rounded-lg border border-stone-100/10 bg-stone-950/75 px-3 py-2 text-right text-xs text-stone-300 shadow-xl backdrop-blur-md sm:hidden"></p>
-    <div id="quest-modal-wrap" class="pointer-events-auto fixed inset-0 z-50 hidden items-center justify-center bg-stone-950/70 p-3 backdrop-blur-sm sm:p-6">
-      <section id="quest-modal" role="dialog" aria-modal="true" aria-labelledby="quest-modal-title" tabindex="-1" class="flex max-h-[min(88vh,760px)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-amber-100/15 bg-[#191a17] text-stone-100 shadow-2xl">
-        <header class="flex items-start justify-between gap-4 border-b border-stone-100/10 px-5 py-4 sm:px-7">
-          <div><p id="quest-modal-kicker" class="text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-amber-200/60">Quest</p><h2 id="quest-modal-title" class="mt-1 font-serif text-2xl text-stone-50"></h2></div>
-          <button id="quest-modal-close" aria-label="Close" class="rounded-lg border border-stone-100/10 px-3 py-2 text-sm text-stone-300 hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-amber-300">Escape</button>
-        </header>
-        <div id="quest-modal-body" class="min-h-0 flex-1 overflow-y-auto px-5 py-5 leading-7 sm:px-7"></div>
-        <footer id="quest-modal-actions" class="flex flex-wrap justify-end gap-2 border-t border-stone-100/10 px-5 py-4 sm:px-7"></footer>
+  const shell = required<HTMLElement>(root, '#world-shell')
+  root.insertAdjacentHTML('beforeend', `
+    <div id="game-modal-wrap" class="hud-modal-wrap" hidden>
+      <section id="game-modal" class="hud-modal" role="dialog" aria-modal="true" aria-labelledby="game-modal-title" tabindex="-1">
+        <header><div><p id="game-modal-kicker">Ashveil</p><h2 id="game-modal-title"></h2></div><button id="game-modal-close" type="button" aria-label="Close panel">Esc · Close</button></header>
+        <div id="game-modal-body" class="hud-modal-body"></div><footer id="game-modal-actions"></footer>
       </section>
     </div>`)
-
-  const byId = <T extends HTMLElement>(id: string): T => {
-    const element = document.getElementById(id)
-    if (!element) throw new Error(`Missing quest UI: ${id}`)
-    return element as T
-  }
-  const interactButton = byId<HTMLButtonElement>('quest-interact')
-  const interactLabel = byId<HTMLElement>('quest-interact-label')
-  const journalButton = byId<HTMLButtonElement>('quest-journal')
-  const journalMobile = byId<HTMLButtonElement>('quest-journal-mobile')
-  const tracker = byId<HTMLElement>('quest-tracker')
-  const destination = byId<HTMLElement>('quest-destination')
-  const destinationMobile = byId<HTMLElement>('quest-destination-mobile')
-  const modalWrap = byId<HTMLElement>('quest-modal-wrap')
-  const modal = byId<HTMLElement>('quest-modal')
-  const modalTitle = byId<HTMLElement>('quest-modal-title')
-  const modalKicker = byId<HTMLElement>('quest-modal-kicker')
-  const modalBody = byId<HTMLElement>('quest-modal-body')
-  const modalActions = byId<HTMLElement>('quest-modal-actions')
-  const closeButton = byId<HTMLButtonElement>('quest-modal-close')
-  let journalEntries: readonly QuestJournalEntry[] = []
+  const interactButton = required<HTMLButtonElement>(root, '#quest-interact')
+  const interactLabel = required<HTMLElement>(root, '#quest-interact-label')
+  const tracker = required<HTMLElement>(root, '#quest-tracker')
+  const saveStatus = required<HTMLElement>(root, '#quest-save-status')
+  const modalWrap = required<HTMLElement>(root, '#game-modal-wrap')
+  const modal = required<HTMLElement>(root, '#game-modal')
+  const modalTitle = required<HTMLElement>(root, '#game-modal-title')
+  const modalKicker = required<HTMLElement>(root, '#game-modal-kicker')
+  const modalBody = required<HTMLElement>(root, '#game-modal-body')
+  const modalActions = required<HTMLElement>(root, '#game-modal-actions')
+  const closeButton = required<HTMLButtonElement>(root, '#game-modal-close')
+  const menuButtons = [...root.querySelectorAll<HTMLButtonElement>('[data-game-menu]')]
+  const journalButton = required<HTMLButtonElement>(root, '[data-game-menu="journal"]')
+  let projection: HudQuestProjection | null = null
   let questState: CharacterQuestState | null = null
+  let continuationLabel: string | undefined
+  let activePanel: Panel | null = null
   let modalListener: (open: boolean) => void = () => {}
   let trackListener: (questId: QuestId, tracked: boolean) => void = () => {}
   let returnFocus: HTMLElement | null = null
+  const layoutPreference = createHudLayoutPreference(browserStorage())
+  applyLayout(layoutPreference.get())
 
   const closeModal = (): void => {
-    if (modalWrap.classList.contains('hidden')) return
-    modalWrap.classList.add('hidden')
-    modalWrap.classList.remove('flex')
+    if (modalWrap.hidden) return
+    modalWrap.hidden = true
+    shell.inert = false
+    activePanel = null
     modalListener(false)
-    returnFocus?.focus()
+    const target = returnFocus
     returnFocus = null
+    target?.focus({ preventScroll: true })
   }
 
   const openModal = (): void => {
-    if (modalWrap.classList.contains('hidden')) {
+    if (modalWrap.hidden) {
       returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
+      modalWrap.hidden = false
+      shell.inert = true
+      modalListener(true)
     }
-    modalWrap.classList.remove('hidden')
-    modalWrap.classList.add('flex')
-    modalListener(true)
-    modal.focus()
+    requestAnimationFrame(() => (firstFocusable(modal) ?? modal).focus({ preventScroll: true }))
   }
 
   const renderActions = (actions: readonly QuestHudAction[]): void => {
@@ -107,139 +83,198 @@ export function createQuestHud(root: HTMLElement, onInteract: () => void): Quest
       const button = document.createElement('button')
       button.type = 'button'
       button.textContent = action.label
-      button.className = action.style === 'primary'
-        ? 'rounded-lg bg-amber-200 px-4 py-2 text-sm font-semibold text-stone-950 hover:bg-amber-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300'
-        : 'rounded-lg border border-stone-100/15 px-4 py-2 text-sm text-stone-200 hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-amber-300'
+      button.className = action.style === 'primary' ? 'primary' : ''
       button.addEventListener('click', action.run)
       return button
     }))
   }
 
-  const openJournal = (): void => {
-    if (!questState) return
-    modalKicker.textContent = 'Alderbank journal'
-    modalTitle.textContent = 'Quests'
-    modalBody.innerHTML = `${journalSection('Main Story', 'main', journalEntries, questState)}${journalSection('Optional Side Quests', 'side', journalEntries, questState)}${rewardLedger(questState)}`
-    for (const button of modalBody.querySelectorAll<HTMLButtonElement>('[data-track-quest]')) {
-      button.addEventListener('click', () => trackListener(button.dataset.trackQuest as QuestId, button.dataset.tracked !== 'true'))
-    }
+  const openPanel = (panel: Panel): void => {
+    if (!questState || !projection) return
+    activePanel = panel
+    modalKicker.textContent = panelKicker(panel)
+    modalTitle.textContent = panelTitle(panel)
+    modalBody.innerHTML = panelMarkup(panel, projection, questState, continuationLabel, layoutPreference.get())
+    if (panel === 'journal') bindTracking(modalBody, trackListener)
+    if (panel === 'settings') bindSettings(modalBody, layoutPreference)
     renderActions([{ label: 'Close', run: closeModal }])
     openModal()
   }
 
   interactButton.addEventListener('click', onInteract)
-  journalButton.addEventListener('click', openJournal)
-  journalMobile.addEventListener('click', openJournal)
+  for (const button of menuButtons) button.addEventListener('click', () => openPanel(button.dataset.gameMenu as Panel))
   closeButton.addEventListener('click', closeModal)
   modalWrap.addEventListener('pointerdown', (event) => { if (event.target === modalWrap) closeModal() })
   window.addEventListener('keydown', (event) => {
-    if (event.code === 'Tab' && !modalWrap.classList.contains('hidden')) {
-      const focusable = [...modal.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')]
-      const first = focusable[0]
-      const last = focusable[focusable.length - 1]
-      const active = document.activeElement
-      if (first && last && (active === modal || !modal.contains(active))) {
-        event.preventDefault()
-        ;(event.shiftKey ? last : first).focus()
-      } else if (first && last && event.shiftKey && active === first) { event.preventDefault(); last.focus() }
-      else if (first && last && !event.shiftKey && active === last) { event.preventDefault(); first.focus() }
-    } else if (event.code === 'Escape' && !modalWrap.classList.contains('hidden')) {
+    if (event.code === 'Tab' && !modalWrap.hidden) trapFocus(event, modal)
+    else if (event.code === 'Escape' && !modalWrap.hidden) { event.preventDefault(); closeModal() }
+    else {
+      const shortcut = resolveHudShortcut(event.code, {
+        repeat: event.repeat, editable: isEditable(event.target as Element | null) || isEditable(document.activeElement), modalOpen: !modalWrap.hidden, activePanel,
+      })
+      if (shortcut.kind === 'none') return
       event.preventDefault()
-      closeModal()
-    } else if (event.code === 'KeyJ' && !event.repeat) {
-      event.preventDefault()
-      if (modalWrap.classList.contains('hidden')) openJournal(); else closeModal()
-    } else if (event.code === 'KeyF' && !event.repeat && modalWrap.classList.contains('hidden')) {
-      event.preventDefault()
-      onInteract()
+      if (shortcut.kind === 'interact') onInteract()
+      else if (shortcut.kind === 'close') closeModal()
+      else openPanel(shortcut.panel)
     }
   })
 
   return {
-    interactButton,
-    journalButton,
-    get modalOpen() { return !modalWrap.classList.contains('hidden') },
+    interactButton, journalButton,
+    get modalOpen() { return !modalWrap.hidden },
     setModalListener: (listener) => { modalListener = listener },
     setTrackListener: (listener) => { trackListener = listener },
     setInteractPrompt: (label) => {
-      interactButton.classList.toggle('hidden', label === null)
+      interactButton.hidden = label === null
       if (label) interactLabel.textContent = label
     },
-    setDestination: (label) => {
-      destination.classList.toggle('hidden', label === null)
-      destinationMobile.classList.toggle('hidden', label === null)
-      if (label) destination.textContent = label
-      if (label) destinationMobile.textContent = label
-    },
-    setJournal: (entries, state) => {
-      journalEntries = entries
+    setJournal: (nextProjection, state, nextContinuationLabel) => {
+      projection = nextProjection
       questState = state
-      tracker.innerHTML = trackerMarkup(entries, state)
+      continuationLabel = nextContinuationLabel
+      tracker.innerHTML = trackerMarkup(nextProjection, state, nextContinuationLabel)
+      if (activePanel === 'journal') openPanel('journal')
     },
+    setSaveStatus: (message) => { saveStatus.hidden = message === null; saveStatus.textContent = message ?? '' },
     showQuest: (definition, scenes, actions, state) => {
-      modalKicker.textContent = definition.category === 'main' ? '◆ Main Story' : '● Optional Side Quest'
-      modalTitle.textContent = `${definition.id} · ${definition.title}`
-      modalBody.innerHTML = `<p class="mb-4 text-sm leading-6 text-stone-400">${escapeHtml(definition.summary)}</p>${rewardPreview(definition, state)}${sceneMarkup(scenes)}`
+      activePanel = null
+      modalKicker.textContent = definition.category === 'main' ? '◆ Main Story' : '● Side Story'
+      modalTitle.textContent = definition.title
+      modalBody.innerHTML = `<p class="hud-summary">${escapeHtml(definition.summary)}</p>${rewardPreview(definition, state)}${sceneMarkup(scenes)}`
       renderActions(actions)
       openModal()
     },
     showMessage: (title, body, actions = [{ label: 'Close', run: closeModal }]) => {
+      activePanel = null
       modalKicker.textContent = 'Alderbank'
       modalTitle.textContent = title
-      modalBody.innerHTML = `<p class="text-stone-300">${escapeHtml(body)}</p>`
+      modalBody.innerHTML = `<p>${escapeHtml(body)}</p>`
       renderActions(actions)
       openModal()
     },
-    openJournal,
+    openJournal: () => openPanel('journal'),
     closeModal,
   }
 }
 
-function trackerMarkup(entries: readonly QuestJournalEntry[], state: CharacterQuestState): string {
-  return (['main', 'side'] as const).map((category) => {
-    const tracked = entries.filter((entry) => entry.category === category && ['active', 'ready'].includes(entry.status))
-      .filter((entry) => state.trackedIds.includes(entry.id))
-    const candidates = (tracked.length > 0 ? tracked : entries.filter((entry) => entry.category === category && entry.status === 'available')).slice(0, 2)
-    if (candidates.length === 0) return ''
-    const heading = category === 'main' ? '◆ Main Story' : '● Side Stories'
-    const color = category === 'main' ? 'text-amber-200' : 'text-teal-300'
-    return `<section><h2 class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] ${color}">${heading}</h2>${candidates.map((entry) => `
-      <div class="mt-1.5 border-l border-stone-100/10 pl-3"><p class="text-sm font-medium text-stone-100">${escapeHtml(entry.title)}</p><p class="mt-0.5 text-xs leading-5 text-stone-400">${escapeHtml(entry.status === 'ready' ? 'Ready to turn in' : entry.nextObjective?.label ?? statusLabel(entry.status))}</p></div>`).join('')}</section>`
-  }).join('') || '<p class="text-xs text-stone-500">No active quests.</p>'
+function trackerMarkup(projection: HudQuestProjection, state: CharacterQuestState, continuationLabel?: string): string {
+  const groups = ([['main', '◆ Main Story'], ['side', '● Side Stories']] as const).flatMap(([category, heading]) => {
+    const entries = projection[category].filter((entry) => state.trackedIds.includes(entry.id))
+    if (entries.length === 0) return []
+    return [`<section class="${category}"><h2>${heading}</h2>${entries.map(trackerEntry).join('')}</section>`]
+  })
+  if (!projection.main.some((entry) => state.trackedIds.includes(entry.id))) {
+    if (projection.story.kind === 'continue' && continuationLabel) groups.unshift(`<section class="main"><h2>◆ Main Story</h2><p class="hud-story-cue">Talk to ${escapeHtml(continuationLabel)} to continue your story</p></section>`)
+    else if (projection.story.kind === 'complete') groups.unshift('<section class="main"><h2>◆ Main Story</h2><p class="hud-story-cue">Your Alderbank story is complete for now.</p></section>')
+    else if (projection.story.kind === 'in-progress') groups.unshift('<section class="main"><h2>◆ Main Story</h2><p class="hud-story-cue">A main story quest is in progress.</p></section>')
+  }
+  return groups.join('')
 }
 
-function journalSection(title: string, category: QuestCategory, entries: readonly QuestJournalEntry[], state: CharacterQuestState): string {
-  const visible = entries.filter((entry) => entry.category === category && entry.status !== 'locked')
-  return `<section class="mb-7"><h3 class="font-serif text-xl ${category === 'main' ? 'text-amber-200' : 'text-teal-300'}">${category === 'main' ? '◆' : '●'} ${title}</h3><div class="mt-3 space-y-3">${visible.map((entry) => `
-    <article class="rounded-xl border border-stone-100/10 bg-stone-950/35 p-4"><div class="flex flex-wrap items-baseline justify-between gap-2"><h4 class="font-medium text-stone-100">${entry.id} · ${escapeHtml(entry.title)}</h4><span class="text-[0.65rem] font-semibold uppercase tracking-wider text-stone-400">${statusLabel(entry.status)}</span></div><p class="mt-2 text-sm leading-6 text-stone-400">${escapeHtml(entry.summary)}</p>${entry.nextObjective ? `<p class="mt-2 text-sm text-stone-200">Next: ${escapeHtml(entry.nextObjective.label)} · ${escapeHtml(entry.location)}</p>` : ''}${entry.unavailableReason ? `<p class="mt-2 text-sm text-amber-200/80">${escapeHtml(entry.unavailableReason)}</p>` : ''}${entry.status === 'active' || entry.status === 'ready' ? `<button data-track-quest="${entry.id}" data-tracked="${state.trackedIds.includes(entry.id)}" class="mt-3 rounded-md border border-stone-100/15 px-3 py-1.5 text-xs text-stone-200 hover:bg-stone-800">${state.trackedIds.includes(entry.id) ? 'Untrack' : 'Track this quest'}</button>` : ''}</article>`).join('') || '<p class="text-sm text-stone-500">Nothing recorded yet.</p>'}</div></section>`
+function trackerEntry(entry: QuestJournalEntry): string {
+  const objective = entry.status === 'ready' ? 'Ready to turn in' : entry.nextObjective?.label ?? 'In progress'
+  return `<article><h3>${escapeHtml(entry.title)}</h3><p>◇ ${escapeHtml(objective)}</p></article>`
+}
+
+function panelMarkup(panel: Panel, projection: HudQuestProjection, state: CharacterQuestState, continuationLabel: string | undefined, layout: HudLayout): string {
+  if (panel === 'journal') return journalMarkup(projection, state, continuationLabel)
+  if (panel === 'character') {
+    const className = state.activeClassId ? escapeHtml(state.activeClassId) : 'Class not yet chosen'
+    const xp = state.activeClassId ? state.classXp[state.activeClassId] ?? 0 : state.pendingXp
+    return `<section class="hud-character"><div class="hud-character-silhouette" aria-hidden="true"></div><article><h3>Adventurer</h3><p>${className}</p><dl><dt>${state.activeClassId ? 'Class experience' : 'Reserved experience'}</dt><dd>${xp}</dd><dt>Main story quests completed</dt><dd>${state.completedIds.filter((id) => id.startsWith('M')).length}</dd></dl></article></section>`
+  }
+  if (panel === 'pack') return packMarkup(state)
+  if (panel === 'map') return '<section class="hud-empty"><div class="hud-empty-map"></div><h3>No map available</h3><p>Explore Alderbank through its paths, landmarks, and people.</p></section>'
+  if (panel === 'finder') return '<section class="hud-empty"><h3>Duty Finder unavailable</h3><p>Group duties are not available in this opening chapter.</p></section>'
+  if (panel === 'social') return '<section class="hud-empty"><h3>No social connections yet</h3><p>Communities and player groups will appear here when online play is available.</p></section>'
+  return settingsMarkup(layout)
+}
+
+function journalMarkup(projection: HudQuestProjection, state: CharacterQuestState, continuationLabel?: string): string {
+  const mainEmpty = projection.story.kind === 'continue' && continuationLabel
+    ? `Talk to ${escapeHtml(continuationLabel)} to continue your story.`
+    : projection.story.kind === 'complete' ? 'Your Alderbank story is complete for now.' : 'No tracked main story quest.'
+  return `<section class="hud-journal-section"><h3>◆ Main Story</h3>${questCards(projection.main, state, mainEmpty)}</section>
+    <section class="hud-journal-section side"><h3>● Side Stories</h3>${questCards(projection.side, state, 'No accepted side stories.')}</section>
+    ${projection.history.length ? `<details class="hud-history"><summary>Completed quests (${projection.history.length})</summary>${projection.history.map((entry) => `<p><b>${escapeHtml(entry.title)}</b><span>${entry.category === 'main' ? 'Main Story' : 'Side Story'}</span></p>`).join('')}</details>` : ''}
+    ${rewardLedger(state)}`
+}
+
+function questCards(entries: readonly QuestJournalEntry[], state: CharacterQuestState, empty: string): string {
+  if (entries.length === 0) return `<p class="hud-empty-copy">${empty}</p>`
+  return `<div class="hud-quest-cards">${entries.map((entry) => `<article><div><h4>${escapeHtml(entry.title)}</h4><span>${entry.status === 'ready' ? 'Ready to turn in' : 'Active'}</span></div><p>${escapeHtml(entry.summary)}</p>${entry.nextObjective ? `<p class="objective">◇ ${escapeHtml(entry.nextObjective.label)}</p>` : ''}<button type="button" data-track-quest="${entry.id}" data-tracked="${state.trackedIds.includes(entry.id)}">${state.trackedIds.includes(entry.id) ? 'Untrack' : 'Track quest'}</button></article>`).join('')}</div>`
+}
+
+function packMarkup(state: CharacterQuestState): string {
+  const labels = new Map(Object.values(state.receipts).flatMap((receipt) => receipt.items.map((item) => [item.id, item.label] as const)))
+  const items = Object.entries(state.rewardInventory).filter(([, quantity]) => quantity > 0)
+  return `<section class="hud-pack-summary"><p><span>Currency</span><strong>${state.currency}</strong></p><p><span>${state.activeClassId ? 'Class XP' : 'Reserved XP'}</span><strong>${state.activeClassId ? state.classXp[state.activeClassId] ?? 0 : state.pendingXp}</strong></p></section><section class="hud-pack-grid">${items.length ? items.map(([id, quantity]) => `<article><div aria-hidden="true">✦</div><h3>${escapeHtml(labels.get(id) ?? id)}</h3><p>Quantity ${quantity}</p></article>`).join('') : '<p class="hud-empty-copy">Quest reward supplies will appear here.</p>'}</section>`
+}
+
+function settingsMarkup(layout: HudLayout): string {
+  return `<section class="hud-settings"><label for="hud-layout">Action layout<select id="hud-layout"><option value="keyboard"${layout === 'keyboard' ? ' selected' : ''}>Keyboard</option><option value="controller"${layout === 'controller' ? ' selected' : ''}>Controller cross hotbar</option></select></label><article><h3>Exploration controls</h3><p>W/S move · A/D turn · Q/E strafe · right mouse steers · left mouse looks · Alt walks · Shift sprints · Space jumps · wheel zooms.</p><h3>Interface controls</h3><p>F interacts. J opens the Journal. Menu buttons show their names when focused or hovered. Escape closes the active panel.</p><p>The controller cross hotbar is a layout preview. Gamepad movement and actions are not available yet.</p></article></section>`
+}
+
+function bindSettings(root: HTMLElement, preference: { get(): HudLayout; set(layout: HudLayout): void }): void {
+  applyLayout(preference.get())
+  required<HTMLSelectElement>(root, '#hud-layout').addEventListener('change', (event) => {
+    const layout = (event.currentTarget as HTMLSelectElement).value === 'controller' ? 'controller' : 'keyboard'
+    preference.set(layout)
+    applyLayout(layout)
+  })
+}
+
+function browserStorage(): Storage | undefined { try { return localStorage } catch { return undefined } }
+
+function applyLayout(layout: 'keyboard' | 'controller'): void {
+  const keyboard = document.querySelector<HTMLElement>('#keyboard-actions')
+  const controller = document.querySelector<HTMLElement>('#controller-actions')
+  if (keyboard) keyboard.hidden = layout === 'controller'
+  if (controller) controller.hidden = layout === 'keyboard'
+}
+
+function bindTracking(root: HTMLElement, listener: (questId: QuestId, tracked: boolean) => void): void {
+  for (const button of root.querySelectorAll<HTMLButtonElement>('[data-track-quest]')) button.addEventListener('click', () => listener(button.dataset.trackQuest as QuestId, button.dataset.tracked !== 'true'))
 }
 
 function rewardLedger(state: CharacterQuestState): string {
-  const items = Object.entries(state.rewardInventory).filter(([, quantity]) => quantity > 0)
-  const receipts = Object.values(state.receipts)
-  const labels = new Map(receipts.flatMap((receipt) => receipt.items.map((item) => [item.id, item.label] as const)))
-  const history = receipts.map((receipt) => `<li><span class="font-medium text-stone-300">${receipt.questId}</span> · ${receipt.pendingXp} ${receipt.creditedClassId ? `XP for ${escapeHtml(receipt.creditedClassId)}` : 'reserved XP'} · ${receipt.currency} Currency${receipt.items.length ? ` · ${receipt.items.map((item) => `${escapeHtml(item.label)} ×${item.quantity}`).join(', ')}` : ''}</li>`).join('')
-  return `<section class="rounded-xl border border-stone-100/10 bg-stone-950/35 p-4"><h3 class="font-serif text-lg text-stone-100">Rewards</h3><div class="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-stone-300"><span>Reserved class XP: ${state.pendingXp}</span><span>Currency: ${state.currency}</span></div>${items.length ? `<p class="mt-2 text-sm text-stone-400">Supplies: ${items.map(([id, count]) => `${escapeHtml(labels.get(id) ?? id)} ×${count}`).join(', ')}</p>` : ''}${history ? `<div class="mt-4 border-t border-stone-100/10 pt-3"><p class="text-[0.65rem] font-semibold uppercase tracking-wider text-stone-500">Completion receipts</p><ul class="mt-2 space-y-1 text-xs leading-5 text-stone-500">${history}</ul></div>` : '<p class="mt-2 text-xs text-stone-500">No completion receipts yet.</p>'}</section>`
+  return `<section class="hud-reward-ledger"><h3>Journey rewards</h3><p>${state.pendingXp} reserved experience · ${state.currency} Currency</p></section>`
 }
 
 function rewardPreview(definition: QuestDefinition, state?: CharacterQuestState): string {
-  const reward = definition.reward
-  const items = reward.items.map((item) => `${escapeHtml(item.label)} ×${item.quantity}`)
-  const xp = state?.activeClassId ? `${reward.pendingXp} XP for ${escapeHtml(state.activeClassId)}` : `${reward.pendingXp} XP reserved for your first class`
-  const parts = [xp, `${reward.currency} Currency`, ...items]
-  return `<section class="mb-5 rounded-lg border border-amber-100/10 bg-amber-100/5 px-4 py-3"><p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-amber-200/65">Reward on completion</p><p class="mt-1 text-sm text-stone-300">${parts.join(' · ')}</p></section>`
+  const items = definition.reward.items.map((item) => `${escapeHtml(item.label)} ×${item.quantity}`)
+  const xp = state?.activeClassId ? `${definition.reward.pendingXp} XP for ${escapeHtml(state.activeClassId)}` : `${definition.reward.pendingXp} XP reserved for your first class`
+  return `<section class="hud-reward-preview"><b>Reward</b><p>${[xp, `${definition.reward.currency} Currency`, ...items].join(' · ')}</p></section>`
 }
 
 function sceneMarkup(scenes: readonly DialogueScene[]): string {
-  return scenes.map((scene) => `<section class="mb-5" data-scene="${escapeHtml(scene.id)}">${scene.lines.map((line) => `<p class="mb-2 text-stone-300"><strong class="font-semibold text-stone-100">${escapeHtml(line.speaker)}:</strong> ${escapeHtml(formatDialogueText(line.text))}</p>`).join('')}</section>`).join('')
+  return scenes.map((scene) => `<section class="hud-dialogue" data-scene="${escapeHtml(scene.id)}">${scene.lines.map((line) => `<p><strong>${escapeHtml(line.speaker)}:</strong> ${escapeHtml(formatDialogueText(line.text))}</p>`).join('')}</section>`).join('')
 }
 
 export function formatDialogueText(text: string, playerName = 'Ashbearer'): string {
   return text.replaceAll('`{player}`', playerName).replaceAll('{player}', playerName)
 }
 
-function statusLabel(status: QuestJournalEntry['status']): string {
-  return ({ available: 'Available !', active: 'Active —', ready: 'Ready ?', completed: 'Completed ✓', planned: 'Next chapter', locked: 'Locked' })[status]
+function panelKicker(panel: Panel): string { return panel === 'journal' ? 'Alderbank journal' : 'Ashveil' }
+function panelTitle(panel: Panel): string { return ({ character: 'Character', pack: "Wayfarer's Pack", map: 'Map', journal: 'Journey Journal', finder: 'Duty Finder', social: 'Social', settings: 'Interface & Controls' })[panel] }
+function isEditable(target: Element | null): boolean { return target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'SELECT', 'TEXTAREA'].includes(target.tagName)) }
+function firstFocusable(root: HTMLElement): HTMLElement | undefined { return [...root.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')][0] }
+
+function trapFocus(event: KeyboardEvent, root: HTMLElement): void {
+  const items = [...root.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')]
+  const first = items[0]
+  const last = items.at(-1)
+  if (!first || !last) return
+  if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+  else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+  else if (!root.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? last : first).focus() }
+}
+
+function required<T extends Element>(root: ParentNode, selector: string): T {
+  const element = root.querySelector<T>(selector)
+  if (!element) throw new Error(`Missing HUD control: ${selector}`)
+  return element
 }
 
 function escapeHtml(value: string): string {

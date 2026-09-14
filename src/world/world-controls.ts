@@ -13,6 +13,12 @@ export interface WorldControlResult {
   readonly turnDelta: number
 }
 
+const NEUTRAL_INJECTED_MOVEMENT: InjectedMovement = { x: 0, z: 0, sprint: false }
+
+export function suspendInjectedMovement(current: InjectedMovement, suspended: boolean): InjectedMovement {
+  return suspended ? NEUTRAL_INJECTED_MOVEMENT : current
+}
+
 export function advanceExplorer(
   explorer: Explorer,
   controls: InputFrame,
