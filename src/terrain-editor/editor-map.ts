@@ -3,7 +3,7 @@ import type { CompiledZone, ZoneDefinition } from '../world/zone-types'
 import type { EditorControl } from './editor-state'
 
 export const REFERENCE_MAP_URL = new URL(
-  '../../docs/art-pipeline/concepts/opening-chapter/starting-zone-map-v1.png',
+  '../../docs/art-pipeline/concepts/opening-chapter/starting-zone-map-v3.png',
   import.meta.url,
 ).href
 
@@ -93,15 +93,17 @@ export function renderControlOverlay(svg: SVGSVGElement, definition: ZoneDefinit
   svg.setAttribute('viewBox', `${MAP_ART_BOUNDS.minX} ${MAP_ART_BOUNDS.minY} ${MAP_WIDTH} ${MAP_HEIGHT}`)
   const paths = definition.paths.map((path) => `<polyline class="map-path" points="${pointList(path.points)}" />`).join('')
   const ridges = definition.ridges.map((ridge) => `<polyline class="map-ridge" style="stroke-width:${Math.max(8, ridge.halfWidth * 2 / MAP_SCALE)}" points="${pointList(ridge.points)}" />`).join('')
+  const landforms = (definition.terrain.landforms ?? []).map((landform) => `<polyline class="map-landform map-landform-${landform.kind}" style="stroke-width:${Math.max(8, landform.halfWidth * 2 / MAP_SCALE)}" points="${pointList(landform.points)}" />`).join('')
   const riverWidth = definition.river.points.reduce((sum, point) => sum + point.halfWidth, 0) / definition.river.points.length * 2 / MAP_SCALE
   const river = `<polyline class="map-river" style="stroke-width:${riverWidth}" points="${pointList(definition.river.points)}" />`
   const controls = [
     ...definition.landmarks.map((landmark) => circle('landmark', landmark, landmark.id, undefined, active)),
     ...definition.paths.flatMap((path) => path.points.slice(1, -1).map((point, index) => circle('path', point, path.id, index + 1, active))),
     ...definition.ridges.flatMap((ridge) => ridge.points.map((point, index) => circle('ridge', point, ridge.id, index, active))),
+    ...(definition.terrain.landforms ?? []).flatMap((landform) => landform.points.map((point, index) => circle('landform', point, landform.id, index, active))),
     ...definition.river.points.map((point, index) => circle('river', point, undefined, index, active)),
   ].join('')
-  svg.innerHTML = `${ridges}${river}${paths}${controls}`
+  svg.innerHTML = `${ridges}${landforms}${river}${paths}${controls}`
 }
 
 export function eventWorldPoint(svg: SVGSVGElement, event: PointerEvent): { x: number; z: number } | null {

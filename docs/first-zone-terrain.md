@@ -128,8 +128,9 @@ the character's facing. A grounded jump plays its 0.18-second anticipation while
 then physics starts the jump; the character continues through start, air and landing clips.
 The temporary camera uses a 48-degree field of view, a 4.8–18-unit zoom range and a
 roughly 9–60-degree pitch range. A ray from the player toward the desired camera keeps it
-in front of terrain and scenery. Overview and return-to-refuge controls support review;
-these bindings and values remain validation settings rather than final design decisions.
+in front of terrain and scenery. Overview and return-to-start controls support review;
+the reset label follows the active zone's authored spawn landmark. These bindings and
+values remain validation settings rather than final design decisions.
 
 In development, the browser exposes `globalThis.ashveilWorld` for repeatable validation.
 Its controls can move, stop, reset or toggle overview, while its state reports position,

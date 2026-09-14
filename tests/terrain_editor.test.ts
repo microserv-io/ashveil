@@ -28,6 +28,15 @@ describe('terrain editor state', () => {
     expect(history.current).toEqual(changed)
   })
 
+  it('moves hill and barrier controls without changing their authored profile', () => {
+    const hill = DEFAULT_ZONE.terrain.landforms!.find((landform) => landform.kind === 'hill')!
+    const moved = moveEditorControl(DEFAULT_ZONE, { kind: 'landform', id: hill.id, index: 1 }, 12, 34)
+    expect(moved.terrain.landforms!.find((landform) => landform.id === hill.id)).toEqual({
+      ...hill,
+      points: [hill.points[0], { x: 12, z: 34 }, ...hill.points.slice(2)],
+    })
+  })
+
   it('clears redo after a new edit and reset restores the authored default', () => {
     const history = createEditorHistory(DEFAULT_ZONE)
     const changed = moveEditorControl(history.current, { kind: 'path', id: 'lower-road', index: 1 }, -200, 100)
@@ -79,6 +88,31 @@ describe('zone browser drafts', () => {
     const saved = saveZoneDraft(storage, DEFAULT_ZONE)
     expect(saved.mainRoute.runSeconds).toBeCloseTo(300, 6)
     expect(loadZoneDraft(storage)).toMatchObject({ kind: 'valid', definition: DEFAULT_ZONE })
+  })
+
+  it('loads and edits a serialized old draft without silently writing landforms', () => {
+    const storage = new MemoryStorage()
+    const legacy = structuredClone(DEFAULT_ZONE) as typeof DEFAULT_ZONE & { terrain: { landforms?: unknown } }
+    delete legacy.terrain.landforms
+    const original = JSON.stringify(legacy)
+    storage.setItem(ZONE_DRAFT_STORAGE_KEY, original)
+    const loaded = loadZoneDraft(storage)
+    expect(loaded.kind).toBe('valid')
+    if (loaded.kind !== 'valid') return
+    expect(loaded.definition.terrain.landforms).toBeUndefined()
+
+    const history = createEditorHistory(DEFAULT_ZONE)
+    history.loadSaved(loaded.definition)
+    const ridge = history.current.ridges[0]!
+    history.apply(moveEditorControl(history.current, { kind: 'ridge', id: ridge.id, index: 1 },
+      ridge.points[1]!.x + 1, ridge.points[1]!.z))
+    history.undo()
+    history.redo()
+    expect(JSON.parse(JSON.stringify(history.current)).terrain.landforms).toBeUndefined()
+    expect(storage.getItem(ZONE_DRAFT_STORAGE_KEY)).toBe(original)
+
+    saveZoneDraft(storage, history.current)
+    expect(JSON.parse(storage.getItem(ZONE_DRAFT_STORAGE_KEY)!).terrain.landforms).toBeUndefined()
   })
 
   it('rejects invalid drafts without overwriting the preceding valid value', () => {

@@ -47,6 +47,14 @@ export interface TerrainStroke extends WorldPoint {
   readonly amount: number
 }
 
+export interface ZoneLandform {
+  readonly kind: 'hill' | 'barrier'
+  readonly id: string
+  readonly points: readonly WorldPoint[]
+  readonly halfWidth: number
+  readonly height: number
+}
+
 export interface ZoneDefinition {
   readonly schemaVersion: 1
   readonly id: string
@@ -58,7 +66,11 @@ export interface ZoneDefinition {
   readonly paths: readonly ZonePath[]
   readonly ridges: readonly ZoneRidge[]
   readonly river: ZoneRiver
-  readonly terrain: { readonly baseHeight: number; readonly strokes: readonly TerrainStroke[] }
+  readonly terrain: {
+    readonly baseHeight: number
+    readonly strokes: readonly TerrainStroke[]
+    readonly landforms?: readonly ZoneLandform[]
+  }
 }
 
 export interface TerrainVertex extends WorldPoint { readonly y: number }
@@ -68,6 +80,7 @@ export interface TerrainGeometryData {
   readonly vertices: readonly TerrainVertex[]
   readonly indices: readonly number[]
   readonly colors: readonly [number, number, number][]
+  readonly stoneWeights: readonly number[]
   readonly columns: number
 }
 

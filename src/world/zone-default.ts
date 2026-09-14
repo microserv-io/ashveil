@@ -43,7 +43,7 @@ export const DEFAULT_ZONE: ZoneDefinition = {
     maxZ: WORLD_DEPTH / 2,
   },
   cellSize: 5,
-  spawn: { landmarkId: 'refuge', offset: { x: 0, z: 0 } },
+  spawn: { landmarkId: 'safe-landing', offset: { x: 86, z: 0 } },
   mainRoute: ['refuge-road', 'lower-road', 'waystation-descent'],
   landmarks: [
     landmark('refuge', 'Alderbank Refuge', 825, 170, 30),
@@ -89,5 +89,34 @@ export const DEFAULT_ZONE: ZoneDefinition = {
       [490, 300, 45], [440, 230, 48], [410, 100, 52], [445, 0, 55],
     ] as const).map(([x, y, halfWidth]) => ({ ...mapToWorld(x, y), halfWidth: halfWidth * MAP_SCALE, depth: 7 })) as ZoneRiverPoint[],
   },
-  terrain: { baseHeight: 4, strokes: [] },
+  terrain: {
+    baseHeight: 4,
+    strokes: [],
+    landforms: [
+      { kind: 'hill', id: 'refuge-bench', halfWidth: 80, height: 14, points: [
+        mapToWorld(760, 145), mapToWorld(825, 170), mapToWorld(935, 200),
+      ] },
+      { kind: 'barrier', id: 'refuge-west-bluff', halfWidth: 32, height: 22, points: [
+        mapToWorld(660, 82), mapToWorld(650, 170), mapToWorld(720, 210), mapToWorld(805, 220), mapToWorld(840, 235),
+      ] },
+      { kind: 'hill', id: 'lower-road-west-hills', halfWidth: 90, height: 20, points: [
+        mapToWorld(650, 340), mapToWorld(730, 390), mapToWorld(790, 440),
+      ] },
+      { kind: 'barrier', id: 'lower-road-rock-face-north', halfWidth: 25, height: 15, points: [
+        mapToWorld(650, 350), mapToWorld(700, 365),
+      ] },
+      { kind: 'barrier', id: 'lower-road-rock-face-south', halfWidth: 25, height: 14, points: [
+        mapToWorld(735, 415), mapToWorld(780, 430),
+      ] },
+      { kind: 'hill', id: 'farm-rolling-fields', halfWidth: 90, height: 16, points: [
+        mapToWorld(1_040, 210), mapToWorld(1_160, 260), mapToWorld(1_250, 330),
+      ] },
+      { kind: 'hill', id: 'orchard-terraces', halfWidth: 80, height: 14, points: [
+        mapToWorld(1_190, 440), mapToWorld(1_300, 520), mapToWorld(1_240, 590),
+      ] },
+      { kind: 'hill', id: 'grove-rally-rise', halfWidth: 90, height: 16, points: [
+        mapToWorld(900, 610), mapToWorld(1_020, 650), mapToWorld(1_120, 690),
+      ] },
+    ],
+  },
 }

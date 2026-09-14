@@ -10,7 +10,7 @@ export interface BuiltTerrainSurface {
 export function terrainStoneWeights(
   data: TerrainGeometryData,
   cellSize: number,
-  baseHeight: number,
+  _baseHeight: number,
 ): Float32Array {
   const weights = new Float32Array(data.vertices.length)
   const rows = Math.ceil(data.vertices.length / data.columns)
@@ -30,8 +30,8 @@ export function terrainStoneWeights(
       }
     }
     const steep = smoothstep(0.32, 0.78, maximumRise / cellSize)
-    const high = smoothstep(baseHeight + 18, baseHeight + 52, vertex.y) * 0.78
-    weights[index] = Math.max(steep, high)
+    const authored = data.stoneWeights[index] ?? 0
+    weights[index] = Math.max(steep, authored)
   }
   return weights
 }

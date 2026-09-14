@@ -22,8 +22,9 @@ It is not an exact spatial map or evidence of implemented content. Its compositi
 places the waystation unusually close to the refuge; playable distance and scale must
 follow the story's travel contract and later terrain review instead.
 
-The current starting-zone map is a north-up regional staging study, not an exact-scale map,
-collision layout or runtime integration plan. It maps the refuge/S01–S05 hub, the
+The current starting-zone map is a north-up regional staging study, not an exact-scale map
+or collision layout. Its v3 landform decisions now inform the authored runtime and editor
+definition. It maps the refuge/S01–S05 hub, the
 M04–M05 wagon and fields outing with S06–S10, the optional Westmere Farm chain
 S11–S13, the orchard chain S14–S16 (not the grove), the M06–M07 Lower Road approach
 with S17–S18, and the M08 entrance area with S19–S20. North is `+world z` and east is
@@ -59,6 +60,6 @@ adopted layout decisions. V2 is retained as the heavier historical blocker study
 The v3 revision was generated with the same tool on 13 September 2026 after feedback
 that v2 was too rocky and enclosed. [`starting-zone-map-v3.prompt.json`](starting-zone-map-v3.prompt.json)
 preserves the exact edit prompt, v2 source path and hash, generated hash and dimensions,
-and the gentler layout decisions. V3 is the current planning reference and awaits
-translation into authored terrain; the active editor overlay and runtime geometry still
-use v1.
+and the gentler layout decisions. V3 is the current planning reference translated into
+the active editor overlay and runtime terrain. The picture remains design provenance;
+the compiled definition is runtime truth.

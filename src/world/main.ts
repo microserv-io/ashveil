@@ -7,8 +7,10 @@ import { DEFAULT_CAMERA_YAW, WorldView } from './renderer'
 import { WorldQuestController } from './quest-controller'
 import { loadSceneryKit, type SceneryKit } from './scenery-kit'
 import { explorerFacingFromCamera } from './steering'
+import { getActiveZone } from './zone-active'
 import { LANDMARKS, nearestLandmark, SPAWN } from './world-data'
 import { advanceExplorer } from './world-controls'
+import { worldStartPresentation } from './world-start'
 
 interface DiagnosticState {
   position: { x: number; y: number; z: number }; facing: number; location: string; overview: boolean
@@ -67,7 +69,8 @@ function initialExplorer(cameraYaw = DEFAULT_CAMERA_YAW): Explorer {
 
 function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedCharacterTemplate): void {
   let explorer = initialExplorer()
-  const hud = createWorldHud(host)
+  const start = worldStartPresentation(getActiveZone())
+  const hud = createWorldHud(host, start)
   const view = new WorldView(host, kit, character, explorer)
   const input = new WorldInput(view.canvas, hud.joystick, hud.joystickKnob, hud.sprintButton, hud.jumpButton)
   const quests = new WorldQuestController(host, view, input, explorer)
@@ -150,7 +153,7 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
 
   const diagnostics: WorldDiagnostics = {
     state: {
-      position: { x: explorer.x, y: explorer.y, z: explorer.z }, facing: explorer.facing, location: 'Alderbank Refuge', overview,
+      position: { x: explorer.x, y: explorer.y, z: explorer.z }, facing: explorer.facing, location: start.locationLabel, overview,
       grounded: explorer.grounded, jumpPhase: explorer.jumpPhase,
       frameMs: 0, frameTimes: [], camera: { x: 0, y: 0, z: 0, yaw: 0 }, forward: { x: 0, z: 1 },
       drawCalls: 0, triangles: 0, water: { elapsedSeconds: 0, level: 0 }, errors,
