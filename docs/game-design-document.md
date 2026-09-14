@@ -16,8 +16,10 @@ This document owns the intended player experience.
 
 The current default browser route is a Three.js idea-validation slice for the opening
 river valley. It tests terrain, movement, environment art and the decided third-person camera direction;
-it is not evidence that the quests, multiplayer systems or full MMORPG are implemented,
-and it does not settle the final production engine.
+the [quest-system slice](https://github.com/microserv-io/ashveil/blob/main/docs/quest-system.md) adds M01/M02 and S01–S05 with temporary
+character-copy NPCs and local progress. The remaining authored quests, multiplayer
+systems and full MMORPG are not implemented, and this does not settle the final
+production engine.
 
 ## How to read and maintain this document
 

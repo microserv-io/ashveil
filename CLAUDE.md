@@ -26,6 +26,8 @@ Small dependency set on purpose.
 | `src/sim/` | **The game. Deterministic, host-agnostic, the source of truth.** Has its own `CLAUDE.md`: read it before changing anything here. |
 | `src/world/` | The first-zone validation slice. `world-data.ts`, `terrain.ts` and `movement.ts` are host-agnostic world truth; browser rendering, controls and HUD live beside them but depend inward on those pure modules. |
 | `src/session/` | Characters, persistence, the authoritative session. Owns what outlives an area. |
+| `src/quests/` | Pure first-zone quest catalogue, progress, one-time rewards and projections. No browser, renderer, clock or legacy runtime imports. See `docs/quest-system.md`. |
+| `src/persistence/` | Atomic, revision-checked offline saves for the first-zone quest aggregate; separate from legacy sim/session saves. |
 | `src/net/` | Transport interface and wire protocol. Loopback today. No gameplay. |
 | `src/render/` | Three.js scene, models, effects, screen overlay, and the input layer (actions, device profiles, gamepad). Reads sim state, never mutates it. `models.ts` loads the committed body and fetched dungeon kit, `rig.ts` owns pose precedence, `riginput.ts` projects sim state into the procedural-motion seam, `profiles/` describes fitted skeletons, `terrain.ts` builds the dungeon, and `actorview.ts` builds one body. |
 | `src/ui/` | HUD, gear panel, passive tree. |

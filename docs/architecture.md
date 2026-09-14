@@ -136,7 +136,47 @@ loading screen. Dungeons are `entry: 'portal'` and may take their time. This is 
 one place the session layer has to hold two connections at once, and it is why the
 transport is an interface rather than a single socket.
 
-### Instance vs session
+### First-zone quest system
+
+The first-zone quest implementation is specified in [quest-system.md](quest-system.md).
+It keeps the authored quest library separate from each character's progress and
+resolved rewards. The pure `src/quests/` rules consume intents and validated world
+events; `src/persistence/` stores the complete offline character aggregate using
+revision-checked transactions. The browser world projects committed state into
+dialogue, markers, the tracker and journal.
+
+```mermaid
+flowchart LR
+  Library[Versioned quest library] --> Rules[Pure quest rules]
+  Intent[Player intent] --> Host[World host: target and proximity checks]
+  Host --> Rules
+  Rules --> Next[Proposed character state]
+  Next --> Store[Atomic save with revision check]
+  Store --> Committed[Committed progress and reward receipts]
+  Committed --> UI[NPC markers, dialogue and journal]
+```
+
+The offline aggregate is distinct from legacy `sim/Character` saves because the
+first-zone route does not run the deprecated combat/session loop. It is the only
+quest/progression save used by this route. Its pending XP and supply inventory do
+not grant combat benefits in the legacy demo. Connecting future combat requires
+adopting this aggregate or an explicit migration, not saving the same character in
+two independently authoritative stores.
+
+For a production service, publish immutable quest definitions into a database library
+and pin accepted quests to their versions. Store character progress separately.
+Completion, XP, wallet/inventory changes and a unique `(character_id, quest_id)` reward
+receipt belong in one server transaction. The identity of a one-time reward excludes
+definition version and class, so neither content updates nor weapon changes can
+reissue it. The server derives character ownership from authentication and objective
+credit from its world events; a client submits intentions, never reward quantities.
+See the quest plan for the table design, version-retention and migration contracts.
+
+The local browser adapter validates transactions and stale revisions; it does not
+provide online authority, account security or live shared-party play. Pure shared
+credit rules are groundwork for that later host.
+
+### Legacy instance and session
 
 Two things were tangled and are now separate:
 

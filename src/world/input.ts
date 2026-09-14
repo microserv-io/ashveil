@@ -18,6 +18,22 @@ export interface KeyboardAxes {
   readonly turn: number
 }
 
+export function neutralInputFrame(): InputFrame {
+  return {
+    keyboardForward: 0,
+    keyboardStrafe: 0,
+    keyboardTurn: 0,
+    touchForward: 0,
+    touchRight: 0,
+    sprint: false,
+    walk: false,
+    jump: false,
+    orbitX: 0,
+    orbitY: 0,
+    zoom: 0,
+  }
+}
+
 export function keyboardAxes(keys: ReadonlySet<string>): KeyboardAxes {
   return {
     forward: Number(keys.has('KeyW') || keys.has('ArrowUp')) - Number(keys.has('KeyS') || keys.has('ArrowDown')),
@@ -31,6 +47,7 @@ export function keyboardSteeringActive(input: Pick<InputFrame, 'keyboardForward'
 }
 
 export class WorldInput {
+  private enabled = true
   private readonly keys = new Set<string>()
   private orbitX = 0
   private orbitY = 0
@@ -68,7 +85,7 @@ export class WorldInput {
     joystick.addEventListener('pointercancel', this.onJoystickUp)
     joystick.addEventListener('lostpointercapture', this.onJoystickUp)
     sprintButton.addEventListener('pointerdown', (event) => {
-      if (this.sprintPointer !== undefined) return
+      if (!this.enabled || this.sprintPointer !== undefined) return
       this.sprintPointer = event.pointerId
       this.sprintTouch = true
       sprintButton.setPointerCapture(event.pointerId)
@@ -82,18 +99,20 @@ export class WorldInput {
     sprintButton.addEventListener('pointercancel', stopSprint)
     sprintButton.addEventListener('lostpointercapture', stopSprint)
     jumpButton.addEventListener('pointerdown', (event) => {
+      if (!this.enabled) return
       event.preventDefault()
       this.jumpQueued = true
     })
   }
 
   read(): InputFrame {
+    if (!this.enabled) return neutralInputFrame()
     const keyboard = keyboardAxes(this.keys)
     const frame = {
       keyboardForward: keyboard.forward,
       keyboardStrafe: keyboard.strafe,
       keyboardTurn: keyboard.turn,
-      touchForward: -this.joystickY,
+      touchForward: this.joystickY === 0 ? 0 : -this.joystickY,
       touchRight: this.joystickX,
       sprint: this.sprintTouch || this.keys.has('ShiftLeft') || this.keys.has('ShiftRight'),
       walk: this.keys.has('AltLeft') || this.keys.has('AltRight'),
@@ -107,6 +126,12 @@ export class WorldInput {
     this.zoom = 0
     this.jumpQueued = false
     return frame
+  }
+
+  setEnabled(enabled: boolean): void {
+    if (this.enabled === enabled) return
+    this.enabled = enabled
+    this.clear()
   }
 
   clear = (): void => {
@@ -125,7 +150,7 @@ export class WorldInput {
   }
 
   private onKeyDown = (event: KeyboardEvent): void => {
-    if (isEditableTarget(event.target) || !GAMEPLAY_KEYS.has(event.code)) return
+    if (!this.enabled || isEditableTarget(event.target) || !GAMEPLAY_KEYS.has(event.code)) return
     event.preventDefault()
     if (event.code === 'Space') {
       if (!event.repeat) this.jumpQueued = true
@@ -134,13 +159,18 @@ export class WorldInput {
     this.keys.add(event.code)
   }
   private onKeyUp = (event: KeyboardEvent): void => {
+    if (!this.enabled) return
     if (!this.keys.delete(event.code)) return
     event.preventDefault()
   }
-  private onWheel = (event: WheelEvent): void => { event.preventDefault(); this.zoom += event.deltaY * 0.012 }
+  private onWheel = (event: WheelEvent): void => {
+    if (!this.enabled) return
+    event.preventDefault()
+    this.zoom += event.deltaY * 0.012
+  }
 
   private onPointerDown = (event: PointerEvent): void => {
-    if (this.dragPointer !== undefined) return
+    if (!this.enabled || this.dragPointer !== undefined) return
     this.dragPointer = event.pointerId
     this.lastX = event.clientX
     this.lastY = event.clientY
@@ -148,7 +178,7 @@ export class WorldInput {
   }
 
   private onPointerMove = (event: PointerEvent): void => {
-    if (event.pointerId !== this.dragPointer) return
+    if (!this.enabled || event.pointerId !== this.dragPointer) return
     this.orbitX += event.clientX - this.lastX
     this.orbitY += event.clientY - this.lastY
     this.lastX = event.clientX
@@ -161,14 +191,14 @@ export class WorldInput {
 
   private onJoystickDown = (event: PointerEvent): void => {
     event.preventDefault()
-    if (this.joystickPointer !== undefined) return
+    if (!this.enabled || this.joystickPointer !== undefined) return
     this.joystickPointer = event.pointerId
     this.joystick.setPointerCapture(event.pointerId)
     this.updateJoystick(event)
   }
 
   private onJoystickMove = (event: PointerEvent): void => {
-    if (event.pointerId === this.joystickPointer) this.updateJoystick(event)
+    if (this.enabled && event.pointerId === this.joystickPointer) this.updateJoystick(event)
   }
 
   private onJoystickUp = (event: PointerEvent): void => {

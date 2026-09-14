@@ -2,6 +2,11 @@
 
 **Three.js idea-validation slice · Playable Blender environment pass**
 
+This document records the terrain build. The subsequent
+[quest-system slice](quest-system.md) adds local quest state, dialogue, interactions
+and placeholder NPCs for M01/M02 and S01–S05; those additions have their own scope
+and validation and do not implement combat or the waystation interior.
+
 ## Objective
 
 Build the first explorable terrain for the opening chapter as one coherent river-valley
