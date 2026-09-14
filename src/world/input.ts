@@ -10,6 +10,11 @@ export interface InputFrame {
   readonly orbitX: number
   readonly orbitY: number
   readonly zoom: number
+  readonly freeLook: boolean
+  readonly mouseSteering: boolean
+  readonly mouseSteeringPending: boolean
+  readonly mouseForward: boolean
+  readonly mouseSteeringOrbitX: number
 }
 
 export interface KeyboardAxes {
@@ -31,6 +36,11 @@ export function neutralInputFrame(): InputFrame {
     orbitX: 0,
     orbitY: 0,
     zoom: 0,
+    freeLook: false,
+    mouseSteering: false,
+    mouseSteeringPending: false,
+    mouseForward: false,
+    mouseSteeringOrbitX: 0,
   }
 }
 
@@ -53,6 +63,10 @@ export class WorldInput {
   private orbitY = 0
   private zoom = 0
   private dragPointer: number | undefined
+  private dragPointerType: string | undefined
+  private mouseButtons = 0
+  private mouseSteeringPending = false
+  private mouseSteeringOrbitX = 0
   private lastX = 0
   private lastY = 0
   private joystickPointer: number | undefined
@@ -66,7 +80,7 @@ export class WorldInput {
     private readonly canvas: HTMLCanvasElement,
     private readonly joystick: HTMLElement,
     private readonly joystickKnob: HTMLElement,
-    sprintButton: HTMLButtonElement,
+    private readonly sprintButton: HTMLButtonElement,
     jumpButton: HTMLButtonElement,
   ) {
     window.addEventListener('keydown', this.onKeyDown)
@@ -76,9 +90,10 @@ export class WorldInput {
     canvas.addEventListener('pointerdown', this.onPointerDown)
     canvas.addEventListener('pointermove', this.onPointerMove)
     canvas.addEventListener('pointerup', this.onPointerUp)
-    canvas.addEventListener('pointercancel', this.onPointerUp)
-    canvas.addEventListener('lostpointercapture', this.onPointerUp)
+    canvas.addEventListener('pointercancel', this.onPointerCancel)
+    canvas.addEventListener('lostpointercapture', this.onPointerCancel)
     canvas.addEventListener('wheel', this.onWheel, { passive: false })
+    canvas.addEventListener('contextmenu', this.onContextMenu)
     joystick.addEventListener('pointerdown', this.onJoystickDown)
     joystick.addEventListener('pointermove', this.onJoystickMove)
     joystick.addEventListener('pointerup', this.onJoystickUp)
@@ -120,10 +135,17 @@ export class WorldInput {
       orbitX: this.orbitX,
       orbitY: this.orbitY,
       zoom: this.zoom,
+      freeLook: (this.mouseButtons & 1) !== 0 && (this.mouseButtons & 2) === 0,
+      mouseSteering: (this.mouseButtons & 2) !== 0,
+      mouseSteeringPending: this.mouseSteeringPending,
+      mouseForward: (this.mouseButtons & 3) === 3,
+      mouseSteeringOrbitX: this.mouseSteeringOrbitX,
     }
     this.orbitX = 0
     this.orbitY = 0
     this.zoom = 0
+    this.mouseSteeringPending = false
+    this.mouseSteeringOrbitX = 0
     this.jumpQueued = false
     return frame
   }
@@ -135,8 +157,13 @@ export class WorldInput {
   }
 
   clear = (): void => {
+    const dragPointer = this.dragPointer
+    const joystickPointer = this.joystickPointer
+    const sprintPointer = this.sprintPointer
     this.keys.clear()
     this.dragPointer = undefined
+    this.dragPointerType = undefined
+    this.mouseButtons = 0
     this.joystickPointer = undefined
     this.joystickX = 0
     this.joystickY = 0
@@ -145,8 +172,13 @@ export class WorldInput {
     this.orbitX = 0
     this.orbitY = 0
     this.zoom = 0
+    this.mouseSteeringPending = false
+    this.mouseSteeringOrbitX = 0
     this.jumpQueued = false
     this.joystickKnob.style.transform = 'translate(0, 0)'
+    releasePointerCapture(this.canvas, dragPointer)
+    releasePointerCapture(this.joystick, joystickPointer)
+    releasePointerCapture(this.sprintButton, sprintPointer)
   }
 
   private onKeyDown = (event: KeyboardEvent): void => {
@@ -156,6 +188,7 @@ export class WorldInput {
       if (!event.repeat) this.jumpQueued = true
       return
     }
+    if (event.repeat && !this.keys.has(event.code)) return
     this.keys.add(event.code)
   }
   private onKeyUp = (event: KeyboardEvent): void => {
@@ -170,8 +203,27 @@ export class WorldInput {
   }
 
   private onPointerDown = (event: PointerEvent): void => {
-    if (!this.enabled || this.dragPointer !== undefined) return
+    if (!this.enabled) return
+    if (event.pointerType === 'mouse') {
+      const buttons = event.buttons & 3
+      if (buttons === 0 || (this.dragPointer !== undefined && event.pointerId !== this.dragPointer)) return
+      const acquiring = this.dragPointer === undefined
+      this.dragPointer = event.pointerId
+      this.dragPointerType = 'mouse'
+      this.mouseButtons = buttons
+      if ((buttons & 2) !== 0) {
+        this.mouseSteeringPending = true
+        this.mouseSteeringOrbitX = this.orbitX
+      }
+      this.lastX = event.clientX
+      this.lastY = event.clientY
+      if (acquiring) this.canvas.setPointerCapture(event.pointerId)
+      event.preventDefault()
+      return
+    }
+    if (this.dragPointer !== undefined) return
     this.dragPointer = event.pointerId
+    this.dragPointerType = event.pointerType
     this.lastX = event.clientX
     this.lastY = event.clientY
     this.canvas.setPointerCapture(event.pointerId)
@@ -179,15 +231,46 @@ export class WorldInput {
 
   private onPointerMove = (event: PointerEvent): void => {
     if (!this.enabled || event.pointerId !== this.dragPointer) return
+    if (this.dragPointerType === 'mouse') {
+      this.mouseButtons = event.buttons & 3
+      if (this.mouseButtons === 0) {
+        this.dragPointer = undefined
+        this.dragPointerType = undefined
+        return
+      }
+    }
     this.orbitX += event.clientX - this.lastX
     this.orbitY += event.clientY - this.lastY
+    if (this.dragPointerType === 'mouse' && (this.mouseButtons & 2) !== 0) {
+      this.mouseSteeringPending = true
+      this.mouseSteeringOrbitX = this.orbitX
+    }
     this.lastX = event.clientX
     this.lastY = event.clientY
   }
 
   private onPointerUp = (event: PointerEvent): void => {
-    if (event.pointerId === this.dragPointer) this.dragPointer = undefined
+    if (event.pointerId !== this.dragPointer) return
+    if (this.dragPointerType === 'mouse') {
+      this.mouseButtons = event.buttons & 3
+      if (this.mouseButtons !== 0) return
+    }
+    this.dragPointer = undefined
+    this.dragPointerType = undefined
   }
+
+  private onPointerCancel = (event: PointerEvent): void => {
+    if (event.pointerId !== this.dragPointer) return
+    this.dragPointer = undefined
+    this.dragPointerType = undefined
+    this.mouseButtons = 0
+    this.orbitX = 0
+    this.orbitY = 0
+    this.mouseSteeringPending = false
+    this.mouseSteeringOrbitX = 0
+  }
+
+  private onContextMenu = (event: MouseEvent): void => { event.preventDefault() }
 
   private onJoystickDown = (event: PointerEvent): void => {
     event.preventDefault()
@@ -227,6 +310,17 @@ const GAMEPLAY_KEYS = new Set([
   'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
   'ShiftLeft', 'ShiftRight', 'AltLeft', 'AltRight', 'Space',
 ])
+
+function releasePointerCapture(element: Element, pointerId: number | undefined): void {
+  if (pointerId === undefined || typeof element.releasePointerCapture !== 'function') return
+  try {
+    if (typeof element.hasPointerCapture !== 'function' || element.hasPointerCapture(pointerId)) {
+      element.releasePointerCapture(pointerId)
+    }
+  } catch {
+    // Capture may already have been released by the browser during cancellation.
+  }
+}
 
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!target || typeof (target as Element).closest !== 'function') return false

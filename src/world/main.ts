@@ -191,9 +191,10 @@ function startWorld(host: HTMLElement, assets: WorldAssets): void {
     const delta = Math.min((now - previous) / 1000, 0.1)
     previous = now
     const controls = input.read()
+    const intendedMouseFacing = explorerFacingFromCamera(view.cameraYawAfterOrbit(controls.mouseSteeringOrbitX))
     view.adjustOrbit(controls.orbitX, controls.orbitY, controls.zoom)
     if (!overview) {
-      const controlled = advanceExplorer(explorer, controls, view.cameraForward(), injected, delta)
+      const controlled = advanceExplorer(explorer, controls, view.cameraForward(), intendedMouseFacing, injected, delta)
       explorer = controlled.explorer
       view.turnCamera(controlled.turnDelta)
     }

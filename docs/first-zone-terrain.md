@@ -117,8 +117,11 @@ and the limitations of these colour-only maps are recorded in
 
 Desktop exploration uses W/S or the up/down arrows to move forward and backward, A/D or
 the left/right arrows to turn, Q/E to strafe, Alt to walk, Shift to sprint and Space to
-jump. Keyboard turning retains the camera's orbit offset; pointer drag orbits the camera
-independently and the wheel zooms. Coarse-pointer devices retain camera-relative movement
+jump. Left mouse drag orbits independently. Right mouse drag steers camera and character
+together, changes A/D into strafing while held, and keeps S as a backpedal. Holding both
+mouse buttons moves forward without stacking speed with W; releasing either stops that
+mouse-forward movement. The wheel zooms. Keyboard turning retains the camera's orbit offset
+except during left-only free-look. Coarse-pointer devices retain camera-relative movement
 through a joystick, a hold-to-sprint control and a jump button while the canvas remains available
 for camera orbit. The explorer runs at 5 units per second, walks at 2 units per second
 with Alt, and sprints at 7 units per second with Shift.
@@ -133,6 +136,23 @@ zenith without reversing the horizontal movement bearing. A ray from the player 
 the desired camera keeps it in front of terrain and scenery. Overview and return-to-start controls support review;
 the reset label follows the active zone's authored spawn landmark. These bindings and
 values remain validation settings rather than final design decisions.
+
+The mouse scheme adopts the character-relative Standard model documented by the
+[FFXIV game manual](https://na.finalfantasyxiv.com/game_manual/operation/): left drag
+free-looks, right drag couples facing to camera direction, and both buttons move forward.
+It also retains WoW's longstanding A/D turn and Q/E strafe defaults, with A/D becoming
+strafe during right-button steering, as recorded in the official historical
+[WoW Classic manual](https://us.media.blizzard.com/manuals/wow/wow-classic-manual-enUS.pdf).
+Standard versus camera-relative Legacy control is a player preference rather than a
+quality ranking; this slice currently offers Standard only.
+Sensitivity, inversion, rebinding, autorun, recenter settings and first-zone gamepad input
+remain deferred. Touch and pen keep independent orbit behavior.
+
+FFXIV's current [camera-pivot setting guide](https://na.finalfantasyxiv.com/uiguide/faq/faq-other/setting_legacy.html)
+and player reports about [free-look fighting camera intent](https://forum.square-enix.com/ffxiv/threads/497225-Legacy-control-left-click-panning?p=6442683&viewfull=1)
+and [sticky mouse steering](https://us.forums.blizzard.com/en/wow/t/right-clickcamera-sticking/1586905)
+motivated deliberate free-look ownership, complete input cleanup and no forced recentering.
+Those reports are anecdotes about player concerns, not evidence of current defects in either game.
 
 In development, the browser exposes `globalThis.ashveilWorld` for repeatable validation.
 Its controls can move, stop, reset or toggle overview, while its state reports position,

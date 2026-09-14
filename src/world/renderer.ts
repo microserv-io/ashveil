@@ -99,6 +99,7 @@ export class WorldView {
 
   get canvas(): HTMLCanvasElement { return this.renderer.domElement }
   get cameraYaw(): number { return this.yaw }
+  cameraYawAfterOrbit(x: number): number { return this.yaw - x * 0.005 }
 
   setExplorer(explorer: Explorer, delta: number): void {
     this.explorer.update(explorer, delta)
