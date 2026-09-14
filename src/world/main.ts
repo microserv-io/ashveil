@@ -1,12 +1,14 @@
 import './world.css'
-import { loadApprovedCharacter, type ApprovedCharacterTemplate } from './approved-character'
 import { createWorldHud } from './hud'
 import { WorldInput } from './input'
 import { canOccupy, createExplorer, type Explorer } from './movement'
 import { DEFAULT_CAMERA_YAW, WorldView } from './renderer'
 import { WorldQuestController } from './quest-controller'
-import { loadSceneryKit, type SceneryKit } from './scenery-kit'
+import { sampleSkyState } from './sky-environment'
 import { explorerFacingFromCamera } from './steering'
+import { createTimePanel, type TimePanel } from './time-panel'
+import { loadWorldAssets, type WorldAssets } from './world-assets'
+import { WorldClock } from './world-clock'
 import { getActiveZone } from './zone-active'
 import { LANDMARKS, nearestLandmark, SPAWN } from './world-data'
 import { advanceExplorer } from './world-controls'
@@ -18,6 +20,7 @@ interface DiagnosticState {
   frameMs: number; frameTimes: number[]
   camera: { x: number; y: number; z: number; yaw: number }; forward: { x: number; z: number }
   drawCalls: number; triangles: number; water: { elapsedSeconds: number; level: number }; errors: string[]
+  time: { hour: number; durationSeconds: number; paused: boolean }
 }
 
 interface WorldDiagnostics {
@@ -25,6 +28,7 @@ interface WorldDiagnostics {
   readonly controls: {
     move(x: number, z: number, sprint?: boolean): void; stop(): void; reset(): void; toggleOverview(): void
     visitLandmark(id: string): void
+    setHour(hour: number): void; setDayDuration(durationSeconds: number): void; setTimePaused(paused: boolean): void
   }
 }
 
@@ -53,9 +57,9 @@ async function boot(): Promise<void> {
   booting = true
   showLoading()
   try {
-    const [kit, character] = await Promise.all([loadSceneryKit(), loadApprovedCharacter()])
+    const assets = await loadWorldAssets()
     app!.replaceChildren()
-    startWorld(app!, kit, character)
+    startWorld(app!, assets)
   } catch (error) {
     console.error(error)
     booting = false
@@ -67,21 +71,32 @@ function initialExplorer(cameraYaw = DEFAULT_CAMERA_YAW): Explorer {
   return { ...createExplorer(SPAWN), facing: explorerFacingFromCamera(cameraYaw) }
 }
 
-function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedCharacterTemplate): void {
+function startWorld(host: HTMLElement, assets: WorldAssets): void {
   let explorer = initialExplorer()
   const start = worldStartPresentation(getActiveZone())
   const hud = createWorldHud(host, start)
-  const view = new WorldView(host, kit, character, explorer)
+  const view = new WorldView(host, assets.scenery, assets.character, assets.sky, explorer)
   const input = new WorldInput(view.canvas, hud.joystick, hud.joystickKnob, hud.sprintButton, hud.jumpButton)
   const quests = new WorldQuestController(host, view, input, explorer)
   let overview = false
   let injected = { x: 0, z: 0, sprint: false }
   let previous = performance.now()
+  const clock = new WorldClock({ nowMilliseconds: previous })
   let averageFrameMs = 0
   let animationFrame = 0
   let pausedForPageCache = false
   let disposed = false
   const errors: string[] = []
+  let timePanel: TimePanel | undefined
+
+  const clearMovement = (): void => {
+    injected = { x: 0, z: 0, sprint: false }
+    input.clear()
+  }
+
+  const setHour = (hour: number): void => { clock.setHour(hour, performance.now()) }
+  const setDayDuration = (durationSeconds: number): void => { clock.setDuration(durationSeconds, performance.now()) }
+  const setTimePaused = (paused: boolean): void => { clock.setPaused(paused, performance.now()) }
 
   function dispose(): void {
     if (disposed) return
@@ -90,6 +105,7 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
     window.removeEventListener('pagehide', handlePageHide)
     window.removeEventListener('pageshow', handlePageShow)
     if (import.meta.env.DEV && globalThis.ashveilWorld === diagnostics) globalThis.ashveilWorld = undefined
+    timePanel?.dispose()
     view.dispose()
   }
 
@@ -101,8 +117,7 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
     pausedForPageCache = true
     cancelAnimationFrame(animationFrame)
     animationFrame = 0
-    injected = { x: 0, z: 0, sprint: false }
-    input.clear()
+    clearMovement()
   }
 
   function handlePageShow(event: PageTransitionEvent): void {
@@ -114,8 +129,7 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
 
   function toggleOverview(): void {
     overview = !overview
-    input.clear()
-    injected = { x: 0, z: 0, sprint: false }
+    clearMovement()
     view.setOverview(overview)
     hud.setOverview(overview)
   }
@@ -157,13 +171,19 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
       grounded: explorer.grounded, jumpPhase: explorer.jumpPhase,
       frameMs: 0, frameTimes: [], camera: { x: 0, y: 0, z: 0, yaw: 0 }, forward: { x: 0, z: 1 },
       drawCalls: 0, triangles: 0, water: { elapsedSeconds: 0, level: 0 }, errors,
+      time: clock.read(previous),
     },
     controls: {
       move: (x, z, sprint = false) => { injected = { x, z, sprint } },
       stop: () => { injected = { x: 0, z: 0, sprint: false } }, reset, toggleOverview, visitLandmark,
+      setHour, setDayDuration, setTimePaused,
     },
   }
-  if (import.meta.env.DEV) globalThis.ashveilWorld = diagnostics
+  if (import.meta.env.DEV) {
+    globalThis.ashveilWorld = diagnostics
+    timePanel = createTimePanel(host, { clearMovement, setHour, setDuration: setDayDuration, setPaused: setTimePaused })
+    timePanel.update(diagnostics.state.time)
+  }
 
   function frame(now: number): void {
     if (disposed) return
@@ -180,7 +200,8 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
     view.setExplorer(explorer, overview ? 0 : delta)
     quests.update(explorer)
     view.updateCamera(explorer, delta)
-    view.render()
+    const time = clock.read(now)
+    view.render(sampleSkyState(time.hour), now * 0.001, explorer)
     const frameMs = performance.now() - frameStart
     averageFrameMs += (frameMs - averageFrameMs) * 0.05
     const rendered = view.diagnostics()
@@ -189,10 +210,12 @@ function startWorld(host: HTMLElement, kit: SceneryKit, character: ApprovedChara
       overview, grounded: explorer.grounded, jumpPhase: explorer.jumpPhase,
       frameMs: averageFrameMs, camera: rendered.camera, forward: rendered.forward,
       drawCalls: rendered.drawCalls, triangles: rendered.triangles, water: rendered.water,
+      time,
     })
     diagnostics.state.frameTimes.push(frameMs)
     if (diagnostics.state.frameTimes.length > 240) diagnostics.state.frameTimes.shift()
     hud.setLocation(diagnostics.state.location)
+    timePanel?.update(time)
     animationFrame = requestAnimationFrame(frame)
   }
 

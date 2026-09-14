@@ -1,0 +1,8 @@
+# Runtime sky refinement
+
+Generated with the built-in imagegen tool on 2026-09-14, editing the original panorama from PROMPT.md. Source pixels copied unchanged. Actual dimensions: 1774 x 887. This version removes clouds from the horizontal seam sectors and removes lower-hemisphere reflections.
+
+Use case: precise-object-edit
+Asset: seamless 360-degree equirectangular game sky texture, preserve exact 2:1 panorama aspect ratio.
+Edit the supplied sky panorama to fix its horizontal wrap seam. Preserve the hand-painted cloud style, blue/azure/ivory/periwinkle palette, and central cloud/open-sky composition. IMPORTANT: the leftmost and rightmost 8 percent of the panorama must be CLOUD-FREE, with exactly matching calm blue vertical gradients and identical edge colors at each height. Remove cloud fragments from these seam-edge sectors, naturally taper surrounding cloud shapes into clear blue before reaching either edge; no vertical cut or painted stripe. A cloud-free gap around the full 360-degree wrap is intentional. Do not add features at the seam. The top 12 percent should remain uniform calm blue, avoiding pole pinching.
+Additionally: the bottom half must be a smooth pale atmospheric blue gradient only, without reflected/mirrored clouds, water, an ocean surface, mountains, trees, or ground. Horizon at the exact vertical midpoint. In the upper half, keep large graceful painted cumulus cloudbanks centered in the interior, away from left/right edges, with plenty of clear sky; airy slightly colorful storybook fantasy, soft sculptural cloud volumes and painterly edges. Only sky, no sun, moon, stars, border, text or watermark; game adds moving celestial bodies separately. This is a flat texture asset, not a presentation mockup.

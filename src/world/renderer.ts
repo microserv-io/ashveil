@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { ApprovedWorldCharacter, type ApprovedCharacterTemplate } from './approved-character'
+import { elevateLookDirection } from './camera-look'
 import { buildScenery, disposeScenery, type BuiltScenery } from './scenery'
 import type { SceneryKit } from './scenery-kit'
 import { LANDMARKS, PATHS, SOLIDS, type WorldPoint } from './world-data'
@@ -12,10 +13,9 @@ import { terrainCameraHitDistance } from './terrain-camera-collision'
 import { getActiveZone } from './zone-active'
 import type { CompiledZone } from './zone-types'
 import { buildWaterSurface, type BuiltWaterSurface } from './water-surface'
+import { buildSkyEnvironment, sampleSkyState, type BuiltSkyEnvironment, type SkyState } from './sky-environment'
 
-const SUN_OFFSET = new THREE.Vector3(-60, 85, 25)
-const SHADOW_RADIUS = 42
-const BACKGROUND = 0xb7aa8e
+const PHYSICAL_CAMERA_MIN_PITCH = 0.16
 
 export const DEFAULT_CAMERA_YAW = 0.45
 
@@ -26,6 +26,7 @@ export class WorldView {
   private readonly zone: CompiledZone
   private readonly terrain: BuiltTerrainSurface
   private readonly water: BuiltWaterSurface
+  private readonly environment: BuiltSkyEnvironment
   private readonly scenery: BuiltScenery
   private readonly explorer: ApprovedWorldCharacter
   private readonly questNpcs: QuestNpcView
@@ -34,13 +35,13 @@ export class WorldView {
   private readonly cameraTarget = new THREE.Vector3()
   private readonly desiredCamera = new THREE.Vector3()
   private readonly cameraDirection = new THREE.Vector3()
+  private readonly lookDirection = new THREE.Vector3()
+  private readonly lookTarget = new THREE.Vector3()
   private readonly overviewPosition = new THREE.Vector3()
   private readonly overviewTarget = new THREE.Vector3()
   private readonly zoneSpanX: number
   private readonly zoneSpanZ: number
   private readonly zoneDiagonal: number
-  private readonly sun: THREE.DirectionalLight
-  private readonly sunTarget = new THREE.Object3D()
   private readonly normalFogDensity: number
   private readonly overviewFogDensity: number
   private waterElapsedSeconds = 0
@@ -53,6 +54,7 @@ export class WorldView {
     host: HTMLElement,
     kit: SceneryKit,
     character: ApprovedCharacterTemplate,
+    skyTexture: THREE.Texture,
     initialExplorer: Explorer,
     zone: CompiledZone = getActiveZone(),
   ) {
@@ -81,26 +83,17 @@ export class WorldView {
     host.prepend(this.renderer.domElement)
 
     this.explorer = new ApprovedWorldCharacter(character, initialExplorer)
-    this.scene.background = new THREE.Color(BACKGROUND)
-    this.scene.fog = new THREE.FogExp2(BACKGROUND, this.normalFogDensity)
     this.terrain = buildTerrainSurface(zone)
-    this.water = buildWaterSurface(zone, SUN_OFFSET)
+    const initialSky = sampleSkyState(8)
+    this.water = buildWaterSurface(zone, initialSky.sunDirection)
     this.scene.add(this.terrain.mesh, this.water.mesh, this.explorer.root)
     this.questNpcs = new QuestNpcView(this.scene, character, QUEST_NPCS, zone.heightAt)
     this.questTargets = new QuestTargetView(this.scene, QUEST_TARGETS, zone.heightAt)
     this.scenery = buildScenery(this.scene, {
       heightAt: zone.heightAt, isWaterAt: zone.isWaterAt, landmarks: LANDMARKS, paths: PATHS, solids: SOLIDS, kit,
     })
-    this.scene.add(new THREE.HemisphereLight(0xf5e8c9, 0x4b5042, 1.55))
-    this.sun = new THREE.DirectionalLight(0xffe5b7, 2.8)
-    this.sun.castShadow = true
-    this.sun.shadow.mapSize.set(1024, 1024)
-    Object.assign(this.sun.shadow.camera, {
-      left: -SHADOW_RADIUS, right: SHADOW_RADIUS, top: SHADOW_RADIUS, bottom: -SHADOW_RADIUS, near: 1, far: 160,
-    })
-    this.sun.shadow.camera.updateProjectionMatrix()
-    this.scene.add(this.sun, this.sunTarget)
-    this.updateSun(initialExplorer)
+    this.environment = buildSkyEnvironment(this.scene, skyTexture, this.normalFogDensity)
+    this.environment.update(initialSky, this.camera.position, initialExplorer)
     this.resize()
   }
 
@@ -110,10 +103,9 @@ export class WorldView {
   setExplorer(explorer: Explorer, delta: number): void {
     this.explorer.update(explorer, delta)
     this.questNpcs.updateLabels(explorer)
-    this.updateSun(explorer)
   }
 
-  resetExplorer(explorer: Explorer): void { this.explorer.reset(explorer); this.updateSun(explorer) }
+  resetExplorer(explorer: Explorer): void { this.explorer.reset(explorer) }
   turnCamera(delta: number): void { this.yaw += delta }
 
   setQuestMarkers(markers: readonly VisibleQuestMarker[]): void {
@@ -128,14 +120,14 @@ export class WorldView {
   adjustOrbit(x: number, y: number, zoom: number): void {
     if (this.overview) return
     this.yaw -= x * 0.005
-    this.pitch = THREE.MathUtils.clamp(this.pitch + y * 0.004, 0.16, 1.05)
+    this.pitch = THREE.MathUtils.clamp(this.pitch + y * 0.004, -1.35, 1.05)
     this.distance = THREE.MathUtils.clamp(this.distance + zoom, 4.8, 18)
   }
 
   setOverview(active: boolean): void {
     this.overview = active
-    ;(this.scene.fog as THREE.FogExp2).density = active ? this.overviewFogDensity : this.normalFogDensity
-    this.sun.castShadow = !active
+    this.environment.setFogDensity(active ? this.overviewFogDensity : this.normalFogDensity)
+    this.environment.setSunShadows(!active)
     this.camera.up.set(0, active ? 0 : 1, active ? 1 : 0)
   }
 
@@ -148,10 +140,11 @@ export class WorldView {
       return
     }
     this.cameraTarget.set(explorer.x, explorer.y + 1.35, explorer.z)
-    const horizontal = Math.cos(this.pitch) * this.distance
+    const physicalPitch = Math.max(this.pitch, PHYSICAL_CAMERA_MIN_PITCH)
+    const horizontal = Math.cos(physicalPitch) * this.distance
     this.desiredCamera.set(
       explorer.x + Math.sin(this.yaw) * horizontal,
-      explorer.y + 1.35 + Math.sin(this.pitch) * this.distance,
+      explorer.y + 1.35 + Math.sin(physicalPitch) * this.distance,
       explorer.z + Math.cos(this.yaw) * horizontal,
     )
     this.cameraDirection.copy(this.desiredCamera).sub(this.cameraTarget)
@@ -174,7 +167,15 @@ export class WorldView {
       this.zone.heightAt(this.desiredCamera.x, this.desiredCamera.z) + 0.85,
     )
     this.camera.position.lerp(this.desiredCamera, Math.min(1, delta * 12))
-    this.camera.lookAt(this.cameraTarget)
+    if (this.pitch >= PHYSICAL_CAMERA_MIN_PITCH) {
+      this.camera.lookAt(this.cameraTarget)
+    } else {
+      this.lookDirection.copy(this.cameraTarget).sub(this.camera.position)
+      const elevated = elevateLookDirection(this.lookDirection, PHYSICAL_CAMERA_MIN_PITCH - this.pitch, this.yaw)
+      this.lookDirection.set(elevated.x, elevated.y, elevated.z)
+      this.lookTarget.copy(this.camera.position).add(this.lookDirection)
+      this.camera.lookAt(this.lookTarget)
+    }
   }
 
   resize(): void {
@@ -193,15 +194,23 @@ export class WorldView {
     this.renderer.setSize(width, height)
   }
 
-  render(): void {
-    this.waterElapsedSeconds = performance.now() * 0.001
-    this.water.update(this.waterElapsedSeconds)
+  render(skyState: SkyState, elapsedSeconds: number, explorer: Explorer): void {
+    this.waterElapsedSeconds = elapsedSeconds
+    const sunDominant = skyState.sunIntensity >= skyState.moonIntensity
+    this.water.update(this.waterElapsedSeconds, {
+      direction: sunDominant ? skyState.sunDirection : skyState.moonDirection,
+      color: sunDominant ? skyState.sunColor : skyState.moonColor,
+      intensity: sunDominant ? skyState.sunIntensity : skyState.moonIntensity,
+      ambientColor: skyState.hemisphereSkyColor,
+    })
+    this.environment.update(skyState, this.camera.position, explorer)
     this.renderer.render(this.scene, this.camera)
   }
 
   dispose(): void {
     this.terrain.dispose()
     this.water.dispose()
+    this.environment.dispose()
     disposeScenery(this.scenery)
     this.questNpcs.dispose()
     this.questTargets.dispose()
@@ -233,10 +242,4 @@ export class WorldView {
     return { x: forward.x / length, z: forward.z / length }
   }
 
-  private updateSun(explorer: Pick<Explorer, 'x' | 'y' | 'z'>): void {
-    this.sunTarget.position.set(explorer.x, explorer.y, explorer.z)
-    this.sun.position.copy(this.sunTarget.position).add(SUN_OFFSET)
-    this.sun.target = this.sunTarget
-    this.sunTarget.updateMatrixWorld()
-  }
 }

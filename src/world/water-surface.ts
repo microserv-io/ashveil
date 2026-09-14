@@ -3,8 +3,15 @@ import type { CompiledZone } from './zone-types'
 
 export interface BuiltWaterSurface {
   readonly mesh: THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>
-  update(elapsedSeconds: number): void
+  update(elapsedSeconds: number, lighting?: WaterLighting): void
   dispose(): void
+}
+
+export interface WaterLighting {
+  readonly direction: THREE.Vector3
+  readonly color: THREE.Color
+  readonly intensity: number
+  readonly ambientColor: THREE.Color
 }
 
 const ACROSS_RIVER = [-1, -0.72, 0, 0.72, 1] as const
@@ -46,7 +53,10 @@ export function buildWaterSurface(zone: CompiledZone, sunlightDirection: THREE.V
     fog: true,
     uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, {
       elapsedSeconds: { value: 0 },
-      sunlightDirection: { value: sunlightDirection.clone().normalize() },
+      keyLightDirection: { value: sunlightDirection.clone().normalize() },
+      keyLightColor: { value: new THREE.Color(0xffd89c) },
+      keyLightIntensity: { value: 2.8 },
+      ambientLightColor: { value: new THREE.Color(0xf5e8c9) },
       shallowColor: { value: new THREE.Color(0x6aa9a9) },
       deepColor: { value: new THREE.Color(0x173f50) },
       foamColor: { value: new THREE.Color(0xd5e7dc) },
@@ -75,7 +85,10 @@ export function buildWaterSurface(zone: CompiledZone, sunlightDirection: THREE.V
     `,
     fragmentShader: `
       uniform float elapsedSeconds;
-      uniform vec3 sunlightDirection;
+      uniform vec3 keyLightDirection;
+      uniform vec3 keyLightColor;
+      uniform float keyLightIntensity;
+      uniform vec3 ambientLightColor;
       uniform vec3 shallowColor;
       uniform vec3 deepColor;
       uniform vec3 foamColor;
@@ -92,13 +105,16 @@ export function buildWaterSurface(zone: CompiledZone, sunlightDirection: THREE.V
         vec3 normal = normalize(vec3(-dx, 1.0, -dz));
         vec3 viewDirection = normalize(cameraPosition - vWorldPosition);
         float fresnel = pow(1.0 - max(dot(normal, viewDirection), 0.0), 3.0);
-        float sunGlint = pow(max(dot(reflect(-sunlightDirection, normal), viewDirection), 0.0), 96.0);
+        float keyGlint = pow(max(dot(reflect(-keyLightDirection, normal), viewDirection), 0.0), 96.0);
         float depthMix = smoothstep(0.3, 6.0, vWaterDepth);
         vec3 color = mix(shallowColor, deepColor, depthMix);
-        color += vec3(0.24, 0.32, 0.34) * fresnel + vec3(1.0, 0.83, 0.56) * sunGlint * 1.4;
+        vec3 ambientFactor = 0.38 + ambientLightColor * 0.62;
+        color *= ambientFactor;
+        color += ambientLightColor * fresnel * 0.3 + keyLightColor * keyGlint * keyLightIntensity * 0.5;
         float foamWave = sin(vWorldPosition.z * 0.34 - elapsedSeconds * 1.65 + sin(vWorldPosition.x * 0.13) * 1.8);
         float foam = smoothstep(0.82, 0.97, vShore) * smoothstep(0.1, 0.72, foamWave);
-        color = mix(color, foamColor, foam * 0.68);
+        vec3 litFoamColor = foamColor * ambientFactor + keyLightColor * keyLightIntensity * 0.03;
+        color = mix(color, litFoamColor, foam * 0.68);
         float alpha = mix(0.48, 0.78, depthMix) * mix(1.0, 0.48, smoothstep(0.76, 1.0, vShore)) + foam * 0.28;
         gl_FragColor = vec4(color, alpha);
         #include <tonemapping_fragment>
@@ -112,7 +128,14 @@ export function buildWaterSurface(zone: CompiledZone, sunlightDirection: THREE.V
   mesh.renderOrder = 2
   return {
     mesh,
-    update: (elapsedSeconds) => { material.uniforms.elapsedSeconds!.value = elapsedSeconds },
+    update: (elapsedSeconds, lighting) => {
+      material.uniforms.elapsedSeconds!.value = elapsedSeconds
+      if (!lighting) return
+      material.uniforms.keyLightDirection!.value.copy(lighting.direction)
+      material.uniforms.keyLightColor!.value.copy(lighting.color)
+      material.uniforms.keyLightIntensity!.value = lighting.intensity
+      material.uniforms.ambientLightColor!.value.copy(lighting.ambientColor)
+    },
     dispose: () => {
       mesh.removeFromParent()
       geometry.dispose()
