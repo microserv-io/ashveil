@@ -1,0 +1,28 @@
+{
+  "tool": "Built-in image_gen",
+  "date": "2026-09-13",
+  "asset": "starting-zone-map-v3.png",
+  "prompt": "Edit this Alderbank zone map to REDUCE the amount of interior cliffs substantially. The previous pass became too rocky and enclosed. Aim for a welcoming rolling river valley with a few purposeful natural blockers, roughly halfway between a flat meadow and the current canyon-filled landscape.\n\nKeep the exact map framing, all labels, buildings, paths, numbered pins, legend, compass, river, desaturated west bank and broken crossings. Preserve the gold and teal route network exactly.\n\nTerrain changes only:\n- Keep the important landing-to-refuge blocker: a single compact, low limestone bluff along the refuge's west/southwest edge. Reduce its exaggerated height and roughness by about half, but keep its rock face unwalkably steep. Retain the clear gold approach around its southeast end as the intended climb. Keep the refuge eave lanterns visible. Remove the tall cliff ring on the village's eastern side so the refuge opens naturally toward fields.\n- Remove about TWO THIRDS of all other new interior exposed cliffs and escarpments. Replace them with gently rounded grassy hills, occasional wooded slopes, shallow contours and broad connected meadows. Do not simply hide tall cliffs behind trees: actually soften the landforms.\n- West of the Lower Road, retain ONE modest irregular wooded ridge with two small rocky faces as a local route guide; dissolve the numerous stacked cliff shelves into rolling countryside.\n- Around Westmere Farm and Old Orchard, remove the enclosing canyon walls. Restore generous fields and a gently terraced cultivated orchard. A few small outcrops at field edges are enough.\n- Around Alder Grove and the rally, remove most interior rock walls. Use one gentle wooded rise to separate areas, with open ground and a broad easy descent to Broken Waystation.\n- Keep the established mountains at the far eastern/southern map edge as the zone boundary, distinct from much lower interior hills.\n\nReadable paths and sheltered places, with breathing room. No maze, no layered rocky mesas covering the interior, no sheer cliff around every location, no new landmarks or text. Preserve the painted parchment MMO cartography style.\n",
+  "generatedSource": "exec-f9a14dcc-bf43-4799-9a87-2cd8e306f9a1.png",
+  "generatedDimensions": {
+    "width": 1536,
+    "height": 1024,
+    "format": "png",
+    "channels": 3,
+    "hasAlpha": false
+  },
+  "generatedSha256": "38cd3d8a3c24d2fc0ff385716dae5698c9e2c3ef9358fc0eee2e190946099427",
+  "sourceReference": {
+    "path": "docs/art-pipeline/concepts/opening-chapter/starting-zone-map-v2.png",
+    "sha256": "f9c6809f855d0c8a395fdde535779ed101267972254578e59caafce0f0f21585",
+    "role": "Exact map-edit reference supplied to reduce the heavy v2 interior blockers while preserving its geography, routes, labels, framing and refuge staging cue."
+  },
+  "layoutDecisions": [
+    "Keep one compact low but unwalkably steep bluff west and southwest of the Refuge, with the existing broad road climb around its southeast end.",
+    "Use a few purposeful rocky ridges and outcrops as route guides; most of the interior returns to connected grassland, wooded rolling hills, fields and gentle orchard terraces.",
+    "Avoid enclosing every landmark with cliffs while preserving the established eastern and southern mountain boundary.",
+    "Preserve every named landmark and the gold and teal route graph, including the waystation return through the rally and wagon.",
+    "The five-minute Refuge-to-Waystation runtime contract remains a future terrain-translation requirement; the illustration does not redefine scale or collision."
+  ],
+  "status": "Current gentler illustrated terrain-planning reference awaiting translation into authored terrain. The active editor overlay and runtime geometry still use v1."
+}
