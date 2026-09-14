@@ -34,6 +34,11 @@ describe('quest modal input ownership', () => {
       orbitX: 0,
       orbitY: 0,
       zoom: 0,
+      freeLook: false,
+      mouseSteering: false,
+      mouseSteeringPending: false,
+      mouseForward: false,
+      mouseSteeringOrbitX: 0,
     })
   })
 

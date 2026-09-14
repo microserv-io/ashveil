@@ -29,6 +29,13 @@ Use **F** to interact nearby and **J** for the journal, or use their on-screen b
 Progress is stored for one offline character per browser origin; returning to the
 refuge does not reset it. This is separate from the deprecated demo's saves.
 
+The first-zone desktop controls use character-relative MMO movement: W/S move, A/D
+turn, Q/E strafe, Alt walks, Shift sprints and Space jumps. Left mouse drag free-looks;
+right drag steers the character with the camera and changes A/D into strafing; holding
+both buttons moves forward. The wheel zooms. Touch keeps its camera-relative joystick
+and independent canvas orbit. This validation route does not yet provide rebinding,
+camera settings, a camera-relative Legacy mode or gamepad input.
+
 The environment pass uses Blender-authored buildings and trees guided by the
 [character-and-village style reference](docs/art-pipeline/concepts/opening-chapter/environment-kit.png).
 The reference sets an art direction; it is not a screenshot of the playable zone.
