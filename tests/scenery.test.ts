@@ -60,15 +60,17 @@ describe('first-zone scenery', () => {
     scenery.root.traverse((object) => {
       if (object instanceof THREE.Mesh) meshes.push(object)
     })
-    expect(meshes.filter((mesh) => mesh instanceof THREE.InstancedMesh)).toHaveLength(4)
     const batches = meshes.filter((mesh): mesh is THREE.InstancedMesh => mesh instanceof THREE.InstancedMesh)
-    let batchMaterialDisposals = 0
+    expect(batches.length).toBeGreaterThan(4)
+    const batchMaterials = new Set<THREE.Material>()
     for (const batch of batches) {
       const material = batch.material as THREE.MeshStandardMaterial
       expect(material).not.toBe(sourceKit.refuge_hall.material)
       expect([material.map, material.normalMap, material.roughnessMap]).toEqual(sourceTextures)
-      material.addEventListener('dispose', () => { batchMaterialDisposals += 1 })
+      batchMaterials.add(material)
     }
+    let batchMaterialDisposals = 0
+    batchMaterials.forEach((material) => material.addEventListener('dispose', () => { batchMaterialDisposals += 1 }))
     expect(scene.children).toContain(scenery.root)
     expect(scenery.cameraOccluders.map((object) => object.name)).toEqual([
       'first-zone-scenery', 'kit-refuge_hall', 'kit-cottage', 'camera-tree-proxies',
@@ -87,5 +89,28 @@ describe('first-zone scenery', () => {
     expect((rebuiltCottage.material as THREE.MeshStandardMaterial).map).toBe(sourceTextures[0])
     disposeScenery(rebuilt)
     expect(sourceTextureDisposals).toBe(0)
+  })
+
+  it('keeps farm fields and fences local to the authored farm landmark', () => {
+    const buildAt = (x: number, z: number): ReturnType<typeof buildScenery> => {
+      const scene = new THREE.Scene()
+      return buildScenery(scene, {
+        heightAt: () => 0,
+        landmarks: [{ id: 'farm', label: 'Farm', x, z, radius: 22 }],
+        paths: [],
+        solids: [],
+        kit: kit(),
+      })
+    }
+    const origin = buildAt(0, 0)
+    const moved = buildAt(120, -75)
+    const centerOfProceduralScenery = (scenery: ReturnType<typeof buildScenery>): THREE.Vector3 =>
+      new THREE.Box3().setFromObject(scenery.root.children[0]!).getCenter(new THREE.Vector3())
+    const originCenter = centerOfProceduralScenery(origin)
+    const movedCenter = centerOfProceduralScenery(moved)
+    expect(movedCenter.x - originCenter.x).toBeCloseTo(120)
+    expect(movedCenter.z - originCenter.z).toBeCloseTo(-75)
+    disposeScenery(origin)
+    disposeScenery(moved)
   })
 })

@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import type { QuestCategory } from '../quests'
 import { ApprovedWorldCharacter, type ApprovedCharacterTemplate } from './approved-character'
 import { createExplorer } from './movement'
-import { heightAt } from './terrain'
+import { heightAt as activeHeightAt } from './terrain'
 import type { WorldQuestNpcPlacement } from './quest-world-data'
 import type { WorldPoint } from './world-data'
 
@@ -21,7 +21,12 @@ interface QuestNpcActor {
 export class QuestNpcView {
   private readonly actors = new Map<string, QuestNpcActor>()
 
-  constructor(scene: THREE.Scene, template: ApprovedCharacterTemplate, placements: readonly WorldQuestNpcPlacement[]) {
+  constructor(
+    scene: THREE.Scene,
+    template: ApprovedCharacterTemplate,
+    placements: readonly WorldQuestNpcPlacement[],
+    heightAt: (x: number, z: number) => number = activeHeightAt,
+  ) {
     const ids = new Set<string>()
     for (const placement of placements) {
       if (ids.has(placement.id)) throw new Error(`duplicate quest NPC placement: ${placement.id}`)

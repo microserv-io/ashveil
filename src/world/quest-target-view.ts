@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import type { QuestCategory } from '../quests'
-import { heightAt } from './terrain'
+import { heightAt as activeHeightAt } from './terrain'
 import type { WorldQuestTarget } from './quest-host'
 import type { QuestMarkerStatus } from './quest-npcs'
 
@@ -13,7 +13,11 @@ export interface VisibleQuestMarker {
 export class QuestTargetView {
   private readonly markers = new Map<string, THREE.Group>()
 
-  constructor(scene: THREE.Scene, targets: readonly WorldQuestTarget[]) {
+  constructor(
+    scene: THREE.Scene,
+    targets: readonly WorldQuestTarget[],
+    heightAt: (x: number, z: number) => number = activeHeightAt,
+  ) {
     for (const target of targets) {
       if (target.kind !== 'prop') continue
       const marker = createAffordance()
@@ -37,6 +41,19 @@ export class QuestTargetView {
       })
       marker.scale.setScalar(item.status === 'ready' ? 1.1 : item.status === 'active' ? 0.9 : 1)
     }
+  }
+
+  dispose(): void {
+    for (const marker of this.markers.values()) {
+      marker.traverse((object) => {
+        if (!(object instanceof THREE.Mesh)) return
+        object.geometry.dispose()
+        const materials = Array.isArray(object.material) ? object.material : [object.material]
+        for (const material of materials) material.dispose()
+      })
+      marker.removeFromParent()
+    }
+    this.markers.clear()
   }
 }
 

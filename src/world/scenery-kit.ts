@@ -180,6 +180,7 @@ function validateGeometry(geometry: THREE.BufferGeometry, name: string): void {
 }
 
 const BUILDING_IDS = new Set<string>(BUILDING_STYLES.map((building) => building.id))
+export const TREE_CULL_CELL_SIZE = 160
 
 const BATCHES: readonly { readonly template: TemplateName; readonly ids: (solid: ScenerySolid) => boolean }[] = [
   { template: 'refuge_hall', ids: (solid) => solid.id === 'refuge-hall' || solid.id === 'farm-barn' },
@@ -195,33 +196,50 @@ export function buildSceneryKitInstances(kit: SceneryKit, options: KitPlacementO
   for (const batch of BATCHES) {
     const placements = options.solids.filter(batch.ids)
     const source = kit[batch.template]
-    const mesh = new THREE.InstancedMesh(source.geometry.clone(), source.material.clone(), placements.length)
     const isTree = batch.template === 'alder_tree' || batch.template === 'orchard_tree'
-    mesh.name = `kit-${batch.template}`
-    mesh.castShadow = true
-    mesh.receiveShadow = batch.template === 'refuge_hall' || batch.template === 'cottage'
-    placements.forEach((solid, index) => {
-      const uniformScale = Math.min(1, solid.radius / Number(source.userData.footprintRadius))
-      const variation = isTree
-        ? treeInstanceVariation(solid.id, source.geometry, solid.radius, TREE_GROUND_ZONE_CUTOFF)
-        : undefined
-      const matrix = new THREE.Matrix4().compose(
-        new THREE.Vector3(solid.x, options.heightAt(solid.x, solid.z), solid.z),
-        new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), variation?.yaw ?? yaws.get(solid.id) ?? 0),
-        variation
-          ? new THREE.Vector3(variation.widthScale, variation.heightScale, variation.widthScale)
-          : new THREE.Vector3(uniformScale, uniformScale, uniformScale),
-      )
-      mesh.setMatrixAt(index, matrix)
-      if (variation) mesh.setColorAt(index, variation.tint)
-    })
-    mesh.instanceMatrix.needsUpdate = true
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
-    mesh.computeBoundingBox()
-    mesh.computeBoundingSphere()
-    group.add(mesh)
+    const chunks = isTree ? treePlacementChunks(placements) : [placements]
+    const geometry = source.geometry.clone()
+    const material = source.material.clone()
+    for (const chunk of chunks) {
+      const mesh = new THREE.InstancedMesh(geometry, material, chunk.length)
+      mesh.name = `kit-${batch.template}`
+      mesh.userData.placementIds = chunk.map((solid) => solid.id)
+      mesh.castShadow = true
+      mesh.receiveShadow = !isTree
+      chunk.forEach((solid, index) => {
+        const uniformScale = Math.min(1, solid.radius / Number(source.userData.footprintRadius))
+        const variation = isTree
+          ? treeInstanceVariation(solid.id, source.geometry, solid.radius, TREE_GROUND_ZONE_CUTOFF)
+          : undefined
+        const matrix = new THREE.Matrix4().compose(
+          new THREE.Vector3(solid.x, options.heightAt(solid.x, solid.z), solid.z),
+          new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), variation?.yaw ?? yaws.get(solid.id) ?? 0),
+          variation
+            ? new THREE.Vector3(variation.widthScale, variation.heightScale, variation.widthScale)
+            : new THREE.Vector3(uniformScale, uniformScale, uniformScale),
+        )
+        mesh.setMatrixAt(index, matrix)
+        if (variation) mesh.setColorAt(index, variation.tint)
+      })
+      mesh.instanceMatrix.needsUpdate = true
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
+      mesh.computeBoundingBox()
+      mesh.computeBoundingSphere()
+      group.add(mesh)
+    }
   }
   return group
+}
+
+function treePlacementChunks(placements: readonly ScenerySolid[]): readonly (readonly ScenerySolid[])[] {
+  const chunks = new Map<string, ScenerySolid[]>()
+  for (const solid of placements) {
+    const key = `${Math.floor(solid.x / TREE_CULL_CELL_SIZE)}:${Math.floor(solid.z / TREE_CULL_CELL_SIZE)}`
+    const chunk = chunks.get(key)
+    if (chunk) chunk.push(solid)
+    else chunks.set(key, [solid])
+  }
+  return [...chunks.values()]
 }
 
 export function buildTreeCameraProxies(options: KitPlacementOptions): THREE.Group {

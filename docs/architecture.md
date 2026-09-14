@@ -107,9 +107,18 @@ it does not settle the final production engine.
 
 The zone loads its Blender scenery kit independently of the legacy model registry.
 Four vertex-coloured templates become instanced buildings and trees; authored positions
-and collision disks remain in `world-data.ts`. Tree camera proxies exclude foliage so
+and collision disks are projected around the compiled zone's named landmarks in
+`world-data.ts`. Tree camera proxies exclude foliage so
 overhanging crowns do not collapse the orbit distance. The kit's Blender generator and
 asset manifest record the source reference, export frame and geometry budgets.
+
+The [zone authoring contract](zone-authoring.md) separates the versioned layout from
+its compiled terrain. The compiler generates a cached height grid, water and mountain
+queries, and route metrics from explicit authored controls. Both the editor and the
+runtime consume that representation. Browser draft loading happens before runtime
+initialization; local storage never becomes a dependency of the terrain compiler.
+Water animation and ground materials remain rendering concerns. Neither changes the
+collision surface or the authored traversal boundary.
 
 Three kinds of place, with different rules, because they answer different questions:
 
@@ -124,9 +133,10 @@ fight in the game then happens at a known party size, so monster density and hea
 can be tuned against it. Shared-world combat would break that, and defending against
 leeching and griefing is a second problem on top.
 
-The procedural generator therefore only ever serves dungeons. Hubs and the overworld
-need authored geometry, which is content rather than code — the generator is wired
-behind a zone rule so authored maps can replace it per zone without touching the sim.
+Random layout generation serves dungeons. Hubs and the overworld use authored
+geometry: compiling an explicit zone layout into terrain does not randomize its
+geography. The dungeon generator remains behind a zone rule so authored maps can
+replace it per zone without touching the sim.
 
 **Seamless is still a handoff.** A shared hub and a party-only overworld cannot be
 the same instance, so walking between them crosses instances no matter how it looks.

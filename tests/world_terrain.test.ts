@@ -80,10 +80,15 @@ describe('first-zone terrain', () => {
       { typeOnly: true, path: '../render/riginput' },
     ])
     expect(character).not.toMatch(/src\/main|\.\.\/(sim|ui|session|net)\//)
-    for (const file of ['terrain.ts', 'world-data.ts', 'movement.ts']) {
-      expect(readFileSync(join(worldRoot, file), 'utf8')).not.toMatch(/from ['"]three['"]|\b(document|window|performance)\b/)
+    for (const file of [
+      'terrain.ts', 'world-data.ts', 'movement.ts', 'zone-types.ts', 'zone-default.ts',
+      'zone-compiler.ts', 'zone-active.ts', 'anchored-placement.ts',
+    ]) {
+      const source = readFileSync(join(worldRoot, file), 'utf8')
+      expect(source).not.toMatch(/from ['"]three['"]|\b(document|window|performance|localStorage|indexedDB)\b/)
+      expect(source).not.toMatch(/\.\.\/(render|ui|session|net)\//)
     }
-    expect(readFileSync(join(root, 'index.html'), 'utf8')).toContain('/src/world/main.ts')
+    expect(readFileSync(join(root, 'index.html'), 'utf8')).toContain('/src/world/zone-bootstrap.ts')
     expect(readFileSync(join(root, 'legacy.html'), 'utf8')).toContain('/src/main.ts')
   })
 })

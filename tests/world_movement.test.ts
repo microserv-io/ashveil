@@ -11,8 +11,9 @@ import {
   SPRINT_SPEED,
   WALK_SPEED,
 } from '../src/world/movement'
-import { PATHS, SPAWN } from '../src/world/world-data'
+import { LANDMARKS, PATHS, SPAWN } from '../src/world/world-data'
 import { heightAt, riverCenterAt, riverHalfWidthAt, WORLD_BOUNDS } from '../src/world/terrain'
+import { mapToWorld } from '../src/world/zone-default'
 
 describe('first-zone movement', () => {
   it('substeps a long frame and caps elapsed time', () => {
@@ -152,15 +153,16 @@ describe('first-zone movement', () => {
   })
 
   it('blocks an angled attempt across the broken span', () => {
-    let explorer = createExplorer({ x: -2, z: -86 })
+    const abutment = LANDMARKS.find((landmark) => landmark.id === 'bridge-abutment')!
+    const edge = riverCenterAt(abutment.z) - riverHalfWidthAt(abutment.z)
+    let explorer = createExplorer({ x: edge - 8, z: abutment.z - 8 })
     for (let i = 0; i < 180; i += 1) {
       explorer = moveExplorer(explorer, { x: 1, z: 0.35, sprint: true }, 1 / 60)
     }
     expect(explorer.x + explorer.radius).toBeLessThanOrEqual(
       riverCenterAt(explorer.z) - riverHalfWidthAt(explorer.z) + 0.001,
     )
-    expect(Math.hypot(explorer.x - 5, explorer.z + 80)).toBeGreaterThanOrEqual(4 + explorer.radius)
-    expect(canOccupy(createExplorer({ x: -20, z: -76 }), -19.5, -76.2)).toBe(true)
+    expect(Math.hypot(explorer.x - abutment.x, explorer.z - abutment.z)).toBeGreaterThanOrEqual(4 + explorer.radius)
   })
 
   it('blocks diagonal escape through the world corner', () => {
@@ -186,5 +188,82 @@ describe('first-zone movement', () => {
         }
       }
     }
+  })
+
+  it('traverses every authored path continuously under real movement collision', () => {
+    for (const path of PATHS) {
+      let explorer = createExplorer(path.points[0]!)
+      for (const target of path.points.slice(1)) for (let frame = 0; frame < 30_000; frame += 1) {
+        const dx = target.x - explorer.x
+        const dz = target.z - explorer.z
+        const distance = Math.hypot(dx, dz)
+        if (distance < 1e-6) break
+        const delta = Math.min(1 / 60, distance / RUN_SPEED)
+        const next = moveExplorer(explorer, { x: dx / distance, z: dz / distance, sprint: false }, delta)
+        expect(Math.hypot(next.x - explorer.x, next.z - explorer.z), `${path.id} stalled`).toBeGreaterThan(0)
+        explorer = next
+      }
+      expect(Math.hypot(explorer.x - path.points.at(-1)!.x, explorer.z - path.points.at(-1)!.z), path.id).toBeLessThan(0.001)
+    }
+  })
+
+  it('runs the full main road continuously in five minutes without resetting explorer state', () => {
+    const routeIds = ['refuge-road', 'lower-road', 'waystation-descent']
+    let explorer = createExplorer(SPAWN)
+    let elapsed = 0
+    for (const path of routeIds.map((id) => PATHS.find((path) => path.id === id)!)) {
+      for (const target of path.points.slice(1)) {
+        for (let frame = 0; frame < 30_000; frame += 1) {
+          const dx = target.x - explorer.x
+          const dz = target.z - explorer.z
+          const distance = Math.hypot(dx, dz)
+          if (distance < 1e-6) break
+          const delta = Math.min(1 / 60, distance / RUN_SPEED)
+          const next = moveExplorer(explorer, { x: dx / distance, z: dz / distance, sprint: false }, delta)
+          expect(Math.hypot(next.x - explorer.x, next.z - explorer.z)).toBeGreaterThan(0)
+          explorer = next
+          elapsed += delta
+        }
+      }
+    }
+    const waystation = LANDMARKS.find((landmark) => landmark.id === 'waystation')!
+    expect(Math.hypot(explorer.x - waystation.x, explorer.z - waystation.z)).toBeLessThan(0.001)
+    expect(elapsed).toBeGreaterThanOrEqual(285)
+    expect(elapsed).toBeLessThanOrEqual(315)
+  })
+
+  it('keeps the full authored road width grounded and traversable', () => {
+    for (const path of PATHS) for (let segment = 1; segment < path.points.length; segment += 1) {
+      const from = path.points[segment - 1]!
+      const to = path.points[segment]!
+      const length = Math.hypot(to.x - from.x, to.z - from.z)
+      const normal = { x: -(to.z - from.z) / length, z: (to.x - from.x) / length }
+      for (const side of [-1, 0, 1]) {
+        const point = { x: (from.x + to.x) * 0.5 + normal.x * path.width * 0.45 * side,
+          z: (from.z + to.z) * 0.5 + normal.z * path.width * 0.45 * side }
+        const explorer = createExplorer({ x: (from.x + to.x) * 0.5, z: (from.z + to.z) * 0.5 })
+        expect(canOccupy(explorer, point.x, point.z), `${path.id} side ${side}`).toBe(true)
+      }
+    }
+  })
+
+  it.each([
+    ['north river join', [600, 100], [460, 0], 'north'],
+    ['south river join', [550, 760], [410, 850], 'south'],
+    ['north-east mountain join', [1400, 100], [1520, 0], 'east'],
+    ['south-east mountain join', [1400, 760], [1520, 850], 'east'],
+  ] as const)('seals the %s before the invisible outer guard', (_name, startPixel, targetPixel, edge) => {
+    const start = mapToWorld(startPixel[0], startPixel[1])
+    const target = mapToWorld(targetPixel[0], targetPixel[1])
+    const dx = target.x - start.x
+    const dz = target.z - start.z
+    const length = Math.hypot(dx, dz)
+    let explorer = createExplorer(start)
+    for (let frame = 0; frame < 4_000; frame += 1) {
+      explorer = moveExplorer(explorer, { x: dx / length, z: dz / length, sprint: true }, 1 / 60)
+    }
+    if (edge === 'north') expect(WORLD_BOUNDS.maxZ - explorer.z).toBeGreaterThan(20)
+    if (edge === 'south') expect(explorer.z - WORLD_BOUNDS.minZ).toBeGreaterThan(20)
+    if (edge === 'east') expect(explorer.x - WORLD_BOUNDS.minX).toBeGreaterThan(20)
   })
 })
