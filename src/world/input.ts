@@ -191,7 +191,10 @@ export class WorldInput {
   }
 
   private onKeyDown = (event: KeyboardEvent): void => {
-    if (!this.enabled || isEditableTarget(event.target) || !GAMEPLAY_KEYS.has(event.code)) return
+    if (!this.enabled || !GAMEPLAY_KEYS.has(event.code)) return
+    if (isEditableTarget(event.target)) return
+    // Space activates a focused button natively; let the browser handle it instead of jumping.
+    if (isButtonTarget(event.target) && event.code === 'Space') return
     event.preventDefault()
     if (event.code === 'Space') {
       if (!event.repeat) this.jumpQueued = true
@@ -331,7 +334,15 @@ function releasePointerCapture(element: Element, pointerId: number | undefined):
   }
 }
 
-function isEditableTarget(target: EventTarget | null): boolean {
+function targetMatches(target: EventTarget | null, selector: string): boolean {
   if (!target || typeof (target as Element).closest !== 'function') return false
-  return (target as Element).closest('input, select, textarea, button, [contenteditable]') !== null
+  return (target as Element).closest(selector) !== null
+}
+
+function isEditableTarget(target: EventTarget | null): boolean {
+  return targetMatches(target, 'input, select, textarea, [contenteditable]')
+}
+
+function isButtonTarget(target: EventTarget | null): boolean {
+  return targetMatches(target, 'button')
 }
