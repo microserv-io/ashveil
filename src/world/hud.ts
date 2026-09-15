@@ -8,6 +8,7 @@ export interface WorldHud {
   readonly jumpButton: HTMLButtonElement
   readonly overviewButton: HTMLButtonElement
   readonly resetButton: HTMLButtonElement
+  readonly rightRail: HTMLElement
   readonly developerTools: HTMLElement
   setLocation(name: string): void
   setOverview(active: boolean): void
@@ -31,7 +32,7 @@ export function createWorldHud(root: HTMLElement, start: { readonly locationLabe
   root.innerHTML = `
     <main id="world-shell" class="world-hud" aria-label="Alderbank interface">
       ${HUD_TARGET_FRAME}
-      <aside class="hud-right-rail">
+      <aside id="right-rail" class="hud-right-rail">
         <section class="hud-minimap" aria-label="Map unavailable">
           <div class="hud-minimap-face"></div>
           <strong id="location"></strong><small>Alderbank</small>
@@ -60,13 +61,14 @@ export function createWorldHud(root: HTMLElement, start: { readonly locationLabe
   const location = get('location')
   const overviewButton = get<HTMLButtonElement>('overview')
   const resetButton = get<HTMLButtonElement>('reset')
+  const rightRail = get('right-rail')
   const setTarget = createTargetFrame(root)
   location.textContent = start.locationLabel
   resetButton.textContent = start.resetLabel
   if (!import.meta.env.DEV) get('developer-tools').hidden = true
   return {
     joystick: get('joystick'), joystickKnob: get('joystick-knob'), sprintButton: get('sprint'), jumpButton: get('jump'),
-    overviewButton, resetButton, developerTools: get('developer-tools-body'),
+    overviewButton, resetButton, rightRail, developerTools: get('developer-tools-body'),
     setLocation: (name) => { location.textContent = name },
     setOverview: (active) => { overviewButton.textContent = active ? 'Return to trail' : 'Overview' },
     setTarget,

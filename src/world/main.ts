@@ -17,6 +17,7 @@ import { LANDMARKS, nearestLandmark, SPAWN } from './world-data'
 import { advanceExplorer, suspendInjectedMovement } from './world-controls'
 import { worldStartPresentation } from './world-start'
 import { loadBaselineTerrainTextures, type TerrainTextureSet } from './terrain-textures'
+import { attachBgmControl, createIntroZoneBgm } from './bgm'
 
 interface DiagnosticState {
   position: { x: number; y: number; z: number }; facing: number; location: string; overview: boolean
@@ -25,6 +26,7 @@ interface DiagnosticState {
   camera: { x: number; y: number; z: number; yaw: number }; forward: { x: number; z: number }
   drawCalls: number; triangles: number; water: { elapsedSeconds: number; level: number }; errors: string[]
   time: { hour: number; durationSeconds: number; paused: boolean }
+  bgm: { source: string; playing: boolean; muted: boolean; volume: number }
   hillsideReview?: { enabled: true; look: HillsideTerrainLook; ready: boolean; error?: string }
 }
 
@@ -35,6 +37,7 @@ interface WorldDiagnostics {
     visitLandmark(id: string): void
     setHour(hour: number): void; setDayDuration(durationSeconds: number): void; setTimePaused(paused: boolean): void
     setTerrainLook(look: HillsideTerrainLook): void
+    setBgmMuted(muted: boolean): void
   }
 }
 
@@ -113,6 +116,30 @@ function startWorld(host: HTMLElement, assets: WorldAssets, baseline?: TerrainTe
     startHour: hillsideRoute.enabled ? HILLSIDE_REVIEW_HOUR : undefined,
     paused: hillsideRoute.enabled,
   })
+  const bgm = createIntroZoneBgm({
+    source: `${import.meta.env.BASE_URL}audio/bgm-intro-zone.m4a`,
+    createAudio: (source) => {
+      const element = new Audio(source)
+      element.preload = 'auto'
+      return element
+    },
+    storage: window.localStorage,
+    onGesture: (trigger) => {
+      const handler = (): void => { trigger() }
+      document.addEventListener('pointerdown', handler, { capture: true })
+      document.addEventListener('keydown', handler, { capture: true })
+      return () => {
+        document.removeEventListener('pointerdown', handler, { capture: true })
+        document.removeEventListener('keydown', handler, { capture: true })
+      }
+    },
+    onVisibilityChange: (onChange) => {
+      const handler = (): void => { onChange(document.visibilityState === 'visible') }
+      document.addEventListener('visibilitychange', handler)
+      return () => { document.removeEventListener('visibilitychange', handler) }
+    },
+  })
+  attachBgmControl(bgm, hud.rightRail)
   let averageFrameMs = 0
   let animationFrame = 0
   let pausedForPageCache = false
@@ -182,6 +209,7 @@ function startWorld(host: HTMLElement, assets: WorldAssets, baseline?: TerrainTe
     window.removeEventListener('pagehide', handlePageHide)
     window.removeEventListener('pageshow', handlePageShow)
     if (import.meta.env.DEV && globalThis.ashveilWorld === diagnostics) globalThis.ashveilWorld = undefined
+    bgm.dispose()
     timePanel?.dispose()
     hillsidePanel?.dispose()
     targetSelection.dispose()
@@ -251,6 +279,7 @@ function startWorld(host: HTMLElement, assets: WorldAssets, baseline?: TerrainTe
       frameMs: 0, frameTimes: [], camera: { x: 0, y: 0, z: 0, yaw: 0 }, forward: { x: 0, z: 1 },
       drawCalls: 0, triangles: 0, water: { elapsedSeconds: 0, level: 0 }, errors,
       time: clock.read(previous),
+      bgm: bgm.status,
       hillsideReview: hillsideRoute.enabled
         ? { enabled: true, look: hillsideLook, ready: view.baselineTerrainReady, error: hillsideLoadError }
         : undefined,
@@ -259,6 +288,7 @@ function startWorld(host: HTMLElement, assets: WorldAssets, baseline?: TerrainTe
       move: (x, z, sprint = false) => { injected = { x, z, sprint } },
       stop: () => { injected = { x: 0, z: 0, sprint: false } }, reset, toggleOverview, visitLandmark,
       setHour, setDayDuration, setTimePaused, setTerrainLook,
+      setBgmMuted: (muted) => { if (muted !== bgm.status.muted) bgm.toggleMuted() },
     },
   }
   if (hillsideRoute.enabled) {
@@ -296,6 +326,7 @@ function startWorld(host: HTMLElement, assets: WorldAssets, baseline?: TerrainTe
     quests.update(explorer)
     view.updateCamera(explorer, delta)
     const time = clock.read(now)
+    bgm.tick(now)
     view.render(sampleSkyState(time.hour), now * 0.001, explorer)
     const frameMs = performance.now() - frameStart
     averageFrameMs += (frameMs - averageFrameMs) * 0.05
