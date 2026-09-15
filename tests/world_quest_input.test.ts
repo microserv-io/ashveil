@@ -106,3 +106,45 @@ describe('quest modal input ownership', () => {
     expect(formatDialogueText('Thank you, `{player}`.')).toBe('Thank you, Ashbearer.')
   })
 })
+
+describe('focused HUD button input', () => {
+  function hudInput(): { input: WorldInput; source: EventTarget } {
+    const source = new EventTarget()
+    const surface = new FakeElement()
+    vi.stubGlobal('window', source)
+    vi.stubGlobal('document', new EventTarget())
+    const input = new WorldInput(
+      surface as unknown as HTMLCanvasElement,
+      surface as unknown as HTMLElement,
+      surface as unknown as HTMLElement,
+      surface as unknown as HTMLButtonElement,
+      surface as unknown as HTMLButtonElement,
+    )
+    return { input, source }
+  }
+
+  const buttonTarget = { closest: (selector: string) => (selector.includes('button') ? buttonTarget : null) }
+  const inputTarget = { closest: (selector: string) => (selector.includes('input') ? inputTarget : null) }
+
+  it('accepts movement keys while a HUD button keeps focus', () => {
+    const { input, source } = hudInput()
+    source.dispatchEvent(event('keydown', { code: 'KeyW', repeat: false, target: buttonTarget }))
+    expect(input.read().keyboardForward).toBe(1)
+  })
+
+  it('yields Space to a focused button instead of triggering jump', () => {
+    const { input, source } = hudInput()
+    const space = event('keydown', { code: 'Space', repeat: false, target: buttonTarget })
+    source.dispatchEvent(space)
+    expect(input.read().jump).toBe(false)
+    expect(space.defaultPrevented).toBe(false)
+  })
+
+  it('still blocks gameplay keys for normal editable fields', () => {
+    const { input, source } = hudInput()
+    const key = event('keydown', { code: 'KeyW', repeat: false, target: inputTarget })
+    source.dispatchEvent(key)
+    expect(input.read().keyboardForward).toBe(0)
+    expect(key.defaultPrevented).toBe(false)
+  })
+})
