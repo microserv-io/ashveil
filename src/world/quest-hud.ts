@@ -2,6 +2,7 @@ import type { CharacterQuestState, DialogueScene, QuestDefinition, QuestId, Ques
 import type { HudQuestProjection } from './quest-presentation'
 import { resolveHudShortcut, type HudPanel } from './hud-shortcuts'
 import { createHudLayoutPreference, type HudLayout } from './hud-layout'
+import { blurActiveElement } from './hud-focus'
 
 export interface QuestHudAction {
   readonly label: string
@@ -53,7 +54,6 @@ export function createQuestHud(root: HTMLElement, onInteract: () => void): Quest
   let activePanel: Panel | null = null
   let modalListener: (open: boolean) => void = () => {}
   let trackListener: (questId: QuestId, tracked: boolean) => void = () => {}
-  let returnFocus: HTMLElement | null = null
   const layoutPreference = createHudLayoutPreference(browserStorage())
   applyLayout(layoutPreference.get())
 
@@ -63,14 +63,11 @@ export function createQuestHud(root: HTMLElement, onInteract: () => void): Quest
     shell.inert = false
     activePanel = null
     modalListener(false)
-    const target = returnFocus
-    returnFocus = null
-    target?.focus({ preventScroll: true })
+    blurActiveElement()
   }
 
   const openModal = (): void => {
     if (modalWrap.hidden) {
-      returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
       modalWrap.hidden = false
       shell.inert = true
       modalListener(true)
@@ -101,8 +98,16 @@ export function createQuestHud(root: HTMLElement, onInteract: () => void): Quest
     openModal()
   }
 
-  interactButton.addEventListener('click', onInteract)
-  for (const button of menuButtons) button.addEventListener('click', () => openPanel(button.dataset.gameMenu as Panel))
+  interactButton.addEventListener('click', () => {
+    interactButton.blur()
+    onInteract()
+  })
+  for (const button of menuButtons) {
+    button.addEventListener('click', () => {
+      button.blur()
+      openPanel(button.dataset.gameMenu as Panel)
+    })
+  }
   closeButton.addEventListener('click', closeModal)
   modalWrap.addEventListener('pointerdown', (event) => { if (event.target === modalWrap) closeModal() })
   window.addEventListener('keydown', (event) => {

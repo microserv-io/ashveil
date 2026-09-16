@@ -5,6 +5,7 @@ import { neutralInputFrame, WorldInput } from '../src/world/input'
 import { QuestNpcView } from '../src/world/quest-npcs'
 import { OPENING_QUESTS } from '../src/quests'
 import { formatDialogueText } from '../src/world/quest-hud'
+import { blurActiveElement } from '../src/world/hud-focus'
 
 class FakeElement extends EventTarget {
   readonly style = { transform: '' }
@@ -132,12 +133,12 @@ describe('focused HUD button input', () => {
     expect(input.read().keyboardForward).toBe(1)
   })
 
-  it('yields Space to a focused button instead of triggering jump', () => {
+  it('consumes Space for a jump even while a HUD button keeps focus', () => {
     const { input, source } = hudInput()
     const space = event('keydown', { code: 'Space', repeat: false, target: buttonTarget })
     source.dispatchEvent(space)
-    expect(input.read().jump).toBe(false)
-    expect(space.defaultPrevented).toBe(false)
+    expect(space.defaultPrevented).toBe(true)
+    expect(input.read().jump).toBe(true)
   })
 
   it('still blocks gameplay keys for normal editable fields', () => {
@@ -146,5 +147,17 @@ describe('focused HUD button input', () => {
     source.dispatchEvent(key)
     expect(input.read().keyboardForward).toBe(0)
     expect(key.defaultPrevented).toBe(false)
+  })
+})
+
+describe('blurActiveElement', () => {
+  it('blurs the element that holds focus', () => {
+    const blur = vi.fn()
+    blurActiveElement({ activeElement: { blur } } as unknown as Document)
+    expect(blur).toHaveBeenCalledTimes(1)
+  })
+
+  it('is a no-op when the document has no active element', () => {
+    expect(() => blurActiveElement({ activeElement: null } as unknown as Document)).not.toThrow()
   })
 })
