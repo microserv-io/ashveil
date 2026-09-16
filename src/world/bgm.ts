@@ -1,4 +1,5 @@
 export const BGM_MUTED_STORAGE_KEY = 'ashveil.bgm.muted'
+export const BGM_VOLUME_STORAGE_KEY = 'ashveil.bgm.volume'
 
 const DEFAULT_TARGET_VOLUME = 0.6
 const DEFAULT_FADE_SECONDS = 2.5
@@ -24,6 +25,8 @@ export interface IntroZoneBgmStatus {
   readonly source: string
   playing: boolean
   muted: boolean
+  /** The configured music level (0..1); status.volume is the fade-in-progress value. */
+  level: number
   volume: number
 }
 
@@ -31,6 +34,8 @@ export interface IntroZoneBgm {
   readonly status: IntroZoneBgmStatus
   tick(nowMilliseconds: number): void
   toggleMuted(): void
+  setLevel(level: number): void
+  subscribe(listener: () => void): () => void
   dispose(): void
 }
 
@@ -46,13 +51,21 @@ export interface IntroZoneBgmDependencies {
 
 interface Fade { from: number; to: number; startedAt: number }
 
+function clamp01(value: number): number {
+  return Math.min(1, Math.max(0, value))
+}
+
+function readStoredLevel(storage: BgmStorageLike, fallback: number): number {
+  const raw = Number.parseFloat(storage.getItem(BGM_VOLUME_STORAGE_KEY) ?? '')
+  return Number.isFinite(raw) ? clamp01(raw) : clamp01(fallback)
+}
+
 /**
  * The intro-zone music bed. Browsers reject play() before a user gesture, so the
  * player stays armed on the first pointer/key press and retries until audio starts.
  * Volume fades ride the render loop's tick rather than owning a timer of their own.
  */
 export function createIntroZoneBgm(dependencies: IntroZoneBgmDependencies): IntroZoneBgm {
-  const targetVolume = dependencies.targetVolume ?? DEFAULT_TARGET_VOLUME
   const fadeSeconds = dependencies.fadeSeconds ?? DEFAULT_FADE_SECONDS
   const audio = dependencies.createAudio(dependencies.source)
   audio.src = dependencies.source
@@ -60,13 +73,19 @@ export function createIntroZoneBgm(dependencies: IntroZoneBgmDependencies): Intr
   audio.volume = 0
 
   let muted = dependencies.storage.getItem(BGM_MUTED_STORAGE_KEY) === '1'
+  let level = readStoredLevel(dependencies.storage, dependencies.targetVolume ?? DEFAULT_TARGET_VOLUME)
   let started = false
   let fade: Fade | undefined
   let pausedForTab = false
   let lastNow = 0
   let disposed = false
+  const listeners = new Set<() => void>()
 
-  const status: IntroZoneBgmStatus = { source: dependencies.source, playing: false, muted, volume: 0 }
+  const status: IntroZoneBgmStatus = { source: dependencies.source, playing: false, muted, level, volume: 0 }
+
+  function notify(): void {
+    for (const listener of [...listeners]) listener()
+  }
 
   const stopGesture = dependencies.onGesture(() => { attemptStart() })
   const stopVisibility = dependencies.onVisibilityChange?.((visible) => {
@@ -90,6 +109,7 @@ export function createIntroZoneBgm(dependencies: IntroZoneBgmDependencies): Intr
       started = true
       status.playing = true
       stopGesture()
+      notify()
     } catch {
       // Autoplay policy rejection: stay armed so the next gesture retries.
     }
@@ -97,7 +117,7 @@ export function createIntroZoneBgm(dependencies: IntroZoneBgmDependencies): Intr
 
   function attemptStart(): void {
     if (disposed || started) return
-    beginFade(muted ? 0 : targetVolume)
+    beginFade(muted ? 0 : level)
     void play()
   }
 
@@ -122,7 +142,27 @@ export function createIntroZoneBgm(dependencies: IntroZoneBgmDependencies): Intr
     status.muted = muted
     dependencies.storage.setItem(BGM_MUTED_STORAGE_KEY, muted ? '1' : '0')
     if (muted) beginFade(0)
-    else if (started) beginFade(targetVolume)
+    else if (started) beginFade(level)
+    notify()
+  }
+
+  function setLevel(next: number): void {
+    if (disposed) return
+    level = clamp01(next)
+    status.level = level
+    dependencies.storage.setItem(BGM_VOLUME_STORAGE_KEY, String(level))
+    if (level > 0 && muted) {
+      muted = false
+      status.muted = false
+      dependencies.storage.setItem(BGM_MUTED_STORAGE_KEY, '0')
+    }
+    if (started && !muted) beginFade(level)
+    notify()
+  }
+
+  function subscribe(listener: () => void): () => void {
+    listeners.add(listener)
+    return () => { listeners.delete(listener) }
   }
 
   function dispose(): void {
@@ -132,9 +172,10 @@ export function createIntroZoneBgm(dependencies: IntroZoneBgmDependencies): Intr
     stopVisibility?.()
     audio.pause()
     status.playing = false
+    listeners.clear()
   }
 
-  return { status, tick, toggleMuted, dispose }
+  return { status, tick, toggleMuted, setLevel, subscribe, dispose }
 }
 
 const ICON_SOUND = `
@@ -160,11 +201,10 @@ export function attachBgmControl(bgm: IntroZoneBgm, host: HTMLElement): void {
     button.innerHTML = bgm.status.muted ? ICON_MUTED : ICON_SOUND
   }
   paint()
-
-  button.addEventListener('click', () => {
-    bgm.toggleMuted()
-    paint()
+  bgm.subscribe(() => {
+    if (button.isConnected) paint()
     button.blur()
   })
+  button.addEventListener('click', () => { bgm.toggleMuted() })
   host.append(button)
 }
