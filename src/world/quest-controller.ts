@@ -10,7 +10,7 @@ import {
 } from '../quests'
 import { IndexedDbQuestStateRepository } from '../persistence'
 import type { WorldInput } from './input'
-import { createQuestHud, type QuestHud, type QuestHudAction } from './quest-hud'
+import { createQuestHud, type MusicLevelPreference, type QuestHud, type QuestHudAction } from './quest-hud'
 import { WorldQuestHost, type QuestHostMutation, type WorldQuestTarget } from './quest-host'
 import { QUEST_TARGETS, destinationForEntry, questTarget } from './quest-world-data'
 import { projectHudQuests } from './quest-presentation'
@@ -34,9 +34,9 @@ export class WorldQuestController {
   private candidates: readonly InteractionCandidate[] = []
   private busy = false
 
-  constructor(root: HTMLElement, private readonly view: WorldView, private readonly input: WorldInput, initialExplorer: Explorer) {
+  constructor(root: HTMLElement, private readonly view: WorldView, private readonly input: WorldInput, initialExplorer: Explorer, music?: MusicLevelPreference) {
     this.explorer = initialExplorer
-    this.hud = createQuestHud(root, () => { void this.interact() })
+    this.hud = createQuestHud(root, () => { void this.interact() }, music)
     this.hud.setModalListener((open) => this.input.setEnabled(!open))
     this.hud.setTrackListener((questId, tracked) => { void this.setTracked(questId, tracked) })
     this.host.onStatus((status) => {

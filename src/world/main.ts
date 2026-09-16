@@ -26,7 +26,7 @@ interface DiagnosticState {
   camera: { x: number; y: number; z: number; yaw: number }; forward: { x: number; z: number }
   drawCalls: number; triangles: number; water: { elapsedSeconds: number; level: number }; errors: string[]
   time: { hour: number; durationSeconds: number; paused: boolean }
-  bgm: { source: string; playing: boolean; muted: boolean; volume: number }
+  bgm: { source: string; playing: boolean; muted: boolean; level: number; volume: number }
   hillsideReview?: { enabled: true; look: HillsideTerrainLook; ready: boolean; error?: string }
 }
 
@@ -38,6 +38,7 @@ interface WorldDiagnostics {
     setHour(hour: number): void; setDayDuration(durationSeconds: number): void; setTimePaused(paused: boolean): void
     setTerrainLook(look: HillsideTerrainLook): void
     setBgmMuted(muted: boolean): void
+    setBgmLevel(level: number): void
   }
 }
 
@@ -99,7 +100,10 @@ function startWorld(host: HTMLElement, assets: WorldAssets, baseline?: TerrainTe
   const view = new WorldView(host, assets.scenery, assets.character, assets.sky, explorer, assets.terrain, getActiveZone(), baseline)
   if (hillsideRoute.enabled) view.adjustOrbit(0, -80, 0)
   const input = new WorldInput(view.canvas, hud.joystick, hud.joystickKnob, hud.sprintButton, hud.jumpButton)
-  const quests = new WorldQuestController(host, view, input, explorer)
+  const quests = new WorldQuestController(host, view, input, explorer, {
+    get: () => bgm.status.level,
+    set: (level) => bgm.setLevel(level),
+  })
   const targetSelection = new NpcTargetController({
     canvas: view.canvas,
     inputEnabled: () => input.isEnabled,
@@ -289,6 +293,7 @@ function startWorld(host: HTMLElement, assets: WorldAssets, baseline?: TerrainTe
       stop: () => { injected = { x: 0, z: 0, sprint: false } }, reset, toggleOverview, visitLandmark,
       setHour, setDayDuration, setTimePaused, setTerrainLook,
       setBgmMuted: (muted) => { if (muted !== bgm.status.muted) bgm.toggleMuted() },
+      setBgmLevel: (level) => bgm.setLevel(level),
     },
   }
   if (hillsideRoute.enabled) {

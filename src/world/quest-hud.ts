@@ -10,6 +10,11 @@ export interface QuestHudAction {
   readonly run: () => void
 }
 
+export interface MusicLevelPreference {
+  get(): number
+  set(level: number): void
+}
+
 export interface QuestHud {
   readonly interactButton: HTMLButtonElement
   readonly journalButton: HTMLButtonElement
@@ -26,7 +31,10 @@ export interface QuestHud {
 }
 
 type Panel = HudPanel
-export function createQuestHud(root: HTMLElement, onInteract: () => void): QuestHud {
+
+const defaultMusicPreference: MusicLevelPreference = { get: () => 0.6, set: () => {} }
+
+export function createQuestHud(root: HTMLElement, onInteract: () => void, music: MusicLevelPreference = defaultMusicPreference): QuestHud {
   const shell = required<HTMLElement>(root, '#world-shell')
   root.insertAdjacentHTML('beforeend', `
     <div id="game-modal-wrap" class="hud-modal-wrap" hidden>
@@ -91,9 +99,9 @@ export function createQuestHud(root: HTMLElement, onInteract: () => void): Quest
     activePanel = panel
     modalKicker.textContent = panelKicker(panel)
     modalTitle.textContent = panelTitle(panel)
-    modalBody.innerHTML = panelMarkup(panel, projection, questState, continuationLabel, layoutPreference.get())
+    modalBody.innerHTML = panelMarkup(panel, projection, questState, continuationLabel, layoutPreference.get(), music.get())
     if (panel === 'journal') bindTracking(modalBody, trackListener)
-    if (panel === 'settings') bindSettings(modalBody, layoutPreference)
+    if (panel === 'settings') bindSettings(modalBody, layoutPreference, music)
     renderActions([{ label: 'Close', run: closeModal }])
     openModal()
   }
@@ -187,7 +195,7 @@ function storyCue(cue: string): string {
   return `<section class="main" aria-label="Main Story quests"><article><h2><span class="hud-quest-title-icon" aria-hidden="true">✧</span><span>Main Story</span></h2><p class="hud-story-cue">${cue}</p></article></section>`
 }
 
-function panelMarkup(panel: Panel, projection: HudQuestProjection, state: CharacterQuestState, continuationLabel: string | undefined, layout: HudLayout): string {
+function panelMarkup(panel: Panel, projection: HudQuestProjection, state: CharacterQuestState, continuationLabel: string | undefined, layout: HudLayout, musicLevel: number): string {
   if (panel === 'journal') return journalMarkup(projection, state, continuationLabel)
   if (panel === 'character') {
     const className = state.activeClassId ? escapeHtml(state.activeClassId) : 'Class not yet chosen'
@@ -198,7 +206,7 @@ function panelMarkup(panel: Panel, projection: HudQuestProjection, state: Charac
   if (panel === 'map') return '<section class="hud-empty"><div class="hud-empty-map"></div><h3>No map available</h3><p>Explore Alderbank through its paths, landmarks, and people.</p></section>'
   if (panel === 'finder') return '<section class="hud-empty"><h3>Duty Finder unavailable</h3><p>Group duties are not available in this opening chapter.</p></section>'
   if (panel === 'social') return '<section class="hud-empty"><h3>No social connections yet</h3><p>Communities and player groups will appear here when online play is available.</p></section>'
-  return settingsMarkup(layout)
+  return settingsMarkup(layout, musicLevel)
 }
 
 function journalMarkup(projection: HudQuestProjection, state: CharacterQuestState, continuationLabel?: string): string {
@@ -222,16 +230,28 @@ function packMarkup(state: CharacterQuestState): string {
   return `<section class="hud-pack-summary"><p><span>Currency</span><strong>${state.currency}</strong></p><p><span>${state.activeClassId ? 'Class XP' : 'Reserved XP'}</span><strong>${state.activeClassId ? state.classXp[state.activeClassId] ?? 0 : state.pendingXp}</strong></p></section><section class="hud-pack-grid">${items.length ? items.map(([id, quantity]) => `<article><div aria-hidden="true">✦</div><h3>${escapeHtml(labels.get(id) ?? id)}</h3><p>Quantity ${quantity}</p></article>`).join('') : '<p class="hud-empty-copy">Quest reward supplies will appear here.</p>'}</section>`
 }
 
-function settingsMarkup(layout: HudLayout): string {
-  return `<section class="hud-settings"><label for="hud-layout">Action layout<select id="hud-layout"><option value="keyboard"${layout === 'keyboard' ? ' selected' : ''}>Keyboard</option><option value="controller"${layout === 'controller' ? ' selected' : ''}>Controller cross hotbar</option></select></label><article><h3>Exploration controls</h3><p>W/S move · A/D turn · Q/E strafe · right mouse steers · left-drag looks · Alt walks · Shift sprints · Space jumps · wheel zooms.</p><h3>Interface controls</h3><p>F interacts. Left-click an NPC to target; click empty ground or press Escape to clear the target. J opens the Journal. Menu buttons show their names when focused or hovered. Escape closes the active panel.</p><p>The controller cross hotbar is a layout preview. Gamepad movement and actions are not available yet.</p></article></section>`
+function settingsMarkup(layout: HudLayout, musicLevel: number): string {
+  const percent = String(Math.round(clamp01(musicLevel) * 100))
+  return `<section class="hud-settings"><label for="hud-layout">Action layout<select id="hud-layout"><option value="keyboard"${layout === 'keyboard' ? ' selected' : ''}>Keyboard</option><option value="controller"${layout === 'controller' ? ' selected' : ''}>Controller cross hotbar</option></select></label><label for="hud-music">Music<span class="hud-music-row"><input id="hud-music" type="range" min="0" max="100" step="5" value="${percent}"><output id="hud-music-value" for="hud-music">${percent}%</output></span></label><article><h3>Exploration controls</h3><p>W/S move · A/D turn · Q/E strafe · right mouse steers · left-drag looks · Alt walks · Shift sprints · Space jumps · wheel zooms.</p><h3>Interface controls</h3><p>F interacts. Left-click an NPC to target; click empty ground or press Escape to clear the target. J opens the Journal. Menu buttons show their names when focused or hovered. Escape closes the active panel.</p><p>The controller cross hotbar is a layout preview. Gamepad movement and actions are not available yet.</p></article></section>`
 }
 
-function bindSettings(root: HTMLElement, preference: { get(): HudLayout; set(layout: HudLayout): void }): void {
+function clamp01(value: number): number {
+  return Math.min(1, Math.max(0, value))
+}
+
+function bindSettings(root: HTMLElement, preference: { get(): HudLayout; set(layout: HudLayout): void }, music: MusicLevelPreference): void {
   applyLayout(preference.get())
   required<HTMLSelectElement>(root, '#hud-layout').addEventListener('change', (event) => {
     const layout = (event.currentTarget as HTMLSelectElement).value === 'controller' ? 'controller' : 'keyboard'
     preference.set(layout)
     applyLayout(layout)
+  })
+  const slider = required<HTMLInputElement>(root, '#hud-music')
+  const readout = required<HTMLOutputElement>(root, '#hud-music-value')
+  slider.addEventListener('input', () => {
+    const percent = Number(slider.value)
+    readout.textContent = `${percent}%`
+    music.set(clamp01(percent / 100))
   })
 }
 

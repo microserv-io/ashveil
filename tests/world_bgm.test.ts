@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   BGM_MUTED_STORAGE_KEY,
+  BGM_VOLUME_STORAGE_KEY,
   createIntroZoneBgm,
   type BgmAudioLike,
   type BgmStorageLike,
@@ -167,5 +168,68 @@ describe('intro zone bgm', () => {
     harness.fireVisibility(true)
     await flush()
     expect(harness.audio.paused).toBe(false)
+  })
+
+  it('restores the configured music level from storage and fades to it on unmute', async () => {
+    const { bgm, harness } = createHarness({ [BGM_MUTED_STORAGE_KEY]: '1', [BGM_VOLUME_STORAGE_KEY]: '0.25' })
+    expect(bgm.status.level).toBe(0.25)
+    harness.fireGesture()
+    await flush()
+    bgm.tick(2_500)
+    expect(bgm.status.volume).toBeCloseTo(0, 1e-6)
+    bgm.toggleMuted()
+    bgm.tick(5_000)
+    expect(bgm.status.volume).toBeCloseTo(0.25, 1e-6)
+  })
+
+  it('ignores a malformed stored level and falls back to the default', () => {
+    const { bgm } = createHarness({ [BGM_VOLUME_STORAGE_KEY]: 'loud' })
+    expect(bgm.status.level).toBe(0.6)
+  })
+
+  it('fades to the new level when setLevel is used and clamps out-of-range values', async () => {
+    const { bgm, harness } = createHarness()
+    harness.fireGesture()
+    await flush()
+    bgm.tick(2_500)
+    bgm.setLevel(0.9)
+    expect(harness.values[BGM_VOLUME_STORAGE_KEY]).toBe('0.9')
+    expect(bgm.status.level).toBe(0.9)
+    bgm.tick(5_000)
+    expect(bgm.status.volume).toBeCloseTo(0.9, 1e-6)
+    bgm.setLevel(3)
+    expect(bgm.status.level).toBe(1)
+  })
+
+  it('dragging the level above zero un-mutes and persists both settings', async () => {
+    const { bgm, harness } = createHarness({ [BGM_MUTED_STORAGE_KEY]: '1' })
+    harness.fireGesture()
+    await flush()
+    bgm.tick(2_500)
+    bgm.setLevel(0.4)
+    expect(bgm.status.muted).toBe(false)
+    expect(harness.values[BGM_MUTED_STORAGE_KEY]).toBe('0')
+    bgm.tick(5_000)
+    expect(bgm.status.volume).toBeCloseTo(0.4, 1e-6)
+  })
+
+  it('persists the music level across player constructions', () => {
+    const first = createHarness()
+    first.bgm.setLevel(0.35)
+    expect(first.harness.values[BGM_VOLUME_STORAGE_KEY]).toBe('0.35')
+    const second = createHarness(first.harness.values)
+    expect(second.bgm.status.level).toBe(0.35)
+  })
+
+  it('notifies subscribers when the mute or level changes', () => {
+    const { bgm } = createHarness()
+    let count = 0
+    const unsubscribe = bgm.subscribe(() => { count += 1 })
+    bgm.toggleMuted()
+    bgm.setLevel(0.2)
+    expect(count).toBe(2)
+    unsubscribe()
+    bgm.toggleMuted()
+    expect(count).toBe(2)
   })
 })

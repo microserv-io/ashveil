@@ -836,6 +836,25 @@
   background: #f0e8d3;
 }
 
+.hud-settings input[type='range'] {
+  min-width: 160px;
+  padding: 0 9px;
+  accent-color: #a78e58;
+}
+
+.hud-settings .hud-music-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hud-settings output {
+  min-width: 46px;
+  color: #4b5948;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
 #game-modal-actions .primary,
 #quest-modal-actions .primary {
   border-color: #6b7e50;
